@@ -8,25 +8,16 @@
 
 #include "common.h"
 #include "config.h"
+#include "object.h"
 
-typedef struct {
-  int win;
-  Byte type;
-  int x;
-  int y;
-  char key;
+typedef struct
+{
+    int   win;
+    Byte  type;
+    int   x;
+    int   y;
+    char  key;
 } Event;
-
-#ifndef _PICTURE_
-#define _PICTURE_
-typedef struct {
-  int width;
-  int height;
-  int offset_x;
-  int offset_y;
-  int pixmap;
-} Picture;
-#endif _PICTURE_
 
 #define EVENT_RBUTTON   0
 #define EVENT_LBUTTON   1
@@ -37,11 +28,12 @@ typedef struct {
 #define EVENT_KEY       6
 #define EVENT_MOVED     7
 
-#define S_FONT	  0
-#define M_FONT	  1
-#define L_FONT	  2
-#define XL_FONT	  3
-#define MAX_FONTS 4
+#define T_FONT    0	/* Tiny/Toddler - your pick */
+#define S_FONT	  1
+#define M_FONT	  2
+#define L_FONT	  3
+#define XL_FONT	  4
+#define MAX_FONTS 5
 
 #define BLACK      0
 #define WHITE      1
@@ -51,7 +43,9 @@ typedef struct {
 #define GREEN      5
 #define BLUE       6
 #define VIOLET     7
-#define MAX_COLORS 8
+#define GREY       8	/* grey71 */
+#define CUR_COLOR  9
+#define MAX_COLORS 10
 
 #define CROSS_CURSOR 0
 #define PLUS_CURSOR  1
@@ -59,8 +53,9 @@ typedef struct {
 #define LR_CURSOR    3
 #define MAX_CURSORS  4
 
-#define MAX_PIXMAPS	350
-#define MAX_WINDOWS	12
+/* #define MAX_PIXMAPS	350 */
+#define MAX_PIXMAPS	450		/* GHS */
+#define MAX_WINDOWS	 16
 
 #define LEFT_BORDER  5
 #define TOP_BORDER   5
@@ -75,6 +70,6 @@ typedef struct {
 
 #ifdef AMIGA
 #include "amigagfx.h"
-#endif 
+#endif
 
 Video *make_video();

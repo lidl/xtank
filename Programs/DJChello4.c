@@ -32,7 +32,7 @@
 
 #include <stdio.h>
 #include <math.h>
-#include "/mit/games/src/vax/xtank/Programs/xtanklibnew.h"
+#include "xtanklib2.h"
 
 
 /* some basic constants to be defined */
@@ -175,6 +175,7 @@ DJChello4_main()
       /* renew information about environment and myself */
       refresh_blips(&status);                           /* refresh the blip info if it is time */
       get_vehicles(&(status.num_vehicles), status.vehicle);   /* find other vehicles */
+if (status.num_vehicles != 0) fprintf(stderr, "DJC: status.num_vehicles %d\n", status.num_vehicles);
       get_location(status.my_location);                 /* update my location for proper aiming */
       search_for_enemies(&status);                      /* find enemies and say hello, goodbye */
 
@@ -331,7 +332,7 @@ struct TankStatus *stat;
     sprintf(data,"A : %d; W : %d; F : %d",stat->armor_ratio, stat->ammo_ratio, stat->fuel_ratio);
     send(stat->my_info.id, OP_TEXT, data);
     if (stat->destination_landmark) {
-      sprintf("destination @ %d,%d", (stat->destination_landmark)->x, (stat->destination_landmark)->y);
+      sprintf(data, "destination @ %d,%d", (stat->destination_landmark)->x, (stat->destination_landmark)->y);
       send(stat->my_info.id, OP_TEXT, data);
     }
     else

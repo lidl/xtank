@@ -1,8 +1,20 @@
 				Setups
 
-Setups consist of settings and a combatants list.
-The settings can be modified from the settings menu.
-The combatant list can be modified from the combatants interface.
+When you click on Play Standard, a vehicle is given to each human
+player, and the remaining vehicles are filled with robots.  Everyone
+is Neutral, so there are no teams.
+
+When you click on Play Players, a vehicle is given to each human
+player.  Each player is Neutral, so there are no teams.
+
+When you click on Play Robots, a few robots are assigned to vehicles
+and an automatic battle begins.  You may want to turn on the battle
+windows with the 'w' key to see their vital statistics.
+
+When you click on Play Customized, you begin a battle with combatants
+which are described in the combatants interface which can be reached
+by clicking on Combatants.  This is the only way to set up team games.
+It also gives you complete control over the combatants in a game.
 
 Combatants Interface
 
@@ -21,4 +33,20 @@ Combatants Interface
   A combatant without a team will default to team neutral.
   A combatant CAN have a player and a program at the same time.
 
-This combatant list is used for Play Customized.
+NOTE:
+
+When you set up teams, you must be sure to match the team numbers
+that you choose with the team numbers used in the maze you are playing
+with.  Most mazes use teams 1 and 2 (with 3, 4, 5, 6 being used if
+there are more than 2 teams).  So when you assign teams in the
+combatants interface, you should have players on the red and orange
+teams.  Yes, this is silly, the game should be able to assign players
+to the lowest numbered teams available in the maze, but it doesn't.
+
+When a game starts, vehicles are place in the maze in a semi-random
+manner.  Players are put on squares of their own team (unless
+they are neutral, in which case it doesn't matter).  They are put on
+start squares, if there are any.  If there are no start squares, they
+are placed randomly on empty squares.  If there are no empty squares,
+then landmark squares are used.  This is important in team games,
+since initial placement of players is important.

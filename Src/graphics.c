@@ -6,7 +6,8 @@
 ** graphics.c
 */
 
-#include "common.h"
+#include "malloc.h"
+#include "config.h"
 
 #ifdef X10
 #include "x10.c"

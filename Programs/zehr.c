@@ -5,7 +5,7 @@
 * algorithm: just moves and shoots a bit *
 \****************************************/
 
-#include "/mit/games/src/vax/xtank/Programs/xtanklib.h"
+#include "/homes/osl/stripes/xtank/Programs/xtanklib.h"
 #include <math.h>
 #define MAX_MAZE 3000
 

@@ -1,3 +1,5 @@
+#include "malloc.h"
+#include <stdio.h>
 /*
 ** Xtank
 **
@@ -12,46 +14,73 @@
 extern int shooter_main();
 
 Prog_desc shooter_prog = {
-  "shooter",
-  "Qwiky",
-  "Sits in one place and fires at the nearest enemy.",
-  "Terry Donahue",
-  PLAYS_COMBAT|DOES_SHOOT,
-  1,
-  shooter_main
+	"shooter",
+	"BASE",
+	"Sits in one place and fires at the nearest enemy.",
+	"Stripes@eng.umd.edu (orig. Terry Donahue)",
+	PLAYS_COMBAT | DOES_SHOOT,
+	1,
+	shooter_main
 };
 
-#define ENEMY_NONE   0
-#define ENEMY_RADAR  1
-#define ENEMY_SCREEN 2
+#define ENEMY_NONE		0
+#define ENEMY_RADAR		1
+#define ENEMY_SCREEN	2
+
+#define MAX_WEAPONS     6
+#define MAX_TURRETS		3
+
+typedef struct
+{
+	int num;					/* #weps in turret */
+	Weapon_info *winfo[MAX_WEAPONS];
+} tinf;							/* "Turret info" */
+
+typedef struct
+{
+	int nt;
+	Weapon_info weap[MAX_WEAPONS];
+	tinf tinfo[MAX_TURRETS];
+} shooter_info;
+
 
 shooter_main()
 {
-  Vehicle_info enemy;
-  Location myloc;
-  Weapon_info winfo;
-  int enemy_flag;
+	Vehicle_info enemy;
+	Location myloc;
+	int enemy_flag;
+	shooter_info data;
+	shooter_info *sinfo = &data;
+	extern int frame;
+	int cur_frame;
 
-  /* Find out info about first weapon */
-  if(num_weapons() > 0) 
-    get_weapon(0,&winfo);
-  else
-    winfo.ammo_speed = 0;
 
-  for(;;) {
-    /* figure out where we are */
-    get_location(&myloc);
+	/* Find out info about weapons */
+	shooter_init(sinfo);
 
-    /* find the nearest enemy */
-    enemy_flag = shooter_find(&myloc,&enemy);
+	for (;;)
+	{
+		/* figure out where we are */
+		get_location(&myloc);
 
-    /* try to shoot at enemy if on screen and we have a weapon */
-    if(enemy_flag == ENEMY_SCREEN && winfo.ammo_speed != 0)
-      shooter_shoot(&myloc,&enemy,winfo.ammo_speed);
+		/* find the nearest enemy */
+		enemy_flag = shooter_find(&myloc, &enemy);
 
-    /* Give up remaining cpu time to improve speed of game */
-    done();
-  }
+		/* try to shoot at enemy if on screen and we have a weapon */
+		if (enemy_flag == ENEMY_SCREEN)
+			shooter_shoot(sinfo, &myloc, &enemy);
+
+		/* Give up remaining cpu time to improve speed of game */
+		cur_frame = frame;
+		done();
+		if (cur_frame == frame)
+		{
+			char *crash = NULL;
+
+			/* assert apparently doesn't work too well... */
+			*crash = 0;
+		}
+	}
 }
 
 /*
@@ -59,66 +88,172 @@ shooter_main()
 ** a clear path to it into t and returns ENEMY_SCREEN.  If no
 ** such vehicle, returns ENEMY_NONE.
 */
-shooter_find(myloc,t)
-     Location *myloc;
-     Vehicle_info *t;
+shooter_find(myloc, t)
+Location *myloc;
+Vehicle_info *t;
 {
-  Vehicle_info vinfo[MAX_VEHICLES];
-  int num_vinfos;
-  Vehicle_info *v;
-  int dx,dy,range,min_range;
-  int i;
+	Vehicle_info vinfo[MAX_VEHICLES];
+	int num_vinfos;
+	Vehicle_info *v;
+	int dx, dy, range, min_range;
+	int i;
 
-  get_vehicles(&num_vinfos,vinfo);
-  
-  /*
-  ** Find the closest vehicle with a clear path to it.
-  */
-  min_range = 99999999;
-  for(i = 0 ; i < num_vinfos ; i++) {
-    v = &vinfo[i];
+	get_vehicles(&num_vinfos, vinfo);
 
-    /* ignore vehicles that have no clear path to them */
-    if(!clear_path(myloc,&v->loc)) continue;
+	/* * Find the closest vehicle with a clear path to it. */
+	min_range = 99999999;
+	for (i = 0; i < num_vinfos; i++)
+	{
+		v = &vinfo[i];
 
-    dx = v->loc.x - myloc->x;
-    dy = v->loc.y - myloc->y;
-    range = dx*dx + dy*dy;
-    if(range < min_range) {
-      min_range = range;
-      *t = *v;
-    }
-  }
+		/* ignore vehicles that have no clear path to them */
+		if (!clear_path(myloc, &v->loc))
+			continue;
 
-  if(min_range == 99999999)
-    return ENEMY_NONE;
-  else
-    return ENEMY_SCREEN;
+		dx = v->loc.x - myloc->x;
+		dy = v->loc.y - myloc->y;
+		range = dx * dx + dy * dy;
+		if (range < min_range)
+		{
+			min_range = range;
+			*t = *v;
+		}
+	}
+
+	if (min_range == 99999999)
+		return ENEMY_NONE;
+	else
+		return ENEMY_SCREEN;
 }
 
 /*
 ** Shoots at vehicle t with all weapons.  Uses quick leading fan algorithm.
 */
-shooter_shoot(myloc,t,ammo_speed)
-     Location *myloc;
-     Vehicle_info *t;
-     int ammo_speed;
+shooter_shoot(sinfo, myloc, t)
+shooter_info *sinfo;
+Location *myloc;
+Vehicle_info *t;
 {
-  int dx,dy;
-  float lead_factor;
+	extern float turret_angle(), aim_turret();
+	extern int frame;
+	int dx, dy, range;
+	float lead_factor, ang;
+	float kludge;
+    int i, j, k;
+    WeaponType weap_type;
+	Weapon_info *wi, *twi;
 
-  dx = t->loc.x - myloc->x;
-  dy = t->loc.y - myloc->y;
+	dx = t->loc.x - myloc->x;
+	dy = t->loc.y - myloc->y;
 
-  /* Lead the target approximately, shoot fanning */
-  lead_factor = 2 * sqrt((double) (dx*dx + dy*dy)) /
-    (float) ammo_speed;
-  dx += (int) (t->xspeed * lead_factor * (float) rnd(20) / 19.0);
-  dy += (int) (t->yspeed * lead_factor * (float) rnd(20) / 19.0);
+	range = dx * dx + dy * dy;
+	for (i = 0; i < sinfo->nt; i++)
+	{
+		for (j = 0; j < sinfo->tinfo[i].num; j++)
+		{
+			wi = sinfo->tinfo[i].winfo[j];
+			if (range > wi->range)
+				continue;
+			/* Lead the target approximately, shoot fanning */
+			lead_factor = 2 * sqrt(0.0 + range) / wi->ammo_speed;
+			dx += (int) (t->xspeed * lead_factor * (float) rnd(20) / 19.0);
+			dy += (int) (t->yspeed * lead_factor * (float) rnd(20) / 19.0);
 
-  /* Point all the turrets towards where he is going to be */
-  aim_all_turrets(dx,dy);
+			/* Point the turret towards where he is going to be */
+            ang = aim_turret((TurretNum)i, dx, dy);
 
-  /* Shoot all weapons */
-  fire_all_weapons();
+			/* Forget shooting if you won't hit... */
+			/* (I want a better algo..) */
+            kludge = ang - turret_angle((TurretNum)i);
+			ang = drem(kludge, (2.0 * PI));		/* Needs to become drem, I
+												   think */
+			/* ang = (ang - turret_angle(i)) % 2.0*PI; */
+			ang = (ang <= 0) ? -ang : ang;
+
+#ifdef DEBUG
+			if (ang >= PI / 8)
+			{
+				fprintf(stderr, "turret %d off by %f, frame %d skiping\n", i, ang, frame);
+				break;
+			}
+#endif
+
+			/* Shoot the weapon */
+			weap_type = wi->type;
+			fire_weapon(wi - sinfo->weap);
+			for (twi = wi + 1, k = j + 1; k < sinfo->tinfo[i].num; k++, twi++)
+			{
+				if (twi->type == weap_type)
+					fire_weapon(twi - sinfo->weap);
+			}
+			break;
+		}
+	}
+}
+
+shooter_init(sinfo)
+shooter_info *sinfo;
+{
+	int i, tnum, j, numweaps;
+	Weapon_info *w, *wx;
+	tinf *ti;
+
+
+	for (i = 0; i < MAX_TURRETS; i++)
+	{
+		sinfo->tinfo[i].num = 0;
+	}
+	sinfo->nt = 0;
+
+	numweaps = num_weapons();
+	for (i = 0; i < numweaps; i++)
+	{
+		w = &sinfo->weap[i];
+		get_weapon(i, w);
+
+		switch (w->mount)
+		{
+			case (MOUNT_TURRET1):
+				tnum = 0;
+				break;
+			case (MOUNT_TURRET2):
+				tnum = 1;
+				break;
+			case (MOUNT_TURRET3):
+				tnum = 2;
+				break;
+			default:
+				fprintf(stderr, "shooter_init bad mount=%d, ignored\n", w->mount);
+		}
+		w->range *= w->range;
+		ti = sinfo->tinfo + tnum;
+		for (j = 0; j < ti->num; j++)
+		{
+			if (ti->winfo[j]->range > w->range)
+			{
+				/* struct assign is ANSI std, you can memcy if you have a
+				   losing compiler... or get gcc */
+				wx = w;
+				w = ti->winfo[j];
+				ti->winfo[j] = wx;
+			}
+		}
+		ti->winfo[j] = w;
+		ti->num += 1;
+		if (tnum >= sinfo->nt)
+			sinfo->nt = tnum + 1;
+	}
+	/* Next do secondary sort baised on sinfo->tinfo[*].winfo[*].damage */
+	/* (want big to low) */
+
+#if 0
+	for (i = 0; i < sinfo->nt; i++)
+	{
+		ti = sinfo->tinfo;
+		for (j = 0; j < ti->num; j++)
+		{
+			fprintf(stderr, "turret %d, wep %d, range %d\n", i, j, ti->winfo[j]->range);
+		}
+	}
+#endif
 }

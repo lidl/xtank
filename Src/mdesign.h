@@ -27,16 +27,19 @@
 #define CONTINUE        3
 
 /* Interface locations and fonts */
-#define INFO_Y   46
-#define INPUT_Y  49
+#define INFO_Y   43
+#define INPUT_Y  46
 #define MD_FONT  M_FONT
+
 
 typedef unsigned int Wall;
 
-typedef struct {
-  int x,y;                 /* coordinates of a place in terms of boxes */
+typedef struct
+{
+    int   x, y;	/* coordinates of a place in terms of boxes */
 } BoxC;
 
-typedef struct {
-  int x,y;                 /* coordinates of a place in terms of pixels */
+typedef struct
+{
+    int   x, y;	/* coordinates of a place in terms of pixels */
 } PixC;

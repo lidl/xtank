@@ -1,26 +1,20 @@
                              General
 
-XTANK is a multi-player vehicle combat game played in mazes of various
+Xtank is a multi-player vehicle combat game played in mazes of various
 sizes and types.  You control a vehicle (usually a tank) equipped with
-the latest in armor and weaponry.  Your objective is to destroy the
-enemy vehicles in the maze before they do the same to you.
+the latest in armor and weaponry.  Your objective depends on the game
+you play.
 
-Winning the game requires a delicate combination of quick-thinking, dodging,
-and accurate firing.
+Xtank can be played single-player against computer controlled robots,
+or multi-player.  You can play one of 5 games in Xtank:
 
-There are two Modes to XTANK and several Games that can be played in
-those modes.
+	Combat		Destroy opponents
+	War		Gain control of territory
+	Ultimate	Ultimate frisbee / Hockey
+	Capture		Capture the flag / Hockey
+	Race		Get to the goal first
 
-In Single-player mode, the enemy tanks are computer controlled robots,
-widely varying in intelligence, speed, strength, and firepower.  
-The only Game available in this mode is Combat.
-
-In Multi-player mode, the enemy tanks are controlled by other human
-players, who have designed their vehicles with the sole intent of destroying
-yours.
-Games available in this mode are: Combat, Ultimate, Capture, and War
-
-XTANK also gives you the option of designing your own vehicles and mazes.
+Xtank also gives you the option of designing your own vehicles and mazes.
 Customize your vehicle to your playing style, or challenge others to beat
 you in your own maze.
 
@@ -44,7 +38,7 @@ Direction control:
 	to the desired direction as quickly as it can, but the vehicle
 	will probably continue skidding in the direction it was going
 	before.  This allows you to make moonshiner turns, donuts, and
-	all the fancy driving maneuvers you can think of. 
+	all the fancy driving maneuvers you care to try.
 
 Speed control:
 
@@ -117,6 +111,8 @@ When a bullet hits a tank, the hits off of the armor is
 subtracted from the damage of the bullet.  Any remaining damage is
 subtracted from the armor in the area that was hit.  When any side
 drops below zero, the vehicle explodes in a shower of bullets.
+The types of bullets that are generated are based on the amount and
+type of ammunition the vehicle has left, as well as vehicle size.
 
 Crashing
 --------
@@ -170,7 +166,7 @@ The effects of surface landmarks are felt anywhere in that box.
 The two remaining types of landmarks:
 
 	goal		place to get to in some games
-	outpost		shoots at you if you are in the box
+	outpost		shoots at you if you are within range
 
 Scoring
 -------
@@ -202,10 +198,33 @@ Treads
 
 Better treads increase your traction, improving your turning ability,
 acceleration and braking.  Since better treads create more friction with
-the ground, they decrease your maximum speed.
+the ground, they decrease your maximum speed (this is a bit shaky on the
+physics side, but is good for game balance).
 
 Bumpers
 -------
 
 Better bumpers make collisions more elastic.  They also reduce the amount
 of damage done to your vehicle in a collision.
+
+Disc Control
+------------
+
+In Ultimate and Capture, there are discs on the playfield.  When you
+run into a disc, it will start to orbit your vehicle.  The following
+keys are then useful:
+
+	's'	Make disc orbit counterclockwise
+	'd'	Toggle direction of disc orbit
+	'f'	Make disc orbit colockwise
+	'w'	Throw disc slowly
+	'e'	Throw disc normal
+	'r'	Throw disc fast
+
+The disc always moves at a constant absolute speed while in orbit, so
+if you are moving quickly, the disc will lag behind you.  All throws
+result in the disc moving tangentially from orbit.  When you own the
+disc, you may be slowed down, depending on the value of Owner slowdown
+in the settings.  While in free flight, the disc will bounce off
+walls, and slow down gradually depending on the value of Disc friction
+in the settings.

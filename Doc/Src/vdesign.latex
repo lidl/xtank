@@ -360,6 +360,21 @@ and displays their approximate locations.  This not only helps to prevent
 ambush, but allows you to track and chase down enemy vehicles.
 Unfortunately, the radar is not foolproof, so occasionally vehicles will
 slip by radar.  Also ghosting may occur (two blips for one vehicle).
+
+  \item [RamPlate:]  This module inhances the art of ramming.  Ramplates 
+attach to the front armor of your vehicle.  When you are involved in a 
+front end collision, you cause double damage while taking only half damage.
+This special weighs half that of your front armor.  
+This special is ideal for the kamakazi robot.
+
+  \item [Repair:]  This module costs a lot of money.  When your speed is zero
+and this special is activated, your armor will be repaired by swapping
+fuel for armor.  The repair rate is $1\over4^{th}$ slower than an armor repair 
+station.
+
+  \item [DeepRadar:]  This module costs a lot of money and does nothing yet.  This feature has not been implemented.
+
+  \item [Stealth:]  This module costs a lot of money and does nothing yet.  This feature has not been implemented.
 \end{description}
 
 \begin{center}

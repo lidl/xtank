@@ -1,75 +1,247 @@
-				Games
-
-There are 5 different games that can be played in xtank.
-Each game has its own rules and winning conditions, and equipment
-
 
 				Combat
 
-This is the standard shoot-em-up game.  
-Points are scored by killing other vehicles.
-When a player on a team reaches the winning score, that team wins.
+Object
 
+The object of Combat is to destroy your opponents before the do the
+same to you.  Points are awarded for each kill, based on the cost of
+your vehicle divided by the cost of the victim's vehicle.  Once a
+player reaches Winning Score number of points, the game ends.
 
+Maze
 
-				Ultimate
+Pretty much any maze will do, but smaller mazes tend to be more fun,
+since vehicles can find each other more easily.  Goals have no effect
+in this game.  Scrolling squares can be used to keep the combat moving
+in circles, or to make it difficult to reach Repair, Armor, and
+Fuel squares.  Outposts which are have a team assigned to them will
+only shoot at members of other teams, so they can be used to make team
+stronghold areas.  Slippery squares and sloww squares make dodgin more
+difficult, which can make the game more fun or less fun, depending on
+your playing style.
 
-Equipment
-	1 disc
-	n teams
-	n Goals
+Vehicle
 
-Playfield
-	Members of a team should start around their goal.
-	The disc should start in the center of the maze.
-	Goals should be single boxes, and difficult to access.
+It is a good idea to have all the vehicles in the game be of
+comparable cost.  In team play, vehicles with different abilities can
+often work better together than clones.  Often one vehicle will be
+able to take advantage of an enemies weakness when a teammate cannot.
 
-Scoring
-	A goal is scored if a player posseses the disc in another
-	team's goal
+Program
 
-	When a goal is scored, every member of the scoring team
-	gets 2 points and $2000.
-		
-	A kill nets the killer 1 point and $1000
+The "drone" program is a pretty dumb player overall, but can be a
+challenge for people who are learning the game.  The "warrior" program
+is more intelligent about movement and firing and can be tough to beat
+even for advanced players.
 
-Winning
-	The game is won when one team reaches a set number of goals.
+Settings
 
-
-
-
-				Capture
-
-Equipment
-	n discs
-	n teams
-	n goals
-
-Playfield
-	Members of a team start around their goal.
-	One disc is placed in each goal.
-	Goals should be a single box, difficult to get to.
-
-Scoring
-	A kill nets the killer $1000	
-
-Winning
-	The game is won when all discs are in one goal.
-
+Ricochet can be interesting, especially in labyrinth style mazes full
+of walls.  It isn't very fair to the robots, though, since none
+currently know how to make use of it.  Relative shooting causes
+bullets to have a velocity relative to the shooter's velocity.  This
+makes shooting while moving at high speeds hard to get used to.  It is
+also unfair to the robots, who don't correct for it.  Restart is
+almost always set in multi-player games, to allow a vehicle to begin
+again after getting killed.  In a single-player game against many
+robots, you may want it off, so that when all enemies are killed, you
+will be done.  Outposts in the maze can be turned off with an Outpost
+strength of 0, or made pretty lethal with a value of 10.  Currently
+the difficulty setting has no effect.  In the future, enemy robots
+will increase in intelligence and strength based on this setting.
 
 
 				War
 
-Equipment
-	n teams
+Object
 
-Playfield
-	Members of a team start near each other
+To gain control of territory by being the last vehicle to enter it.
+The game should end once a given team controls a certain percentage of
+enemy territory.  I'm not sure if this actually happens...
+This game doesn't really work that well, since it hasn't been
+playtested very much.  It is a lot like Combat as far as skills go.
+Having never played it much, I don't know of any strategies or
+vehicle/maze designs that work well for it.
 
-Scoring
-	A kill nets the killer 1 point and $1000
 
-Winning
-	The game is won when one team conquers the required percentage
-	of territory.
+				Ultimate
+
+Object
+
+The object of Ultimate is to score as many goals as possible by
+maneuvering the disc into the opposing team's goal.  A goal is scored
+when a vehicle OWNS a disc inside an enemy goal (if the disc is
+sliding across or bouncing inside an enemy goal, nothing happens).
+
+Maze
+
+Ultimate is generally played with small team (1-3 players per team)
+in a small maze which has 2 goals.  A good example of an Ultimate maze
+is "moosemaze", which has two well protected goals, and 3 starting
+locations for each team.
+
+Vehicle
+
+A small fast and maneuverable vehicle is best for this game, since the
+objective is not to kill each other, but to maneuver the disc quickly
+up the playfield.  Oil slicks are useful to build walls of oil in
+strategic locations or simply to disorient a trailing vehicle.  A good
+example of an Ultimate vehicle is "Ultimate" which is a hexo good
+traction and a single oil slick in the back.
+
+Program
+
+Currently there is only one robot that plays Ultimate, called "buddy".
+He doesn't do that good a job with strategy, but he is good at
+catching and stealing the disc (he can even intercept a bounce pass,
+which is something that humans have trouble with).  For games between
+good players, though, a buddy is more of a hindrance than a help.
+
+Settings
+
+Usually the Commentator is activated, so that all players are informed
+of the spectacular events on the playfield.  No wear is usually turned
+on as well, so that collisions between vehicles are not deadly, and
+thus no armor is required on vehicles.  This means that vehicles
+cannot be killed, but that tends to make the game more playable and
+thus more exciting.  Full map is also turned on, so that everyone can
+see what the entire playfield looks like from the beginning.  Owner
+slowdown is usually set at around 8, so that the owner of the disc
+cannot simply run into the goal.  Disc friction is usually set pretty
+low (around 2), making long passes feasible.  If Disc friction is set
+to 0, it is difficult to catch up to the disc after an errant pass.
+
+Disc
+
+When play begins, a random player begins with a disc.  When a disc is
+owned by a vehicle, it will orbit around that vehicle.  The owner of a
+disc may not move as fast as a vehicle that doesn not own a disc,
+depending on the setting of Owner slowdown.  The owner of a disc can
+toggle the direction of orbit using the 'd' key, or set it to be
+counterclockwise with 's', or clockwise with 'f'.  The disc can be
+thrown off tangentially at three different speeds with 'w' (slow),
+'e' (medium), or 'r' (fast).
+
+When the CENTER of the disc makes contact with the BOUNDING BOX of
+another vehicle, that vehicle gains control of the disc and the disc
+immediately begins orbitting the new owner.  This can result in the
+disc immediately returning to the old owner, depending on how the
+direction of disc orbit and vehicle speed (the absolute speed of the
+disc is constant, so a fast moving vehicle will have the disc trailing
+behind him).  If the disc hits a wall while orbiting a vehicle, that
+vehicle immediately loses ownership of the disc, and the disc will
+bounce off the wall and resume newtonian motion.
+
+Ocassionally, with small vehicles (lightcycles and hexos) and fast
+moving discs, the disc will pass through a vehicle that should have
+caught it.  This is due to the large jumps between the location of the
+disc and the vehicle moving at high speeds.  Currently the collision
+detection algorithm is not very good, so those collisions are not
+detected.
+
+Controlling the disc well requires practice.  An expert Ultimate player
+can usually keep the disc away from two neophytes indefinitely.
+Accurate passing is made easier by moving in the direction that you
+want to pass towards.  You will then have better control over the
+direction of release, since the disc is moving slower relative to you
+when it is going in the direction you want to throw it.  Quick
+reverses of disc orbit are crucial to faking out a defender.  Swooping
+strafing runs are good for stealing a disc.  Knocking an opponent into
+a wall with a good check will force the vehicle to lose control of the
+disc, giving you a chance to retreive it.  There are many other tricks
+to be learned in this game, but the best way to learn them is by
+playing it yourself.
+
+
+				Capture
+
+Object
+
+The object of Capture is to own all the discs in the game while being
+in your own goal.  The game starts with one disc per team, so you must
+capture each opponent's disc and bring it back to your own goal while
+preventing others from doing the same.
+
+Maze
+
+Mazes for Capture are usually small, but larger than an equivalent
+Ultimate maze.  They often contain outposts for each team, to protect
+that team's goal area.  Destructible walls are also used for
+protection.  Goal areas are difficult to get to, but not too far from
+each other, since the game tends to take a while to end anyway.
+
+Vehicle
+
+On a given Capture team, there are usually three vehicles, the goalie,
+the fighter, and the runner.  The goalie is usually extremely well
+armored with several big guns to discourage other's from getting near
+the goal (where the team's disc is usually kept).  The fighter usually
+has long range weapons, and is moderately fast and armored.  The
+runner is usually very fast and maneuverable, with little armor and
+moderate weaponry.  For two player teams, the runner is eliminated.
+For 4 player teams, there are more fighters.
+
+Program
+
+There is a team of Capture robots (a goalie, a fighter, and a robot)
+in the works.  They don't play very well right now, and are not ready
+to be released.  One of the big challenges here is communication
+between the robots, since they each have different tasks in the game.
+
+Settings
+
+No wear is turned off, so that vehicles can be killed.  Owner slowdown
+is usually 3-4, so that you can dodge around a bit with the disc.
+Full map is on, just for convenience.
+
+Play
+
+Everyone on the team should be a reasonable Ultimate player.  Develop
+your disc skills in Ultimate, where there are fewer discs and no
+possibility of death.  The fighters should be good combat players who
+can fire accurately from long range to kill a goalie (or anyone else
+with the disc).  The runners should have good passing and disc
+maneuvering skills.  The goalies should have good disc maneuvering
+skills and dodging skills.  The goalie should obviously be pulled when
+a team loses their disc.  Ocassionally it is good to pull your goalie,
+leaving the disc there while ganging up on the enemies disc.
+
+
+				Race
+
+Object
+
+To be the first player to reach a goal.
+
+Maze
+
+The locations of the start and goal squares in the maze are crucial.
+The path between them should have choices in it, so that solving the
+maze takes more thought and skill, instead of being a test of vehicle
+speed.  Outposts are useful to make a shorter path more damaging,
+giving the player a tradeoff between surviving and saving time.
+Destructible walls can be used to force a vehicle to have powerful
+weapons, which generally slow a vehicle down.  Slip and scroll squares
+around corners test out cornering skill.
+
+Vehicle
+
+The type of vehicle you want is very dependent on the maze that you
+are entering.  Use your best judgment.
+
+Program
+
+There are no programs that play Race currently.  Designing one would
+be pretty difficult, since in a well designed maze many tough
+decisions must be made.  Designing a robot which optimally travelled
+through a maze of empty squares and walls would be a good college
+Intro to AI project.
+
+Settings
+
+Full map is often used so that those who have been in the maze before
+don't have as much of an advantage.  But for a newly designed maze,
+the discovery process can make things interesting for all the players.
+By varying the Outpost strength, Scroll speed, and box slowdown, you
+can turn an innocent looking maze into a nightmare.  For mazes with
+loads of outposts, turning on Point bullets can improve display time.

@@ -8,7 +8,7 @@
 
 #include <sys/uio.h>	/* needed for XlibInt.c */
 
-#include <sys/param.h> /* needed for XConnDis.c */
+#include <sys/param.h>	/* needed for XConnDis.c */
 
 #define MSKCNT ((NOFILE + 31) / 32)	/* size of bit array */
 
@@ -16,6 +16,7 @@
 #define BITMASK(i) (1 << (i))
 #define MASKIDX(i) 0
 #endif
+
 #if (MSKCNT>1)
 #define BITMASK(i) (1 << ((i) & 31))
 #define MASKIDX(i) ((i) >> 5)
@@ -34,6 +35,7 @@
 #define UNSETBITS(dst, b1) (dst[0] &= ~b1[0])
 #define ANYSET(src) (src[0])
 #endif
+
 #if (MSKCNT==2)
 #define COPYBITS(src, dst) { dst[0] = src[0]; dst[1] = src[1]; }
 #define CLEARBITS(buf) { buf[0] = 0; buf[1] = 0; }
@@ -48,6 +50,7 @@
                       dst[1] &= ~b1[1]; }
 #define ANYSET(src) (src[0] || src[1])
 #endif
+
 #if (MSKCNT==3)
 #define COPYBITS(src, dst) { dst[0] = src[0]; dst[1] = src[1]; dst[2] = src[2]; }
 #define CLEARBITS(buf) { buf[0] = 0; buf[1] = 0; buf[2] = 0; }
@@ -65,6 +68,7 @@
                       dst[2] &= ~b1[2]; }
 #define ANYSET(src) (src[0] || src[1] || src[2])
 #endif
+
 #if (MSKCNT>3)
 #define COPYBITS(src, dst) bcopy((caddr_t) src, (caddr_t) dst,\
 				 MSKCNT*sizeof(long))
@@ -85,10 +89,10 @@ char *malloc(), *realloc(), *calloc(), *alloca();
 
 char *strncpy(), *strncat();
 
-void exit();
-void bcopy();
-void perror();
-void free();
+void  exit();
+void  bcopy();
+void  perror();
+void  free();
 
 #define LockDisplay(dis)
 #define LockMutex(mutex)
@@ -99,6 +103,7 @@ void free();
 
 #if (defined ibm032)&&(defined __HIGHC__)
 pragma on(alloca);
+
 #endif
 
 /*
@@ -107,8 +112,8 @@ pragma on(alloca);
  * define MALLOC_0_RETURNS_NULL.  This is necessary because some
  * Xlib code expects malloc(0) to return a valid pointer to storage.
  */
-#ifdef MALLOC_0_RETURNS_NULL
 
+#ifdef MALLOC_0_RETURNS_NULL
 # define Xmalloc(size) malloc(((size) > 0 ? (size) : 1))
 # define Xrealloc(ptr, size) realloc((ptr), ((size) > 0 ? (size) : 1))
 # define Xcalloc(nelem, elsize) calloc(((nelem) > 0 ? (nelem) : 1), (elsize))
@@ -118,7 +123,6 @@ pragma on(alloca);
 # define Xmalloc(size) malloc((size))
 # define Xrealloc(ptr, size) realloc((ptr), (size))
 # define Xcalloc(nelem, elsize) calloc((nelem), (elsize))
-
 #endif
 
 #define BytesReadable(fd, ptr) ioctl ((fd), FIONREAD, (ptr))
@@ -139,5 +143,7 @@ pragma on(alloca);
 
 #ifndef CRAY
 extern char *index();
-#endif /* not CRAY */
+
+#endif	/* not CRAY */
+
 #define SearchString(string, char) index((string), (char))

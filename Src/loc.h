@@ -6,13 +6,18 @@
 ** loc.h
 */
 
+#include "config.h"
+
 #ifdef UNIX
+
+#include "screen.h"
+
+
 /*
 ** Makes loc = old_loc + (dx,dy)
 */
 #define update_loc(old_loc,loc,dx,dy) \
-{ \
-  do {  \
+  {  \
     (loc)->x = (old_loc)->x + dx;  \
     (loc)->y = (old_loc)->y + dy;  \
  \
@@ -38,6 +43,5 @@
       (loc)->grid_y = (old_loc)->grid_y - 1;  \
     }  \
     else (loc)->grid_y = (old_loc)->grid_y;  \
-  } while(0); \
-}
+  }
 #endif

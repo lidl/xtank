@@ -4,6 +4,8 @@
 
 #define all_bullets_views 18
 
+#define OURSTUFF
+
 static Picture all_bullets_pic[all_bullets_views] = {
       { 2, 2, 0, 0 },
       { 3, 3, 1, 1 },
@@ -19,7 +21,11 @@ static Picture all_bullets_pic[all_bullets_views] = {
       { 5, 5, 2, 2 },
       { 5, 5, 2, 2 },
       { 7, 7, 3, 3 },
+#ifdef OURSTUFF
+      {11,11, 5, 5 },
+#else
       { 5, 5, 2, 2 },
+#endif
       { 7, 7, 3, 3 },
       { 9, 9, 4, 4 },
       { 15, 15, 7, 7 }
@@ -73,8 +79,14 @@ static unsigned char as_bits[] = {
 static unsigned char ft_bits[] = { 
     0x14, 0x3c, 0x2a, 0x6d, 0x56, 0x3a, 0x14};
 
+#ifdef OURSTUFF
+static unsigned char ml_bits[] = {
+   0xf8, 0x00, 0x84, 0x01, 0x42, 0x02, 0x21, 0x06, 0x31, 0x05, 0xf9, 0x04,
+   0x65, 0x04, 0x23, 0x04, 0x12, 0x02, 0x0c, 0x01, 0xf8, 0x00};
+#else
 static unsigned char ml_bits[] = { 
     0x11, 0x0a, 0x04, 0x0a, 0x11};
+#endif
 
 static unsigned char seeker_bits[] = {
    0x49, 0x2a, 0x14, 0x63, 0x14, 0x2a, 0x49};

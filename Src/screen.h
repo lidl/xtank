@@ -6,6 +6,9 @@
 ** screen.h
 */
 
+#include "config.h"
+
+
 #ifdef S1024x864
 /* Window geometry information */
 #define ANIM_WIN_X	0
@@ -21,16 +24,16 @@
 #define CONS_WIN_X	768
 #define CONS_WIN_Y	296
 #define CONS_WIN_WIDTH	250
-#define CONS_WIN_HEIGHT	210
+#define CONS_WIN_HEIGHT	(216+HELP_WIN_HEIGHT)
 
 #define MAP_WIN_X	768
-#define MAP_WIN_Y	512
+#define MAP_WIN_Y	(518+HELP_WIN_HEIGHT)
 #define MAP_WIN_WIDTH	250
 #define MAP_WIN_HEIGHT	250
 
 #define HELP_WIN_X	0
 #define HELP_WIN_Y	768
-#define HELP_WIN_WIDTH  1018
+#define HELP_WIN_WIDTH  (1015-MAP_WIN_WIDTH)
 #define HELP_WIN_HEIGHT	90
 
 #define MSG_WIN_X	768
@@ -46,10 +49,6 @@
 
 #define BORDER          3
 #define STAT_BORDER	2
-
-#define BOX_WIDTH	192
-#define BOX_HEIGHT	192
-#define NUM_BOXES	4
 #endif
 
 #ifdef S640x400
@@ -92,8 +91,11 @@
 
 #define BORDER          1
 #define STAT_BORDER	1
-
-#define BOX_WIDTH	100
-#define BOX_HEIGHT	100
-#define NUM_BOXES	4
 #endif
+
+
+#define SCREEN_WIDTH	ANIM_WIN_WIDTH	/* for robot interface */
+#define SCREEN_HEIGHT	ANIM_WIN_HEIGHT
+
+#define BOX_WIDTH	(ANIM_WIN_WIDTH/NUM_BOXES)
+#define BOX_HEIGHT	(ANIM_WIN_HEIGHT/NUM_BOXES)

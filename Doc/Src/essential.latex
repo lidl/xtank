@@ -327,6 +327,20 @@ you're out of the game.
   \mitem{Commentator} Whether or not to use the commentator when you
 play the \menu{Ultimate} game.
 
+  \mitem{Full Map} Whether or not to display the entire maze in the
+mapper area at all times.
+
+  \mitem{Pay To Play}  If on, when people die, they must pay the cost
+of their vehicle to continue playing.  If you cannot afford it, you simply
+watch (as in the demo mode).
+
+  \mitem{Robots Don't Win}  If on, XTANK becomes prejudice against robots
+and ignores their score.
+
+  \mitem{Scale Armor to Max}  If on, the armor bars are scaled relative to
+the maximum number of points on a single side.  If off, each armor bar is 
+scaled relative to each side.
+
   \end{description}
 
 \mitem{Winning score} When any vehicle reaches this score, the game

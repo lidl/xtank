@@ -1,0 +1,92 @@
+----------------------------------------------------------------------
+Changes for version 1.2 released 24Nov89
+
+Thanks to Christopher North-Keys, Robert Potter, Bill Bolosky,
+Tor Lillqvist, and Juha Sarlin for their improvements.
+
+Moved #include's for dynamic loading into the DYNALOAD #ifdef.
+
+Added #ifndef's to avoid compiler warnings in Xlibint.h
+
+Added check for LOGNAME env variable for username in file.c (used on hp's)
+
+Added to Makefile entries for HP9000 series 800, sunlwp, and TAGS
+Cleaned up some unused entries too.
+
+Moved replacement #define for drem from hit.c and lowlib.c into sysdep.h.
+Added hpux to list of those using replacement atan2() and drem().
+
+Added setjmp and stack pointer assignment code for hp9000s800 to thread.[ch]
+
+Switched from using void * to using char * in thread.c.
+
+Added hp9k8 dynamic loading code to unix.c.  Also cleaned up the network
+checking code, converting strcpy's to bcopy's, since nulls might exist
+in the 4 byte addresses.
+
+Added #ifdef X11R2FONTS around X11R2 fontnames in x11.c
+
+Added warning message for when screen is too small for parent window in x11.c
+
+Added flush_cache_hp9k8.s file used by HP dynamic loading in unix.c
+
+Now malloc executable_name in main.c, instead of limiting length to 40
+
+Added spaces for #define DEBUG and #define X11R2FONTS in config.h
+
+Increased buffer sizes for filenames and pathnames in file.c and interface.c
+Changed the environment variables for pathnames to XTANK_DIR, XTANK_VEHICLES,
+XTANK_MAZES, and XTANK_PROGRAMS, a trailing "/" is no longer required.
+
+Ensured that Terminal structure is initialized to zero in gr.c
+
+Implemented real timer to control real game speed in icounter.c and actions.c
+
+Set initial game speed to 15 frames/sec in init.c
+
+Added Sun LWP implementation of threads package to threads.[ch] and config.h
+
+Bug fixes to warrior.c to avoid hanging/crashing.
+
+Fixed null pointer dereferences in cosell.c and file.c
+
+Initialized all.last_angle in warrior_main() of warrior.c
+
+Added a cd into the programs directory before compiling in unix.c
+
+Bumped version number up to 1.2 in xtank.h
+
+----------------------------------------------------------------------
+Changes for version 1.1 released 02Nov1989
+
+Thanks to Christos Zoulas, Steve Jankowski, and Hal Peterson, for their
+improvements
+
+Rewrote thread package in a much simpler and readable form.  Now resides
+in thread.c and thread.h.
+
+Increased robot program stack size from 20K to 25K in program.h
+
+Added #define THREAD   in config.h for enabling threading code.
+Added #define DYNALOAD in config.h for enabling dynamic loading code.
+Added #define CHECKNET in config.h for enabling network address check code.
+Added #define XTANKDIR in config.h for setting the default pathname.
+
+Added spot for #define SUNOS4_0 or SUNOS3_0 in config.h so that
+the thread code will use the right location in jmp_buf for the stack
+pointer.
+
+Fixed up Makefile.  This will still require changes for different
+machine types.  I know of no machine-independent way of determining
+the machine type in the makefile.
+
+Created macro for atan2, called ATAN2 in sysdep.h which avoids
+calling atan2 with x==0 && y==0.  Replaced calls to atan2 with ATAN2
+in box.c, drone.c, hit.c, input.c, lowlib.c, update.c, and warrior.c.
+
+Removed NULL pointer dereferencing in file.c, collision.c, and interface.c.
+
+In main.c moved initialization of eset and bset into main().
+
+Bumped version number up to 1.1 in xtank.h
+

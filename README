@@ -1,5 +1,6 @@
 This is the main Xtank directory.  The subdirectories are as follows:
 
+BETA-README 	Beta release notes.
 Doc		Documentation on how to play Xtank
 Help		Files used by the on-line help system in Xtank
 Todo		Ideas for the future, lists from the past
@@ -10,5 +11,5 @@ Src		Source code for Xtank
 Util		Random utilities used in writing Xtank
 Vehicles	Files describing vehicles used in Xtank (stickybitted)
 xtank		Shell script to run Xtank
-.xtank.vax	VAX executable
-.xtank.rt	RT executable
+dbgxtank	Shell script to run Xtank under dbx
+to-fix		Working notes for V1.2UMDENG

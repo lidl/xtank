@@ -1,0 +1,2 @@
+This directory contains code for fixed point arithmetic.  It is not
+used in Xtank currently, but may be used in the future.

@@ -47,7 +47,7 @@
 **    from an earlier version, another notable achievement.
 */
 
-#include "/mit/games/src/vax/xtank/Programs/xtanklib.h"
+#include "/homes/osl/stripes/xtank/Programs/xtanklib.h"
 #include <math.h>
 
 #include "roger.h"		/* The constants, structs, etc. */

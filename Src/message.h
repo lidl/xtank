@@ -6,6 +6,14 @@
 ** message.h
 */
 
+#ifndef _MESSAGE_H_
+#define _MESSAGE_H_
+
+
+#include "types.h"
+#include "limits.h"
+
+
 /* Recipient for messages sent to every vehicle */
 #define RECIPIENT_ALL 255
 
@@ -15,42 +23,37 @@
 /* Sender for initial set of messages on before slots have been filled */
 #define SENDER_NONE 254
 
-/* Message opcodes */
-#define OP_LOCATION	0
-#define OP_GOTO		1
-#define OP_FOLLOW	2
-#define OP_HELP		3
-#define OP_ATTACK	4
-#define OP_OPEN		5
-#define OP_THROW	6
-#define OP_CAUGHT	7
-#define OP_ACK		8
-#define OP_TEXT		9
-#define OP_DEATH        10
-#define MAX_OPCODES	11
+/* Sender for messages sent by dead people */
+#define SENDER_DEAD 253
 
-/* Message data types */
-#define DATA_LOC	0
-#define DATA_COMB	1
-#define DATA_MISC	2
 
-/* Message display string length is 9 more than the data length */
-#define MAX_MESSAGE_LEN (MAX_DATA_LEN+9)
+/* the different kinds of messages */
+typedef enum {
+    OP_LOCATION,		/* this is where I am */
+    OP_GOTO,			/* go to this square */
+    OP_FOLLOW,			/* follow this vehicle */
+    OP_HELP,			/* help me! */
+    OP_ATTACK,			/* attack this vehicle */
+    OP_OPEN,			/* throw me the disc */
+    OP_THROW,			/* I threw the disc */
+    OP_CAUGHT,			/* I caught the disc */
+    OP_ACK,			/* I got your message */
+    OP_TEXT,			/* arbitrary text */
+    OP_DEATH			/* somebody died (sent only by xtank itself) */
+} Opcode;
+#define MAX_OPCODES 11		/* how many of them there are */
 
-/* Font to display messages and the message menus */
-#define MSG_FONT	S_FONT
+typedef struct {
+    Byte  sender;	/* vehicle number of sender */
+    Byte  sender_team;	/* team number of sender */
+    Byte  recipient;	/* vehicle number of recipient */
+    Opcode  opcode;		/* type of message */
+    int   frame;		/* frame number when sent */
+    Byte  data[MAX_DATA_LEN];	/* data of message */
+} Message;
 
-#ifdef S1024x864
-/* Menu locations */
-#define RECIPIENT_X 5
-#define RECIPIENT_Y 5
-#define VEHICLE_X   80
-#define VEHICLE_Y   5
-#define OPCODE_X    190
-#define OPCODE_Y    5
-#define SEND_X      5
-#define SEND_Y      110
 
-/* Row of game window that the sending message is displayed */
-#define SENDING_ROW 17
-#endif
+extern void compose_message();
+
+
+#endif ndef _MESSAGE_H_

@@ -1,13 +1,15 @@
 #!/bin/csh -f
-setenv XTANKDIR     /mit/games/src/vax/xtank/
-setenv VEHICLESDIR  Vehicles/
-setenv MAZESDIR     Mazes/
-setenv PROGRAMSDIR  Programs/
+setenv XTANK_DIR       ~stripes/xtank
+setenv XTANK_VEHICLES  Vehicles
+setenv XTANK_MAZES     Mazes
+setenv XTANK_PROGRAMS  Programs
 
-if (`machtype` == "vax") then
-   echo "Running .xtank.vax"
-   ${XTANKDIR}.xtank.vax $*
-else
-   echo "Running .xtank.rt"
-   ${XTANKDIR}.xtank.rt $*
-endif       
+set arch = `arch`
+
+#if (`hostname` == sparcee || `hostname` == emc) then
+    #echo "EMACing"
+    #${XTANK_DIR}/Src/emacs $*
+#else
+    echo "Running .xtank.$arch"
+    ${XTANK_DIR}/.xtank.$arch $*
+#endif

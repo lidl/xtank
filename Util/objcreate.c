@@ -47,14 +47,14 @@ typedef struct _Segment {
   int y1;
   int x2;
   int y2;
-  int dx;			/* x2-x1 */
-  int dy;			/* y2-y1 */
-  float slope;			/* dy/dx */
-  int intercept;		/* y1 - slope * x1 */
-  int minx;			/* min(x1,x2) */
-  int miny;			/* min(y1,y2) */
-  int maxx;			/* max(x1,x2) */
-  int maxy;			/* max(y1,y2) */
+  int dx;            /* x2-x1 */
+  int dy;            /* y2-y1 */
+  float slope;            /* dy/dx */
+  int intercept;        /* y1 - slope * x1 */
+  int minx;            /* min(x1,x2) */
+  int miny;            /* min(y1,y2) */
+  int maxx;            /* max(x1,x2) */
+  int maxy;            /* max(y1,y2) */
 } Segment;
 
 typedef struct _Picture {
@@ -70,12 +70,12 @@ typedef struct _Picinfo {
 } Picinfo;
 
 typedef struct _Object {
-  char type[12];		/* type of object */
-  int num_pics;			/* number of picture in the object */
-  Picture *pic;			/* array of pictures of the object */
-  int num_turrets;		/* number of turrets in object */
-  int num_segs;			/* number of segments to represent object */
-  Picinfo *picinfo;		/* array of info about pictures */
+  char type[12];        /* type of object */
+  int num_pics;            /* number of picture in the object */
+  Picture *pic;            /* array of pictures of the object */
+  int num_turrets;        /* number of turrets in object */
+  int num_segs;            /* number of segments to represent object */
+  Picinfo *picinfo;        /* array of info about pictures */
 } Object;
 
 char line[81];
@@ -131,16 +131,16 @@ main(argc,argv)
     sscanf(line,"%d",&num_turrets);
     if(num_turrets > 0)
       for(i = 0 ; i < num_turrets ; i++) {
-	fgets(line,80,info_file);
-	sscanf(line,"%d %d",&turret[i].x,&turret[i].y);
+    fgets(line,80,info_file);
+    sscanf(line,"%d %d",&turret[i].x,&turret[i].y);
       }
 
     fgets(line,80,info_file);
     sscanf(line,"%d",&num_segs);
     if(num_segs > 0)
       for(i = 0 ; i < num_segs ; i++) {
-	fgets(line,80,info_file);
-	sscanf(line,"%d %d",&segment[i].x1,&segment[i].y1);
+    fgets(line,80,info_file);
+    sscanf(line,"%d %d",&segment[i].x1,&segment[i].y1);
       }
 
     fclose(info_file);
@@ -175,120 +175,142 @@ main(argc,argv)
   fprintf(object_file,"\n");
 
   /* If object is a body, add picinfo structure to object file */
-  if(body) {
-    fprintf(object_file,"Picinfo %s_picinfo[%s_views] = {\n",name,name);
-    for(i = 0 ; i < num_views ; i++) {
-      fprintf(object_file,"\t{ { ");
+    if(body) 
+    {
+        fprintf(object_file,"Picinfo %s_picinfo[%s_views] = {\n",name,name);
+        for(i = 0 ; i < num_views ; i++) 
+        {
+            fprintf(object_file,"\t{ { ");
 
-      /* put in dummy value if there are no turrets */
-      if(num_turrets == 0) {
-	fprintf(object_file,"{0,0}");
-      }
-      else {
-	for(j = 0 ; j < num_turrets ; j++) {
-	  rotate_point(turret[j].x,turret[j].y,&x,&y,2*PI*i/num_views);
-	  fprintf(object_file,"{%d,%d}",x,y);
-	  if(j != num_turrets - 1) fprintf(object_file,", ");
-	}
-      }
-      fprintf(object_file," },\n");
+            /* put in dummy value if there are no turrets */
+            if(num_turrets == 0) 
+            {
+                fprintf(object_file,"{0,0}");
+            }
+            else 
+            {
+                for(j = 0 ; j < num_turrets ; j++) 
+                {
+                    rotate_point(turret[j].x,turret[j].y,&x,&y,2*PI*i/num_views);
+                    fprintf(object_file,"{%d,%d}",x,y);
+                    if(j != num_turrets - 1)
+                        fprintf(object_file,", ");
+                }
+            }
+            fprintf(object_file," },\n");
 
-      fprintf(object_file,"\t  { ");
-      for(j = 0 ; j < num_segs ; j++) {
-	rotate_point(segment[j].x1,segment[j].y1,&x1,&y1,2*PI*i/num_views);
-	k = (j+1) % num_segs;
-	rotate_point(segment[k].x1,segment[k].y1,&x2,&y2,2*PI*i/num_views);
-	make_segment(&seg,x1,y1,x2,y2);
-	fprintf(object_file,"{%d,%d,%d,%d,%d,%d,%f,%d,%d,%d,%d,%d}",
-		seg.x1, seg.y1, seg.x2, seg.y2, seg.dx, seg.dy, seg.slope,
-		seg.intercept, seg.minx, seg.miny, seg.maxx, seg.maxy);
-	if(j != num_segs - 1) fprintf(object_file,",\n\t    ");
-      }
-      fprintf(object_file," }");
-      if(i != num_views - 1) fprintf(object_file," },\n");
-      else fprintf(object_file," }\n");
+            fprintf(object_file,"\t  { ");
+            for(j = 0 ; j < num_segs ; j++) 
+            {
+                rotate_point(segment[j].x1,segment[j].y1,&x1,&y1,2*PI*i/num_views);
+                k = (j+1) % num_segs;
+                rotate_point(segment[k].x1,segment[k].y1,&x2,&y2,2*PI*i/num_views);
+                make_segment(&seg,x1,y1,x2,y2);
+                fprintf(object_file,"{%d,%d,%d,%d,%d,%d,%f,%d,%d,%d,%d,%d}",
+                    seg.x1, seg.y1, seg.x2, seg.y2, seg.dx, seg.dy, seg.slope,
+                    seg.intercept, seg.minx, seg.miny, seg.maxx, seg.maxy);
+                if(j != num_segs - 1)
+                    fprintf(object_file,",\n\t    ");
+              }
+              fprintf(object_file," }");
+              if(i != num_views - 1)
+                fprintf(object_file," },\n");
+              else
+                fprintf(object_file," }\n");
+        }
+        fprintf(object_file,"};\n\n");
+    }
+
+    /* Get bitmap sizes from the bitmaps */
+    for(i = 0 ; i < num_bitmaps ; i++) 
+    {
+        strcpy(filename,name);
+        sprintf(ending,"%d",i);
+        strcat(filename,ending);
+        if((bitmap_file = fopen(filename,"r")) == NULL) 
+        {
+            fprintf("Could not open bitmap file %s.\n",filename);
+            exit(1);
+        }
+
+        fgets(line,80,bitmap_file);    /* width line */
+        sscanf(line,"#define %*s %d",&pic[i].width);
+        pic[i].offset_x = pic[i].width/2;
+
+        fgets(line,80,bitmap_file);    /* height line */
+        sscanf(line,"#define %*s %d",&pic[i].height);
+        pic[i].offset_y = pic[i].height/2;
+
+        fclose(bitmap_file);
+    }
+
+    /* Add picture structure to object file */
+    fprintf(object_file,"Picture %s_pic[%s_views] = {\n",name,name);
+    for(i = 0 ; i < num_bitmaps ; i++) 
+    {
+        fprintf(object_file,"\t{ %d, %d, %d, %d }",pic[i].width,pic[i].height,
+            pic[i].offset_x,pic[i].offset_y);
+        if(i != num_bitmaps - 1)
+            fprintf(object_file,",\n");
+        else
+            fprintf(object_file,"\n");
     }
     fprintf(object_file,"};\n\n");
-  }
 
-  /* Get bitmap sizes from the bitmaps */
-  for(i = 0 ; i < num_bitmaps ; i++) {
-    strcpy(filename,name);
-    sprintf(ending,"%d",i);
-    strcat(filename,ending);
-    if((bitmap_file = fopen(filename,"r")) == NULL) {
-      fprintf("Could not open bitmap file %s.\n",filename);
-      exit(1);
+    /* Add object structure to object file */
+    fprintf(object_file,"Object %s_obj = {\n",name);
+    fprintf(object_file,"\t%c%s%c,\n",'"',name,'"');
+    fprintf(object_file,"\t%s_views,\n",name);
+    fprintf(object_file,"\t%s_pic%s\n",name,body ? "," : "");
+    if(body) 
+    {
+        fprintf(object_file,"\t%d,\t\t\t/* num_turrets */\n",num_turrets);
+        fprintf(object_file,"\t%d,\t\t\t/* num_segs */\n",num_segs);
+        fprintf(object_file,"\t%s_picinfo\n",name);
+    }
+    fprintf(object_file,"};\n\n");
+
+    /* Add all bitmaps from bitmap files to object file */
+    for(i = 0 ; i < num_bitmaps ; i++) 
+    {
+        strcpy(filename,name);
+        sprintf(ending,"%d",i);
+        strcat(filename,ending);
+        if((bitmap_file = fopen(filename,"r")) == NULL) 
+        {
+            fprintf("Could not open bitmap file %s.\n",filename);
+            exit(1);
+        }
+        fgets(line,80,bitmap_file);    /* width line */
+        fgets(line,80,bitmap_file);    /* height line */
+        fgets(line,80,bitmap_file); /* static short declaration line */
+
+        /* Replace declaration with something that makes sense */
+        /* fprintf(object_file,"static short %s%d_bits[] = {\n",name,i);*/
+        fprintf(object_file,"static char %s%d_bits[] = {\n",name,i);
+
+        /* Copy the shorts quickly */
+        while(fgets(line,80,bitmap_file) != NULL)
+            fputs(line,object_file);
+        fputs("\n",object_file);
+
+        fclose(bitmap_file);
     }
 
-    fgets(line,80,bitmap_file);	/* width line */
-    sscanf(line,"#define %*s %d",&pic[i].width);
-    pic[i].offset_x = pic[i].width/2;
-
-    fgets(line,80,bitmap_file);	/* height line */
-    sscanf(line,"#define %*s %d",&pic[i].height);
-    pic[i].offset_y = pic[i].height/2;
-
-    fclose(bitmap_file);
-  }
-
-  /* Add picture structure to object file */
-  fprintf(object_file,"Picture %s_pic[%s_views] = {\n",name,name);
-  for(i = 0 ; i < num_bitmaps ; i++) {
-    fprintf(object_file,"\t{ %d, %d, %d, %d }",pic[i].width,pic[i].height,
-	    pic[i].offset_x,pic[i].offset_y);
-    if(i != num_bitmaps - 1) fprintf(object_file,",\n");
-    else fprintf(object_file,"\n");
-  }
-  fprintf(object_file,"};\n\n");
-
-  /* Add object structure to object file */
-  fprintf(object_file,"Object %s_obj = {\n",name);
-  fprintf(object_file,"\t%c%s%c,\n",'"',name,'"');
-  fprintf(object_file,"\t%s_views,\n",name);
-  fprintf(object_file,"\t%s_pic%s\n",name,body ? "," : "");
-  if(body) {
-    fprintf(object_file,"\t%d,\t\t\t/* num_turrets */\n",num_turrets);
-    fprintf(object_file,"\t%d,\t\t\t/* num_segs */\n",num_segs);
-    fprintf(object_file,"\t%s_picinfo\n",name);
-  }
-  fprintf(object_file,"};\n\n");
-
-  /* Add all bitmaps from bitmap files to object file */
-  for(i = 0 ; i < num_bitmaps ; i++) {
-    strcpy(filename,name);
-    sprintf(ending,"%d",i);
-    strcat(filename,ending);
-    if((bitmap_file = fopen(filename,"r")) == NULL) {
-      fprintf("Could not open bitmap file %s.\n",filename);
-      exit(1);
+    /* Add bitmap ordering to object file */
+    fprintf(object_file,"short *%s_bitmap[%s_views] = {\n",name,name);
+    for(i = 0 ; i < num_bitmaps ; i++) 
+    {
+        sprintf(line,"\t%s%d_bits",name,i);
+        if(i < num_bitmaps - 1)
+            strcat(line,",\n");
+        else
+            strcat(line,"\n");
+        fputs(line,object_file);
     }
-    fgets(line,80,bitmap_file);	/* width line */
-    fgets(line,80,bitmap_file);	/* height line */
-    fgets(line,80,bitmap_file); /* static short declaration line */
+    fprintf(object_file,"};\n");
 
-    /* Replace declaration with something that makes sense */
-    fprintf(object_file,"static short %s%d_bits[] = {\n",name,i);
-
-    /* Copy the shorts quickly */
-    while(fgets(line,80,bitmap_file) != NULL)
-      fputs(line,object_file);
-    fputs("\n",object_file);
-
-    fclose(bitmap_file);
-  }
-
-  /* Add bitmap ordering to object file */
-  fprintf(object_file,"short *%s_bitmap[%s_views] = {\n",name,name);
-  for(i = 0 ; i < num_bitmaps ; i++) {
-    sprintf(line,"\t%s%d_bits",name,i);
-    if(i < num_bitmaps - 1) strcat(line,",\n");
-    else strcat(line,"\n");
-    fputs(line,object_file);
-  }
-  fprintf(object_file,"};\n");
-
-  fclose(object_file);
+    fclose(object_file);
 }
 
 

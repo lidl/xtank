@@ -1,0 +1,59 @@
+XTANK now has the following new features:
+   (and is available for ftp from ftp.eng.umd.edu)
+
+    o   Shocker Walls
+        Electrified walls.  Scalable from 0 - 10.  0 turns them off.
+    
+    o   Hover
+    
+    o   Peace
+        While on YOUR peace square (or neutral), bullets just "tink".
+
+    o   Scrolling Menus
+        Menus that scroll using scrollbars!
+
+    o   Support for .Xdefaults.
+
+        xtank*playerName     -  Specifies the (guess what) Player's Name.
+        xtank*tankName       -  Specifies the (guess what) Tank's Name.
+        xtank*escherWidth    -  Specifies the width of the Escher Border
+                                if you don't like escher borders, set
+                                this to "1".
+        xtank*foreground     -  Color name for the foreground.
+        xtank*background     -  Color name for the background.
+        xtank*reverseVideo   -  Whether or not to "reverse video" your xtank
+                                window.  Defaults to false.  Set this to
+                                "true" if you want the feature.
+        xtank*beep           -  Whether or not to beep.  This means you
+                                don't deal with it at compile time.
+        xtank*color.red      -  Color name for the red team.
+        xtank*color.orange   -  Color name for the orange team.
+        xtank*color.yellow   -  Color name for the yellow team.
+        xtank*color.green    -  Color name for the green team.
+        xtank*color.violet   -  Color name for the violet team.
+        xtank*color.neutral  -  Color name for the neutral team.
+        xtank*color.cursor   -  Color for the cursor.
+
+        More will be added later.
+        Suggestions are WELCOME!
+
+
+    o   HUD - rpotter's robot.
+        As you may have read, rpotter wrote a robot which writes
+        on your display.  He submitted it and we added 2 features.
+
+        DISCLAIMER:
+            Currently, there is no "official" way for robots to
+            draw on the screen.  Robots who find a way, may not work
+            on all future versions.  However, since at least one robot has
+            found a way, (and the results are cool), we have added a
+            method for that robot to understand Expose events.
+
+        1.  HUD has been altered to handle Expose events.  
+
+        2.  HUD has been altered to handle Relative Fire.
+
+
+    o   NAVIGATION
+        A special has been added.  With this special, driving backwards
+        is much easier.  You head in the direction that you choose,

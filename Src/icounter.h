@@ -6,8 +6,9 @@
 ** icounter.h
 */
 
-#ifdef UNIX
+#include "config.h"
 
+#ifdef UNIX
 typedef int Clock;
 extern int elapsed_time;
 
@@ -25,23 +26,23 @@ extern int elapsed_time;
 
 #define compare_clocks(cl1,cl2) \
   ( (*(cl1)) > (*(cl2)) ? -1 : (*(cl1)) < (*(cl2)) ? 1 : 0 )
-
 #endif
 
 #ifdef AMIGA
- 
+
 #include <exec/types.h>
 #include <exec/interrupts.h>
 #include <hardware/custom.h>
 #include <hardware/intbits.h>
 
-typedef struct {
-  int ticks,vpos;
+typedef struct
+{
+    int   ticks, vpos;
 } Clock;
 
 extern struct Custom *c;
 extern int count;
- 
+
 #define clear_clock() \
   { count = 0; }
 
@@ -60,8 +61,4 @@ extern int count;
     (cl1)->ticks < (cl2)->ticks ?  1 : \
      (cl1)->vpos > (cl2)->vpos  ? -1 : \
      (cl1)->vpos < (cl2)->vpos  ?  1 : 0)
-
 #endif
-
-
-

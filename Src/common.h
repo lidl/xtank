@@ -1,6 +1,5 @@
-
 /*
-** The Whole Common Thing
+** Xtank
 **
 ** Copyright 1988 by Terry Donahue
 **
@@ -10,8 +9,14 @@
 #ifndef _COMMON_H_
 #define _COMMON_H_
 
-/* constants useful in every day life */
-#define COMPANY_NAME "The Company.  (C) 1988"
+
+#define VERSION "1.2e-UMDENG"
+
+
+/* Useful constants */
+#ifndef NULL
+#define NULL 0
+#endif
 
 #ifndef FALSE
 #define FALSE 0
@@ -22,29 +27,27 @@
 #endif TRUE
 
 #ifndef PI
-#define PI	3.1415926535
-#endif PI
+#define PI	3.14159265358979323846
+#endif
+
+#define BAD_VALUE       (-1)
+
 
 /* Useful macros */
-#ifndef min
-#define min(x,y) (((x) < (y)) ? (x) : (y))
-#endif min
 
-#ifndef max
-#define max(x,y) (((x) > (y)) ? (x) : (y))
-#endif max
-
-#ifndef abs
-#define abs(x) (((x) > 0) ? (x) : -(x))
-#endif abs
+#define MIN(x,y) (((x) < (y)) ? (x) : (y))
+#define MAX(x,y) (((x) > (y)) ? (x) : (y))
+#define ABS(x) (((x) > 0) ? (x) : -(x))
+#define SIGN(x)	((x)<0?-1:(x)==0?0:1)
+#define SQR(x) ((x)*(x))
 
 #define rorre(dat) \
   {printf("error: %s\n", (char *)dat); \
   exit(17);}
 
-/* all the types you WISHHHH C had built in */
-typedef unsigned char Boolean;
-typedef unsigned char Byte;
+/* avoid some lint warnings */
+extern char *malloc(), *calloc(), *sprintf(), *strcpy(), *memset(), *memcpy();
+extern long random();
 
-#include "config.h"
-#endif _COMMON_H_
+
+#endif ndef _COMMON_H_

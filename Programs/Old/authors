@@ -1,0 +1,196 @@
+entrant: Steve Worley ('91)
+program: Diophantine.c
+vehicle: diophantine
+strategy:
+
+Wanders around randomly, avoiding walls until it finds an enemy.
+Begins to dodge bullets by weaving back and forth.
+Shoots at the most appealing target.  Fire everything if close.
+
+Detailed description of algorithms:
+
+watch_out_a:
+Bullet dodging using acceleration. Loads in bullets, discards those that
+are too close, too far, or moving away. Of remaining, compute the closest
+distance of approach. If this is less than some empirically derived #, it
+hits. Procedure accelerates vehicle to speed resulting in smallest damage.
+Also regulates mean speed, trying to keep the tank at WANTED_SPEED.
+
+watch_out_t:
+Bullet dodging as above using 70 deg turns. Alternates with it to produce
+the "double dodge" approach.
+
+dodge_wall:
+am I gonna hit a wall? ok, turn 90 deg. still? ok, turn again. still? ok, 
+turn around. each update has a "slop" in turning or maintaining so vehicle
+does not move straight or make 90 deg turns.
+
+shoot_suckers:
+find the most appealing target & shoot at it if I might be able to hit
+it. Uses leading. hurtstat keeps track of who Ive shot at so Im more likely
+to hit someone I've been shooting at a lot, since they are more likly to be
+damaged.
+
+nuke_same_guy:
+shoot the guy you liked so much before. Don't check for walls, the salvo
+wouldnt have been fired if there was one. Thus, members of salvos may hit
+walls, but more likly not, since there havnt been major changes. 
+
+fire:
+shoot. if close, fire everything, otherwise, fire half to keep heat down.
+
+
+
+entrant: Dan Schmidt
+program: artful.c
+vehicle: artful
+strategy:
+
+Artful avoids walls.
+Artful avoids bullets.
+Artful avoids other tanks.
+Artful avoids fighting.
+
+Artful attempts to demonstrate the futility of war in a world where peace
+is the only answer.  It fails utterly.
+
+
+
+entrant: Richard Crosby
+program: bing.c
+vehicle: bing50
+strategy:
+
+     Basically, my strategy is to seek out the enemy, navigate
+the maze for a close-range attack, and then let him have it with
+the guns at point-blank.  If there's a break in the action, the
+tank will seek supplies when needed.
+
+
+
+entrant: Placebo
+program: clueless.c
+vehicle: clueless
+strategy:
+
+Move east.
+Once we hit a wall, do it again and again until we die.
+
+
+
+entrant:  Fred Martin (G)
+program:  crank.c
+vehicle:  crank
+strategy:
+
+Crank has two modes:  "attack the nearest vehicle" and "run from all
+vehicles".  It uses a weighting algorithm to navigate, which takes in
+account possible exits, turning angles, nearby vehicles, and radar.
+
+Crank shoots, using a leading algorithm, whenever a vehicle is in
+sight.
+
+
+
+entrant: Laura Finkelstein ('89) and Jeff Dike ('87)
+program: laura1.c
+vehicle: laura2
+strategy:
+
+Our strategy is to win!!!
+
+Jeff says he had nothing to do with this.
+
+
+
+entrant: Jonathan Amsterdam (G) and David Clemens (G)
+program: quickie.c
+vehicle: djpsycho
+strategy:
+
+Quickie isn't, but he does avoid walls when no enemies are around.
+
+If an enemy comes within range, Quickie stops wandering and lets him
+have it until he goes out of range, slips behind a wall, or is destroyed.
+
+When attacking, Quickie wiggles as best he can, and rotates to expose
+armor evenly.
+
+
+
+entrant: Placebo
+program: spiral.c
+vehicle: clueless
+strategy:
+
+Spin in place.
+Fire all weapons to make a pretty spiral pattern on the screen.
+
+
+
+entrant: Placebo
+program: spot.c
+vehicle: spot
+strategy:
+
+Follow nearest vehicle and shoot at it with the weakest weapon.
+
+
+entrant: Rob Fullmer ('89)
+program: tchewka.c
+vehicle: tchewka
+strategy:
+
+Tchewka first tries to run away from the other vehicles in the battle,
+and hide out where it is safe.
+
+After waiting a while, tchewka comes back, ready for action, driving
+towards the nearest vehicle, and slamming into it at top speed.
+Then the acid sprayers do the rest, destroying the vehicle in record time.
+
+
+
+entrant: Allan MacKinnon ('91)
+program: thee.c
+vehicle: thee8
+strategy:
+
+Thee seeks out enemies using the radar while avoiding the walls in the maze.
+Once an enemy is sighted, thee tries to keep it just within the
+range of its long-range weapons.  This makes it hard for vehicles with
+short range attacks to do much damage.
+
+This competition was a great idea - this is my first C program!
+
+
+
+entrant: Kirk Lauritz Johnson ('88)
+program: tuna.c
+vehicle: tuna
+strategy:
+
+Attempts to search through the maze for opponents, ammo, armor, fuel, etc.
+Only limited success on this, however, but what the heck.
+
+
+
+entrant: Mike Zehr
+program: zehr.c
+vehicle: zehr1
+strategy:
+
+Starts in EXPLORE mode, where it wanders randomly, trying to cover
+unexplored territory and keeping a map of the territory it has covered.
+
+When it sees a blip on the radar, it goes into YELLOW mode.
+At this point, it starts to head towards the blip, and points it turret
+in the general right direction.
+
+When there is an enemy on screen, it is in COMBAT mode.
+Here, it no longer takes straight paths between points, and no longer
+waits to leave a square before plotting a new course, making it harder
+to lead.
+
+It picks a target and shoots at it, occasionally switching targets if
+one gets too close.  Also, it tries to avoid moving too close to
+another tank, by maintaining a distance of one box from each tank.

@@ -1,0 +1,13 @@
+#!/bin/csh -f
+setenv XTANK_DIR       ~stripes/xtank
+setenv XTANK_VEHICLES  Vehicles
+setenv XTANK_MAZES     Mazes
+setenv XTANK_PROGRAMS  Programs
+
+if (`hostname` == sparcee) then
+	echo "Debuggin emacs\!"
+	dbx ${XTANK_DIR}/Src/emacs
+else
+	echo "Debuggin .xtank.sun"
+	dbx ${XTANK_DIR}/.xtank.`arch`
+endif

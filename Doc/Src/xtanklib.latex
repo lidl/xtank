@@ -2,6 +2,11 @@
 
 \makeindex
 
+% KLUDGE to get around a kludge in lfonts.tex and the fact that the
+% bitmaps for the cmcsc10 font are not available in 90% size
+
+\font\sc=cmcsc10 
+
 \input{header.latex}
 
 \title{How to Write an \xtank\ Robot Program}
@@ -40,10 +45,10 @@ they are organized into the following groups:
 \section{Programming Notes}
 
 \begin{itemize}
-  \item Programs should be stored in \verb|/mit/games/src/vax/xtank/Programs|.
-	The line \\
-	\verb|#include /mit/games/src/vax/xtank/Programs/xtanklib.h| \\
-        must appear at the top of your program.
+  \item The source code for programs should be stored in the directory
+        \verb|$(XTANK_DIR)/$(XTANK_PROGRAMS)|.  Ask your local maintainer
+        what directory this is if you're not sure.  You must
+        \verb|#include  "xtanklib.h"| at the beginning of the program.
 
   \item Your program filename must have a \verb~.c~ extension, 
         e.g. \verb~<program name>.c~.
@@ -64,6 +69,9 @@ they are organized into the following groups:
         you won't be able to use it in two different vehicles in one battle
         (i.e. running it against itself).  Every vehicle using your \xtank\
         program will be using the same global and static variables.
+        If you plan to be able to use it in two different vehicles in
+        one battle, create a structure in your main procedure which
+        contains all ``global'' data, and pass its address to every function.
 
   \item Global and static variables do not get reinitialized each battle,
         so initialize them yourself, at the start of your main function.
@@ -96,13 +104,13 @@ program.
 
 {\small
 \begin{tabbing}
-\verb~Foo foo foo foo foo~ \= \kill
+\verb~Foo foo foo foo foo foo foo~ \= \kill
 \verb~typedef struct {~  \\
 \verb~  char *name;~     \> {\em name of program} \\
-\verb~  char *type;~     \> {\em type of program} \\
 \verb~  char *vehicle;~  \> {\em name of default vehicle} \\
 \verb~  char *strategy;~ \> {\em description of strategy} \\
 \verb~  char *author;~   \> {\em name of author} \\
+\verb~  unsigned int abilities;~ \> {\em things the program does} \\
 \verb~  int skill;~      \> {\em ability rating of the program (0--10)} \\
 \verb~  int (*func)();~  \> {\em name of main function} \\
 \verb~  char *code;~     \> {\em used internally by \xtank} \\
@@ -115,28 +123,25 @@ program.
 than the name of the file itself.  Only the first 18 characters of it will
 be used by \xtank.
 
-  \vitem{type} is the type of the program.  \xtank\ recognizes the following
-strings, but yours is not required to be one of them.
-
-\begin{itemize}
-  \item[\bf combat]   fights opponents to the death.
-  \item[\bf war]      fights opponents in battle scenarios.  Generally these
-                  involve taking over territory as well as killing other
-                  tanks.
-  \item[\bf ultimate] plays the ``ultimate'' game, in which teams fight to
-                  move a disc into the opponents' goal.
-  \item[\bf capture]  plays the ``capture'' game, in which teams fight to
-                  gain control of the opponents' disc and bring it
-                  to their territory.
-  \item[\bf race]     drives through mazes as quickly as possible.
-\end{itemize}
-
   \vitem{vehicle} is the default vehicle name.  It should be present in
 the default Vehicles directory.
 
   \vitem{strategy} describes the program's strategy in a few sentences.
 
   \vitem{author} is the name of the author of the program.
+
+  \vitem{abilities} lists the things the program does.  This should be
+the binary `or' of some of the following flags:
+\begin{verbatim}
+  PLAYS_COMBAT            DOES_SHOOT              USES_TEAMS
+  PLAYS_WAR               DOES_EXPLORE            USES_MINES
+  PLAYS_ULTIMATE          DOES_DODGE              USES_SLICKS
+  PLAYS_CAPTURE           DOES_REPLENISH          USES_SIDE_MOUNTS
+  PLAYS_RACE                                      USES_MESSAGES
+\end{verbatim}
+For example, a tank which plays combat and shoots at everyone except
+its teammates might have \verb~PLAYS_COMBAT | DOES_SHOOT | USES_TEAMS~
+in this field.
 
   \vitem{skill} is the skill of the program for its particular type.
 Most programs should be somwhere from 2 to 8.  Save 0 and 1 for the truly 
@@ -162,7 +167,7 @@ program is perfectly valid, although not too useful.
 ** nothing.c
 */
 
-#include "/mit/games/src/vax/xtank/Programs/xtanklib.h"
+#include "xtanklib.h"
 
 extern int nothing_main();
 
@@ -372,9 +377,10 @@ is a wall on that side of a given box.
 \verb~SpecialType~: The various types of specials.
 \xx
 \begin{verbatim}
-  0 CONSOLE
-  1 MAPPER
-  2 RADAR
+  0 CONSOLE      4 RAMPLATE
+  1 MAPPER       5 DEEPRADAR
+  2 RADAR        6 STEALTH
+  3 REPAIR
 \end{verbatim}
 
 \setlength{\parskip}{0ex}
@@ -409,14 +415,28 @@ All the structures which are used in \xtanklib\ are listed here.
 \verb~  int grid_x, grid_y;~ \> {\em box within the maze} \\
 \verb~  int box_x, box_y;~   \> {\em location within that box} \\ 
 \verb~  int x, y;~           \> {\em location in pixels from origin of maze} \\
-\> {\em (e.g. \verb|x| = \verb|grid_x| * \verb|BOX_WIDTH| + \verb|box_x|)}
+\> {\em (e.g. \verb|x = grid_x * BOX_WIDTH + box_x|)} \\
 \verb~} Location;~ \\
+\end{tabbing}
+
+\begin{tabbing}
+\verb~  unsigned int flags;      ~ \= \kill
+\verb~typedef struct {~ \\
+\verb~  unsigned int flags;~ \> {\em bits for walls, etc.; used by
+some macros} \\
+\verb~  LandmarkType type;~  \> {\em code for landmark type} \\
+\verb~  Team team;~  \> {\em what team owns the box, \verb~NEUTRAL~ if
+it's neutral} \\
+\verb~  char strength;~ \> {\em strength of the scroll, outpost, etc.} \\
+\verb~} Box;~ \\
 \end{tabbing}
 
 \begin{tabbing}
 \verb~  LandmarkType type;     ~  \= \kill
 \verb~typedef struct {~ \\
 \verb~  LandmarkType type;~  \> {\em code for landmark type} \\
+\verb~  Team team;~   \> {\em what team owns the box, \verb~NEUTRAL~
+if it's neutral} \\
 \verb~  int x,y;~     \> {\em box within the maze which the landmark is in } \\
 \verb~} Landmark_info;~ \\
 \end{tabbing}
@@ -485,6 +505,8 @@ owner} \\
                                    off walls} \\
 \verb~  Boolean no_wear;~ \> {\em whether or not vehicles take damage and
                                   use up fuel } \\
+\verb~  Boolean full_map;~ \> {\em whether everyone starts out with a
+complete map } \\
 \verb~  Game game;~ \> {\em what type of game is being played} \\
 \verb~  int winning_score;~ \> {\em how many points a vehicle needs 
                              to win the game} \\
@@ -516,6 +538,11 @@ This is a more detailed description of the exact effects some members
 of the \verb~Settings_info~ structure.
 
 \begin{itemize}
+  \vitem{full\_map} If this is \verb~TRUE~, then the vehicle's mapper
+will automatically be initialized with information about the entire
+maze at the beginning of each battle.  To access this information,
+call \verb~map_get()~ and then use the builtin map macros such as
+\verb~map_wall()~.
   \vitem{outpost\_strength} Ranges from 0 to 10.  It determines how many
 and what types of bullets will be fired by an outpost.  A value of 0 means
 outposts will not fire.  A value of 10 means 5 heavy rocket launchers will
@@ -541,7 +568,7 @@ move.
 
 Sending or receiving a message requires you to keep track of several
 variables, outlined below.  When you send a message, these will be arguments
-to \verb~send()~; when you receive a message, they will be in a
+to \verb~send_msg()~; when you receive a message, they will be in a
 \verb~Message~ structure.
 
 \paragraph{Recipient}
@@ -559,7 +586,7 @@ The various kinds of opcodes are summarized in the {\bf Types} section.
 \paragraph{Data field}
 
 There are 10 different types of messages, which have widely differing types
-of data to be sent.  One of the arguments to \verb~send()~ is 
+of data to be sent.  One of the arguments to \verb~send_msg()~ is 
 \verb~char data[MAX_DATA_LEN]~;
 this section describes what information should go in that array for each 
 kind of message.
@@ -580,7 +607,7 @@ string. {\bf Note:} make sure that the
 text is not more than \verb~MAX_DATA_LEN-1~ characters long!  Otherwise your
 program may crash.
   \vitem{OP\_DEATH} Vehicle ID of victim in \verb~data[0]~, new number
-f kills for the killer in \verb~data[1]~, and vehicle ID of killer
+of kills for the killer in \verb~data[1]~, and vehicle ID of killer
 in \verb~data[2]~.  A message with this opcode is sent from \verb~SENDER_COM~
 to \verb~RECIPIENT_ALL~ every time a vehicle dies.  If the victim wasn't
 killled by a vehicle, \verb~data[2]~ contains \verb~SENDER_NONE~.
@@ -609,8 +636,8 @@ turn_vehicle(desired_angle)
 Starts turning the vehicle to \verb~desired_angle~.  Depending on its
 turn rate, this may take a while.
 
-\begin{verbatim}
 \index{turn_rate}
+\begin{verbatim}
 float turn_rate(abs_speed)
      float abs_speed;
 \end{verbatim}
@@ -689,7 +716,7 @@ Puts the width and height (in pixels) of the bounding box around the
 picture of the vehicle into the integers pointed to by width and height.
 These values change as the vehicle rotates.
 
-subsection{Turrets}
+\subsection{Turrets}
 
 \index{num_turrets}
 \begin{verbatim}
@@ -705,6 +732,16 @@ Angle turret_angle(num)
 \end{verbatim}
 \xx
 Returns the angle of the specified turret.
+
+\index{turret_position}
+\begin{verbatim}
+turret_position(turret,xp,wp)
+     TurretNum turret;
+     int *xp, *wp;
+\end{verbatim}
+\xx
+Puts the position of the specified turret relative to the vehicle's
+location in \verb~xp~ and \verb~yp~.
 
 \index{turret_turn_rate}
 \begin{verbatim}
@@ -884,7 +921,7 @@ int heat_sinks()
 \xx
 Returns the number of heat sinks in the vehicle.
 
-\subsubsection{Specials}
+\subsection{Specials}
 
 \index{has_special}
 \begin{verbatim}
@@ -909,6 +946,15 @@ and \verb~FALSE~ if there isn't.  If you have no way of knowing (it isn't
 on your map), returns \verb~FALSE~.
 You can only detect the presence of a wall if it is
 on your map and you have your mapper on.
+
+\index{map_get}
+\begin{verbatim}
+Box **map_get()
+\end{verbatim}
+\xx
+Returns a pointer to the vehicle's map.  The map will be initialzed
+for you automatically if \verb~full_map~ in the \verb~Settings_info~
+structure is \verb~TRUE~.  
 
 \index{clear_path}
 \begin{verbatim}
@@ -1041,6 +1087,54 @@ get_settings(settings_info)
 Puts the values of important user-changeable settings into the structure
 pointed to by \verb~settings_info~.
 
+\subsection{Map macros}
+
+For the following macros, \verb~map~ should be the return value of
+\verb~get_map()~.  These macros do not actually look at the
+environment; they merely look up information stored in \verb~map~.
+If your map is out of date, these macros may return inaccurate
+information.
+
+\index{map_wall}
+\begin{verbatim}
+Boolean map_wall(map,dir,x,y)
+     Box **map;
+     Wall dir;
+     int x,y;
+\end{verbatim}
+\xx
+Returns \verb~TRUE~ if \verb~map~ indicates that there is a wall on
+the specified side of the specified box, and \verb~FALSE~ otherwise.
+
+\index{map_landmark}
+\begin{verbatim}
+LandmarkType map_landmark(map,x,y)
+     Box **map;
+     int x,y;
+\end{verbatim}
+\xx
+Returns the type of landmark in box (x,y).
+
+\index{map_team}
+\begin{verbatim}
+Team map_team(map,x,y)
+     Box **map;
+     int x,y;
+\end{verbatim}
+\xx
+Returns the owner of box (x,y).
+
+\index{map_strength}
+\begin{verbatim}
+char map_strength(map,x,y)
+     Box **map;
+     int x,y;
+\end{verbatim}
+\xx
+Returns the strength (on a scale of 0 to 10) of the box (x,y) if it is
+a scroll, slow, or outpost square.  It may be more useful to look at
+the information returned by \verb~get_settings~ for this information.
+
 \subsection{Discs}
 
 \index{num_discs}
@@ -1053,7 +1147,7 @@ Returns the number of discs that the vehicle owns.
 \index{throw_discs}
 \begin{verbatim}
 throw_discs(speed)
-    float speed;
+     float speed;
 \end{verbatim}
 \xx
 Releases all the discs that the vehicle is carrying at the desired speed.
@@ -1080,16 +1174,16 @@ int messages()
 \xx
 Returns the number of messages waiting to be read.
 
-\index{send}
+\index{send_msg}
 \begin{verbatim}
-send(recipient,opcode,data)
+send_msg(recipient,opcode,data)
 \end{verbatim}
 \xx
 Sends a message to the recipient with the given opcode and data.
 
-\index{receive}
+\index{receive_msg}
 \begin{verbatim}
-receive(m)
+receive_msg(m)
      Message *m;
 \end{verbatim}
 \xx
@@ -1120,9 +1214,9 @@ int score()
 \xx
 Returns the current score of the vehicle.
 
-\index{money}
+\index{get_money}
 \begin{verbatim}
-int money()
+int get_money()
 \end{verbatim}
 \xx
 Returns the amount of money the vehicle owns.  Money is used to buy fuel and
@@ -1135,7 +1229,7 @@ done()
 \xx
 This function will not return until the next frame of execution,
 so calling it means giving up your remaining cpu time for this frame.
-Use it if you don't wish to do anything more this frame, 
+Use it if you don't wish to do anything more this frame.
 
 \appendix
 
@@ -1151,7 +1245,7 @@ vehicles, and if it finds one, it runs towards it and shoots at it.
 ** attack.c
 */
 
-#include "/mit/games/src/vax/xtank/Programs/xtanklib.h"
+#include "xtanklib.h"
 #include <math.h>
 
 extern int attack_main();

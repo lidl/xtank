@@ -1,0 +1,25 @@
+Beta test notes.
+
+We need you to:
+  * Tell us what your set-up is (Hardware, OS, config.h).
+  * Tell us if it works.
+  * Tell us if it doesn't work.
+  * Tell us if it doesn't work, and you know why it doesn't
+  * Tell us if it almost works.
+  * Tell us if you like it.
+  * Tell us if you don't like it.
+  * Tell us if it improves your sex life.
+
+The "us" is skeeve@eng.umd.edu and stripes@eng.umd.edu.  Or if you like
+"xtank@eng.umd.edu".  To be added to the "xtank@eng.umd.edu" list send
+the above info to xtank-request@eng.umd.edu along with a request to be
+added to the list.
+
+Our set-up: sun3's & sun4's SUN_LWP.
+
+By the way, 1.2 used machtype or it's ilk to figure out if it was a VAX or
+a Sun, or whatever.  Since we don't have that, but do have arch, and arch
+is standard in SunOS and BSD4.4 we use it.  If you don't have one, just
+make a shell script that echos the machene type.
+
+						- stripes & skeeve

@@ -1,37 +1,12 @@
-/*
-** cosell.h 
-**
-** This defines the constants for the commentator in xtank
-*/
+/* cosell.h - stuff for the commentator */
 
+/* Cosell, the ultimate commentator (in the wrong sense) opcodes */
+#define COS_INIT_MOUTH    0
+#define COS_OWNER_CHANGE  1
+#define COS_SLICK_DROPPED 2
+#define COS_BIG_SMASH     3
+#define COS_GOAL_SCORED   4
+#define COS_BEEN_SLICKED  5
 
-#ifndef _COSELL_
-#define _COSELL_
-
-#include "message.h"
-
-#define TOO_MANY_SLICKS 6
-
-#define SLICK_THRESH   100
-#define CHANGE_THRESH    6
-#define SMASH_THRESH    25
-#define SLICKED_THRESH  20
-#define BOBBLE_THRESH   50
-
-#define WICKET_THRESH    4
-
-#define HOWARD_SAYS_A_LITTLE(data) \
-    compose_message(SENDER_COM, RECIPIENT_ALL, OP_TEXT, \
-		    (Byte *)(sprintf data,buf))
-
-#define HOWARD_SAYS(data) \
-  return compose_message(SENDER_COM,RECIPIENT_ALL,OP_TEXT, \
-			 (Byte *) (sprintf data,buf))
-
-#define LAST_OWNER owners[(owner_index+9)%10]
-#define LAST_NAME LAST_OWNER->disp
-
-extern Bset *bset;
-extern int num_vehicles;
-
-#endif
+#define COS_IGNORE        0
+#define COS_WALL_HIT      1

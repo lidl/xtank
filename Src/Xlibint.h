@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $Header: Xlibint.h,v 11.52 88/08/11 18:16:56 jim Exp $ */
+/* $Header: /u2/rpotter/src/X/xtank1.2c/Src/RCS/Xlibint.h,v 1.2 90/08/06 23:43:05 rpotter Exp Locker: rpotter $ */
 /* Copyright 1984, 1985, 1987  Massachusetts Institute of Technology */
 
 /*
@@ -10,18 +10,21 @@
  *
  *	Warning, there be dragons here....
  */
+
 #ifndef NEED_EVENTS
 #define _XEVENT_
 #endif
 
 #ifdef CRAY
+
 #ifndef __TYPES__
 #define __TYPES__
-#include <sys/types.h>			/* forgot to protect it... */
-#endif /* __TYPES__ */
+#include <sys/types.h>	/* forgot to protect it... */
+#endif	/* __TYPES__ */
+
 #else
 #include <sys/types.h>
-#endif /* CRAY */
+#endif	/* CRAY */
 
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
@@ -31,25 +34,28 @@
 #ifndef NULL
 #define NULL 0
 #endif
+
 #define LOCKED 1
 #define UNLOCKED 0
 
-extern int errno;			/* Internal system error number. */
+extern int errno;	/* Internal system error number. */
 extern void bcopy();
 
-extern (*_XIOErrorFunction)();		/* X system error reporting routine. */
-extern (*_XErrorFunction)();		/* X_Error event reporting routine. */
-extern char *_XAllocScratch();		/* fast memory allocator */
-extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
+extern (*_XIOErrorFunction) ();	/* X system error reporting routine. */
+extern (*_XErrorFunction) ();	/* X_Error event reporting routine. */
+extern char *_XAllocScratch();	/* fast memory allocator */
+extern Visual *_XVIDtoVisual();	/* given visual id, find structure */
 
 #ifndef BUFSIZE
-#define BUFSIZE 2048			/* X output buffer size. */
+#define BUFSIZE 2048	/* X output buffer size. */
 #endif
+
 #ifndef EPERBATCH
-#define EPERBATCH 8			/* when batching, how many elements */
+#define EPERBATCH 8	/* when batching, how many elements */
 #endif
+
 #ifndef CURSORFONT
-#define CURSORFONT "cursor"		/* standard cursor fonts */
+#define CURSORFONT "cursor"	/* standard cursor fonts */
 #endif
 
 /*
@@ -62,6 +68,7 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
  *   after shifting right 61 bits of it is not pointing to
  *   a word boundary.
  */
+
 #ifdef WORD64
 #define WORD64ALIGN if ((long)dpy->bufptr >> 61) {\
            dpy->last_req = dpy->bufptr;\
@@ -72,14 +79,14 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
              dpy->request += 1;\
              dpy->bufptr += 4;\
          }
-#else /* else does not require alignment on 64-bit boundaries */
+#else	/* else does not require alignment on 64-bit boundaries */
 #define WORD64ALIGN
-#endif /* WORD64 */
+#endif	/* WORD64 */
 
 
 /*
  * GetReq - Get the next avilable X request packet in the buffer and
- * return it. 
+ * return it.
  *
  * "name" is the name of the request, e.g. CreatePixmap, OpenFont, etc.
  * "req" is the name of the request pointer.
@@ -97,7 +104,8 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
 	dpy->bufptr += SIZEOF(x/**/name/**/Req);\
 	dpy->request++
 
-#else  /* non-ANSI C uses empty comment instead of "##" for token concatenation */
+#else	/* non-ANSI C uses empty comment instead of "##" for token
+	   concatenation */
 #define GetReq(name, req) \
         WORD64ALIGN\
 	if ((dpy->bufptr + SIZEOF(x/**/name/**/Req)) > dpy->bufmax)\
@@ -136,9 +144,9 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
 
 
 /*
- * GetResReq is for those requests that have a resource ID 
+ * GetResReq is for those requests that have a resource ID
  * (Window, Pixmap, GContext, etc.) as their single argument.
- * "rid" is the name of the resource. 
+ * "rid" is the name of the resource.
  */
 
 #if (defined __STDC__) && (!defined UNIXCPP)
@@ -167,8 +175,9 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
 
 /*
  * GetEmptyReq is for those requests that have no arguments
- * at all. 
+ * at all.
  */
+
 #if (defined __STDC__) && (!defined UNIXCPP)
 #define GetEmptyReq(name, req) \
         WORD64ALIGN\
@@ -223,7 +232,7 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
  * "ptr" is the pointer being assigned to.
  * "n" is the number of bytes to allocate.
  *
- * Example: 
+ * Example:
  *    xTextElt *elt;
  *    BufAlloc (xTextElt *, elt, nbytes)
  */
@@ -237,19 +246,20 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
 /*
  * provide emulation routines for smaller architectures
  */
+
 #ifndef WORD64
 #define Data16(dpy, data, len) Data((dpy), (char *)(data), (len))
 #define Data32(dpy, data, len) Data((dpy), (char *)(data), (len))
 #define _XRead16(dpy, data, len) _XRead((dpy), (char *)(data), (len))
 #define _XRead32(dpy, data, len) _XRead((dpy), (char *)(data), (len))
-#endif /* not WORD64 */
+#endif	/* not WORD64 */
 
 
 #define min(a,b) (((a) < (b)) ? (a) : (b))
 #define max(a,b) (((a) > (b)) ? (a) : (b))
 
-#define	CI_NONEXISTCHAR	0x4000	/* required because QueryFont represents
-				   a non-existant character with zero-value
+#define	CI_NONEXISTCHAR	0x4000	/* required because QueryFont represents a
+				   non-existant character with zero-value
 				   metrics, but requires drivers to output
 				   the default char in their place. */
 
@@ -258,9 +268,10 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
  * Stuff to handle large architecture machines; the constants were generated
  * on a 32-bit machine and must coorespond to the protocol.
  */
+
 #ifdef WORD64
 #define MUSTCOPY
-#endif /* WORD64 */
+#endif	/* WORD64 */
 
 
 #ifdef MUSTCOPY
@@ -269,7 +280,7 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
 #define SIZEOF(x) sizeof_##x
 #else
 #define SIZEOF(x) sizeof_/**/x
-#endif /* if ANSI C compiler else not */
+#endif	/* if ANSI C compiler else not */
 
 #define NEXTPTR(p,t) (t *) (((char *) p) + SIZEOF(t))
 #define INCPTR(p,t) p = (t *) (((char *) p) + SIZEOF(t))
@@ -431,15 +442,21 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
 #define sizeof_xPropIconSize 24
 #define sizeof_xChangeKeyboardMappingReq 8
 
-#else /* else not MUSTCOPY, this is used for 32-bit machines */
+#else	/* else not MUSTCOPY, this is used for 32-bit machines */
 
+#ifndef SIZEOF
 #define SIZEOF(x) sizeof(x)
+#endif
+
+#ifndef NEXTPTR
 #define NEXTPTR(p,t) ((p)+1)
+#endif
+
+#ifndef INCPTR
 #define INCPTR(p,t) (p++)
+#endif
 
 /* srcvar must be a variable for large architecture version */
 #define OneDataCard32(dpy,dstaddr,srcvar) \
   { *(unsigned long *)(dstaddr) = (srcvar); }
-
-#endif /* MUSTCOPY - used machines whose C structs don't line up with proto */
-
+#endif	/* MUSTCOPY - used machines whose C structs don't line up with proto */

@@ -1,16 +1,37 @@
+Xtank is available via ftp on ftp.eng.umd.edu as /xtank/xtank.1.2e.tar.Z
 
-The Hanging Bug has been fixed!            Xtank should no longer hang
-The font sizes have been fixed!            Text should look nicer
+This is test version 1.2e of Xtank
 
-Thanks to wchuang@athena for helping me debug remotely from California.
-
-Documentation can be found in /mit/games/src/vax/xtank/Doc:
-
+Documentation can be found in ....../xtank/Doc
 essential.dvi How to play xtank       vdesign.dvi  How to design vehicles
 mdesign.dvi   How to design mazes     xtanklib.dvi How to write robot programs
-
-dvi2ps -r essential.dvi | lpr -Ppname
-
+dvi2ps -r ....../xtank/Doc/essential.dvi | lpr -Ppname
 is the command to print out the file essential.dvi to the printer named pname.
 
-10/22/89      Terry Donahue      tmdonahu@athena  (comments to xtank@athena)
+11/12/90       Xtank Developers    send comments to xtank@eng.umd.edu
+
+UMD-ENG Hacks (partial list):
+----------------------------
+    Screenery
+    =========
+        Shocker Walls   - Electrified walls really hurt.  Scalable (0-10).
+        Peace           - Bullets ting while on YOUR peace square.
+
+    Treads
+    ======
+        Hover           - Experimental.
+
+    Specials
+    ========
+        Repair          - Costs ALOT, when stopped, swaps fuel for armor.
+        RamPlate        - When you hit someone with your FRONT, 
+                          you cause extra damage and take less.
+                          The RamPlate weighs half that of your front armor.
+        Navigation      - Makes driving backwards much easier.  You
+                          head toward the direction you choose,
+                          rather than away from it.
+
+    Misc
+    ====
+        Scrolling menus - Kinda obvious
+        Xdefaults       - Documented elsewhere

@@ -6,6 +6,10 @@
 ** map.h
 */
 
+/* Maximum maze coordinates */
+#define GRID_WIDTH	30
+#define GRID_HEIGHT	30
+
 #define MAP_BORDER	-13
 #define MAP_BOX_SIZE	9
 
