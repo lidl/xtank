@@ -16,6 +16,10 @@
 #include <sys/types.h>
 #include <pthread.h>
 
+/* #define SEQUENTIAL */
+/* #define THUNDERING_HERD */
+#define ONE_BY_ONE
+
 static int ret_a, ret_b, ret_c;
 
 void thread_a(void);
@@ -63,7 +67,7 @@ main(int argc, char *argv[])
 
 	printf("after first call to sched_yield\n");
 
-#if defined(__bsdi__) && 1
+#if defined(SEQUENTIAL)
 	pthread_resume_np(thd_a);
 	printf("after call to pthread_resume_np(thd_a)\n");
 	pthread_resume_np(thd_b);
@@ -72,16 +76,23 @@ main(int argc, char *argv[])
 	printf("after call to pthread_resume_np(thd_c)\n");
 #endif
 
-#if defined(__bsdi__) && 0
+#if defined(THUNDERING_HERD)
 	pthread_resume_all_np();
 	printf("after call to pthread_resume_all_np\n");
 #endif
 
-	(void) sched_yield();
+#if defined(ONE_BY_ONE)
+	pthread_resume_np(thd_a);
+	printf("after call to pthread_resume_np(thd_a)\n");
+#endif
 
-	printf("after second call to sched_yield\n");
-
-	sleep(4);
+	printf("main calls pthread_join()\n");
+	status = pthread_join(thd_c, NULL);
+	if (status) {
+		perror("pthread_join");
+		exit(1);
+	}
+	printf("main finishes pthread_join()\n");
 
 	exit (0);
 }
@@ -91,9 +102,12 @@ thread_a(void)
 {
 	printf("thread_a started\n");
 
+#if defined(ONE_BY_ONE)
+	pthread_resume_np(thd_b);
+	printf("thread_a -> resume(thread_b)\n");
+
 	pthread_suspend_np(thd_a);
-	sched_yield();
-	sleep(2);
+#endif
 
 	printf("thread_a finished\n");
 	ret_a = 1;
@@ -105,7 +119,13 @@ thread_b(void)
 {
 	printf("thread_b started\n");
 
-/*	pthread_suspend_np(thd_a); */
+#if defined(ONE_BY_ONE)
+	pthread_resume_np(thd_c);
+	printf("thread_b -> resume(thread_c)\n");
+
+	pthread_suspend_np(thd_b);
+#endif
+
 	sleep(2);
 
 	printf("thread_b finished\n");
@@ -117,6 +137,13 @@ void
 thread_c(void)
 {
 	printf("thread_c started\n");
+
+#if defined(ONE_BY_ONE)
+	pthread_resume_np(thd_a);
+	printf("thread_c -> resume(thread_a)\n");
+	pthread_resume_np(thd_b);
+	printf("thread_c -> resume(thread_b)\n");
+#endif
 
 	sleep(2);
 
