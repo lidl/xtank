@@ -1,15 +1,12 @@
 /*
- * Copyright (c) 1989 Christoph. Alex. North-Keys
- */
-
-/*
-$Author: lidl $
-$Id: escher.c,v 1.1.1.1 1995/02/01 00:25:34 lidl Exp $
+** Copyright (c) 1989 Christoph. Alex. North-Keys
+**
+** $Id$
 */
 
 /*
- * escher.c version started Thu d.07.12.1989
- */
+** escher.c version started Thu d.07.12.1989
+*/
 
 #include "sysdep.h"
 #include "graphics.h"

@@ -3,12 +3,7 @@
 **
 ** Copyright 1993 by Pix Technologies Corp.
 **
-** special.h
-*/
-
-/*
-$Author: lidl $
-$Id: special.h,v 1.1.1.1 1995/02/01 00:25:43 lidl Exp $
+** $Id$
 */
 
 #ifndef _SPECIAL_H_

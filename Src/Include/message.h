@@ -3,12 +3,7 @@
 **
 ** Copyright 1988 by Terry Donahue
 **
-** message.h
-*/
-
-/*
-$Author: lidl $
-$Id: message.h,v 1.1.1.1 1995/02/01 00:25:41 lidl Exp $
+** $Id$
 */
 
 #ifndef _MESSAGE_H_

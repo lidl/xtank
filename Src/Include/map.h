@@ -3,12 +3,7 @@
 **
 ** Copyright 1988 by Terry Donahue
 **
-** map.h
-*/
-
-/*
-$Author: lidl $
-$Id: map.h,v 1.1.1.1 1995/02/01 00:25:41 lidl Exp $
+** $Id$
 */
 
 /* Maximum maze coordinates */

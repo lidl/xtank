@@ -3,12 +3,7 @@
 **
 ** Copyright 1988 by Terry Donahue
 **
-** hit.c
-*/
-
-/*
-$Author: lidl $
-$Id: hit.c,v 1.1.1.2 1995/02/01 00:28:13 lidl Exp $
+** $Id$
 */
 
 #include <math.h>

@@ -2,14 +2,9 @@
 ** Xtank
 **
 ** Copyright 1992 by Kurt Lidl
-** Copyright 1993 by Pix Technologies Corp.
+** Copyright 1993,1999 by Pix Technologies Corp.
 **
-** threadglue.c
-*/
-
-/*
-$Author: lidl $
-$Id: threadglue.c,v 1.1.1.1 1995/02/01 00:25:39 lidl Exp $
+** $Id$
 */
 
 #include <assert.h>

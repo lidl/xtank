@@ -1,15 +1,9 @@
-
 /*
 ** Xtank
 **
 ** Copyright 1988 by Terry Donahue
 **
-** thread.h
-*/
-
-/*
-$Author: lidl $
-$Id: thread.h,v 1.1.1.1 1995/02/01 00:25:44 lidl Exp $
+** $Id$
 */
 
 #ifdef THREAD_MP
@@ -98,17 +92,20 @@ Thread;
 #endif
 #endif /* THREAD_MP */
 
+#ifdef THREAD_POSIX
+#include <pthread.h>
+typedef pthread_t Thread;
+#endif /* THREAD_POSIX */
+
 #ifdef THREAD_SUNLWP
 #include <lwp/lwp.h>
 #include <lwp/stackdep.h>
 typedef thread_t Thread;
-
 #endif /* THREAD_SUNLWP */
 
 #ifdef THREAD_SVR4
 #include <ucontext.h>
 typedef ucontext_t Thread;
-
 #endif /* THREAD_SVR4 */
 
 #if !defined(THREAD_MP) && !defined(THREAD_SUNLWP) && !defined(THREAD_SVR4) \

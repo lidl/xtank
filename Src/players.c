@@ -3,12 +3,7 @@
 **
 ** Copyright 1992 by C. Moore
 **
-** players.c
-*/
-
-/*
-$Author: lidl $
-$Id: players.c,v 1.1.1.1 1995/02/01 00:25:37 lidl Exp $
+** $Id$
 */
 
 #define MAX_LENGTH 255

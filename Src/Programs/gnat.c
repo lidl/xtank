@@ -3,12 +3,7 @@
 **
 ** Copyright 1992 by William T. Katz
 **
-** gnat.c
-*/
-
-/*
-$Author: lidl $
-$Id: gnat.c,v 1.1.1.1 1995/02/01 00:25:46 lidl Exp $
+** $Id$
 */
 
 /*

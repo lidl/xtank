@@ -2,8 +2,7 @@
 #
 # Copyright 1993 by Pix Technologies Corp.
 #
-# $Author: lidl $
-# $Id: xtank,v 1.1.1.2 1995/02/01 00:29:42 lidl Exp $
+# $Id$
 #
 XTANK_DIR=/usr/obj/xtank
 XTANK_VEHICLES=Vehicles

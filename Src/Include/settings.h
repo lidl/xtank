@@ -1,15 +1,9 @@
-
 /*
 ** Xtank
 **
 ** Copyright 1993 by Pix Technologies Corp.
 **
-** settings.h
-*/
-
-/*
-$Author: lidl $
-$Id: settings.h,v 1.1.1.1 1995/02/01 00:25:43 lidl Exp $
+** $Id$
 */
 
 #ifndef _SETTINGS_H_

@@ -3,12 +3,7 @@
 **
 ** Copyright 1992 by Sean Barrett
 **
-** bootlegger.c
-*/
-
-/*
-$Author: lidl $
-$Id: Bootlegger.c,v 1.1.1.1 1995/02/01 00:25:45 lidl Exp $
+** $Id$
 */
 
 /*

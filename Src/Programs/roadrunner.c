@@ -3,12 +3,7 @@
 **
 ** Copyright 1991 by Hans Mejdahl Jeppesen
 **
-** roadrunner.c
-*/
-
-/*
-$Author: lidl $
-$Id: roadrunner.c,v 1.1.1.1 1995/02/01 00:25:47 lidl Exp $
+** $Id$
 */
 
 /**********************************************************************/

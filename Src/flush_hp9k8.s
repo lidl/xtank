@@ -1,6 +1,11 @@
+;
+; Xtank
+;
+; $Id$
+
+;
 ; This was sent out over Netnews this past summer, so I am assuming
 ; it is ok to freely distribute it with Xtank.
-;
 ;
 ; Routine to flush and synchronize data and instruction caches
 ; for dynamic loading

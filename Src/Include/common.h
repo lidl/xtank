@@ -3,12 +3,7 @@
 **
 ** Copyright 1988 by Terry Donahue
 **
-** common.h
-*/
-
-/*
-$Author: lidl $
-$Id: common.h,v 1.1.1.1 1995/02/01 00:25:40 lidl Exp $
+** $Id$
 */
 
 #ifndef _COMMON_H_

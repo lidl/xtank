@@ -1,15 +1,9 @@
-
 /*
 ** Xtank
 **
 ** Copyright 1988 by Terry Donahue
 **
-** gr.h
-*/
-
-/*
-$Author: lidl $
-$Id: gr.h,v 1.1.1.1 1995/02/01 00:25:40 lidl Exp $
+** $Id$
 */
 
 /* Window numbers for display procedures */

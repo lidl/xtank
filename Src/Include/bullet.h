@@ -3,14 +3,11 @@
 **
 ** Copyright 1993 by Pix Technologies Corp.
 **
-** Comment: things pertaining to bullets and explosions
-**
-** bullet.h
+** $Id$
 */
 
 /*
-$Author: lidl $
-$Id: bullet.h,v 1.1.1.1 1995/02/01 00:25:40 lidl Exp $
+** Comment: things pertaining to bullets and explosions
 */
 
 #ifndef _BULLET_H_

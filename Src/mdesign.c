@@ -3,12 +3,7 @@
 **
 ** Copyright 1988 by Terry Donahue
 **
-** mdesign.c
-*/
-
-/*
-$Author: lidl $
-$Id: mdesign.c,v 1.1.1.1 1995/02/01 00:25:36 lidl Exp $
+** $Id$
 */
 
 #include "malloc.h"

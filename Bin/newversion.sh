@@ -2,8 +2,7 @@
 #
 # Copyright 1992, 1993 by Pix Technologies Corp.
 #
-# $Author: lidl $
-# $Id: newversion.sh,v 1.2 1995/02/01 00:41:20 lidl Exp $
+# $Id$
 #
 if [ $# = 1 ]; then
     TARGET=$1

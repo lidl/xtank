@@ -1,10 +1,9 @@
 /**/#
-/**/# Imakefile for ./Src/Programs - part of the UMDENG X-Tank distribution
+/**/# Imakefile for ./Src/Programs - part of the Xtank distribution
 /**/#
-/**/# Copyright 1992, 1993 by Pix Technologies Corp.
+/**/# Copyright 1992,1993,1994,1999 by Pix Technologies Corp.
 /**/#
-/**/# $Author: lidl $
-/**/# $Id: Imakefile,v 1.1.1.2 1995/02/01 00:29:04 lidl Exp $
+/**/# $Id$
 /**/#
 
 #include "../../Imakefile.Config"

@@ -3,12 +3,7 @@
 **
 ** Copyright 1988 by Terry Donahue
 **
-** XMultiSync.c
-*/
-
-/*
-$Author: lidl $
-$Id: XMultiSync.c,v 1.1.1.1 1995/02/01 00:25:48 lidl Exp $
+** $Id$
 */
 
 #ifdef MULTI_SYNC

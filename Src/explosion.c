@@ -3,12 +3,7 @@
 **
 ** Copyright 1993 by Pix Technologies, Corp.
 **
-** explosion.c
-*/
-
-/*
-$Author: lidl $
-$Id: explosion.c,v 1.1.1.1 1995/02/01 00:25:34 lidl Exp $
+** $Id$
 */
 
 #include "sysdep.h"

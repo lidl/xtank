@@ -3,12 +3,7 @@
 **
 ** Copyright 1993 by Pix Technologies Corp.
 **
-** clfkr.h
-*/
-
-/*
-$Author: lidl $
-$Id: clfkr.h,v 1.1.1.1 1995/02/01 00:25:40 lidl Exp $
+** $Id$
 */
 
 #ifndef _CLFKR_H_

@@ -3,12 +3,7 @@
 **
 ** Copyright 1992 by Matt Senft
 **
-** tagman.c
-*/
-
-/*
-$Author: lidl $
-$Id: tagman.c,v 1.1.1.1 1995/02/01 00:25:47 lidl Exp $
+** $Id$
 */
 
 #define MARGIN_OF_ERROR  59
@@ -406,7 +401,7 @@ Prog_desc FILE_PROG =
     PROGRAM_NAME,
     "Disgorge",
     "Uses relative fire and team tactics to distribute quality poundage to \nits opponents. When it cannot fire upon opponents it uses RacerX modified code\ncare of RPotter.\nShould be placed in a vehicle with some turret-mounted weapons \nand a mapper. \nIt works better when all weapons on the turret are the same.\n", 
-    "Matthew T. Senft(senft@pix.com)", 
+    "Matthew T. Senft(senft@pix.net)", 
     PLAYS_COMBAT | PLAYS_RACE | DOES_EXPLORE | DOES_SHOOT 
 	| USES_TEAMS | USES_MINES | USES_SLICKS | USES_SIDE_MOUNTS | USES_MESSAGES, 
     4,

@@ -3,12 +3,7 @@
 **
 ** Copyright 1988 by Terry Donahue
 **
-** vstructs.h
-*/
-
-/*
-$Author: lidl $
-$Id: vstructs.h,v 1.1.1.1 1995/02/01 00:25:44 lidl Exp $
+** $Id$
 */
 
 #define MIN_ARMOR        0

@@ -3,12 +3,7 @@
 **
 ** Copyright 1988 by Michael J. Zehr
 **
-** warrior.c
-*/
-
-/*
-$Author: lidl $
-$Id: warrior.c,v 1.1.1.1 1995/02/01 00:25:48 lidl Exp $
+** $Id$
 */
 
 /****************************************\

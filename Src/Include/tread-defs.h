@@ -3,12 +3,7 @@
 **
 ** Copyright 1993 by Pix Technologies Corp.
 **
-** tread-defs.h
-*/
-
-/*
-$Author: lidl $
-$Id: tread-defs.h,v 1.1.1.1 1995/02/01 00:25:44 lidl Exp $
+** $Id$
 */
 
 /* sym            type   friction  cost */

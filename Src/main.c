@@ -1,17 +1,9 @@
-
-
-
 /*
 ** Xtank
 **
 ** Copyright 1988 by Terry Donahue
 **
-** main.c
-*/
-
-/*
-$Author: lidl $
-$Id: main.c,v 1.1.1.2 1995/02/01 00:28:17 lidl Exp $
+** $Id$
 */
 
 #include "malloc.h"

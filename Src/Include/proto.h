@@ -3,7 +3,7 @@
 **
 ** Copyright 1993 by Pix Technologies Corp.
 **
-** proto.h
+** $Id$
 */
 
 #if defined(__STDC__) || defined(__cplusplus)

@@ -3,12 +3,7 @@
 **
 ** Copyright 1988 by Terry Donahue
 **
-** x11.c
-*/
-
-/*
-$Author: lidl $
-$Id: x11.c,v 1.1.1.1 1995/02/01 00:25:48 lidl Exp $
+** $Id$
 */
 
 #include "malloc.h"

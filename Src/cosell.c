@@ -3,15 +3,12 @@
 **
 ** Copyright 1988 by Terry Donahue
 **
-** cosell.c
-**
-** version basic simple lame non-complicated to the max (by Doug Church)
-** adjusted to better handle multiple discs by Adam Bryant.
+** $Id$
 */
 
 /*
-$Author: lidl $
-$Id: cosell.c,v 1.1.1.1 1995/02/01 00:25:34 lidl Exp $
+** version basic simple lame non-complicated to the max (by Doug Church)
+** adjusted to better handle multiple discs by Adam Bryant.
 */
 
 #include "malloc.h"

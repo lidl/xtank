@@ -3,14 +3,11 @@
 **
 ** Copyright 1993 by Pix Technologies Corp
 **
-** Comment: supplemental functions for lacking systems
-**
-** sysdep.c
+** $Id$
 */
 
 /*
-$Author: lidl $
-$Id: sysdep.c,v 1.1.1.2 1995/02/01 00:28:26 lidl Exp $
+** Comment: supplemental functions for lacking systems
 */
 
 /* these don't have strdup() in their c library, so here's a function */

@@ -3,12 +3,7 @@
 **
 ** Copyright 1988 by Terry Donahue
 **
-** file.c
-*/
-
-/*
-$Author: lidl $
-$Id: newfile.c,v 1.1.1.1 1995/02/01 00:25:37 lidl Exp $
+** $Id$
 */
 
 #include <string.h>

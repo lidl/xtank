@@ -1,16 +1,9 @@
-
-
 /*
 ** Xtank
 **
 ** Copyright 1990 by Daniel Schmidt; All rights reserved.
 **
-** Buddy.c
-*/
-
-/*
-$Author: lidl $
-$Id: Buddy.c,v 1.1.1.1 1995/02/01 00:25:45 lidl Exp $
+** $Id$
 */
 
 /*
@@ -22,24 +15,6 @@ $Id: Buddy.c,v 1.1.1.1 1995/02/01 00:25:45 lidl Exp $
 **
 ** You are free to modify this file as long as you make clear
 ** what code is yours and what is mine.
-**
-** Previous Log:  Buddy.c,v
- * Revision 1.4  90/08/19  15:15:53  dschmidt
- * Better throwing code, including throwing in a range.
- * Throw at the whole side of a goal, rather than a point on that side.
- * Clear the disc.
- * Run after discs at full speed.
- * Keep track of disc spin internally.
- *
- * Revision 1.3  90/08/17  20:27:50  dschmidt
- * Only throw to a teammate if he's closer to the goal than I am
- *
- * Revision 1.2  90/08/15  21:24:08  dschmidt
- * Rip out Buddy_move_carefully and use Buddy_wander instead.
- *
- * Revision 1.1  90/08/15  19:32:56  dschmidt
- * Initial revision
- *
 **
 */
 

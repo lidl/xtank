@@ -3,12 +3,7 @@
 **
 ** Copyright 1988 by Terry Donahue
 **
-** display.c
-*/
-
-/*
-$Author: lidl $
-$Id: display.c,v 1.1.1.1 1995/02/01 00:25:34 lidl Exp $
+** $Id$
 */
 
 #include "xtank.h"

@@ -3,12 +3,7 @@
 **
 ** Copyright 1988 by Terry Donahue
 **
-** highlib.c
-*/
-
-/*
-$Author: lidl $
-$Id: highlib.c,v 1.1.1.1 1995/02/01 00:25:35 lidl Exp $
+** $Id$
 */
 
 #include "malloc.h"

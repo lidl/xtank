@@ -1,3 +1,11 @@
+/*
+** Xtank
+**
+** This file is in the Public Domain.
+**
+** $Id$
+*/
+
 #ifdef SOUND
 #include "limits.h"
 #include "xtank.h"

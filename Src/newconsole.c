@@ -3,12 +3,7 @@
 **
 ** Copyright 1992 by Joshua Osborne
 **
-** console.c
-*/
-
-/*
-$Author: lidl $
-$Id: newconsole.c,v 1.1.1.1 1995/02/01 00:25:36 lidl Exp $
+** $Id$
 */
 
 #include "malloc.h"

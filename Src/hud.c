@@ -3,12 +3,7 @@
 **
 ** Copyright 1991, 1992, 1992 by Aaron Nabil-Eastlund
 **
-** hud.c
-*/
-
-/*
-$Author: lidl $
-$Id: hud.c,v 1.1.1.1 1995/02/01 00:25:35 lidl Exp $
+** $Id$
 */
 
 #include "xtank.h"

@@ -1,14 +1,9 @@
 /*
 ** Xtank
 **
-** Copyright 1990 by Jost Osborne
+** Copyright 1990 by Josh Osborne
 **
-** scroll.c
-*/
-
-/*
-$Author: lidl $
-$Id: scroll.c,v 1.1.1.1 1995/02/01 00:25:37 lidl Exp $
+** $Id$
 */
 
 #include "xtank.h"

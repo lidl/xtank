@@ -3,32 +3,27 @@
 **
 ** Copyright 1988 by Steve Worley
 **
-** Dio.c
-*/
-
-/*
-$Author: lidl $
-$Id: Dio.c,v 1.1.1.1 1995/02/01 00:25:45 lidl Exp $
+** $Id$
 */
 
 /*  ========================================================================
-    ========================================================================
-    =====                  THE DIOPHANTINE EXPLORER                     ====
-    =====                                                               ====
-    ===== For use as a controlling program for the Xtank "Diophantom"   ====
-    =====                                                               ====
-    =====                                                               ====
-    ===== Written by Steve Worley for the BATTLE OF THE XTANKS contest  ====
-    =====                                                               ====
-    ===== 4/24/88                                         v48.378.373   ====
-    =====                                                               ====
-    ===== Thanks to Terry Donahue for help with program coding problems ====
-    ========================================================================
-    ========================================================================
-
-***** Modified to work with Xtank v0.95 by Dan Schmidt *****
-***** Modified to work with Xtank v1.20 by Gordon Smith *****
+**  ========================================================================
+**  =====                  THE DIOPHANTINE EXPLORER                     ====
+**  =====                                                               ====
+**  ===== For use as a controlling program for the Xtank "Diophantom"   ====
+**  =====                                                               ====
+**  =====                                                               ====
+**  ===== Written by Steve Worley for the BATTLE OF THE XTANKS contest  ====
+**  =====                                                               ====
+**  ===== 4/24/88                                         v48.378.373   ====
+**  =====                                                               ====
+**  ===== Thanks to Terry Donahue for help with program coding problems ====
+**  ========================================================================
+**  ========================================================================
 */
+
+/* ***** Modified to work with Xtank v0.95 by Dan Schmidt  ***** */
+/* ***** Modified to work with Xtank v1.20 by Gordon Smith ***** */
 
 #include <xtanklib.h>
 #include <math.h>

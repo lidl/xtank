@@ -3,14 +3,11 @@
 **
 ** Copyright 1993 by Pix Technologies Corp.
 **
-** Comment: fixed sizes for arrays and the like
-**
-** limits.h
+** $Id$
 */
 
 /*
-$Author: lidl $
-$Id: tanklimits.h,v 1.1.1.2 1995/02/01 00:28:38 lidl Exp $
+** Comment: fixed sizes for arrays and the like
 */
 
 #ifndef _TANKLIMITS_H_

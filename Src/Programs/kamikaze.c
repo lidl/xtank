@@ -3,12 +3,7 @@
 **
 ** Copyright 1990 by Robert Potter
 **
-** kamikaze.c
-*/
-
-/*
-$Author: lidl $
-$Id: kamikaze.c,v 1.1.1.1 1995/02/01 00:25:47 lidl Exp $
+** $Id$
 */
 
 /*

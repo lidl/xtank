@@ -3,9 +3,9 @@
 .\"
 .\" Copyright 1993 by Pix Technologies Corp
 .\"
-.\" Xtank.man
+.\" $Id$
 .\"
-.TH XTANK 6 "15 Febuary 1993" "Xtank 1.3d" 
+.TH XTANK 6 "15 Febuary 1993" "Xtank 1.4d" 
 .SH NAME
 xtank - a X11 based game of tank combat
 .SH SYNOPSIS

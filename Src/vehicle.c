@@ -3,12 +3,7 @@
 **
 ** Copyright 1993 by Pix Technologies Corp.
 **
-** vehicle.c
-*/
-
-/*
-$Author: lidl $
-$Id: vehicle.c,v 1.1.1.1 1995/02/01 00:25:38 lidl Exp $
+** $Id$
 */
 
 #include "xtank.h"

@@ -3,12 +3,7 @@
 **
 ** Copyright 1988 by Terry Donahue
 **
-** outpost.h
-*/
-
-/*
-$Author: lidl $
-$Id: outpost.h,v 1.1.1.1 1995/02/01 00:25:43 lidl Exp $
+** $Id$
 */
 
 /* How large an outpost is */

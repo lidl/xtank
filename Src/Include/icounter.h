@@ -1,15 +1,9 @@
-
 /*
 ** Xtank
 **
 ** Copyright 1988 by Terry Donahue
 **
-** icounter.h
-*/
-
-/*
-$Author: lidl $
-$Id: icounter.h,v 1.1.1.1 1995/02/01 00:25:40 lidl Exp $
+** $Id$
 */
 
 #ifdef UNIX

@@ -3,12 +3,7 @@
 **
 ** Copyright 1988 by Terry Donahue
 **
-** spot.c
-*/
-
-/*
-$Author: lidl $
-$Id: spot.c,v 1.1.1.1 1995/02/01 00:25:47 lidl Exp $
+** $Id$
 */
 
 #include "sysdep.h"

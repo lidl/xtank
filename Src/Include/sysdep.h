@@ -1,16 +1,9 @@
-
 /*
 ** Xtank
 **
 ** Copyright 1988 by Terry Donahue
 **
-** sysdep.h
-*/
-
-
-/*
-$Author: lidl $
-$Id: sysdep.h,v 1.1.1.2 1995/02/01 00:28:53 lidl Exp $
+** $Id$
 */
 
 #ifndef SYSDEP_H

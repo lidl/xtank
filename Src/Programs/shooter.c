@@ -3,12 +3,7 @@
 **
 ** Copyright 1988 by Terry Donahue
 **
-** shooter.c
-*/
-
-/*
-$Author: lidl $
-$Id: shooter.c,v 1.1.1.1 1995/02/01 00:25:47 lidl Exp $
+** $Id$
 */
 
 #include <xtanklib.h>

@@ -1,17 +1,13 @@
-
 /*
 ** Xtank
 **
 ** Copyright 1988 by Terry Donahue
 **
-** Comment: Part of the graphics toolkit
-**
-** menu.h
+** $Id$
 */
 
 /*
-$Author: lidl $
-$Id: menu.h,v 1.1.1.1 1995/02/01 00:25:41 lidl Exp $
+** Comment: Part of the graphics toolkit
 */
 
 #include "scroll.h"

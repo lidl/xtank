@@ -3,12 +3,7 @@
 **
 ** Copyright 1991 by Robert Potter
 **
-** RacerX.c
-*/
-
-/*
-$Author: lidl $
-$Id: RacerX.c,v 1.1.1.1 1995/02/01 00:25:46 lidl Exp $
+** $Id$
 */
 
 /************************************************\

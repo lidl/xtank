@@ -3,12 +3,7 @@
 **
 ** Copyright 1988 by Terry Donahue
 **
-** eliza.c
-*/
-
-/*
-$Author: lidl $
-$Id: eliza.c,v 1.1.1.1 1995/02/01 00:25:46 lidl Exp $
+** $Id$
 */
 
 /*

@@ -3,12 +3,7 @@
 **
 ** Copyright 1988 by Terry Donahue
 **
-** program.c
-*/
-
-/*
-$Author: lidl $
-$Id: program.c,v 1.1.1.2 1995/02/01 00:28:09 lidl Exp $
+** $Id$
 */
 
 #include "malloc.h"

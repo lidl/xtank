@@ -3,12 +3,7 @@
 **
 ** Copyright 1988 by Terry Donahue
 **
-** xtank.h
-*/
-
-/*
-$Author: lidl $
-$Id: xtank.h,v 1.1.1.1 1995/02/01 00:25:44 lidl Exp $
+** $Id$
 */
 
 #ifndef _XTANK_H_

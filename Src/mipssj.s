@@ -1,3 +1,9 @@
+;
+; XTank
+;
+; $Id$
+;
+
 #include "/usr/include/mips/asm.h"
 #include "/usr/include/mips/regdef.h"
 .set noat

@@ -1,3 +1,9 @@
+/*
+** Xtank
+**
+** $Id$
+*/
+
 /* jeff's first robot.  It doesn't move, it talks, it eats your mushrooms. */
 
 /*****************************************************************************

@@ -3,12 +3,7 @@
 **
 ** Copyright 1989 by Mike Shanzer
 **
-** Flipper.c
-*/
-
-/*
-$Author: lidl $
-$Id: Flipper.c,v 1.1.1.1 1995/02/01 00:25:46 lidl Exp $
+** $Id$
 */
 
 /*

@@ -3,12 +3,7 @@
 **
 ** Copyright 1988 by Terry Donahue
 **
-** thread.c
-*/
-
-/*
-$Author: lidl $
-$Id: thread.c,v 1.1.1.2 1995/02/01 00:28:36 lidl Exp $
+** $Id$
 */
 
 #include "sysdep.h"
@@ -23,7 +18,7 @@ $Id: thread.c,v 1.1.1.2 1995/02/01 00:28:36 lidl Exp $
 #endif
 
 /* The current thread that is executing */
-Thread *curthd;
+static Thread *curthd;
 
 #ifdef THREAD_MP
 /****************************************************************************/
@@ -314,8 +309,7 @@ Thread *thd;
 
 #ifdef THREAD_SVR4
 /*
-** System V Release 4 thread implementation by Kurt Lidl
-** lidl@pix.com   December 1991
+** System V Release 4 thread implementation by Kurt Lidl, December 1991
 */
 
 Thread *thread_setup()
@@ -395,20 +389,38 @@ Thread *thd;
 /*
 ** POSIX threading code -- at least a rough cut at a first pass,
 ** provided by bird@sevior.triumf.ca (Tony Ambardar)
+**
+** Hacked into submission by Kurt Lidl (lidl@pix.net)
 */
 
 Thread *thread_setup()
 {
 	int status;
+	int policy;
+	pthread_attr_t attr;
 
 	curthd = (pthread_t *) malloc(sizeof(pthread_t));
 	*curthd = pthread_self();
+
+	status=pthread_attr_getschedpolicy(&attr, &policy);
+	if (status !=0) {
+		perror("pthread_attr_getschedpolicy");
+		exit(17);
+	}
+	status=pthread_attr_setschedpolicy(&attr, SCHED_RR);
+	if (status !=0) {
+		perror("pthread_attr_setschedpolicy");
+		exit(17);
+	}
+
+#if 0
 	status=pthread_setscheduler(*curthd,SCHED_FIFO,PRI_FIFO_MAX);
 	if (status != 0) {
 		perror("pthread_setscheduler");
 		printf("If OSF/Alpha, do you have real-time [RT] subsets?\n");
 		exit(17);
 	}
+#endif
 	return curthd;
 }
 
@@ -421,13 +433,15 @@ void (*func)();
 	int status;
 
 	pthread_attr_create(&prog_attr);
-	pthread_attr_setinheritsched(&prog_attr,PTHREAD_DEFAULT_SCHED);
+	pthread_attr_setinheritsched(&prog_attr,PTHREAD_EXPLICIT_SCHED);
 	pthread_attr_setsched(&prog_attr,SCHED_FIFO);
+#if 0
 	pthread_attr_setprio(&prog_attr,PRI_FIFO_MIN);
+#endif
 	pthread_attr_setstacksize(&prog_attr, (long) STACK_SIZE);
 
-	status=pthread_create((Thread *) buf, prog_attr,
-	(pthread_startroutine_t) func, (pthread_addr_t) 0);
+	status=pthread_create((Thread *) buf, &prog_attr,
+	(void *) func, (void *) 0);
 	if (status != 0) {
 		perror("pthread_create");
 		printf("Couldn't create a thread!\n");
@@ -445,8 +459,10 @@ Thread *newthd;
 	if (curthd != newthd) {
 		oldthd = curthd;
 		curthd = newthd;
+#if 0
 		pthread_setprio(*oldthd,PRI_FIFO_MIN);
 		pthread_setprio(*newthd,PRI_FIFO_MAX);
+#endif
 		pthread_yield();
 		pthread_testcancel();
 		return oldthd;
@@ -459,13 +475,13 @@ Thread *thd;
 {
 	int status;
 
-	pthread_cancel(*thd);
-	pthread_detach(thd);
+	status = pthread_cancel(*thd);
 	if (status != 0) {
 		perror("pthread_cancel");
 		printf("Couldn't kill a thread\n");
 		exit(17);
 	}
+	pthread_detach(thd);
 	return thd;
 }
 

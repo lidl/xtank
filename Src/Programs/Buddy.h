@@ -3,12 +3,7 @@
 **
 ** Copyright 1990 by Daniel Schmidt; All rights reserved.
 **
-** Buddy.h
-*/
-
-/*
-$Author: lidl $
-$Id: Buddy.h,v 1.1.1.1 1995/02/01 00:25:45 lidl Exp $
+** $Id$
 */
 
 /*
@@ -20,24 +15,6 @@ $Id: Buddy.h,v 1.1.1.1 1995/02/01 00:25:45 lidl Exp $
 **
 ** You are free to modify this file as long as you make clear
 ** what code is yours and what is mine.
-**
-** Previous Log:  Buddy.h,v
- * Revision 1.4  90/08/19  15:17:35  dschmidt
- * Better throwing code, including throwing in a range.
- * Throw at the whole side of a goal, rather than a point on that side.
- * Clear the disc.
- * Run after discs at full speed.
- * Keep track of disc spin internally.
- *
- * Revision 1.3  90/08/17  20:28:15  dschmidt
- * Only throw to a teammate if he's closer to the goal than I am
- *
- * Revision 1.2  90/08/15  21:24:45  dschmidt
- * Rip out Buddy_move_carefully and use Buddy_wander instead.
- *
- * Revision 1.1  90/08/15  19:31:52  dschmidt
- * Initial revision
- *
 **
 */
 

@@ -3,14 +3,11 @@
 **
 ** Copyright 1988 by Terry Donahue
 **
-** Needs a rewrite.
-**
-** status.c
+** $Id$
 */
 
 /*
-$Author: lidl $
-$Id: status.c,v 1.1.1.1 1995/02/01 00:25:37 lidl Exp $
+** Needs a rewrite.
 */
 
 #include "malloc.h"

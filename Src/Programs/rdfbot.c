@@ -1,4 +1,10 @@
 /*
+** Xtank
+**
+** $Id$
+*/
+
+/*
  * Demo bot for rdf interface
  *
  * Set the "full map" flag, and use something
@@ -9,10 +15,6 @@
  *
  * Test vehicle must not have radar or newradar, as these
  * start up activated and will prevent RDF from working.
- */
-
-/*
- * $Id: rdfbot.c,v 1.1.1.1 1995/02/01 00:25:48 lidl Exp $
  */
 
 #include <stdio.h>

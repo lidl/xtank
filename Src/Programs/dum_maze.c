@@ -3,12 +3,7 @@
 **
 ** Copyright 1991 by Hans Mejdahl Jeppesen
 **
-** dum_maze.c
-*/
-
-/*
-$Author: lidl $
-$Id: dum_maze.c,v 1.1.1.1 1995/02/01 00:25:46 lidl Exp $
+** $Id$
 */
 
 /**********************************************************************/

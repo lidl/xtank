@@ -4,15 +4,10 @@
 ** Copyright 1992, 1993 by Pix Technologies Corp.
 **
 ** Comment:  A Vehicle loader that uses LEX to parse things
-**           Written by Gordon Smith (aahz@eng.umd.edu)
-**           Hacked on a bit (OK, a lot) by lidl@pix.com
+**           Written by Gordon Smith (aahz@pix.net)
+**           Hacked on a bit (OK, a lot) by lidl@pix.net
 **
-** vload.l
-*/
-
-/*
-$Author: lidl $
-$Id: vload.l,v 1.1.1.1 1995/02/01 00:25:38 lidl Exp $
+** $Id$
 */
 
 %{

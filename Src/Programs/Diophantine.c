@@ -3,12 +3,7 @@
 **
 ** Copyright 1988 by Steve Worley
 **
-** Diophantine.c
-*/
-
-/*
-$Author: lidl $
-$Id: Diophantine.c,v 1.1.1.1 1995/02/01 00:25:45 lidl Exp $
+** $Id$
 */
 
 /*  ========================================================================

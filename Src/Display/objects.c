@@ -3,12 +3,7 @@
 **
 ** Copyright 1988 by Terry Donahue
 **
-** objects.c
-*/
-
-/*
-$Author: lidl $
-$Id: objects.c,v 1.1.1.1 1995/02/01 00:25:49 lidl Exp $
+** $Id$
 */
 
 #include "tanklimits.h"

@@ -1,3 +1,11 @@
+/*
+** Xtank
+**
+** This file is in the Public Domain.
+**
+** $Id$
+*/
+
 #ifdef SOUND
 
 #ifndef	_sound_h

@@ -1,12 +1,8 @@
 /*
- * Copyright (c) 1992, 1993, 1994.
- * Aaron Nabil-Eastlund
- *
- */
-
-/*
-$Author: lidl $
-$Id: camo.c,v 1.1.1.1 1995/02/01 00:25:34 lidl Exp $
+** Copyright (c) 1992, 1993, 1994.
+** Aaron Nabil-Eastlund
+**
+** $Id$
 */
 
 #include "malloc.h"

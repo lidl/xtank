@@ -1,14 +1,9 @@
 /*
-**  Menu Toolkit
+** Menu Toolkit
 **
-**  Copyright 1988 by Terry Donahue
+** Copyright 1988 by Terry Donahue
 **
-**  menu.c
-*/
-
-/*
-$Author: lidl $
-$Id: menu.c,v 1.1.1.1 1995/02/01 00:25:36 lidl Exp $
+** $Id$
 */
 
 #include "sysdep.h"

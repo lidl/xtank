@@ -3,13 +3,7 @@
 **
 ** Copyright 1988 by Terry Donahue
 **
-** mdesign.h
-*/
-
-
-/*
-$Author: lidl $
-$Id: mdesign.h,v 1.1.1.1 1995/02/01 00:25:41 lidl Exp $
+** $Id$
 */
 
 /* Padding on each side of the maze in boxes */

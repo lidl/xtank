@@ -3,12 +3,7 @@
 **
 ** Copyright 1988, 1989, 1990, 1991, 1992, 1993  by Aaron Nabil-Eastlund
 **
-** newradar.c
-*/
-
-/*
-$Author: lidl $
-$Id: newradar.c,v 1.1.1.1 1995/02/01 00:25:39 lidl Exp $
+** $Id$
 */
 
 #include "malloc.h"
