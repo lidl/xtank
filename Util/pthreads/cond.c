@@ -34,6 +34,12 @@ crock_t data = {
 	PTHREAD_MUTEX_INITIALIZER, PTHREAD_COND_INITIALIZER, 0,
 };
 
+/* if TIMEOUT > SLEEPVAL, then signal will work */
+/* if TIMEOUT =< SLEEPVAL, then timeout will occur */
+
+#define SLEEPVAL 2
+#define TIMEOUT SLEEPVAL+1
+
 int
 main(int argc, char *argv[])
 {
@@ -42,7 +48,6 @@ main(int argc, char *argv[])
 	pthread_attr_t suspended;
 
 	self = pthread_self();
-
 
 	status = pthread_attr_init(&suspended);
 	if (status) {
@@ -67,7 +72,7 @@ main(int argc, char *argv[])
 
 	printf("after first call to sched_yield\n");
 
-	tout.tv_sec = time (NULL) + 2;
+	tout.tv_sec = time (NULL) + TIMEOUT;
 	tout.tv_nsec = 0;
 
 	/* wake up the other thread */
@@ -120,7 +125,7 @@ thread_a(void)
 
 	printf("thread_a started\n");
 
-	sleep(2);
+	sleep(SLEEPVAL);
 	status = pthread_mutex_lock(&data.mutex);
 	if (status) {
 		perror("pthread_mutex_lock");
