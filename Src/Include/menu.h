@@ -10,10 +10,13 @@
 */
 
 /*
-$Author: rpotter $
-$Id: menu.h,v 2.3 1991/02/10 13:51:21 rpotter Exp $
+$Author: aahz $
+$Id: menu.h,v 2.4 1992/09/12 09:40:09 aahz Exp $
 
 $Log: menu.h,v $
+ * Revision 2.4  1992/09/12  09:40:09  aahz
+ * added support for left justfied menus
+ *
  * Revision 2.3  1991/02/10  13:51:21  rpotter
  * bug fixes, display tweaks, non-restart fixes, header reorg.
  *
@@ -75,6 +78,7 @@ typedef struct
     unsigned onehil:1;	/* Only one highlighted at once */
     unsigned nwidth:1;	/* A width set, or dynamically determined */
 	unsigned has_bar:1; /* Does the menu have a scroll bar? */
+	unsigned center:1;  /* center text of each entry? */
 	scrollbar sbar;
 } Menu;
 
@@ -102,52 +106,57 @@ typedef struct {
 
 #define menu_complex_make(mo, mi, ti, s, w, x, y, dt, fn, flags) \
     (menu_set_fields(mo, mi, flags), \
-     menu_bare_make(mo,mi,ti,s,w, x,y,fn,FALSE,TRUE), \
+     menu_bare_make(mo,mi,ti,s,w, x,y,fn,FALSE,TRUE,TRUE), \
      menu_set_choices(mo,mi,dt))
 
 #define menu_norm_make(mo, mi, ti, s, w, x, y, dt, fn) \
     (menu_set_fields(mo, mi, MENU_BORDER | MENU_HOLD | MENU_LEAVEHIL | MENU_TITLE | MENU_ONEHIL), \
-     menu_bare_make(mo,mi,ti,s,w, x,y,fn,FALSE,TRUE), \
+     menu_bare_make(mo,mi,ti,s,w, x,y,fn,FALSE,TRUE,TRUE), \
+     menu_set_choices(mo,mi,dt))
+
+#define menu_left_make(mo, mi, ti, s, w, x, y, dt, fn) \
+    (menu_set_fields(mo, mi, MENU_BORDER | MENU_HOLD | MENU_LEAVEHIL | MENU_TITLE | MENU_ONEHIL), \
+     menu_bare_make(mo,mi,ti,s,w, x,y,fn,FALSE,TRUE,FALSE), \
      menu_set_choices(mo,mi,dt))
 
 #define menu_noho_make(mo, mi, ti, s, w, x, y, dt, fn, es) \
     (menu_set_fields(mo, mi, \
 		     MENU_BORDER | MENU_LEAVEHIL | MENU_TITLE | MENU_ONEHIL), \
-     menu_bare_make(mo,mi,ti,s,w, x,y,fn,FALSE,es), \
+     menu_bare_make(mo,mi,ti,s,w, x,y,fn,FALSE,es,TRUE), \
      menu_set_choices(mo,mi,dt))
 
 #define menu_noti_make(mo, mi, ti, s, w, x, y, dt, fn) \
     (menu_set_fields(mo, mi, \
 		     MENU_BORDER | MENU_HOLD | MENU_LEAVEHIL | MENU_ONEHIL), \
-     menu_bare_make(mo,mi,ti,s,w, x,y,fn,FALSE,TRUE), \
+     menu_bare_make(mo,mi,ti,s,w, x,y,fn,FALSE,TRUE,TRUE), \
      menu_set_choices(mo,mi,dt))
 
 #define menu_recv_make(mo, mi, ti, s, w, x, y, dt, fn) \
     (menu_set_fields(mo, mi, \
 		     MENU_BORDER | MENU_HOLD | MENU_LEAVEHIL | MENU_TITLE | \
 		     MENU_ONEHIL | MENU_WIDTH ), \
-     menu_bare_make(mo,mi,ti,s,w, x,y,fn,FALSE,TRUE), \
+     menu_bare_make(mo,mi,ti,s,w, x,y,fn,FALSE,TRUE,TRUE), \
      menu_set_choices(mo,mi,dt))
 
 #define menu_scroll_make(mo, mi, ti, s, w, x, y, dt, fn) \
     (menu_set_fields(mo, mi, MENU_BORDER | MENU_HOLD | MENU_TITLE), \
-     menu_bare_make(mo,mi,ti,s,w, x,y,fn,TRUE,TRUE), \
+     menu_bare_make(mo,mi,ti,s,w, x,y,fn,TRUE,TRUE,TRUE), \
      menu_set_choices(mo,mi,dt))
 
 #define menu_nohil_make(mo, mi, ti, s, w, x, y, dt, fn) \
     (menu_set_fields(mo, mi, MENU_BORDER | MENU_HOLD | MENU_TITLE), \
-     menu_bare_make(mo,mi,ti,s,w, x,y,fn,FALSE,TRUE), \
+     menu_bare_make(mo,mi,ti,s,w, x,y,fn,FALSE,TRUE,TRUE), \
      menu_set_choices(mo,mi,dt))
 
 #define menu_simp_make(mo, mi, ti, s, w, x, y, dt, fn) \
     (menu_set_fields(mo, mi, MENU_BORDER), \
-     menu_bare_make(mo,mi,ti,s,w, x,y,fn,FALSE,TRUE), \
+     menu_bare_make(mo,mi,ti,s,w, x,y,fn,FALSE,TRUE,TRUE), \
      menu_set_choices(mo,mi,dt))
 
 #define menu_flag_make(mo, mi, ti, s, w, x, y, dt, fn) \
     (menu_set_fields(mo, mi, \
 		     MENU_BORDER | MENU_HOLD | MENU_TITLE | MENU_LEAVEHIL), \
-     menu_bare_make(mo,mi,ti,s,w, x,y,fn,FALSE,TRUE), \
+     menu_bare_make(mo,mi,ti,s,w, x,y,fn,FALSE,TRUE,TRUE), \
      menu_set_choices(mo,mi,dt))
 
 #define menu_set_hil(mo, mi, i) \

@@ -2,9 +2,12 @@
 
 /*
 $Author: lidl $
-$Id: vehicleparts.h,v 2.6 1992/03/31 21:49:23 lidl Exp $
+$Id: vehicleparts.h,v 2.7 1992/09/13 07:03:02 lidl Exp $
 
 $Log: vehicleparts.h,v $
+ * Revision 2.7  1992/09/13  07:03:02  lidl
+ * aaron 1.3e patches
+ *
  * Revision 2.6  1992/03/31  21:49:23  lidl
  * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
  *
@@ -71,28 +74,14 @@ typedef enum {
 } SpecialType;
 #define MAX_SPECIALS	((int)real_MAX_SPECIALS) /* how many there are */
 
-#ifdef NO_TIMED_REFILL
-
 /* the different types of weapons */
 typedef enum {
-#define QQ(sym,type,dam,rng,ammo,tm,spd,wgt,spc,fr,ht,ac,cost) sym,
+#define QQ(sym,type,dam,rng,ammo,tm,spd,wgt,spc,fr,ht,ac,cost,refill,hgt) sym,
 #include "weapon-defs.h"	/* read this file for an explanation */
 #undef  QQ
     real_VMAX_WEAPONS
 } WeaponType;
 #define VMAX_WEAPONS	((int)real_VMAX_WEAPONS) /* how many there are */
-
-#else /* NO_TIMED_REFILL */
-/* the different types of weapons */
-typedef enum {
-#define QQ(sym,type,dam,rng,ammo,tm,spd,wgt,spc,fr,ht,ac,cost,refill) sym,
-#include "weapon-defs.h"	/* read this file for an explanation */
-#undef  QQ
-    real_VMAX_WEAPONS
-} WeaponType;
-#define VMAX_WEAPONS	((int)real_VMAX_WEAPONS) /* how many there are */
-
-#endif /* NO_TIMED_REFILL */
 
 /* the differnt types of treads */
 typedef enum {

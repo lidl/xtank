@@ -7,10 +7,13 @@
 */
 
 /*
-$Author: stripes $
-$Id: vdesign.c,v 2.15 1992/09/07 02:44:24 stripes Exp $
+$Author: lidl $
+$Id: vdesign.c,v 2.16 1992/09/13 07:04:14 lidl Exp $
 
 $Log: vdesign.c,v $
+ * Revision 2.16  1992/09/13  07:04:14  lidl
+ * aaron 1.3e patches
+ *
  * Revision 2.15  1992/09/07  02:44:24  stripes
  * 0 space armor now works.
  *
@@ -223,25 +226,12 @@ Special_stat special_stat[MAX_SPECIALS] = {
 #undef  QQ
 };
 
-#ifdef NO_TIMED_REFILL
-
 Weapon_stat weapon_stat[VMAX_WEAPONS] = {
-#define QQ(sym,type,dam,rng,ammo,tm,spd,wgt,spc,fr,ht,ac,cost) \
-    {type,dam,rng,ammo,tm,spd,wgt,spc,fr,ht,ac,cost},
+#define QQ(sym,type,dam,rng,ammo,tm,spd,wgt,spc,fr,ht,ac,cost,refill,hgt) \
+    {type,dam,rng,ammo,tm,spd,wgt,spc,fr,ht,ac,cost,refill,hgt},
 #include "weapon-defs.h"	/* read this file for an explanation */
 #undef QQ
 };
-
-#else /* NO_TIMED_REFILL */
-
-Weapon_stat weapon_stat[VMAX_WEAPONS] = {
-#define QQ(sym,type,dam,rng,ammo,tm,spd,wgt,spc,fr,ht,ac,cost,refill) \
-    {type,dam,rng,ammo,tm,spd,wgt,spc,fr,ht,ac,cost,refill},
-#include "weapon-defs.h"	/* read this file for an explanation */
-#undef QQ
-};
-
-#endif /* NO_TIMED_REFILL */
 
 Tread_stat tread_stat[MAX_TREADS] = {
 #define QQ(sym,type,fric,cost) {type,fric,cost},

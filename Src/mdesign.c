@@ -8,10 +8,13 @@
 */
 
 /*
-$Author: lidl $
-$Id: mdesign.c,v 2.6 1992/05/19 22:57:19 lidl Exp $
+$Author: aahz $
+$Id: mdesign.c,v 2.7 1992/09/12 09:42:26 aahz Exp $
 
 $Log: mdesign.c,v $
+ * Revision 2.7  1992/09/12  09:42:26  aahz
+ * removed unused global
+ *
  * Revision 2.6  1992/05/19  22:57:19  lidl
  * post Chris Moore patches, and sqrt to SQRT changes
  *
@@ -319,11 +322,11 @@ display_mdesc_maze()
 display_mdesc_info(d)
 Mdesc *d;
 {
-	extern char *game_str[];
 	char temp[110];
+	extern char *games_entries[];
 
 	sprintf(temp, "Name: %-15s  Type: %-10s  Designer: %-24s",
-            d->name, game_str[(int)d->type], d->designer);
+            d->name, games_entries[(int)d->type], d->designer);
 	mprint(temp, 0, INFO_Y);
 	sprintf(temp, "Description: %-50s", d->desc);
 	mprint(temp, 0, INFO_Y + 1);

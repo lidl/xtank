@@ -8,9 +8,12 @@
 
 /*
 $Author: lidl $
-$Id: actions.c,v 2.11 1992/08/18 05:40:06 lidl Exp $
+$Id: actions.c,v 2.12 1992/09/13 07:04:14 lidl Exp $
 
 $Log: actions.c,v $
+ * Revision 2.12  1992/09/13  07:04:14  lidl
+ * aaron 1.3e patches
+ *
  * Revision 2.11  1992/08/18  05:40:06  lidl
  * added tac nuke changes
  *
@@ -145,28 +148,11 @@ lCoord *target;
     b->loc = &b->loc1;
     b->old_loc = &b->loc2;
 
-/*
- *
- * Note that this "height" idea here is an extensive change. It moves a buncha
- * logic from hit.c over here for setting the "height" of a bullet. Has the
- * disadvantage that these "high" objects still hit the things they run
- * into, they just don't explode! Maybe i'll fix that sometime...
- * 
- */
-    switch (type) {
-      case SEEKER:
-    		b->old_loc->z = b->loc->z = 1;
-		break;
-      case MINE:
-    		b->old_loc->z = b->loc->z = -1;
-		break;
-      default:                                   /* HARM when launched too */
-    		b->old_loc->z = b->loc->z = 0;
-		break;
-     }
-
     /* Find the weapon_stat structure */
     ws = &weapon_stat[(int)type];
+
+    /* Set initial height */
+    b->old_loc->z = b->loc->z = ws->height;
 
     /* Compute the x and y components of the bullet's speed */
     b->xspeed = (FLOAT) ws->ammo_speed * cos(angle);

@@ -8,9 +8,12 @@
 
 /*
 $Author: lidl $
-$Id: input.c,v 2.17 1992/06/07 02:45:08 lidl Exp $
+$Id: input.c,v 2.18 1992/09/13 07:01:59 lidl Exp $
 
 $Log: input.c,v $
+ * Revision 2.18  1992/09/13  07:01:59  lidl
+ * removed NO_NEW_RADAR ifdefs
+ *
  * Revision 2.17  1992/06/07  02:45:08  lidl
  * Post Adam Bryant patches and a manual merge of the rejects (ugh!)
  *
@@ -378,15 +381,6 @@ Event *event;
 			sync_rate = 16;
 			break;
 #endif
-#ifdef NO_NEW_RADAR
-/*
- * Borrowing this key, sorry...
- */
-		    case 'T':
-			toggle_3d(TS_3d);
-			expose_win(ANIM_WIN, TRUE);
-			break;
-#endif /* NO_NEW_RADAR */
 		    case 'W':
 			toggle_3d(TS_wide);
 			break;

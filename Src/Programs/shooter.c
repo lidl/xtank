@@ -7,10 +7,13 @@
 */
 
 /*
-$Author: lidl $
-$Id: shooter.c,v 2.7 1992/08/19 05:19:46 lidl Exp $
+$Author: stripes $
+$Id: shooter.c,v 2.8 1992/09/13 06:51:07 stripes Exp $
 
 $Log: shooter.c,v $
+ * Revision 2.8  1992/09/13  06:51:07  stripes
+ * Updated to handle 4 turrets.
+ *
  * Revision 2.7  1992/08/19  05:19:46  lidl
  * changed to use SQRT instead of sqrt
  *
@@ -271,6 +274,9 @@ shooter_info *sinfo;
 				break;
 			case (MOUNT_TURRET3):
 				tnum = 2;
+				break;
+			case (MOUNT_TURRET4):
+				tnum = 3;
 				break;
 			default:
 				fprintf(stderr, "shooter_init bad mount=%d, ignored\n", w->mount);

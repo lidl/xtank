@@ -11,6 +11,7 @@
 /* For "UNDEFINED" */
 #include "interface.h"
 #include "terminal.h"
+#include "vstructs.h"
 
 #define BUFLEN 256
 #define SEP ",\t"
@@ -21,7 +22,7 @@ extern int num_terminals;
 extern Terminal *terminal[];
 
 char *yval(), *strtoke();
-void cv_str(), cv_kw2i(), cv_bool(), cv_int(), cv_flt(), cv_maze();
+void cv_str(), cv_kw2i(), cv_bool(), cv_int(), cv_flt(), cv_maze(), cv_force();
 
 %}
 
@@ -73,6 +74,8 @@ f		{B}[0-9]+("."[0-9]*)?
 ^"Normal Friction"{f}/\n	{ cv_flt( yval(), &settings.si.normal_friction); }
 ^"Shocker Walls"{i}/\n		{ cv_int( yval(), &settings.si.shocker_walls); }
 ^"Difficulty"{i}/\n			{ cv_int( yval(), &settings.difficulty); }
+^"Force On"{s}/\n			{ cv_force(yval(), INT_FORCE_ON); }
+^"Force Off"{s}/\n			{ cv_force(yval(), INT_FORCE_OFF); }
 
 ^"Program"{s}/\n			{
 				/* we should load $2 if prog $1 doesn't exist */
@@ -227,6 +230,23 @@ int max;
 	return;
 }
 
+void cv_force(val, state)
+char *val;
+int state;
+{
+	extern char force_states[];
+	int i;
+
+	for(i = 0; i < MAX_SPECIALS; i++) {
+		if (!strcmp(val, special_stat[i].type)) {
+			force_states[i] = state;
+			return;
+		}
+	}
+
+	fprintf(stderr, "Couldn't force %s to %d\n", val, state);
+}
+
 void cv_bool(val, bool)
 char *val;
 int *bool;
@@ -256,13 +276,24 @@ int *ival;
 int load_settings(pcFileName)
 	char *pcFileName;
 {
+	extern char force_states[];
+	int i;
 	static int bCalled = FALSE;
 	FILE *fp;
+
+	if (! *pcFileName)
+	{
+		return (0);
+	}
 
 	fp = fopen(pcFileName, "r");
 	if (!fp) {
 		fprintf(stderr, "Can't find setups file\n");
 		return (0);
+	}
+
+	for(i = 0; i < MAX_SPECIALS; i++) {
+		force_states[i] = INT_FORCE_DONT;
 	}
 
 	if (bCalled)

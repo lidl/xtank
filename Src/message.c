@@ -8,9 +8,12 @@
 
 /*
 $Author: lidl $
-$Id: message.c,v 2.9 1992/04/09 04:15:28 lidl Exp $
+$Id: message.c,v 2.10 1992/09/13 07:04:14 lidl Exp $
 
 $Log: message.c,v $
+ * Revision 2.10  1992/09/13  07:04:14  lidl
+ * aaron 1.3e patches
+ *
  * Revision 2.9  1992/04/09  04:15:28  lidl
  * changed to use system limits file to figure out INT_MAX, also
  * avoids a warning from ANSI compilers
@@ -616,6 +619,10 @@ Message *m;
        means a bad message. */
     if (m->sender == SENDER_COM)
 	m->sender_team = 0;
+#ifndef NO_DAMAGE
+    else if (m->sender == SENDER_R2D2)
+	m->sender_team = 0;
+#endif
     else if (m->sender == SENDER_DEAD)
     {
 
@@ -910,10 +917,23 @@ char *disp;
 		disp[i++] = 'C';
 		disp[i++] = 'O';
 		disp[i++] = 'M';
+#ifndef NO_DAMAGE
+	} else if (sen == SENDER_R2D2) {
+		/* r2 sender */
+		disp[i++] = 'R';
+		disp[i++] = '2';
+		disp[i++] = 'D';
+		disp[i++] = '2';
+		disp[i++] = ':';
+#endif
 	} else {
 		/* Vehicle sender */
 		print_combatant(sen);
 	}
+
+#ifndef NO_DAMAGE
+	if (sen != SENDER_R2D2) {
+#endif
 
 	/* Add arrow */
 	disp[i++] = '-';
@@ -935,6 +955,10 @@ char *disp;
 			print_combatant(rec);
 		}
 	}
+
+#ifndef NO_DAMAGE
+	}
+#endif
 
 	disp[i++] = ' ';
 

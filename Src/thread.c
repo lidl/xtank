@@ -8,9 +8,15 @@
 
 /*
 $Author: lidl $
-$Id: thread.c,v 2.20 1992/09/06 21:16:46 lidl Exp $
+$Id: thread.c,v 2.22 1992/09/13 06:49:20 lidl Exp $
 
 $Log: thread.c,v $
+ * Revision 2.22  1992/09/13  06:49:20  lidl
+ * fixed the 386BSD threading
+ *
+ * Revision 2.21  1992/09/12  00:15:44  lidl
+ * final fixes for hp300 machines
+ *
  * Revision 2.20  1992/09/06  21:16:46  lidl
  * changed to hopefully do the right thing between HP9000 series
  * cisc machines, depending on the OS being run
@@ -224,7 +230,10 @@ Thread *(*func) ();
 #else
 	/* Stack grows upwards, SP in state[1]. Align to doubleword boundary */
 	/* This is rather ad-hoc... but seems to work. */
-	thd->state[1] = ((unsigned) (thd + 2) + 100) & ~7;
+	{
+	unsigned *foo = (unsigned *)thd->state;
+	foo[1] = ((unsigned) (thd + 2) + 100) & ~7;
+	}
 #endif
 #endif
 
@@ -250,7 +259,8 @@ Thread *(*func) ();
 #ifdef __386BSD__
 	/* Stack grows downwards, SP in state[0]. align to 32-bit boundary */
 	/* this doesn't work quite right, yet */
-	thd->state[0] = bufend & ~3;
+	thd->state[2] = bufend & ~3;
+	thd->state[3] = bufend & ~3;
 #endif
 
 #if defined(sequent) && defined(i386)

@@ -7,10 +7,13 @@
 */
 
 /*
-$Author: lidl $
-$Id: game.c,v 2.17 1992/09/07 18:46:53 lidl Exp $
+$Author: stripes $
+$Id: game.c,v 2.18 1992/09/12 19:45:59 stripes Exp $
 
 $Log: game.c,v $
+ * Revision 2.18  1992/09/12  19:45:59  stripes
+ * Hacked in STQ
+ *
  * Revision 2.17  1992/09/07  18:46:53  lidl
  * fixed some typos in the comments, made it so team scoring will not
  * let the neutral "team" win -- side effect -- I don't think
@@ -98,7 +101,7 @@ $Log: game.c,v $
 
 
 extern Maze maze;
-extern char *game_str[];
+extern char *games_entries[];
 extern char *teams_entries[];
 extern int team_color[];
 extern int num_terminals;
@@ -132,6 +135,8 @@ Boolean init;
 {
 	switch (settings.si.game)
 	{
+		case STQ_GAME:
+			return stq_rules(init);
 		case COMBAT_GAME:
 			return combat_rules(init);
 		case WAR_GAME:
@@ -229,6 +234,42 @@ int combat_rules(init)
     }
 
 	return (retcode);
+}
+
+int stq_rules(init)
+int init;
+{
+    static int starter;
+    Coord *start;
+    int num_starts, random;
+    Loc loc;
+	int ret = combat_rules(init);
+
+	if (init) {
+		start = maze.start[NEUTRAL];
+		num_starts = maze.num_starts[NEUTRAL];
+
+		if (num_starts != 0) {
+			random = rnd(num_starts);
+			/* Start up 1 disc in a random neutral start point */
+			loc.grid_x = start[random].x;
+			loc.grid_y = start[random].y;
+
+			loc.box_x = BOX_WIDTH / 2;
+			loc.box_y = BOX_HEIGHT / 2;
+
+			loc.x = loc.grid_x * BOX_WIDTH + loc.box_x;
+			loc.y = loc.grid_y * BOX_HEIGHT + loc.box_y;
+
+			make_bullet((Vehicle *) NULL, &loc, DISC, 0.0);
+		} else {
+			/* Start up 1 disc on the starter's vehicle */
+			make_bullet((Vehicle *) NULL, live_vehicles[starter++ 
+			  % num_veh_alive]->loc, DISC, 0.0);
+		}
+	}
+
+	return ret;
 }
 
 /*
@@ -711,34 +752,36 @@ int n;
 	clear_window(ANIM_WIN);
 
         sprintf(s, "Game: %s     Frame: %d",
-		game_str[(int)settings.si.game],
+		games_entries[(int)settings.si.game],
 		frame);
 	(*plain_out)(s, 5, 2);
 
 	/* If we just reset the game, say who scored what */
 	if (status == GAME_RESET)
 	{
-	    switch (settings.si.game)
-	    {
-	      case CAPTURE_GAME:
-		sprintf(s, "All discs collected by the %s team",
-			teams_entries[winning_team]);
-		break;
-	      case ULTIMATE_GAME:
-		sprintf(s, "A goal for the %s team scored by %s",
-			teams_entries[winning_team], winning_vehicle->disp);
-		break;
-	      case COMBAT_GAME:
-		sprintf(s, "Battle won by %s", winning_vehicle->disp);
-		break;
-	      case WAR_GAME:
-		sprintf(s, "War won by the %s team",
-			teams_entries[winning_team]);
-		break;
-	      case RACE_GAME:
-		sprintf(s, "Race won by %s", winning_vehicle->disp);
-		break;
-	    }
+		switch (settings.si.game) {
+			case CAPTURE_GAME:
+				sprintf(s, "All discs collected by the %s team",
+				teams_entries[winning_team]);
+				break;
+			case ULTIMATE_GAME:
+				sprintf(s, "A goal for the %s team scored by %s",
+				teams_entries[winning_team], winning_vehicle->disp);
+				break;
+			case STQ_GAME:
+				sprintf(s, "Insanity squashed by %s", winning_vehicle->disp);
+				break;
+			case COMBAT_GAME:
+				sprintf(s, "Battle won by %s", winning_vehicle->disp);
+				break;
+			case WAR_GAME:
+				sprintf(s, "War won by the %s team",
+				teams_entries[winning_team]);
+			break;
+			case RACE_GAME:
+				sprintf(s, "Race won by %s", winning_vehicle->disp);
+			break;
+		}
 	    (*plain_out)(s, 5, 4);
 	}
 	/* Print out the total scores for all the teams */

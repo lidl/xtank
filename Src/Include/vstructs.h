@@ -8,9 +8,12 @@
 
 /*
 $Author: lidl $
-$Id: vstructs.h,v 2.7 1992/03/31 21:49:23 lidl Exp $
+$Id: vstructs.h,v 2.8 1992/09/13 07:03:02 lidl Exp $
 
 $Log: vstructs.h,v $
+ * Revision 2.8  1992/09/13  07:03:02  lidl
+ * aaron 1.3e patches
+ *
  * Revision 2.7  1992/03/31  21:49:23  lidl
  * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
  *
@@ -72,9 +75,8 @@ typedef struct
     int   heat;
     int   ammo_cost;
     int   cost;
-#ifndef NO_TIMED_REFILL
     int   refill_time;
-#endif /* !NO_TIMED_REFILL */
+    int   height;
 } Weapon_stat;
 
 typedef struct

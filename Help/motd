@@ -1,23 +1,22 @@
-Send comments to xtank@eng.umd.edu                              13 Feb 1992
+Send comments to xtank@eng.umd.edu                              13 Sept 1992
 
 The latest Xtank beta release is available via anonymous FTP on the
-host ftp.eng.umd.edu, in the directory /pub/xtank.
+hosts azathoth.sura.net and on ftp.eng.umd.edu, in the directory /pub/xtank.
 
 Be sure to read the builtin Release Notes.  Also, you should
 probably check out the FAQ answers that have been included.
 
-Please *NOTE* -- this is an alpha quality release, as opposed
-to the last several beta-quality releases.  As such, we know
+Please *NOTE* -- this is an beta quality release, as opposed
+to the last alpha quality release.  As such, we know
 there are bugs, and so forth, but feel that it is important
 to get this code out to people for them to play with it.
 
 PIX.COM Hacks (partial list):
-    New Console Driver        - Josh Osborne
-    SVR4 threading            - Kurt Lidl
+    Shooter hacking           - Josh Osborne
+    386BSD threading          - Kurt Lidl
+    New Window Layout         - Gordon Smith
 
 Contibuted Hacks (partial list):
-    New Tank Bodies           - Olaf Becker
-    Teleport Fixes            - Chris Moore
-    Tank Designer Changes     - Bill Woodall
-    Misc Other Fixes          - Aaron Eastlund
+    RDF/TACLINK/HARM Fixes    - Aaron Eastlund
+    Damage system             - Aaron Eastlund
     Other small fixes         - Many, many others

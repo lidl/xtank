@@ -34,6 +34,13 @@
 #define FLOAT double
 #endif
 
+#ifdef Angle
+#undef Angle
+#define Angle double
+#else
+#define Angle double
+#endif
+
 #ifdef SECOND_COPY
 #define PROGRAM_NAME  "Tagman2"
 #define FILE_PROG     tagman2_prog

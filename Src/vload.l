@@ -4,7 +4,7 @@
 ** Hacked on a bit by lidl@pix.com
 */
 
-/* $Id: vload.l,v 1.8 1992/09/06 22:15:00 lidl Exp $ */
+/* $Id: vload.l,v 1.9 1992/09/12 09:42:26 aahz Exp $ */
 
 %{
 #ifdef YY_DECL
@@ -82,7 +82,9 @@ char *vstr;
 int *addr;
 int *max_addr;
 {
-	int v = atoi(vstr);
+	int v;
+
+	v = atoi(vstr);
 
 	if (v > *max_addr) {
 		*max_addr = v;

@@ -8,7 +8,7 @@ Josh M. Osborne    (stripes@pix.com)
 
 Kurt Lidl          (lidl@pix.com)
         Struggling Artist and patch-meister.
-	SVR4 threading.
+	386BSD & SVR4 threading.
 
 Gordon H. Smith    (aahz@eng.umd.edu)
         Many bug fixes, previous yeoman's service as code maintainer.
@@ -21,6 +21,7 @@ Aaron Eastlund     (aarone@sail.labs.tek.com)
         Redraw optimization. (Stingy Redraw code)
         No names mode.
         New Radar mode.  (And all that it entails.)
+        Even more RDF/TACLINK fixes and enhancements.
 
 Matt Senft         (senft@pix.com)
         Tagman code, many small bug fixes.
@@ -35,7 +36,7 @@ William Katz       (wk5w@virginia.edu)
 Chris Moore        (moore@src.bae.co.uk)
         Teleport mode.
 
-Vaughan Clarkson   (vaughan@ewd.dsto.oz.au)
+Vaughan Clarkson   (vaughan@ewd.dsto.gov.au)
         HP code fixes, to hopefully get things working.
 
 Olaf Becker        (n9030166@rowlf.cc.wwu.edu)

@@ -1,6 +1,7 @@
-$Id: xtank.FAQ,v 1.10 1992/09/08 01:26:01 lidl Exp $
+$Id: xtank.FAQ,v 1.12 1992/09/14 01:07:25 lidl Exp $
 
 FAQ for the rec.games.xtank.{play|programmer} newsgroups:
+FAQ for the Xtank game, also!
 
 There are three major sections in this revision of the
 rec.games.xtank.{play|programmer} FAQ.  Please make sure
@@ -10,39 +11,38 @@ Thanks.
 If you have comments or corrections to this posting, please
 mail them to xtank-request@eng.umd.edu.  Thanks.
 
-Section 1 -- General information topics
-Section 2 -- Playing information topics
-Section 3 -- Installation, compiling, & porting information
+Section G -- General information topics
+Section P -- Playing information topics
+Section I -- Installation, compiling, & porting information
 
 General Topics:
 ====================
-01)  What type of postings should be posted in rec.games.xtank.play?
-02)  What type of postings should be posted in rec.games.xtank.programmer?
-03)  What is Xtank all about?
-04)  What is the latest Xtank release?
-05)  Where can I get the Xtank release from?
-06)  How do I use "ftpmail" to get Xtank?
-07)  How do I make a patch file for Xtank?
-08)  Is there a place that I can get binaries from?
+G.01)  What type of postings should be posted in rec.games.xtank.play?
+G.02)  What type of postings should be posted in rec.games.xtank.programmer?
+G.03)  What is Xtank all about?
+G.04)  What is the latest Xtank release?
+G.05)  Where can I get the Xtank release from?
+G.06)  How do I use "ftpmail" to get Xtank?
+G.07)  How do I make a patch file for Xtank?
+G.08)  Is there a place that I can get binaries from?
 
 Playing Topics:
 ====================
-09)  Why can't I place HARMs on the vehicles I design?
+P.01)  Why can't I place HARMs on the vehicles I design?
 
 Installation, compiling and porting Topics:
 ==============================
 
-10)  What software tools do I need to make a version of Xtank?
-11)  Will Xtank work on my unix system ?
-12)  What are some of the common problems with Xtank installs?
-13)  What does "Alarm Clock" mean, when I run Xtank?
-14)  What should I do if Xtank doesn't compile/work on my unix system ?
-15)  How should I go about porting Xtank to a new (unsupported) system?
-16)  Why won't Xtank compile on my DECstation?
+I.01)  What software tools do I need to make a version of Xtank?
+I.02)  Will Xtank work on my unix system ?
+I.03)  What are some of the common problems with Xtank installs?
+I.04)  What does "Alarm Clock" mean, when I run Xtank?
+I.05)  What should I do if Xtank doesn't compile/work on my unix system ?
+I.06)  How should I go about porting Xtank to a new (unsupported) system?
 
 =========================== ANSWERS to the FAQ ============================
 
-01)  What type of postings should be posted in rec.games.xtank.play?
+G.01)  What type of postings should be posted in rec.games.xtank.play?
 
 This newsgroup is intended to be used for (but not limited to)
 discussion of:
@@ -55,7 +55,7 @@ discussion of:
    - feedback to game designers about robot features and strategies
      that are effective against their robots, from a human perspective
 
-02)  What type of postings should be posted in rec.games.xtank.programmer?
+G.02)  What type of postings should be posted in rec.games.xtank.programmer?
 
 This newsgroup is intended to be used for (but not limited to)
 discussion of:
@@ -81,7 +81,7 @@ In general, if you haven't read through the code of the main game
 modules, or the robot you have a question about, this probably isn't
 the correct place to post your question.
 
-03)  What is Xtank all about?
+G.03)  What is Xtank all about?
 
 Briefly put, Xtank is a multi-player vehicular-based (normally
 combat-oriented) game played in mazes of various sizes and types.
@@ -118,11 +118,11 @@ The vehicles described above are also player designed.  The design of
 playable vehicles is an art unto itself, so you will most likely have
 to try a good many vehicles before you get one that is worth keeping.
 
-04)  What is the latest Xtank release?
+G.04)  What is the latest Xtank release?
 
-The latest release of Xtank is the 1.3e release.
+The latest release of Xtank is the 1.3f release.
 
-05)  Where can I get the Xtank release from?
+G.05)  Where can I get the Xtank release from?
 
 In general, the latest release of Xtank can be anonymously
 FTP'ed from the host ftp.eng.umd.edu, in the directory /pub/xtank.
@@ -137,29 +137,25 @@ of Xtank available for anonymous FTP:
 
 Host mojo.eng.umd.edu   (129.2.90.15)
     Location: /pub/xtank
-           FILE -rw-r--r--    1549811  Feb 13 06:54  xtank1.3e.tar.Z
+           FILE -rw-r--r--    some_large_number  Sep 13 xtank1.3f.tar.Z
 
 Host azathoth.sura.net  (128.167.254.184)
     Location: /pub/xtank
-           FILE -rw-r--r--    1549811  Feb 17 07:21  xtank1.3e.tar.Z
-
-Host export.lcs.mit.edu (18.24.0.12)
-    Location: /contrib
-           FILE -rw-r--r--    1549811  Feb 13 06:54  xtank1.3e.tar.Z
+           FILE -rw-r--r--    some_large_number  Sep 17 xtank1.3f.tar.Z
 
 If you don't have anonymous FTP access, please *DON'T* mail or post
 asking people to mail you a copy.  The release is just too damn big
 to do that often.  Instead, see the section on "ftpmail".
 
-06)  How do I use "ftpmail" to get Xtank?
+G.06)  How do I use "ftpmail" to get Xtank?
 
 Mail the following message to "ftpmail@decwrl.dec.com", with
 just about anything as the "Subject:" line (it is ignored).
 
-connect ftp.eng.umd.edu
+connect mojo.eng.umd.edu
 binary
 chdir /pub/xtank
-get xtank1.3e.tar.Z
+get xtank1.3f.tar.Z
 
 If this doesn't work (like the version number has changed) you can
 get more info about the ftpmail program by by mailing ftpmail@decwrl.dec.com,
@@ -168,7 +164,7 @@ with the word "help" in the body (the Subject: line is ignored).
 Please remember that the ftpmail service is their to help everyone, so
 please don't abuse the privilege!  Thanks.
 
-07)  How do I make a patch file for Xtank?
+G.07)  How do I make a patch file for Xtank?
 
 Basically, for each changed file, you do the following:
 
@@ -181,9 +177,9 @@ any changes in the status of our patch program...
 
 ========================
 
-08)  Is there a place that I can get binaries from?
+G.08)  Is there a place that I can get binaries from?
 
-[For the 1.3e release, the current answer is "No".  This will
+[For the 1.3f and 1.3e releases, the current answer is "No".  This will
 hopefully change at some point in the near future.]
 
 For version 1.3d read the following:
@@ -219,7 +215,7 @@ the Doc directory, but it does have useful information in it.
 
 ========================
 
-09)  Why can't I place HARMs on the vehicles I design?
+P.01)  Why can't I place HARMs on the vehicles I design?
 
 HARMs can only be installed on the side mounts of a vehicle body.
 Try placing them there, and you should have a good experience.
@@ -229,7 +225,7 @@ aim these puppies.  Good luck.
 
 ========================
 
-10)  What software tools do I need to make a version of Xtank?
+I.01)  What software tools do I need to make a version of Xtank?
 
 Well the short and sweet of it is: -->  Imake  <---
      
@@ -252,7 +248,7 @@ installed on your system.  I'm not too sure how recent, but version
 
 flex is available via FTP from prep.ai.mit.edu
 
-11) Will Xtank work on my system ?
+I.02) Will Xtank work on my system ?
 
 Xtank is, shall we say, a large and complex body of code, some of which
 works in a rather arcane way.  It's not terribly portable, but we are
@@ -264,19 +260,24 @@ Offhand, I know that Xtank runs on the following systems:
 
 Sun hardware, Sun 3 (SunOS 3.5 or higher) or Sun 4 (SunOS 4.0 or
 higher).  DECstations, running either Ultrix 3.1, 4.1 or 4.2.
+386/486 systems running 386BSD, with X11R5.
 
-These are the only three platforms we have access to test releases on
+These are the only a few platforms we have access to test releases on
 before we ship the code.  (Generally, we test Xtank on Sun4 systems
-and DECstations, and not the Sun3 systems.)
+and DECstations, and not the Sun3 systems.  Althougth lately, we
+have also been regression testing the releases on a VAX 3100 and
+a DECstation 5000/25.  Finally, we have it running on our 386BSD
+systems.  If you would like to have us test on more systems, get
+us accounts on them, accessable through telnet.  We can't promise
+that we can test on everything, but it helps to have an account there.)
 
 We have finished the port of Xtank to a SVR4 machine, using the
 SVR4 low-level threading available via makecontext()/swapcontext().
 Outside of adding the stub things needed in the Imakefile(s), Xtank
 should work on those systems.
 
-Someday, we
-may even support MACH threads.  We may even support POSIX threads,
-if they ever straighten out *that* mess.)
+Someday, we may even support MACH threads.  We may even support POSIX
+threads, if they ever straighten out *that* mess.)
 
 In the past, Xtank has compiled and run on the following machines.  This
 may or may not work on the latest release.  We can't test it, but we
@@ -296,7 +297,7 @@ do actively apply fixes that people send us that are supposed to fix things.
 Not all features are working on all platforms.  If your platform doesn't
 have a particular feature, port it and send us a patch file!
 
-12)  What are some of the common problems with Xtank installs?
+I.03)  What are some of the common problems with Xtank installs?
 
 Many people have improperly installed X11 on their systems such that
 system include files get included explicitly before the program
@@ -312,7 +313,7 @@ the compile line.  This is also a no-go issue for Xtank.  If you
 have this problem, you should try to find a local guru to help
 you.
 
-13)  What does "Alarm Clock" mean, when I run Xtank?
+I.04)  What does "Alarm Clock" mean, when I run Xtank?
 
 If you run Xtank, and setup a game, and then try to run it,
 and Xtank dies after one frame of animation, you probably have
@@ -326,20 +327,20 @@ If you are working on a Unix machine that supports both SYSV, and BSD
 (eg SunOS), this probably means that you have compiled something with
 the SYSV version of the C compiler, rather then the BSD C compiler.
 
-14)  What should I do if Xtank doesn't compile/work on my unix system ?
+I.05)  What should I do if Xtank doesn't compile/work on my unix system ?
 
 First, make sure that you are trying to install the latest version
 of Xtank.  If you are not, then get the latest version, and try again.
 
 Second, you should investigate exactly what is wrong with the
 system.  If you can't fix it yourself, then you should carefully
-gather all the information in the BETA-README file and post that to
+gather all the information in the README file and post that to
 the network, in the rec.games.xtank.programmer.  *WARNING* Failing to
 submit a full description of the machine, and the error message is
 liable to generate a flame in response to your posting. *WARNING*
 
 For your convience, here is the list of questions to be filled out:
-(taken from the BETA-README file)
+(taken from the README file)
 
   * What your setup is:
        - Hardware platform (eg Sun SPARCstation 1+)
@@ -366,7 +367,7 @@ that you system supports, if any.  Some systems support a "-d" or
 "-D" flag, even though it is not documented.  You've got nothing to
 lose if you try it, even if your "make" manpage doesn't mention it.
 
-15)  How should I go about porting Xtank to a new (unsupported) system?
+I.06)  How should I go about porting Xtank to a new (unsupported) system?
 
 Many Unix systems out there have most of the support needed to run
 Xtank, in at least some form or another.
@@ -450,13 +451,3 @@ The above really just covers some of the difficult parts in porting
 Xtank.  If you have suggestions or additions to the above text,
 please send them to me, via the address listed at the beginning of
 this FAQ.
-
-16)  Why won't Xtank compile on my DECstation?
-
-You need to use GCC to compile Xtank on the DECstations, at least
-for ones running Ultrix 4.2(A).  DEC has done something to the C
-compiler that causes it to die in compiling Xtank.  I don't frankly
-care why -- the same code will compile just fine under Ultrix 4.2
-on a vax, and compiles fine using GCC v2.2.2 on the same DECstation.
-
-Complain to DEC, or install GCC.  Don't complain to us.

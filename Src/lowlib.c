@@ -8,9 +8,12 @@
 
 /*
 $Author: lidl $
-$Id: lowlib.c,v 2.16 1992/06/07 02:45:08 lidl Exp $
+$Id: lowlib.c,v 2.17 1992/09/13 07:04:14 lidl Exp $
 
 $Log: lowlib.c,v $
+ * Revision 2.17  1992/09/13  07:04:14  lidl
+ * aaron 1.3e patches
+ *
  * Revision 2.16  1992/06/07  02:45:08  lidl
  * Post Adam Bryant patches and a manual merge of the rejects (ugh!)
  *
@@ -79,6 +82,7 @@ $Log: lowlib.c,v $
 #include "cosell.h"
 #include "outpost.h"
 #include "globals.h"
+#include "graphics.h"
 
 extern Weapon_stat weapon_stat[];
 extern Armor_stat armor_stat[];
@@ -685,6 +689,11 @@ WeaponStatus fire_weapon(num)
 	    else
 	    make_bullet(cv, &bloc, w->type, angle + PI / 100 * (50 - rnd(101)) / 50);
 	}
+
+    /* mark time weapon was fired */
+
+    cv->frame_weapon_fired = frame;
+
     }
 
     check_time();
@@ -1500,6 +1509,7 @@ SpecialStatus switch_special(st, action)
 {
     check_time();
 
+    if (st != (int) STEALTH)
     if (st == SP_activate || st == SP_deactivate || st == SP_on || st == SP_off)
 	do_special(cv, st, action);
 
@@ -1567,49 +1577,86 @@ int aim_smart_weapon(x, y)
 
 }
 
-#ifdef RDFTEST
+
 
 /*
- * incomplete, don't use     -ane
+ * compiler may warn about "statement not reached", ignore.
  */
 
-#define SGN(a)  (((a)<0) ? -1 : 0)
+#define SGN(a)  (((a)<0) ? -1 : 1)
 
 void rdf_map(map)
 Box map[][GRID_HEIGHT];
 {
     int i,j;
+    int first_veh, end_veh;
     Trace *t;
     Special *ms = &cv->special[(int) MAPPER];
     Special *rs = &cv->special[(int) RDF];
+    Special *ts = &cv->special[(int) TACLINK];
 
     Mapper *m = (Mapper *) ms->record;
     Rdf *r= (Rdf *) rs->record;
 
     int d, x, y, ax, ay, sx, sy, dx, dy;
-    int flags;
+    unsigned int flags;
     int x1, y1, x2, y2;
 
     check_time();
 
-    if (ms->status != SP_nonexistent && rs->status != SP_nonexistent) {
 
-	for (j = 0; j < MAX_VEHICLES; j++) {
+    if (ms->status != SP_nonexistent && rs->status == SP_on) {
+
+/*
+ * Only scan myself if taclink isn't running.
+ */
+
+        if (ts->status == SP_on) {
+	    first_veh = 0;
+	    end_veh = MAX_VEHICLES;
+        } else {
+	    first_veh = cv->number;
+	    end_veh = cv->number + 1;
+	}
+
+/*
+ * Rasterize the RDF traces onto the map
+ */
+
+	for (j = first_veh; j < end_veh; j++) {
 	    for (i = 0; i < MAX_VEHICLES; i++) {
 
 		t = &r->trace[j][i];
+
+                if (t->to_draw) {
+                    x1 = t->draw.start_x;
+                    y1 = t->draw.start_y;
+                    x2 = t->draw.end_x;
+                    y2 = t->draw.end_y;
+
+		    /*
+		     * RED is always set explicty independant of mono
+		     */
+                    if (j != cv->number)
+		       flags = YELLOW_RDF;
+                    else if (t->draw.color == RED)
+		       flags = RED_RDF;
+                    else 
+		       flags = GREEN_RDF;
+
 
 		dx = x2-x1;  ax = ABS(dx) << 1;  sx = SGN(dx);
 		dy = y2-y1;  ay = ABS(dy) << 1;  sy = SGN(dy);
 
 		x = x1;
 		y = y1;
-		if (ax>ay) {
+		if (ax > ay) {
 		    d = ay - (ax >> 1);
 		    for (;;) {
-			if (x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT)
-			    map[x][y].flags  |= flags;
-			if (x == x2) return;
+			if (x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT) {
+			    map[x][y].flags = ((map[x][y].flags & ANY_RDF) ? X_RDF : 0) | flags | map[x][y].flags;
+                        }
+			if (x == x2) goto complete;
 			if (d >= 0) {
 			    y += sy;
 			    d -= ax;
@@ -1618,11 +1665,12 @@ Box map[][GRID_HEIGHT];
 			d += ay;
 		    }
 		} else {
-		    d = ax -( ay >> 1);
+		    d = ax - (ay >> 1);
 		    for (;;) {
-			if (x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT)
-			    map[x][y].flags  |= flags;
-			if (y == y2) return;
+			if (x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT) {
+			    map[x][y].flags = ((map[x][y].flags & ANY_RDF) ? X_RDF : 0) | flags | map[x][y].flags;
+                        }
+			if (y == y2) goto complete;
 			if (d >= 0) {
 			    x += sx;
 			    d -= ay;
@@ -1632,10 +1680,13 @@ Box map[][GRID_HEIGHT];
 		    }
 		}
 	    }
+complete:
+	    ;
+            }
 	}
     }
     return;
 }
 
-#endif
+
 

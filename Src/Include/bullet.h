@@ -2,9 +2,12 @@
 
 /*
 $Author: lidl $
-$Id: bullet.h,v 2.6 1992/08/31 01:50:45 lidl Exp $
+$Id: bullet.h,v 2.7 1992/09/13 07:03:02 lidl Exp $
 
 $Log: bullet.h,v $
+ * Revision 2.7  1992/09/13  07:03:02  lidl
+ * aaron 1.3e patches
+ *
  * Revision 2.6  1992/08/31  01:50:45  lidl
  * changed to use tanktypes.h, instead of types.h
  *
@@ -52,6 +55,7 @@ typedef struct {
     Boolean hurt_owner;	/* whether bullet can hurt owner or not */
     lCoord target;		/* last target update for a smart weapon */
     int state;                  /* what a smart bullet is up to */
+    int mode;
 } Bullet;
 
 typedef struct {

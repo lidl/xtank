@@ -8,9 +8,12 @@
 
 /*
 $Author: lidl $
-$Id: box.c,v 2.8 1992/05/19 22:57:19 lidl Exp $
+$Id: box.c,v 2.9 1992/09/13 07:04:14 lidl Exp $
 
 $Log: box.c,v $
+ * Revision 2.9  1992/09/13  07:04:14  lidl
+ * aaron 1.3e patches
+ *
  * Revision 2.8  1992/05/19  22:57:19  lidl
  * post Chris Moore patches, and sqrt to SQRT changes
  *
@@ -175,6 +178,10 @@ FLOAT *xadj, *yadj;
 			break;
 	}
 
+#ifndef NO_CAMO
+    if (!v->camod)
+#endif /* !NO_CAMO */
+
 	/* Activate any outposts within 2 squares of the vehicle */
 	for (x = v->loc->grid_x - 2; x <= v->loc->grid_x + 2; x++)
 		for (y = v->loc->grid_y - 2; y <= v->loc->grid_y + 2; y++)
@@ -237,8 +244,6 @@ Box *b;
                     ws = &weapon_stat[(int)v->vdesc->weapon[i]];
 					if (v->owner->money >= ws->ammo_cost && w->ammo < ws->max_ammo)
 
-#ifndef NO_TIMED_REFILL
-
 /*
  * If the refill_time is 0, filled the weapon up to capacity
  * instantly
@@ -271,11 +276,8 @@ Box *b;
 					    if (w->refill_counter != 1)
 						--w->refill_counter;
                                             else
-#endif /* NO_TIMED_REFILL */
 					{
-#ifndef NO_TIMED_REFILL
 						w->refill_counter = weapon_stat[(int) w->type].refill_time;
-#endif /* NO_TIMED_REFILL */
 
 						w->ammo++;
 						w->status &= ~WS_no_ammo;

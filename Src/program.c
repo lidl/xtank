@@ -7,10 +7,13 @@
 */
 
 /*
-$Author: lidl $
-$Id: program.c,v 2.25 1992/09/06 21:15:02 lidl Exp $
+$Author: aahz $
+$Id: program.c,v 2.26 1992/09/12 09:42:26 aahz Exp $
 
 $Log: program.c,v $
+ * Revision 2.26  1992/09/12  09:42:26  aahz
+ * added support for forcing specials
+ *
  * Revision 2.25  1992/09/06  21:15:02  lidl
  * removed console initization stuff that the new console driver doesn't
  * use
@@ -230,24 +233,21 @@ Vehicle *v;
 {
     int i, j;
     Mapper *m = (Mapper *) v->special[(int) MAPPER].record;
+	extern char force_states[];
 
 /*
-
-#ifndef NO_FORCE
-
-Here is a code fragment for forcing specials in and out.
-
-    for (i = 0; i < MAX_SPECIALS; i++) {
-	if (force_out[i]) {
-	    v->special[i].status = SP_nonexistent;
-	}
-	if (force_in[i]) {
-	    v->special[i].status = SP_off;
-	}
+    for (i = 0; i < MAX_SPECIALS; i++)
+    {
+        if (force_states[i] == INT_FORCE_OFF)
+        {
+            v->special[i].status = SP_nonexistent;
+        }
+		else
+        if (force_states[i] == INT_FORCE_ON)
+        {
+            v->special[i].status = SP_off;
+        }
     }
-
-#endif
-
 */
 
     if (settings.si.no_radar) {

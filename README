@@ -40,6 +40,8 @@ To build this UMDENG Xtank distribution:
             quickly.
          1) "chmod +w Imakefile.Config"
          2) Edit Imakefile.Config for your site
+            If you have a supported system, *all* you should have to
+            change is the XTANK_DIR variable in this file.
          3) "xmkmf"
          4) "make Makefiles"
          5) "make"
@@ -53,7 +55,10 @@ things.  Namely, you should copy .../Src/vload.flexed to
 
 Keep the original .flexed files around, in case something bad happens...
 
-If it didn't work correctly on your system, keep reading:
+If it didn't work correctly on your system, keep reading!
+
+Make sure you read the FAQ file, located in Help/xtank.FAQ!
+That might help you out, it has lots of useful information in it!
 
 We need you to tell us:
   * What your setup is:
@@ -75,8 +80,8 @@ Our set-ups (where we test the release before shipping it):
     Sun3's running SunOS 4.1 and 4.1.1, using SUN_LWP, sun's cc
     Sun4's, running SunOS 4.1.2, using SUN_LWP, sun's cc
     (sometimes with GCC V2.2.2 also)
-    DECstation 3100's, running Ultrix 4.1, using THREAD_MP, gcc 1.40
-    DECstation 5000's, running Ultrix 4.2, using THREAD_MP, gcc 2.2.2
+    DECstation 5000's, running Ultrix 4.2, using THREAD_MP, dec's cc
+    VAXstation 3100's, running Ultrix 4.2, using THREAD_MP, gcc 2.2.2
 
 By the way, previous versions (before 1.2e) used "machtype" or it's
 ilk to figure out if it was a VAX or a Sun, or whatever.  Since that

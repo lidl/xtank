@@ -8,9 +8,12 @@
 
 /*
 $Author: lidl $
-$Id: update.c,v 2.13 1992/08/18 05:41:55 lidl Exp $
+$Id: update.c,v 2.14 1992/09/13 07:04:14 lidl Exp $
 
 $Log: update.c,v $
+ * Revision 2.14  1992/09/13  07:04:14  lidl
+ * aaron 1.3e patches
+ *
  * Revision 2.13  1992/08/18  05:41:55  lidl
  * added tac nuke patches
  *
@@ -150,9 +153,15 @@ update_vehicle(v)
 	if ((v->num_discs > 0) &&
 	    (settings.si.disc_heat < 1.0)) {
 	    v->heat += 10 * (1.0 - settings.si.disc_heat);
+#ifdef NO_DAMAGE
 	    v->heat -= (v->vdesc->heat_sinks * settings.si.disc_heat + 1);
 	} else {
 	    v->heat -= v->vdesc->heat_sinks + 1;
+#else
+	    v->heat -= (v->heat_sinks * settings.si.disc_heat + 1);
+	} else {
+	    v->heat -= v->heat_sinks + 1;
+#endif
 	}
 	if (v->heat < 0) {
 	    v->heat = 0;
@@ -712,7 +721,7 @@ Bullet *b;
 		b->xspeed = xdir * sp;
 	    }
 	    else
-		b->yspeed = ydir * SQRT((double) sp2 - b->xspeed * b->xspeed);
+		b->yspeed = ydir * SQRT(sp2 - b->xspeed * b->xspeed);
 	}
     }
 }
@@ -720,7 +729,6 @@ Bullet *b;
 int traceharm = FALSE;
 
 #define HARM_ACC 4
-#define UPDATE_RATE 1
 
 update_harm(b)
 Bullet *b;
@@ -733,109 +741,103 @@ Bullet *b;
     Vehicle *best_v;
     long best_dist, dist;
 
-   make_explosion(b->loc, EXP_EXHAUST);
-
-   /*
-    * If age > BOOST_PHASE
-    *   perform updates
-    * else if age = BOOST_PHASE
-    *   set elevation to flying
-    */
+    make_explosion(b->loc, EXP_EXHAUST);
 
     if (traceharm) printf("uh: Begins.\n");
 
     b->state = RED;
 
-    if (weapon_stat[(int)b->type].frames - b->life > BOOST_PHASE)  {
+    bCoord.x = b->loc->x;
+    bCoord.y = b->loc->y;
 
-        if (traceharm) printf("uh:   Past boost phase.\n");
+   /*
+    * Set the initial strictness of a emitter lock
+    * a little looser if the HARM was just launched.
+    */
+
+    if (weapon_stat[(int)b->type].frames - b->life == 1)
+	best_dist = 2 * BOX_WIDTH;
+    else
+	best_dist = 1 * BOX_WIDTH;
+
+    if (traceharm) printf("uh:   Initial best dist %i\n", best_dist);
+
+   /* 
+    * Look at each vehicle and determine it's brightness relative to
+    * the last target coordinate.
+    */
+
+    for (i = 0; i < num_veh_alive; i++) {
+
+       /*
+	* Ignore vehicles with no radar on.
+	*/
+
+	if ( live_vehicles[i]->special[(SpecialType)NEW_RADAR].status != SP_on
+	  && live_vehicles[i]->special[(SpecialType)RADAR].status != SP_on     )
+
+	    continue;
+       /*
+	* Ignore friends.  Fortunately all the old radar sets have been
+	* retro-fitted with IFF encoders...
+	*/
+
+	if ( (b->owner->team == live_vehicles[i]->team && b->owner->team != NEUTRAL)
+             || live_vehicles[i]->have_IFF_key[b->owner->number]                     )
+
+	    continue;
+
+	if (traceharm) printf("uh:   v: %i ok for emmiter-lock\n", i);
+
+	vCoord.x = live_vehicles[i]->loc->x;
+	vCoord.y = live_vehicles[i]->loc->y;
+
+	dist = idist(b->target.x, b->target.y, vCoord.x, vCoord.y);
+
+       /*
+	* The distance from the lock coordinate to the target
+	* vehicle not only has to be smaller than the last, it
+	* has to be less than the initial best dist (strictness).
+	*/
+
+	if (dist < best_dist) {
+	    if (traceharm) printf("uh:  v: %i better than last! dist: %li best: %li \n", i, dist, best_dist);
+	    best_v = live_vehicles[i];
+	    best_dist = dist;
+	    b->state = GREEN;
+	}
+    } 
 
 
-	/*
-	 * Set the initial strictness on a emitter lock
-	 * based on how far bullet is from the lock coord.
-	 */
+   /* 
+    * If there isn't a radar lock, or we have lost it, look
+    * around for a likely looking vehicle.
+    */
 
+    if (b->state == RED) {
 
-	bCoord.x = b->loc->x;
-	bCoord.y = b->loc->y;
+	best_dist = 1 * BOX_WIDTH;
 
-        if (idist(bCoord.x, bCoord.y, b->target.x, b->target.y) > BOX_WIDTH * 4)
-	    best_dist = 3 * BOX_WIDTH;
-        else
-	    best_dist = 1 * BOX_WIDTH;
+	for (i = 0; i < num_veh_alive; i++) {
 
-	if (traceharm) printf("uh:   Initail best dist %i\n", best_dist);
-
-       /* 
-        * Look at each vehicle, at determine it's brightness relative to
-        * the last target coordinate.
-        */
-            for (i = 0; i < num_veh_alive; i++) {
-
-
-	   /*
-            * Rule out team members (and ourselves), 
-            * those with radar off,  
-            * those who are IFF friends
-	    *
-	    * Find the vehicle and coordinates that are emitting closest to
-	    * the stored coordinates.  It would be cheating to save the actual
-	    * vehicle pointer we found last update!
-            */
-
-	    if ( (b->owner->team == live_vehicles[i]->team && b->owner->team != NEUTRAL)
-                 || ( (live_vehicles[i]->special[(SpecialType)NEW_RADAR].status != SP_on)
-                    && (live_vehicles[i]->special[(SpecialType)RADAR].status != SP_on) )
-                 || (live_vehicles[i]->have_IFF_key[b->owner->number]) 
-		)
-                continue;
-
-	    if (traceharm) printf("uh:   v: %i ok for emmiter-lock\n", i);
-
-	    vCoord.x = live_vehicles[i]->loc->x;
-	    vCoord.y = live_vehicles[i]->loc->y;
-
-	    dist = idist(b->target.x, b->target.y, vCoord.x, vCoord.y);
-
-	    /*
-	     * The distance from the lock coordinate to the target
-	     * vehicle not only has to be smaller than the last, it
-	     * has to be less than the initial best dist.
+	    /* Is he visible? And
+	     * if my shooter is alive, does he think 
+	     * that this guy is a friend?  Cheating by getting
+	     * "high-res" taclink data.
 	     */
 
-	    if (dist < best_dist) {
-		if (traceharm) printf("uh:  v: %i better than last! dist: %li best: %li \n", i, dist, best_dist);
-	        best_v = live_vehicles[i];
-	        best_dist = dist;
-		b->state = GREEN;
-            }
+	   if (live_vehicles[i]->camod) 
+	       continue;
 
-        } 
+	   if (   tstflag(b->owner->status, VS_is_alive)
+               && b->owner->special[(SpecialType)NEW_RADAR].status != SP_nonexistent
+	       && b->owner->special[(SpecialType)TACLINK].status == SP_on
+	       && (((newRadar *)(b->owner->special[(SpecialType) NEW_RADAR].record))->blip[live_vehicles[i]->number].draw_radar
+	          ||  
+		  ((newRadar *)(b->owner->special[(SpecialType) NEW_RADAR].record))->blip[live_vehicles[i]->number].draw_tactical)
+               && ((newRadar *)(b->owner->special[(SpecialType) NEW_RADAR].record))->blip[live_vehicles[i]->number].draw_friend )
 
-
-       /* 
-        *  If nothing was emitting close to our target,
-	*  use radar near find something near our target 
-	*  coordinates.
-        */
-
-#define MAGIC_RCS 100
-
-	if (traceharm) printf("uh:   Pre self-locking \n");
-
-        if (b->state == RED)
-	   for (i = 0; i < num_veh_alive; i++) {
-
-	    if (traceharm) printf("uh:   self-locking v: %i\n", i);
-
-	    if ( (b->owner->team == live_vehicles[i]->team && b->owner->team != NEUTRAL)
-               || (live_vehicles[i]->have_IFF_key[b->owner->number])
-	       || (live_vehicles[i]->rcs < MAGIC_RCS)
-		 )
-                continue;
-		
-	    if (traceharm) printf("uh:   eligible self-lock vehicle: %i \n", i);
+	       continue;
 
 	    vCoord.x = live_vehicles[i]->loc->x;
 	    vCoord.y = live_vehicles[i]->loc->y;
@@ -844,11 +846,13 @@ Bullet *b;
 
 	    if (dist < best_dist) {
 		if (traceharm) printf("uh:  v: %i better than last! dist: %li best: %li \n", i, dist, best_dist);
-	        best_v = live_vehicles[i];
-	        best_dist = dist;
+		best_v = live_vehicles[i];
+		best_dist = dist;
 		b->state = YELLOW;
-            }
+	    }
 	}
+    }
+
 
 	/*
          * make sure we locked on to something,
@@ -856,21 +860,40 @@ Bullet *b;
 	 * to update the lock coordinates,
 	 * then use code stolen from seeker
 	 *
-	 * Eventually might want to reduce rate at which update_harm
-	 * is called, that's what UPDATE_RATE is for.
          */
+
+	 /*
+	  * Changed so that even in RED state HARM flies to 
+	  * target coord's even if there never was a lock.
+	  *
+	  * Also keeps HARM's "around" the target coords
+	  * until they run out of fuel or self-destruct
+	  */
 
 	if (b->state != RED) {
 
 	    if (traceharm) printf("uh:   must not be in red state, cause we're locking on\n");
 
-	    b->target.x = best_v->loc->x + (best_v->vector.xspeed * UPDATE_RATE);
-	    b->target.y = best_v->loc->y + (best_v->vector.yspeed * UPDATE_RATE);
+	    b->target.x = best_v->loc->x + best_v->vector.xspeed;
+	    b->target.y = best_v->loc->y + best_v->vector.yspeed;
+
+	}
 
 	    best_dx = (int) (b->target.x - b->loc->x);
 	    best_dy = (int) (b->target.y - b->loc->y);
 
 	    sp = weapon_stat[(int)b->type].ammo_speed;
+
+	/*
+	 * If we are in RED state
+	 * slow down so as to give better chance
+	 * to acquire a lock on something later
+	 */
+/*
+            if (b->state == RED) {
+		sp = sp / 2;
+	    }
+*/
 	    sp2 = sp * sp;
 
 	    xdir = ((b->xspeed > 0) ? 1 : -1);
@@ -909,11 +932,28 @@ Bullet *b;
             b->loc->z = 1;
         else
 	    b->loc->z = 9;
-    }
-	} else if (weapon_stat[(int)b->type].frames - b->life == BOOST_PHASE)
-		b->loc->z = 9;
 
 	if (traceharm) printf("uh: leaving\n");
+
+    /*
+     * Update tactical harm display
+     */
+        if (b->owner->special[(SpecialType)TACLINK].status == SP_on) {
+	
+	/*
+	 * Look for a free slot
+	 */
+
+	    for (i = 0; i < HARM_TRACKING_SLOTS 
+			&& ((Taclink *)b->owner->special[(SpecialType)TACLINK].record)->harm[i] != NULL; i++);
+        /*
+	 * Find one?
+	 *   then use it
+	 */
+	    if (i != HARM_TRACKING_SLOTS)
+	        ((Taclink *)b->owner->special[(SpecialType)TACLINK].record)->harm[i] = (char *) b;
+         }
+
 
 }
 

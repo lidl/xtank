@@ -43,24 +43,40 @@ unsigned int action;
 	case SP_update: {
 
 	    int i;
+            Boolean damaged = FALSE;
+	    Boolean rad = FALSE;
+	    Boolean weap = FALSE;
 
-	    /*
-	     * Check to see if he has any weapons on.
-	     */
+            if (v->special[(SpecialType) RADAR].status == SP_on
+              || v->special[(SpecialType) NEW_RADAR].status == SP_on) {
+		rad = TRUE;
+            } else {
 
-	    for (i = 0; i < v->num_weapons && !(v->weapon[i].status & WS_on); i++)
-		;
+		/*
+		 * radar off, so check to see if he has any weapons on.
+		 */
 
-	    /*
-	     * The loop above won't have completed if there was a 
-	     * weapon on
-	     */
+		for (i = 0; i < v->num_weapons && !(v->weapon[i].status & WS_on); i++)
+		    ;
+
+		if (i != v->num_weapons) {
+		    weap = TRUE;
+                } else {
+
+		    /*
+		     * radar & weapons off, check the vehicle's skin
+		     */ 
+
+		    for (i = FRONT; i < MAX_SIDES; i++)
+			if (v->armor.side[i] != v->vdesc->armor.side[i])
+			    damaged = TRUE;
+                }
+	    }
 	     
-	    if (i != v->num_weapons) {
+	    if (weap || rad || damaged) {
 	        v->rcs = v->normal_rcs;
 		s->activate_frame = frame + STEALTH_DELAY;
-	    }
-	    else if (frame > s->activate_frame) 
+	    } else if (frame > s->activate_frame) 
 		v->rcs = v->stealthy_rcs;
 
 	    }
@@ -97,6 +113,7 @@ unsigned int action;
 
 	    if ( ( v->loc->x != v->old_loc->x) ||
 	      (v->vector.old_rot != v->vector.rot) ||
+	      (v->frame_weapon_fired == frame) ||
 	      /* add in other conditions of camo here */
               (v->loc->y != v->old_loc->y) ) {
 		c->camo_countdown = v->time_to_camo;

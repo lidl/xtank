@@ -7,10 +7,19 @@
 */
 
 /*
-$Author: lidl $
-$Id: interface.h,v 2.5 1992/06/07 02:52:54 lidl Exp $
+$Author: aahz $
+$Id: interface.h,v 2.8 1992/09/12 09:40:09 aahz Exp $
 
 $Log: interface.h,v $
+ * Revision 2.8  1992/09/12  09:40:09  aahz
+ * made a menu for forcing specials
+ *
+ * Revision 2.7  1992/09/12  00:32:44  aahz
+ * removed useless define
+ *
+ * Revision 2.6  1992/09/12  00:21:16  stripes
+ * Added STK
+ *
  * Revision 2.5  1992/06/07  02:52:54  lidl
  * Post Adam Bryant patches and a manual merge of the rejects (ugh!)
  *
@@ -119,9 +128,9 @@ $Log: interface.h,v $
 #define TEAMS_MENU	(VEHICLES_MENU+1)	/* must be sequential */
 #define NUM_MENU	(TEAMS_MENU+1)
 #define FLAGS_MENU	(NUM_MENU+1)
+#define FORCE_MENU  (FLAGS_MENU+1)
 
-#define MAX_MENUS	(FLAGS_MENU+1)
-#define MAX_GAMES	5
+#define MAX_MENUS	(FORCE_MENU+1)
 
 #define SET_DENSITY	0
 #define SET_DIFFICULTY  1
@@ -134,3 +143,4 @@ $Log: interface.h,v $
 #define SET_DISC_DAMAGE	8
 #define SET_DISC_HEAT	9
 #define SET_DISC_SPEED	10
+

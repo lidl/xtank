@@ -73,10 +73,35 @@ static char *console_sp_status[] = {"---", "off", "on", "brk"};
 static int console_sf_color[] = {GREY, WHITE};
 static char *console_sf_status[] = {"off", "on"};
 
+#ifdef JOSH
+
 static int console_w_color[] = {RED, RED, GREY, GREEN,
 RED, RED, RED, RED};
+
 static char *console_w_status[] = {"broken", "broken", "off", "on",
 "no ammo", "no ammo", "no ammo", "no ammo"};	/* Add on-off to noammo */
+
+#else /* JOSH  ie, Aaron */ 
+
+/*
+ *	   	no_am   func    on
+ * off & broken	0       0       0       broken, red
+ * on & broken	0       0       1       BROKEN, red
+ * norm off	0       1       0       off, grey
+ * norm on	0       1       1       on, green
+ * mt brk off	1       0       0       broken, red
+ * mt brk on 	1       0       1       BROKEN, red
+ * mt & off	1       1       0       off, red
+ * mt & on	1       1       1       no ammo, red
+ */
+
+static int console_w_color[] = {RED, RED, GREY, GREEN, RED, RED, RED, RED};
+
+static char *console_w_status[] = {"damaged", "DAMAGED", "offline", "ONLINE",
+"damaged", "DAMAGED", "offline", "EMPTY"};
+
+
+#endif /* JOSH */
 
 static char *console_mount[] = {"T1", "T2", "T3", "T4", "F", "B", "L", "R"};
 
@@ -213,42 +238,42 @@ char *record;
 	crec->item[11].green = 0;
 
 	crec->item[12].type = CSTRING_ARRAY;
-	crec->item[12].ival = &v->special[CONSOLE].status;
+	crec->item[12].ival = (int *) &v->special[CONSOLE].status;
 	crec->item[12].str_array = console_sp_status;
 	crec->item[12].color_array = console_sp_color;
 
 	crec->item[13].type = CSTRING_ARRAY;
-	crec->item[13].ival = &v->special[RADAR].status;
+	crec->item[13].ival = (int *) &v->special[RADAR].status;
 	crec->item[13].str_array = console_sp_status;
 	crec->item[13].color_array = console_sp_color;
 
 	crec->item[14].type = CSTRING_ARRAY;
-	crec->item[14].ival = &v->special[MAPPER].status;
+	crec->item[14].ival = (int *) &v->special[MAPPER].status;
 	crec->item[14].str_array = console_sp_status;
 	crec->item[14].color_array = console_sp_color;
 
 	crec->item[15].type = CSTRING_ARRAY;
-	crec->item[15].ival = &v->safety;
+	crec->item[15].ival = (int *) &v->safety;
 	crec->item[15].str_array = console_sf_status;
 	crec->item[15].color_array = console_sf_color;
 
 	crec->item[16].type = CSTRING_ARRAY;
-	crec->item[16].ival = &v->teleport;
+	crec->item[16].ival = (int *) &v->teleport;
 	crec->item[16].str_array = console_sf_status;
 	crec->item[16].color_array = console_sf_color;
 
 	crec->item[17].type = CSTRING_ARRAY;
-	crec->item[17].ival = &v->special[REPAIR].status;
+	crec->item[17].ival = (int *) &v->special[REPAIR].status;
 	crec->item[17].str_array = console_sp_status;
 	crec->item[17].color_array = console_sp_color;
 
 	crec->item[18].type = CSTRING_ARRAY;
-	crec->item[18].ival = &v->special[NEW_RADAR].status;
+	crec->item[18].ival = (int *) &v->special[NEW_RADAR].status;
 	crec->item[18].str_array = console_sp_status;
 	crec->item[18].color_array = console_sp_color;
 
 	crec->item[19].type = CSTRING_ARRAY;
-	crec->item[19].ival = &v->special[TACLINK].status;
+	crec->item[19].ival = (int *) &v->special[TACLINK].status;
 	crec->item[19].str_array = console_sp_status;
 	crec->item[19].color_array = console_sp_color;
 

@@ -9,9 +9,12 @@
 
 /*
 $Author: lidl $
-$Id: radar.c,v 2.8 1992/03/31 21:45:50 lidl Exp $
+$Id: radar.c,v 2.9 1992/09/13 07:04:14 lidl Exp $
 
 $Log: radar.c,v $
+ * Revision 2.9  1992/09/13  07:04:14  lidl
+ * aaron 1.3e patches
+ *
  * Revision 2.8  1992/03/31  21:45:50  lidl
  * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
  *
@@ -48,6 +51,7 @@ $Log: radar.c,v $
 #include "map.h"
 #include "vehicle.h"
 #include "globals.h"
+#include "bullet.h"
 
 extern Map real_map;
 
@@ -187,15 +191,11 @@ unsigned int action;
              * are being stealthy.
              */
 
-            for (veh = 0; veh < MAX_VEHICLES; ++veh) {
-                sv = &actual_vehicles[veh];
-
-                if ( !tstflag(sv->status, VS_is_alive) 
-		    || !tstflag(vehicle_flags, (VEHICLE_0 << veh)) )
-                    continue;
+            for (veh = 0; veh < num_veh_alive; ++veh) {
+                sv = live_vehicles[veh];
 
                 if (sv->rcs < sv->normal_rcs)
-                    clrflag(vehicle_flags, (VEHICLE_0 << veh));
+                    clrflag(vehicle_flags, (VEHICLE_0 << sv->number));
 
 		if (v->loc->grid_x != sv->loc->grid_x
 		  || v->loc->grid_y != sv->loc->grid_y) {
@@ -425,11 +425,11 @@ unsigned int action;
 	    if (traceaction) if (v->number == 0) printf("snr: %i update    ", frame);
 	    if (frame - r->frame_updated >= RAD_UPDATE_INTERVAL) {
 		r->frame_updated = frame;
-		for (veh = 0; veh < MAX_VEHICLES; veh++) {
-		    b = &r->blip[veh];
-		    bv = &actual_vehicles[veh];
+		for (veh = 0; veh < num_veh_alive; veh++) {
+		    bv = live_vehicles[veh];
+		    b = &r->blip[bv->number];
 		    b->draw_radar = FALSE;
-		    if ( (bv == v) || !tstflag(bv->status, VS_is_alive) )
+		    if (bv == v)
 			continue;
 
                     /* sort of illegally scribbling on this, change in future */
@@ -499,7 +499,7 @@ unsigned int action;
 
 	    r->need_redisplay = TRUE;
 
-	    r->frame_updated = frame - RAD_UPDATE_INTERVAL;
+	    r->frame_updated = frame;
 
 	    for (veh = 0; veh < MAX_VEHICLES; veh++) {
 		b = &r->blip[veh];
@@ -550,6 +550,7 @@ unsigned int action;
     Rdf *rdf;
     int i, vi;
     Trace *tr;
+    Bullet *h;
 
     t = (Taclink *) record;
     r = (newRadar *)(v->special[(SpecialType) NEW_RADAR].record);
@@ -559,6 +560,21 @@ unsigned int action;
 
 	case SP_redisplay:
 	    if (traceaction) if (v->number == 0) printf(" st: %i redisplay  ", frame);
+	    for (i = 0; i < HARM_TRACKING_SLOTS; i++) {
+		if (t->draw_harm[i].color != t->drawn_harm[i].color
+		      || t->draw_harm[i].x != t->drawn_harm[i].x
+		      || t->draw_harm[i].y != t->drawn_harm[i].y)  {
+		      if (t->drawn_harm[i].color != -1) {
+		          draw_filled_square(MAP_WIN, t->drawn_harm[i].x, t->drawn_harm[i].y, 3, DRAW_XOR, t->drawn_harm[i].color);
+		          t->drawn_harm[i].color = -1;
+                      }
+		      if (t->draw_harm[i].color != -1) {
+		          draw_filled_square(MAP_WIN, t->draw_harm[i].x, t->draw_harm[i].y, 3, DRAW_XOR, t->draw_harm[i].color);
+		          t->drawn_harm[i] = t->draw_harm[i];
+		      }
+		}
+	    }
+
 	    if (v->special[(SpecialType) RDF].status != SP_nonexistent) {
 		for (vi = 0; vi < MAX_VEHICLES; vi++) {
 		    if (vi == v->number)
@@ -596,54 +612,84 @@ unsigned int action;
 
 	case SP_update:
 	    if (traceaction) if (v->number == 0) printf(" st: %i update    ", frame);
+	    /*
+	     * Look thru harm tracking slots, if there is something in it 
+	     * copy it then mark it is availiable again, else zap the last
+	     * copy as it must have blown up
+	     */
+	    for (i = 0; i < HARM_TRACKING_SLOTS; i++) {
+		if (t->harm[i]) { 
+		    h = (Bullet *) t->harm[i];
+		    t->draw_harm[i].color = h->state;
+		    t->draw_harm[i].grid_x = h->loc->grid_x;
+		    t->draw_harm[i].grid_y = h->loc->grid_y;
+		    t->draw_harm[i].x = grid2map(h->loc->grid_x) + ((7-3)/2) + MAP_BOX_SIZE / 4;
+		    t->draw_harm[i].y = grid2map(h->loc->grid_y) + ((7-3)/2) + MAP_BOX_SIZE / 4;
+		    t->harm[i] = NULL;
+		} else {
+		    t->draw_harm[i].color = -1;
+		}
+	    }
+
 	    if (v->special[(SpecialType) RDF].status != SP_nonexistent) {
-		for (vi = 0; vi < MAX_VEHICLES; vi++) {
-		    tv = &actual_vehicles[vi];
+		for (vi = 0; vi < num_veh_alive; vi++) {
+		    tv = live_vehicles[vi];
 		    for (i = 0; i < MAX_VEHICLES; i++) {
-/*
- * and you may ask yourself...
- *  Q: why didn't I just spy into the tactical friends Rdf space instead
- *  of all of this copying?  A:  I wanted to preserve flexibilty
- *  so that I could alter the persistance rules for tactical info.
- */
 			if (tv == v)
 			    continue;
-			if (rdf->trace[vi][i].to_draw) --rdf->trace[vi][i].to_draw;
+			if (rdf->trace[tv->number][i].to_draw) --rdf->trace[tv->number][i].to_draw;
 			if ( !tstflag(tv->status, VS_is_alive)
 			 || tv->special[(SpecialType) RDF].status != SP_on 
 			 || tv->special[(SpecialType) TACLINK].status != SP_on 
 		         || !( v->have_IFF_key[tv->number] 
 			      || (tv->team == v->team && v->team != NEUTRAL)))
 			    continue;
-			if (((Rdf *)(tv->special[(SpecialType) RDF].record))->trace[vi][i].to_draw == PERSIST) {
-			    rdf->trace[vi][i].to_draw = PERSIST;
-			    rdf->trace[vi][i].draw = ((Rdf *)(tv->special[(SpecialType) RDF].record))->trace[vi][i].draw;
+			if (((Rdf *)(tv->special[(SpecialType) RDF].record))->trace[tv->number][i].to_draw == PERSIST) {
+			    rdf->trace[tv->number][i].to_draw = PERSIST;
+			    rdf->trace[tv->number][i].draw = ((Rdf *)(tv->special[(SpecialType) RDF].record))->trace[tv->number][i].draw;
 			    /*
-			    printf("got a tac rdf trace v: %i i: %i\n", vi, i);
+			    printf("got a tac rdf trace v: %i i: %i\n", tv->number, i);
 			    */
 			}
 		    }
 		}
             }
+
+	    if (v->special[(SpecialType) TACLINK].status == SP_on &&
+	        v->special[(SpecialType) NEW_RADAR].status != SP_nonexistent) {
 	    if (frame - t->frame_updated >= TAC_UPDATE_INTERVAL) {
 		t->frame_updated = frame;
-		if (v->special[(SpecialType) NEW_RADAR].status != SP_nonexistent) {
-		    for (veh = 0; veh < MAX_VEHICLES; veh++) {
-			b = &r->blip[veh];
-			bv = &actual_vehicles[veh];
+		    for (veh = 0; veh < num_veh_alive; veh++) {
+			bv = live_vehicles[veh];
+			b = &r->blip[bv->number];
 			b->draw_tactical = FALSE;
 
-			if ( (bv == v) || !tstflag(bv->status, VS_is_alive) )
+			if (bv == v)
 			    continue;
 
                         /* illegally scribbling on this too, make a local variable */
 			b->draw_friend = v->have_IFF_key[bv->number] || (bv->team == v->team && v->team != NEUTRAL);
-
+			/*
+			 * My taclink is on (else I wouldn't be here)
+			 * and his is on so mark him as a friend via taclink
+			 */
 			if ( b->draw_friend && bv->special[(SpecialType) TACLINK].status == SP_on)
 			    b->draw_tactical = TRUE;
-			else {
-			    for (veh2 = 0; (veh2 < MAX_VEHICLES) && !b->draw_tactical; veh2++) {
-				tv = &actual_vehicles[veh2];
+                        /*
+			 * He wasn't a friend or his Taclink was off.
+			 * If I have newRadar capability, look for newRadar info
+			 * coming down the link and scan all of my IFF friends
+			 * NR memory for this guy
+			 */
+			else if (v->special[(SpecialType) NEW_RADAR].status != SP_nonexistent
+			       || v->special[(SpecialType) NEW_RADAR].status != SP_broken) {
+			    /*
+			     * Looks thru all of the vehicles (veh2) until 
+			     * I find one that is an IFF friend and has
+			     * tac & nr running and sees this guy
+			     */
+			    for (veh2 = 0; (veh2 < num_veh_alive) && !b->draw_tactical; veh2++) {
+				tv = live_vehicles[veh2];
 				b->draw_tactical = (tstflag(tv->status, VS_is_alive) &&
 					  (v->have_IFF_key[tv->number] || (tv->team == v->team && v->team != NEUTRAL)) &&
 					  tv != v &&
@@ -701,6 +747,14 @@ unsigned int action;
 	case SP_draw:
 	case SP_erase:
   	    if (traceaction) if (v->number == 0) printf(" st: %i draw/erase\n", frame);
+	    for (i = 0; i < HARM_TRACKING_SLOTS; i++) {
+		if (t->drawn_harm[i].color != -1) {
+		    draw_filled_square(MAP_WIN, t->drawn_harm[i].x, t->drawn_harm[i].y, 3, DRAW_XOR, t->drawn_harm[i].color);
+		    if (action == SP_erase)
+			t->drawn_harm[i].color = -1;
+		}
+	    }
+
 	    if (v->special[(SpecialType) NEW_RADAR].status != SP_nonexistent) {
 		for (veh = 0; veh < MAX_VEHICLES; veh++) {
 		    b = &r->blip[veh];
@@ -740,6 +794,11 @@ unsigned int action;
 
 	case SP_activate:
   	    if (traceaction) if (v->number == 0) printf(" st: %i activate\n", frame);
+
+	    for (i = 0; i < HARM_TRACKING_SLOTS; i++) {
+		t->draw_harm[i].color = -1;
+		t->drawn_harm[i].color = -1;
+	    }
 
 	    if (v->special[(SpecialType) RDF].status != SP_nonexistent) {
 		for (vi = 0; vi < MAX_VEHICLES; vi++) {
@@ -796,6 +855,10 @@ unsigned int action;
 
 	case SP_deactivate:
   	    if (traceaction) if (v->number == 0) printf(" st: %i deactivate\n", frame);
+	    for (i = 0; i < HARM_TRACKING_SLOTS; i++) {
+		t->draw_harm[i].color = -1;
+		t->drawn_harm[i].color = -1;
+	    }
 		if (v->special[(SpecialType) NEW_RADAR].status != SP_nonexistent) {
 		    for (veh = 0; veh < MAX_VEHICLES; veh++) {
 			b = &r->blip[veh];

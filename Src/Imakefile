@@ -1,12 +1,11 @@
 /**/#
 /**/# Imakefile for ./Src - part of the UMDENG X-Tank distribution
 /**/#
-/**/# $Id: Imakefile,v 1.36 1992/09/06 21:13:57 lidl Exp $
+/**/# $Id: Imakefile,v 1.37 1992/09/12 19:36:29 lidl Exp $
 /**/#
 
 #include "../Imakefile.Config"
 
-      CDEBUGFLAGS = -g
           DEPLIBS = $(DEPXLIB)
   LOCAL_LIBRARIES = $(XLIB)
              SRCS = 3d.c XMultiSync.c actions.c animate.c box.c camo.c \
@@ -157,8 +156,8 @@ copyout:
 	co $(SRCS) $(INCL)
 
 all::
-	@-chgrp xtank *.o 2>/dev/null
-	@-chmod 664 *.o 2>/dev/null
+	@-chgrp xtank $(XTANK_TARGET) .version setups.c vload.c *.o 2>/dev/null
+	@-chmod 664 .version setups.c vload.c *.o 2>/dev/null
 
 /**/#prof:
 /**/#	$(COMPILE.c) -O -pg $(SRCS)

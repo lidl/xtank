@@ -8,9 +8,12 @@
 
 /*
 $Author: lidl $
-$Id: message.h,v 2.7 1992/08/31 01:50:45 lidl Exp $
+$Id: message.h,v 2.8 1992/09/13 07:03:02 lidl Exp $
 
 $Log: message.h,v $
+ * Revision 2.8  1992/09/13  07:03:02  lidl
+ * aaron 1.3e patches
+ *
  * Revision 2.7  1992/08/31  01:50:45  lidl
  * changed to use tanktypes.h, instead of types.h
  *
@@ -56,6 +59,10 @@ $Log: message.h,v $
 #define SENDER_NONE 254		/* Sender for initial set of messages on before
 				   slots have been filled */
 #define SENDER_DEAD 253		/* Sender for messages sent by dead people */
+
+#ifndef NO_DAMAGE
+#define SENDER_R2D2  252	/* Sender is damage control robot */
+#endif
 
 
 typedef Byte ID;		/* vehicle identification */

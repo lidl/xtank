@@ -8,9 +8,12 @@
 
 /*
 $Author: lidl $
-$Id: hit.c,v 2.10 1992/06/07 02:45:08 lidl Exp $
+$Id: hit.c,v 2.11 1992/09/13 07:04:14 lidl Exp $
 
 $Log: hit.c,v $
+ * Revision 2.11  1992/09/13  07:04:14  lidl
+ * aaron 1.3e patches
+ *
  * Revision 2.10  1992/06/07  02:45:08  lidl
  * Post Adam Bryant patches and a manual merge of the rejects (ugh!)
  *
@@ -67,6 +70,10 @@ $Log: hit.c,v $
 
 extern Map real_map;
 extern Settings settings;
+
+#ifndef NO_DAMAGE
+extern int frame;
+#endif /* !NO_DAMAGE */
 
 Side find_affected_side(v, angle)    
 Vehicle *v;                     
@@ -703,6 +710,10 @@ int height;
     int *side;
     Side s;
 
+#ifndef NO_DAMAGE
+    int rnum;
+#endif
+
     /* Vehicles don't take damage if no_wear is set */
     if (settings.si.no_wear)
 	return 0;
@@ -725,6 +736,7 @@ int height;
 	break;
     }
 
+
     /* Subtract the hits off of the armor, and apply the damage */
     damage = MAX(0, damage - hits_off[v->armor.type]);
     if (damage > 0)
@@ -736,9 +748,105 @@ int height;
 	{
             side[(int)s] = 0;
 	    kill_vehicle(v, damager);
+#ifndef NO_DAMAGE
+            return damage;    /* ok, ok, bad style. */
+#endif
 	}
     }
-    /* Return the number of points of damage done to the vehicle */
+
+#ifndef NO_DAMAGE
+
+/*
+ * Note that this could have been implemented as a check in the update
+ * loop in the special, 'cept that the special can only see if the armor
+ * value has changed, not if a hit has occured at all.
+ */
+
+ /*
+  * Would require additional tests if low-energy weapons that can
+  * hit top are introduced
+  */
+
+/* 
+ * 0 to 25	 no damage
+ * 25 to 50	 radar
+ * 50 to 100     new radar
+ */
+    if (s == TOP) {
+
+	rnum = rnd(100);
+
+	if (rnum > 50) {
+	    if (v->special[(SpecialType) NEW_RADAR].status == SP_on ||
+	        v->special[(SpecialType) NEW_RADAR].status == SP_off) {
+		do_special(v, NEW_RADAR, SP_break);
+	        compose_message(SENDER_R2D2, v->number,
+			    OP_TEXT, "New_radar array destroyed");
+	    }
+        } else if (rnum > 25) {
+	    if (v->special[(SpecialType) RADAR].status == SP_on ||
+	        v->special[(SpecialType) RADAR].status == SP_off) {
+	        do_special(v, RADAR, SP_break);
+	        compose_message(SENDER_R2D2, v->number,
+			    OP_TEXT, "Radar radome destroyed");
+            }
+	}
+    }
+
+    /* Now check if this was a red zone hit
+     * for under-armor damage
+     */
+
+    if (side[(int)s] + damage < (v->vdesc->armor.side[(int)s] * .2) ) {
+
+	rnum = rnd(100);
+
+	switch((int) s) {
+	    case TOP:
+		break;
+	    case BOTTOM:
+		break;
+	    case LEFT:
+	    case RIGHT:
+		break;
+	    case BACK:
+		if (v->heat_sinks > 0) {  /* Does this vehicle actually have heat sinks? */
+		    if (v->heat_sinks == v->vdesc->heat_sinks) {   /* Are they still 100%? */
+			if (rnd(100) < 25) {
+			    v->heat_sinks = v->vdesc->heat_sinks / 2;
+			    compose_message(SENDER_R2D2, v->number,
+			             OP_TEXT, "1/2 heatsink capacity");
+			}
+		    } else if (v->heat_sinks != 0) /* Any left ? */
+			    if (rnd(100) < 25) {   /* already damaged */
+			    v->heat_sinks = 0;
+			    compose_message(SENDER_R2D2, v->number,
+			             OP_TEXT, "Coolant system offline");
+			    }
+		    }
+		    if (v->heat_sinks < 0) v->heat_sinks = 0;
+		break;
+	    case FRONT:
+	if ( (v->special[(SpecialType) NEW_RADAR].status == SP_on ||
+	      v->special[(SpecialType) NEW_RADAR].status == SP_off) &&
+	      rnd(100) < 50 ) {
+	    do_special(v, NEW_RADAR, SP_break);
+	    compose_message(SENDER_R2D2, v->number,
+			    OP_TEXT, "New_radar array destroyed");
+        } else if ( (v->special[(SpecialType) RDF].status == SP_on ||
+	    v->special[(SpecialType) RDF].status == SP_off) &&
+	      rnd(100) < 10 ) {
+	    do_special(v, RDF, SP_break);
+	    compose_message(SENDER_R2D2, v->number,
+			    OP_TEXT, "RDF damaged");
+        }
+		break;
+	}
+    }
+
+#endif /* NO_DAMAGE */
+
+/* Return the number of points of damage done to the vehicle */
     return damage;
 }
 

@@ -7,10 +7,16 @@
 */
 
 /*
-$Author: stripes $
-$Id: interface.c,v 2.42 1992/08/30 21:08:01 stripes Exp $
+$Author: aahz $
+$Id: interface.c,v 2.44 1992/09/12 09:42:26 aahz Exp $
 
 $Log: interface.c,v $
+ * Revision 2.44  1992/09/12  09:42:26  aahz
+ * added force specials menu
+ *
+ * Revision 2.43  1992/09/12  00:49:32  aahz
+ * added madman to the games menu
+ *
  * Revision 2.42  1992/08/30  21:08:01  stripes
  * Kludged around a bug (terminal[nt]->vdesc bug)
  *
@@ -170,6 +176,7 @@ $Log: interface.c,v $
 #include "screen.h"
 #include "graphics.h"
 #include "gr.h"
+#include "vstructs.h"
 #include "menu.h"
 #include "interface.h"
 #include "terminal.h"
@@ -180,6 +187,8 @@ $Log: interface.c,v $
 #include <sys/dir.h>
 #endif
 #include "clfkr.h"
+
+extern char *strdup();
 
 extern int num_veh;
 
@@ -206,7 +215,7 @@ extern char *version3;
 
 extern struct CLFkr command_options;
 
-static whichlevel[MAX_MENUS] = {0,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,3};
+static whichlevel[MAX_MENUS] = {0,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,3,3};
 
 /* For convienence */
 static char *done_entries[] = {"Done"};
@@ -225,11 +234,12 @@ static char
     *main_entries[] = {"Play", "Settings", "Combatants", "View", "Load",
 		       "Design", "Add players", "Text entry", "Help", "Quit"},
     *play_entries[] = {"Standard", "Players", "Robots", "Customized"},
-    *settings_entries[] = {"Vehicle", "Maze", "Game", "Flags", "Winning score",
-			   "Difficulty", "Outpost strength", "Scroll speed",
-			   "Box slowdown", "Disc friction", "Throwing speed",
-			   "Disc damage", "Disc heat", "Owner slowdown",
-			   "Shocker Walls", "Save settings", "Load Settings"},
+    *settings_entries[] = {
+			  	"Flags", "Maze", "Winning score", "Force Specials",
+				"Game", "Shocker Walls", "Outpost strength", "Difficulty",
+			  	"Scroll speed", "Box slowdown", "Disc friction", "Throwing speed",
+			  	"Disc damage", "Disc heat", "Owner slowdown", "Vehicle",
+				"Save settings", "Load Settings"},
     *view_entries[] = {"Maze", "Vehicle", "Program", "Setup", "Player"},
     *load_entries[] = {"Maze", "Vehicle", "Program", "Setup"},
     *design_entries[] = {"Maze", "Vehicle"},
@@ -250,7 +260,10 @@ static char
 			"'port from any to any"
 			},
     *programs_entries[MAX_PDESCS],
+	*force_entries[MAX_SPECIALS],
     *players_entries[MAX_TERMINALS];
+
+char force_states[MAX_SPECIALS];
 
 /* Grid text entries, numeric values, and menus for the combatants interface */
 static Byte grid_val[MAX_GRIDS][MAX_VEHICLES];
@@ -258,7 +271,8 @@ static char *grid_ent[MAX_GRIDS][MAX_VEHICLES];
 static int grid_id[MAX_GRIDS];
 
 /* Global so message system can use it */
-char *games_entries[] = {"Combat", "War", "Ultimate", "Capture", "Race"};
+char *games_entries[] = {"Combat", "War", "Ultimate", "Capture",
+						 "Race", "Madman"};
 char *teams_entries[] = {"Neutral", "Red", "Orange", "Yellow", "Green", "Blue",
 			     "Violet"};
 
@@ -360,8 +374,68 @@ init_flags_hil()
 
 }
 
+void MakeForceString(pcTemp, iNum)
+    char *pcTemp;
+	int iNum;
+{
+	int iVal = force_states[iNum];
+
+    (void) sprintf(pcTemp, "%-12s    ", special_stat[iNum].type);
+	if (iVal == INT_FORCE_ON)
+	{
+        strcat(pcTemp, "ON");
+	}
+	else if (iVal == INT_FORCE_OFF)
+	{
+        strcat(pcTemp, "OFF");
+	}
+	else
+	{
+        strcat(pcTemp, "DONT");
+	}
+
+	if (! force_entries[iNum])
+	{
+        force_entries[iNum] = (char *) malloc(40);   /* use define */
+	}
+
+    strcpy(force_entries[iNum], pcTemp);
+}
+
 init_interface()
 {
+	int iCtr;
+	char acTemp[40];
+	static int iFirstTime = 1;
+
+    if (iFirstTime)
+    {
+		iFirstTime = 0;
+
+        for (iCtr = 0; iCtr < MAX_SPECIALS; iCtr++)
+        {
+            force_entries[iCtr] = (char *)0;
+		    force_states[iCtr]  = INT_FORCE_DONT;
+        }
+	}
+	else
+	{
+        for (iCtr = 0; iCtr < MAX_SPECIALS; iCtr++)
+        {
+		    force_states[iCtr]  = INT_FORCE_DONT;
+            if (force_entries[iCtr])
+			{
+                free(force_entries[iCtr]);
+                force_entries[iCtr] = (char *)0;
+			}
+        }
+	}
+
+	for (iCtr = 0; iCtr < MAX_SPECIALS; iCtr++)
+	{
+		MakeForceString(acTemp, iCtr);
+	}
+
     init_players();
     menu_sys_window(&menu_sys, ANIM_WIN);
 
@@ -383,13 +457,17 @@ init_interface()
 		   LEV1_X, LEV0_Y, design_entries, M_FONT);
     menu_norm_make(&menu_sys, HELP_MENU, "Help", 11, 0,
 		   LEV1_X, LEV0_Y, help_entries, M_FONT);
-    menu_nohil_make(&menu_sys, GAMES_MENU, "Games", MAX_GAMES, 0,
+    menu_nohil_make(&menu_sys, GAMES_MENU, "Games",
+			(sizeof(games_entries)/sizeof(char *)), 0,
 		    LEV2_X, LEV0_Y, games_entries, M_FONT);
     menu_noti_make(&menu_sys, NUM_MENU, "", 11, 0,
 		   LEV2_X, LEV0_Y, num_entries, M_FONT);
     menu_flag_make(&menu_sys, FLAGS_MENU, "Flags", 
 		   (sizeof(flags_entries) / sizeof(char *)), /* GHS */
 		   0, LEV3_X, LEV0_Y, flags_entries, M_FONT);
+    menu_left_make(&menu_sys, FORCE_MENU, "Force Specials   Opt",
+           (sizeof(force_entries) / sizeof(char *)),
+           0, LEV2_X, LEV0_Y, force_entries, M_FONT);
 
 	init_flags_hil();
 
@@ -471,6 +549,7 @@ init_comb_menus()
 		   setups_entries, M_FONT);
 }
 
+
 int sub_interface_main(choice)
 	int choice;
 {
@@ -511,6 +590,36 @@ int sub_interface_main(choice)
 			break;
 	}
 	return (retval);
+}
+
+int sub_interface_force(choice)
+	int choice;
+{
+	int  iVal;
+	char acTemp[40];
+
+	iVal = force_states[choice];
+
+	if (iVal == INT_FORCE_DONT)
+	{
+		iVal = INT_FORCE_ON;
+	}
+	else if (iVal == INT_FORCE_ON)
+	{
+		iVal = INT_FORCE_OFF;
+	}
+	else if (iVal == INT_FORCE_OFF)
+	{
+		iVal = INT_FORCE_DONT;
+	}
+
+	force_states[choice] = iVal;
+
+	MakeForceString(acTemp, choice);
+
+	menu_redraw(&menu_sys, FORCE_MENU);
+
+	return (0);
 }
 
 void sub_interface_view(choice)
@@ -695,55 +804,59 @@ void sub_interface_settings(choice)
 	switch (choice)
 	{
 		case 0:
-			menu_display(&menu_sys, VEHICLES_MENU);
+			menu_display(&menu_sys, FLAGS_MENU);
 			break;
 		case 1:
 			menu_display(&menu_sys, MAZES_MENU);
 			break;
 		case 2:
-			menu_display(&menu_sys, GAMES_MENU);
-			break;
-		case 3:
-			menu_display(&menu_sys, FLAGS_MENU);
-			break;
-		case 4:
 			ask_winning_score();
 			/* Unhighlight selection and redisplay settings */
 			/* if a value in the settings was changed.      */
 			display_settings();
 			menu_unhighlight(&menu_sys, SETTINGS_MENU);
 			break;
+		case 3:
+			/* force specials */
+			menu_display(&menu_sys, FORCE_MENU);
+			break;
+		case 4:
+			menu_display(&menu_sys, GAMES_MENU);
+			break;
 		case 5:
-			do_num(SET_DIFFICULTY, TRUE);
+			do_num(SET_SHOCKERWALL, TRUE);
 			break;
 		case 6:
 			do_num(SET_OUTPOST, TRUE);
 			break;
 		case 7:
-			do_num(SET_SCROLL, TRUE);
+			do_num(SET_DIFFICULTY, TRUE);
 			break;
 		case 8:
-			do_num(SET_BOX_SLOW, TRUE);
+			do_num(SET_SCROLL, TRUE);
 			break;
 		case 9:
-			do_num(SET_DISC_FRIC, TRUE);
+			do_num(SET_BOX_SLOW, TRUE);
 			break;
 		case 10:
-			do_num(SET_DISC_SPEED, TRUE);
+			do_num(SET_DISC_FRIC, TRUE);
 			break;
 		case 11:
-			do_num(SET_DISC_DAMAGE, TRUE);
+			do_num(SET_DISC_SPEED, TRUE);
 			break;
 		case 12:
-			do_num(SET_DISC_HEAT, TRUE);
+			do_num(SET_DISC_DAMAGE, TRUE);
 			break;
 		case 13:
-			do_num(SET_DISC_SLOW, TRUE);
+			do_num(SET_DISC_HEAT, TRUE);
 			break;
 		case 14:
-			do_num(SET_SHOCKERWALL, TRUE);
+			do_num(SET_DISC_SLOW, TRUE);
 			break;
 		case 15:
+			menu_display(&menu_sys, VEHICLES_MENU);
+			break;
+		case 16:
     		clear_window(ANIM_WIN);
     		iprint("Enter the settings filename.", 0, 8);
 			input_filename(ANIM_WIN, acPrevFileName, acFileName,
@@ -752,7 +865,7 @@ void sub_interface_settings(choice)
 			set_terminal(0);
 			expose_win(ANIM_WIN, TRUE);
 			break;
-		case 16:
+		case 17:
     		clear_window(ANIM_WIN);
     		iprint("Enter the settings filename.", 0, 8);
 			input_filename(ANIM_WIN, acPrevFileName, acFileName,
@@ -1019,6 +1132,10 @@ main_interface()
 		  case FLAGS_MENU:
 		    sub_interface_flags(choice);
 		    break;
+
+		  case FORCE_MENU:
+			  sub_interface_force(choice);
+			  break;
 		}
 	    }
 	    break;
@@ -1311,14 +1428,14 @@ Boolean init;
 */
 display_settings()
 {
-    extern char *game_str[], *bool_str[];
+    extern *bool_str[];
     char temp[41];
     int line;
 
     clear_window(GAME_WIN);
 
     line = 0;
-    display_game_str("Game:  ", game_str[(int)settings.si.game], line++);
+    display_game_str("Game:  ", games_entries[(int)settings.si.game], line++);
     display_game_num("Speed: %d", settings.game_speed, line++);
 
     /* If maze is random, display density, else display name */

@@ -165,18 +165,6 @@ typedef struct {
 	Angle old_angle;
     } turret[MAX_TURRETS];
 
-    /* should just need to arrays of int type */
-
-#ifdef GLORGON
-    struct {
-	int type;
-    } draw[NUM_MOUNTS], drawn[NUM_MOUNTS];
-    struct {
-        int range;
-	int type;
-    } display_weapon[NUM_MOUNTS];
-#endif
-
 } Hud;
 
 #endif /* !NO_HUD */
@@ -193,8 +181,10 @@ typedef struct {
  *
  * 23 makes them blink off for a frame just
  * before the update comes in
+ *
+ * Set to 24 so 'bots don't miss it.
  */
-#define PERSIST 23
+#define PERSIST 24
 
 #define MAP_OFF (MAP_BOX_SIZE / 2)
 
@@ -222,8 +212,15 @@ typedef struct {
     int   activate_frame;       /* frame we can be stealty */
 } Stealth;
 
+#define HARM_TRACKING_SLOTS 2
 typedef struct {
+   char *harm[HARM_TRACKING_SLOTS]; /* Should be Bullet */
    int frame_updated;
+   struct {
+        int x, y;
+        int grid_x, grid_y;
+	int color;
+   } draw_harm[HARM_TRACKING_SLOTS], drawn_harm[HARM_TRACKING_SLOTS];
 } Taclink;
 
 

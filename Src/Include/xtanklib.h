@@ -8,9 +8,12 @@
 
 /*
 $Author: lidl $
-$Id: xtanklib.h,v 2.15 1992/05/19 22:56:08 lidl Exp $
+$Id: xtanklib.h,v 2.16 1992/09/13 07:03:02 lidl Exp $
 
 $Log: xtanklib.h,v $
+ * Revision 2.16  1992/09/13  07:03:02  lidl
+ * aaron 1.3e patches
+ *
  * Revision 2.15  1992/05/19  22:56:08  lidl
  * post chris moore patches
  *
@@ -240,10 +243,19 @@ typedef struct {
 #define MAZE_FLAGS	(INSIDE_MAZE|NORTH_WALL|WEST_WALL|NORTH_DEST|WEST_DEST)
 
 /* Flags for RDF on a "map" */
+
+/*
+ * Note that these values are flags in the MAPPER only,
+ * they occupy the space used for the vehicle flags in
+ * the real map.
+ */
+
 #ifndef NO_CAMO
 #define RED_RDF		(1<<8)
 #define GREEN_RDF	(1<<9)
 #define YELLOW_RDF 	(1<<10)
+#define ANY_RDF         (RED_RDF | GREEN_RDF | YELLOW_RDF)
+#define X_RDF 	        (1<<11)
 #endif NO_CAMO
 
 /* Program ability flags */
@@ -301,6 +313,15 @@ typedef struct {
 				 (int)(mount) <= (int)MOUNT_TURRET4)
 
 /*
+ * Table of initial height values
+ */
+
+#define LOW -1
+#define NORM 0
+#define HIGH 1
+#define FLY  9
+
+/*
 * Well, IS_TURRET is here, isn't it?
 */
  
@@ -313,8 +334,6 @@ typedef struct {
 */
  
 #define make_bullet(v,loc,type,angle) make_smart_bullet(v,loc,type,angle,NULL)
-
-#define BOOST_PHASE 5 /* How many frames it moves ballisticly forward */
 
 #include "lowlib.h"
 

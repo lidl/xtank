@@ -8,9 +8,12 @@
 
 /*
 $Author: lidl $
-$Id: display.c,v 2.16 1992/06/07 02:45:08 lidl Exp $
+$Id: display.c,v 2.17 1992/09/13 07:04:14 lidl Exp $
 
 $Log: display.c,v $
+ * Revision 2.17  1992/09/13  07:04:14  lidl
+ * aaron 1.3e patches
+ *
  * Revision 2.16  1992/06/07  02:45:08  lidl
  * Post Adam Bryant patches and a manual merge of the rejects (ugh!)
  *
@@ -140,6 +143,9 @@ int lastterm;
 {
     Vehicle *v;
     int i;
+#ifndef NO_HUD
+    unsigned int action;
+#endif /* NO_HUD */
 
     /* Check for being exposed */
     check_expose(ANIM_WIN, status);
@@ -189,6 +195,47 @@ int lastterm;
 
     display_bullets(status, lastterm);
     display_explosions(status);
+
+#ifndef NO_HUD
+
+    /*
+     *  The test for NULL is a piece of SPAM.
+     *
+     *  Basically the reason this is needed is cause
+     *  this routine is getting called with
+     *  the current terminal set to a non-existant
+     *  vehicle.  It's some bogosity for the
+     *  death-delay so that the dead vehicle keeps getting
+     *  updates
+     *
+     *  -ane
+     */
+
+    v = term->vehicle;
+
+    if (v != NULL) {
+
+    if (!tstflag(v->status, VS_is_alive)
+	&& tstflag(v->status, VS_was_alive)) printf ("Got one!\n");
+
+	switch (status) {
+	  case REDISPLAY:
+	    if (tstflag(v->status, VS_is_alive))
+	        do_special(v, HUD, SP_redisplay);
+	    break;
+	  case ON:
+	    if (tstflag(v->status, VS_is_alive))
+	        do_special(v, HUD, SP_draw);
+	    break;
+	  case OFF:
+	    if (tstflag(v->status, VS_was_alive))
+	        do_special(v, HUD, SP_erase);
+	    break;
+	}
+    }
+
+#endif /* !NO_HUD */
+
 }
 
 
@@ -732,14 +779,6 @@ display_map(status)
 	    do_special(v, CAMO, action);
 	    do_special(v, RDF, action);
 #endif /* !NO_CAMO */
-#ifndef NO_HUD
-/*
- * Bzzzt!  Wrong place for this, the HUD is in the animation
- * window.  Well, it looks good here, dontcha think?
- */
-	    do_special(v, HUD, action);
-#endif /* !NO_HUD */
-
 	} else {
 	    if (v->death_timer == DEATH_DELAY - 1) {
 		do_special(v, RADAR, SP_erase);

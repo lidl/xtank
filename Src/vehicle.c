@@ -4,9 +4,18 @@
 **
 */
 
-/* $Id: vehicle.c,v 2.15 1992/08/19 04:57:57 lidl Exp $ */
+/* $Id: vehicle.c,v 2.18 1992/09/13 07:04:14 lidl Exp $ */
 /*
    $Log: vehicle.c,v $
+ * Revision 2.18  1992/09/13  07:04:14  lidl
+ * aaron 1.3e patches
+ *
+ * Revision 2.17  1992/09/12  09:42:26  aahz
+ * added support for forcing specials
+ *
+ * Revision 2.16  1992/09/12  07:03:34  stripes
+ * Moved the release_discs, so STQ could work.
+ *
  * Revision 2.15  1992/08/19  04:57:57  lidl
  * minor fix for hpux systems
  *
@@ -93,75 +102,81 @@ void make_specials(v, which)
     Vehicle *v;
     Flag which;
 {
-    extern int special_console(), special_mapper(), special_radar(),
+    extern SpecialStatus special_console(), special_mapper(), special_radar(),
 	special_new_radar(), special_taclink(),
-#ifndef NO_CAMO
 	special_camo(), special_stealth(), special_rdf(),
-#endif /* !NO_CAMO */
-#ifndef NO_HUD
-	special_hud(),
-#endif /* !NO_HUD */
-        special_dummy(), special_repair();
+	special_hud(), special_dummy(), special_repair();
     Special *s;
     int i;
+	extern char force_states[];
 
     for (i = 0; i < MAX_SPECIALS; i++) {
-	s = &v->special[i];
+		s = &v->special[i];
 
-	/* make sure vehicle should have this special */
-	if (! tstflag(which, (1 << i))) {
-	    s->status = SP_nonexistent;
-	    continue;
-	}
+		if (force_states[i] == INT_FORCE_OFF)
+		{
+			v->special[i].status = SP_nonexistent;
+			continue;
+		}
+		else
+		if (force_states[i] == INT_FORCE_ON)
+		{
+			v->special[i].status = SP_off;
+		}
+		else
+		if (force_states[i] == INT_FORCE_DONT)
+		{
+			/* make sure vehicle should have this special */
+			if (! tstflag(which, (1 << i))) {
+	    		s->status = SP_nonexistent;
+	    		continue;
+			}
+		}
 
 	switch (i) {
 	    case CONSOLE:
 		s->proc = special_console;
-		s->record = calloc((unsigned) 1, sizeof(Console));
+		s->record = (void *) calloc((unsigned) 1, sizeof(Console));
 		break;
 	    case MAPPER:
 		s->proc = special_mapper;
-		s->record = calloc((unsigned) 1, sizeof(Mapper));
+		s->record = (void *) calloc((unsigned) 1, sizeof(Mapper));
 		break;
 	    case RADAR:
 		s->proc = special_radar;
-		s->record = calloc((unsigned) 1, sizeof(Radar));
+		s->record = (void *) calloc((unsigned) 1, sizeof(Radar));
 		break;
 	    case NEW_RADAR:
 		s->proc = special_new_radar;
-		s->record = calloc((unsigned) 1, sizeof(newRadar));
+		s->record = (void *) calloc((unsigned) 1, sizeof(newRadar));
 		break;
 	    case TACLINK:
 		s->proc = special_taclink;
-		s->record = calloc((unsigned) 1, sizeof(Taclink));
+		s->record = (void *) calloc((unsigned) 1, sizeof(Taclink));
 		break;
-#ifndef NO_CAMO
             case CAMO:
                 s->proc = special_camo;
-                s->record = calloc((unsigned) 1, sizeof(Camo));
+                s->record = (void *) calloc((unsigned) 1, sizeof(Camo));
                 break;
             case STEALTH:
                 s->proc = special_stealth;
-                s->record = calloc((unsigned) 1, sizeof(Stealth));
+                s->record = (void *) calloc((unsigned) 1, sizeof(Stealth));
                 break;
             case RDF:
                 s->proc = special_rdf;
-                s->record = calloc((unsigned) 1, sizeof(Rdf));
+                s->record = (void *) calloc((unsigned) 1, sizeof(Rdf));
                 break;
-#endif /* !NO_CAMO */
-#ifndef NO_HUD
             case HUD:
                 s->proc = special_hud;
-                s->record = calloc((unsigned) 1, sizeof(Hud));
+                s->record = (void *) calloc((unsigned) 1, sizeof(Hud));
                 break;
-#endif /* !NO_HUD */
 	    case REPAIR:
 		s->proc = special_repair;
-		s->record = calloc((unsigned) 1, 1);
+		s->record = (void *) calloc((unsigned) 1, 1);
 		break;
 	    default:
 		s->proc = special_dummy;
-		s->record = calloc((unsigned) 1, 1);
+		s->record = (void *) calloc((unsigned) 1, 1);
 		break;
 	}
     }
@@ -228,11 +243,12 @@ Vehicle *make_vehicle(d, c)
 
     make_turrets(v);
     make_programs(v, c->num_programs, c->program);
-    make_specials(v, d->specials);
 
     for (i = 0; i < MAX_SPECIALS; i++)
 	v->special[i].status = (d->specials & (1 << i)) ? SP_off :
 		SP_nonexistent;
+
+    make_specials(v, d->specials);
 
     v->max_turn_rate = d->handling / 8.0;
 
@@ -294,6 +310,10 @@ int activate_vehicle(v)
     v->heat = 0;
     v->num_discs = 0;
 
+#ifndef NO_DAMAGE
+    v->heat_sinks = v->vdesc->heat_sinks;
+#endif
+
 /*
  * Start with an approximation of the radar surface 
  *  v->rcs = (float) pow((double) v->vdesc->weight, 2.0/3.0) * 3.0;
@@ -343,6 +363,8 @@ int activate_vehicle(v)
 
 	for (i = 0; i < MAX_VEHICLES; i++)
 	    v->illum[i].color = -1;
+
+    v->frame_weapon_fired = -2;
 
 #endif /* !NO_CAMO */
 
@@ -546,9 +568,6 @@ kill_vehicle(victim, killer)
         explode_location(killer->loc, 1, EXP_GLEAM);
     }
 
-    /* Release at fast speed any discs the victim owned */
-    release_discs(victim, DISC_FAST_SPEED, TRUE);
-
     victim->owner->deaths++;
 
 	if (killer)
@@ -556,6 +575,14 @@ kill_vehicle(victim, killer)
 		points = 1000.0 * victim->vdesc->cost / killer->vdesc->cost;
     	if (!SAME_TEAM(killer, victim)) 
 		{
+			if (settings.si.game == STQ_GAME)
+			{
+				if (victim->num_discs || killer->num_discs)
+				{
+					killer->owner->score += points;
+				}
+			}
+			else
 			if (settings.si.game != ULTIMATE_GAME &&
 	    		settings.si.game != CAPTURE_GAME)
 			{
@@ -576,6 +603,10 @@ kill_vehicle(victim, killer)
     }
     /* Send out a message about the victim's death */
     send_death_message(victim, killer);
+
+    /* Release at fast speed any discs the victim owned */
+	/* (make sure this is AFTER the points check, for STQ */
+    release_discs(victim, DISC_FAST_SPEED, TRUE);
 
     /* check if we should let them resurrect */
     if (!settings.si.restart) {

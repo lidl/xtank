@@ -391,7 +391,7 @@ int show_dot P_((BoxC *loc));
 
 /* menu.c */
 int menu_sys_window P_((Menu_int *menuobj, int wdw));
-int menu_bare_make P_((Menu_int *menuobj, int menuid, char *title, int size, int width, int xtop, int ytop, int fntcode, int has_bar, int use_escher));
+int menu_bare_make P_((Menu_int *menuobj, int menuid, char *title, int size, int width, int xtop, int ytop, int fntcode, int has_bar, int use_escher, int center));
 int menu_set_fields P_((Menu_int *menuobj, int menuid, int val));
 int menu_resize P_((Menu_int *menuobj, int menuid, int newsize));
 int menu_new_width P_((Menu_int *menuobj, int menuid, int newwid));

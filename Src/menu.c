@@ -7,10 +7,13 @@
 */
 
 /*
-$Author: lidl $
-$Id: menu.c,v 2.4 1991/12/10 03:41:44 lidl Exp $
+$Author: aahz $
+$Id: menu.c,v 2.5 1992/09/12 09:42:26 aahz Exp $
 
 $Log: menu.c,v $
+ * Revision 2.5  1992/09/12  09:42:26  aahz
+ * added support for left justified menus
+ *
  * Revision 2.4  1991/12/10  03:41:44  lidl
  * changed float to FLOAT, for portability reasons
  *
@@ -53,7 +56,7 @@ int wdw;
  * by the programmer to the menu...
  */
 menu_bare_make(menuobj, menuid, title, size, width, xtop, ytop, fntcode,
-	       has_bar, use_escher)
+	       has_bar, use_escher, center)
 Menu_int *menuobj;		/* Object holding all menus of a "system" */
 int menuid;			/* integer id number that the menu will be */
 char *title;			/* Title of menu, or "" if none */
@@ -63,6 +66,7 @@ int xtop, ytop;			/* upper left x,y coordinates of menu */
 int fntcode;			/* font id */
 int has_bar;			/* has scrollbar */
 int use_escher;			/* use escher menus */
+int center;             /* center text */
 {
     Menu *m;			/* Temporary menu holder */
     int i;			/* Temporary counter for setting menus */
@@ -79,6 +83,7 @@ int use_escher;			/* use escher menus */
     menuobj->is_up[menuid] = MENU_DOWN;
     MAKE_M;
     m->has_bar = has_bar;
+	m->center = center;
     m->numitem = size;		/* store the parameters of the menu */
     /* m->offset = 0; */
     if (use_escher)
@@ -199,13 +204,26 @@ int menuid;						/* menu identifier */
 
 	for (i = top; i < limit; i++)
 	{
-		draw_text(menuobj->wdw,
-				  m->xt + (m->width >> 1),		/* X */
-				  m->yt + m->fh * (i - top) + 2,	/* Y */
-				  m->items[i],	/* The String */
-				  m->font,
-				  DRAW_COPY,
-				  MENU_FORE);
+		if (m->center)
+		{
+            draw_text(menuobj->wdw,
+                      m->xt + (m->width >> 1),		/* X */
+                      m->yt + m->fh * (i - top) + 2,	/* Y */
+                      m->items[i],	/* The String */
+                      m->font,
+                      DRAW_COPY,
+                      MENU_FORE);
+		}
+		else
+		{
+            draw_text_left(menuobj->wdw,
+                           m->xt,		/* X */
+                           m->yt + m->fh * (i - top) + 2,	/* Y */
+                           m->items[i],	/* The String */
+                           m->font,
+                           DRAW_COPY,
+                           MENU_FORE);
+		}
 		if (m->hil[i]) {
 			menu_highlight(menuobj->wdw, m, i);
 		}

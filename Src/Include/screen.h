@@ -7,10 +7,14 @@
 */
 
 /*
-$Author: lidl $
-$Id: screen.h,v 2.4 1991/09/15 09:24:51 lidl Exp $
+$Author: aahz $
+$Id: screen.h,v 2.5 1992/09/12 09:40:09 aahz Exp $
 
 $Log: screen.h,v $
+ * Revision 2.5  1992/09/12  09:40:09  aahz
+ * reordered windows.  Made more important windows closer to
+ * the top of the screen so reduced size displays only miss the garbage
+ *
  * Revision 2.4  1991/09/15  09:24:51  lidl
  * removed vestiges of config.h file, now all configuration is done in
  * the Imakefile, and propogated via compile-time -D flags
@@ -34,35 +38,35 @@ $Log: screen.h,v $
 
 #ifdef S1024x864
 /* Window geometry information */
-#define ANIM_WIN_X	0
-#define ANIM_WIN_Y	0
-#define ANIM_WIN_WIDTH	768
-#define ANIM_WIN_HEIGHT	768
+#define ANIM_WIN_X        0
+#define ANIM_WIN_Y        0
+#define ANIM_WIN_WIDTH    768
+#define ANIM_WIN_HEIGHT   768
 
-#define GAME_WIN_X	768
-#define GAME_WIN_Y	0
-#define GAME_WIN_WIDTH	250
-#define GAME_WIN_HEIGHT	192
+#define HELP_WIN_X        0
+#define HELP_WIN_Y        768
+#define HELP_WIN_WIDTH    (1015-MAP_WIN_WIDTH)
+#define HELP_WIN_HEIGHT   90
 
-#define CONS_WIN_X	768
-#define CONS_WIN_Y	296
-#define CONS_WIN_WIDTH	250
-#define CONS_WIN_HEIGHT	(216+HELP_WIN_HEIGHT)
+#define MAP_WIN_X         768
+#define MAP_WIN_Y         0
+#define MAP_WIN_WIDTH     250
+#define MAP_WIN_HEIGHT    250
 
-#define MAP_WIN_X	768
-#define MAP_WIN_Y	(518+HELP_WIN_HEIGHT)
-#define MAP_WIN_WIDTH	250
-#define MAP_WIN_HEIGHT	250
+#define CONS_WIN_X        768
+#define CONS_WIN_Y        (MAP_WIN_Y + MAP_WIN_HEIGHT + 6)
+#define CONS_WIN_WIDTH    250
+#define CONS_WIN_HEIGHT   306
 
-#define HELP_WIN_X	0
-#define HELP_WIN_Y	768
-#define HELP_WIN_WIDTH  (1015-MAP_WIN_WIDTH)
-#define HELP_WIN_HEIGHT	90
+#define MSG_WIN_X         768
+#define MSG_WIN_Y         (CONS_WIN_Y + CONS_WIN_HEIGHT + 6)
+#define MSG_WIN_WIDTH     250
+#define MSG_WIN_HEIGHT    92
 
-#define MSG_WIN_X	768
-#define MSG_WIN_Y	198
-#define MSG_WIN_WIDTH   250
-#define MSG_WIN_HEIGHT	92
+#define GAME_WIN_X        768
+#define GAME_WIN_Y        (MSG_WIN_Y + MSG_WIN_HEIGHT + 6)
+#define GAME_WIN_WIDTH    250
+#define GAME_WIN_HEIGHT   192
 
 /* Battle windows.  Not always mapped */
 #define STAT_WIN_X	768
@@ -76,35 +80,35 @@ $Log: screen.h,v $
 
 #ifdef S640x400
 /* Window geometry information */
-#define ANIM_WIN_X	0
-#define ANIM_WIN_Y	0
-#define ANIM_WIN_WIDTH	400
-#define ANIM_WIN_HEIGHT	400
+#define ANIM_WIN_X        0
+#define ANIM_WIN_Y        0
+#define ANIM_WIN_WIDTH    400
+#define ANIM_WIN_HEIGHT   400
 
-#define GAME_WIN_X	400
-#define GAME_WIN_Y	0
-#define GAME_WIN_WIDTH	238
-#define GAME_WIN_HEIGHT	192
+#define HELP_WIN_X        0
+#define HELP_WIN_Y        310
+#define HELP_WIN_WIDTH    638
+#define HELP_WIN_HEIGHT   88
 
-#define CONS_WIN_X	400
-#define CONS_WIN_Y	0
-#define CONS_WIN_WIDTH	238
-#define CONS_WIN_HEIGHT	158
+#define GAME_WIN_X        400
+#define GAME_WIN_Y        0
+#define GAME_WIN_WIDTH    238
+#define GAME_WIN_HEIGHT   192
 
-#define MAP_WIN_X	400
-#define MAP_WIN_Y	160
-#define MAP_WIN_WIDTH	238
-#define MAP_WIN_HEIGHT	238
+#define CONS_WIN_X        400
+#define CONS_WIN_Y        0
+#define CONS_WIN_WIDTH    238
+#define CONS_WIN_HEIGHT   158
 
-#define HELP_WIN_X	0
-#define HELP_WIN_Y	310
-#define HELP_WIN_WIDTH  638
-#define HELP_WIN_HEIGHT	88
+#define MAP_WIN_X         400
+#define MAP_WIN_Y         160
+#define MAP_WIN_WIDTH     238
+#define MAP_WIN_HEIGHT    238
 
-#define MSG_WIN_X	0
-#define MSG_WIN_Y	0
-#define MSG_WIN_WIDTH   238
-#define MSG_WIN_HEIGHT	88
+#define MSG_WIN_X         0
+#define MSG_WIN_Y         0
+#define MSG_WIN_WIDTH     238
+#define MSG_WIN_HEIGHT    88
 
 /* Battle windows.  Not always mapped */
 #define STAT_WIN_X	400

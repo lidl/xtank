@@ -8,9 +8,12 @@
 
 /*
 $Author: lidl $
-$Id: mapper.c,v 2.9 1992/03/31 21:45:50 lidl Exp $
+$Id: mapper.c,v 2.10 1992/09/13 07:04:14 lidl Exp $
 
 $Log: mapper.c,v $
+ * Revision 2.10  1992/09/13  07:04:14  lidl
+ * aaron 1.3e patches
+ *
  * Revision 2.9  1992/03/31  21:45:50  lidl
  * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
  *
@@ -151,7 +154,8 @@ SpecialStatus special_mapper(v, record, action)
 		b = &real_map[x][y];
 		mb = &m->map[x][y];
 
-		flags = b->flags ^ mb->flags;	/* get flags difference */
+                /* mask off vehicle flags first -ane */
+		flags = (b->flags & MAZE_FLAGS) ^ mb->flags;	/* get flags difference */
 		if (flags & NORTH_WALL && y != top)
 		{
 		    /* add symbol to display list */

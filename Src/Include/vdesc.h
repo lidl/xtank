@@ -29,9 +29,7 @@ typedef struct {
     int   reload_counter;	/* # frames until next shot can be fired */
     int   ammo;			/* number of ammo units left in weapon */
     Flag  status;		/* status of weapon (on/off,no_ammo) */
-#ifndef NO_TIMED_REFILL
     int   refill_counter;	/* # frames until next shot can refilled */
-#endif /* !NO_TIMED_REFILL */
 } Weapon;
 
 typedef struct {

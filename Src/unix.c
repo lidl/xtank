@@ -8,12 +8,16 @@
 
 /*
 $Author: lidl $
-$Id: unix.c,v 2.17 1992/08/19 04:55:44 lidl Exp $
+$Id: unix.c,v 2.18 1992/09/13 06:51:54 lidl Exp $
 
 $Log: unix.c,v $
- * Revision 2.17  1992/08/19  04:55:44  lidl
- * made uglier, to support linking on hpux machines
+ * Revision 2.18  1992/09/13  06:51:54  lidl
+ * made the commands use the path to find executables, rather than assuming
+ * /bin/cc and /bin/ld
  *
+ * Revision 2.17  92/08/19  04:55:44  lidl
+ * made uglier, to support linking on hpux machines
+ * 
  * Revision 2.16  1992/03/31  04:04:16  lidl
  * pre-aaron patches, post 1.3d release (ie mailing list patches)
  *
@@ -306,9 +310,9 @@ struct nlist nl[3];
 	    /* Do the compile */
 	    sprintf(command,
 #ifdef mips
-            "cd %s/%s; /bin/cc %s -c -G 0 -O -I%s -o %s.o %s.c > %s 2>&1",
+            "cd %s/%s; cc %s -c -G 0 -O -I%s -o %s.o %s.c > %s 2>&1",
 #else
-            "cd %s/%s; /bin/cc %s -c -O -I%s -o %s.o %s.c > %s 2>&1",
+            "cd %s/%s; cc %s -c -O -I%s -o %s.o %s.c > %s 2>&1",
 #endif
 		 pathname, programsdir, ALLDEFINES, headersdir, module_name,
 		    module_name, error_name);
@@ -325,7 +329,7 @@ struct nlist nl[3];
 	case 'o':
 	    /* Do the link */
 	    sprintf(command,
-		    "/bin/ld -x -N -A %s -T %s -o %s %s.o -lm -lc > %s 2>&1",
+		    "ld -x -N -A %s -T %s -o %s %s.o -lm -lc > %s 2>&1",
 		    executable_name, address, output_name, module_name,
 		    error_name);
 
@@ -540,7 +544,7 @@ char *output_name, *error_name;
     switch (*(p + 1)) {
 	case 'c':
 	    /* Do the compile */
-	    sprintf(command, "cd %s/%s; /bin/cc -c -O -I. %s.c > %s 2>&1",
+	    sprintf(command, "cd %s/%s; cc -c -O -I. %s.c > %s 2>&1",
 		    pathname, programsdir, module_name, error_name);
 
 #ifdef DEBUG
@@ -556,7 +560,7 @@ char *output_name, *error_name;
 #ifdef __hpux
 	    sprintf(command, "/bin/ld -x -a archive -A %s -R %s -e %s_main -o %s %s.o -lm -lc > %s 2>&1",
 #else
-	    sprintf(command, "/bin/ld -x -N -A %s -R %s -e %s_main -o %s %s.o -lm -lc > %s 2>&1",
+	    sprintf(command, "ld -x -N -A %s -R %s -e %s_main -o %s %s.o -lm -lc > %s 2>&1",
 #endif
 		    executable_name, address, sym, output_name, module_name, error_name);
 

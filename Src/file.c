@@ -8,9 +8,15 @@
 
 /*
 $Author: lidl $
-$Id: file.c,v 2.27 1992/06/07 02:45:08 lidl Exp $
+$Id: file.c,v 2.30 1992/09/14 01:06:49 lidl Exp $
 
 $Log: file.c,v $
+ * Revision 2.30  1992/09/14  01:06:49  lidl
+ * hpux sux
+ *
+ * Revision 2.29  1992/09/12  19:46:50  stripes
+ * Added force specials support.
+ *
  * Revision 2.27  1992/06/07  02:45:08  lidl
  * Post Adam Bryant patches and a manual merge of the rejects (ugh!)
  *
@@ -119,9 +125,12 @@ $Log: file.c,v $
 #include "vehicle.h"
 #include "terminal.h"
 #include "globals.h"
+#include "vstructs.h"
 #ifdef UNIX
 #include <sys/param.h>
+#ifndef __hpux
 #include <sys/dir.h>
+#endif
 #endif
 #if defined(SVR4) || defined(SYSV)
 #include <dirent.h>
@@ -851,9 +860,16 @@ int save_settings(pcFileName)
     Video *vidptr;
     Vehicle *vptr;
 	Prog_desc *pdesc;
+	int i;
     extern char *teams_entries[];
     extern Terminal *terminal[];
     extern int num_terminals;
+	extern char force_states[MAX_SPECIALS];
+
+	if (! *pcFileName)
+	{
+		return 0;
+	}
 
     outfile = fopen(pcFileName, "w");
 	assert(outfile);
@@ -906,6 +922,17 @@ int save_settings(pcFileName)
 	fprintf(outfile, "Normal Friction: %f\n", settings.si.normal_friction);
 	fprintf(outfile, "Shocker Walls: %d\n", settings.si.shocker_walls);
 	fprintf(outfile, "Difficulty: %d\n", settings.difficulty);
+
+	for(i = 0; i < MAX_SPECIALS; i++) {
+		if (force_states[i] == INT_FORCE_OFF) {
+			fprintf(outfile, "Force Off: %s\n", special_stat[i].type);
+		}
+	}
+	for(i = 0; i < MAX_SPECIALS; i++) {
+		if (force_states[i] == INT_FORCE_ON) {
+			fprintf(outfile, "Force On: %s\n", special_stat[i].type);
+		}
+	}
 
 	customized_combatants();
 	init_combatants();

@@ -7,10 +7,13 @@
 */
 
 /*
-$Author: senft $
-$Id: main.c,v 2.11 1992/04/21 05:11:58 senft Exp $
+$Author: aahz $
+$Id: main.c,v 2.12 1992/09/12 09:42:26 aahz Exp $
 
 $Log: main.c,v $
+ * Revision 2.12  1992/09/12  09:42:26  aahz
+ * removed unused global
+ *
  * Revision 2.11  1992/04/21  05:11:58  senft
  * Added support for no o and no delay options.
  *
@@ -68,7 +71,6 @@ $Log: main.c,v $
 #endif
 
 
-char *game_str[] = {"Combat", "War", "Ultimate", "Capture", "Race"};
 char team_char[] = "NROYGBV";
 
 Eset actual_eset, *eset;

@@ -1,32 +1,25 @@
-                                                            September 6, 1992
+                                                            September 13, 1992
 
-              Release Notes for the Xtank UMDENG 1.3e Release
+              Release Notes for the Xtank UMDENG 1.3f Release
 
 New features:
 
-   * entirely new console driver
+   * support for 386BSD threading.
+     No support for dynamic loading yet, but we are working on it.
 
-   * support for SVR4 style threading
-     It was working on the SVR4 machines we had before we had to
-     give them back to the vendor.  We'd like to hear about any
-     success stories that people have with this code.
+   * modificiation to the robot "shooter" to bring it up to speed with
+     4 turret'd vehicles
 
-   * partial cleanup of THREAD_MP code
-     (It's only a little cleaner.  Most likely it will get majorly
-     whacked in the next release.)
+   * more and better RDF/TACLINK work from Aaron Eastlund
 
-   * no more support for the old .v vehicle file formats
-     We told you it was going away, *poof*, now it's gone.
-     Convert any vehicles you can't live without, and mail
-     the .V files to xtank-request@eng.umd.edu for possible
-     inclusion in the next release.
+   * removal of old code that wasn't ever getting defined, as part
+     of our code cleanup activities
 
-     Actaully, it does support them.  We can guarentee that it will
-     not support them in the next release.
+   * Imakefile file reorganization, tweaking of some compiler flags
+     on suns, hp's.  Not widely tested.
 
-   * two new submitted vehicle bodies.
-     They can accelerate really fast, but have space and weight
-     limitations that don't let them unbalance the game.
+   * re-arranged console layout, to better handle working on screens
+     of size 1024x768
 
 Known Problems:
    * no updates to the programmer docs (UTSL)

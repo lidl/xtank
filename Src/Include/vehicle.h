@@ -2,9 +2,12 @@
 
 /*
 $Author: lidl $
-$Id: vehicle.h,v 2.11 1992/08/31 01:50:45 lidl Exp $
+$Id: vehicle.h,v 2.12 1992/09/13 07:03:02 lidl Exp $
 
 $Log: vehicle.h,v $
+ * Revision 2.12  1992/09/13  07:03:02  lidl
+ * aaron 1.3e patches
+ *
  * Revision 2.11  1992/08/31  01:50:45  lidl
  * changed to use tanktypes.h, instead of types.h
  *
@@ -121,7 +124,11 @@ typedef struct {
 	int color;
     } illum[MAX_VEHICLES];
 
+    int frame_weapon_fired;
 #endif /* !NO_CAMO */
+#ifndef NO_DAMAGE
+    int heat_sinks;
+#endif
 
 } Vehicle;
 

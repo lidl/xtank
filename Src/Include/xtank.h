@@ -7,10 +7,13 @@
 */
 
 /*
-$Author: lidl $
-$Id: xtank.h,v 2.10 1992/08/31 01:50:45 lidl Exp $
+$Author: aahz $
+$Id: xtank.h,v 2.11 1992/09/12 09:40:09 aahz Exp $
 
 $Log: xtank.h,v $
+ * Revision 2.11  1992/09/12  09:40:09  aahz
+ * added new defines for forcing specials
+ *
  * Revision 2.10  1992/08/31  01:50:45  lidl
  * changed to use tanktypes.h, instead of types.h
  *
@@ -182,5 +185,8 @@ $Log: xtank.h,v $
 #define TURRET_MOUNT_Z   (BOX_WIDTH/8)
 #define SIDE_MOUNT_Z     (-BOX_WIDTH/8)
 
+#define INT_FORCE_DONT   0
+#define INT_FORCE_ON     1
+#define INT_FORCE_OFF    2
 
 #endif /* _XTANK_H_ */
