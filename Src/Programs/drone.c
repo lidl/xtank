@@ -14,6 +14,7 @@
 #include "malloc.h"
 #include "xtanklib.h"
 #include <math.h>
+#include <stdio.h>
 #include "sysdep.h"
 
 static void main();
@@ -48,6 +49,11 @@ static void main()
     find_thresh = 4;
     move_count = 0;
     move_thresh = 10;
+
+/* for debugging threads */
+#ifdef __bsdi__
+fprintf(stderr,"drone_main() entered\n");
+#endif
 
     /* Get us going at the beginning */
     set_rel_drive(5.0);

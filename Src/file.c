@@ -24,10 +24,8 @@
 #ifdef linux
 #define MAXNAMLEN NAME_MAX
 #endif
-#ifndef __hpux
-#if !defined(SVR4)
+#if !defined(__hpux) && (!defined(sun) || !defined(SVR4))
 #include <sys/dir.h>
-#endif
 #endif
 #endif
 #if defined(SVR4) || defined(SYSV)

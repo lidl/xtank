@@ -24,7 +24,8 @@
 #endif
 
 
-#if defined(AMIGA) || defined(MOTOROLA) || defined(i860) || defined(mmax)
+#if defined(AMIGA) || defined(MOTOROLA) || defined(i860) || defined(mmax) || \
+    !(defined(sun) && defined(SVR4))
 /* drem() not available so replace with wrapper around fmod() */
 static double temp_drem;
 
@@ -78,7 +79,9 @@ double rint P_((double x));
 #ifndef sgi
 #define random lrand48
 #endif
+#if !defined(sun) || !defined(SVR4)
 #define srandom srand48
+#endif
 #if defined(__hpux) || defined(__STDC__) || defined(STDC_LIBRARIES)
 #define bcopy(s,d,n) memmove(d,s,n)
 #else

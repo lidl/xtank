@@ -94,20 +94,6 @@
     SYS_LIBRARIES = -L/usr/X11/lib
 #endif
 
-/* Stupid fucking changes between BSDI v1.0 and v1.1 cause needless */
-/* pain and suffering for those that wish to support both! */
-
-/* We only need -ll on BSDi v1.1, but so help me god, I am just */
-/* furious that the only way of figuring out what version of the OS */
-/* is running is truely stupid.  It was 1.0 for the bsdi v1.0 release */
-/* and the Xfree folks conveinently made it 4.3 for the 1.1 release. */
-
-/* They all deserve to lose massively for not making the major/minor */
-/* OS release numbers for 1.1 what they should be.  Since they are */
-/* determined to lose, I made this file fail if the system isn't either */
-/* 1.0 (figured out correctly) or 4.3 (==1.1), so someone will have to */
-/* examine this once the first post-1.1 systems arrive. */
-
 #ifdef i386BsdArchitecture
 #if (OSMajorVersion == 4) && (OSMinorVersion == 3)
 	/* duh, this is really bsdi v1.1 */
@@ -145,19 +131,14 @@
     SYS_LIBRARIES = -lm43 -lbsd -lsun
 #endif
 #ifdef SunArchitecture
-#if OSMajorVersion == 4
+# if OSMajorVersion == 4
     SYS_LIBRARIES = /usr/lib/debug/malloc.o -llwp
-#endif
-#if defined(HasGcc) || defined(FORCE_GCC)
+# endif
+# if defined(HasGcc) || defined(FORCE_GCC)
         CCOPTIONS = $(EXTRA_CCOPTS)
-#else
+# else
         CCOPTIONS = /usr/lib/libm.il $(EXTRA_CCOPTS)
-#endif
-#ifdef SparcArchitecture
-/**/# Sun4 only options go here
-#else
-/**/# Sun3 only options go here
-#endif
+# endif
 #endif
 #ifdef UltrixArchitecture
 #ifdef MipsArchitecture

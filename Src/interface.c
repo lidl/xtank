@@ -21,10 +21,10 @@
 
 #ifdef UNIX
 #include <sys/param.h>
-#ifndef SVR4
-#include <sys/dir.h>
-#else
+#if defined(sun) && defined(SVR4)
 #include <dirent.h>
+#else
+#include <sys/dir.h>
 #endif
 #endif
 #include "clfkr.h"
@@ -1841,10 +1841,9 @@ int batch;
 #endif
 	char *ptr;
 
-#if !defined(hpux) && !defined(i860) && !defined(NeXT) && !defined(__alpha)
-#if 0
+#if !defined(hpux) && !defined(i860) && !defined(NeXT) && !defined(__alpha) \
+    && !defined(sun)
 	char *rindex();
-#endif
 #endif
 	char output_name[MAXPATHLEN], temp[MAXPATHLEN];
 	char *error_name, *code;

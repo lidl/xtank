@@ -9,6 +9,7 @@
 #include "sysdep.h"
 #include "malloc.h"
 #include "thread.h"
+#include <stdio.h>
 #include <assert.h>
 #include <errno.h>
 #include "proto.h"
@@ -46,10 +47,7 @@ Thread *thread_setup()
 	return thread_init((char *) curthd, 10 * sizeof(Thread), main);
 }
 
-Thread *thread_init(buf, bufsize, func)
-char *buf;
-unsigned int bufsize;
-Thread *(*func) ();
+Thread *thread_init(char *buf, unsigned int bufsize, Thread (*(func(void))))
 {
 	int bufend;
 	Thread *thd;
@@ -273,10 +271,7 @@ Thread *thread_setup()
 	return curthd;
 }
 
-Thread *thread_init(buf, bufsize, func)
-char *buf;
-unsigned int bufsize;
-Thread *(*func) ();
+Thread *thread_init(char *buf, unsigned int bufsize, Thread (*(*func(void))))
 {
 	/* remember to give pointer to _top_ of stack */
 	lwp_create((thread_t *) buf, func, MINPRIO, LWPNOLASTRITES,
@@ -284,8 +279,7 @@ Thread *(*func) ();
 	return (Thread *) buf;
 }
 
-Thread *thread_switch(newthd)
-Thread *newthd;
+Thread *thread_switch(Thread *newthd)
 {
 	volatile thread_t * last_thread;
 
@@ -298,8 +292,7 @@ Thread *newthd;
 	return curthd;
 }
 
-Thread *thread_kill(thd)
-Thread *thd;
+Thread *thread_kill(Thread *thd)
 {
 	lwp_destroy(*thd);
 	return thd;
@@ -334,10 +327,7 @@ Thread *thread_setup()
 
 /* The following code is derived from a piece of */
 /* sample code from Peter Chubb, peterc@softway.oz.au */
-Thread *thread_init(buf, bufsize, func)
-char *buf;
-unsigned int bufsize;
-Thread *(*func) ();
+Thread *thread_init(char *buf, unsigned int bufsize, Thread (*(*func(void))))
 {
 	stack_t st;
 
@@ -353,15 +343,14 @@ Thread *(*func) ();
 		assert(0);
 	}
 	/* Modify the context to have a new stack */
-	STRUCT_ASSIGN((buf->uc_stack), st, stack_t);
-	buf->uc_link = curthd;	/* depends on a global */
+	STRUCT_ASSIGN((((ucontext_t *)buf)->uc_stack), st, stack_t);
+	((ucontext_t *)buf)->uc_link = curthd;  /* depends on a global */
 	/* Make the modified context */
 	makecontext((ucontext_t *) buf, (void (*)()) func, 0);
 	return (Thread *) buf;
 }
 
-Thread *thread_switch(newthd)
-Thread *newthd;
+Thread *thread_switch(Thread *newthd)
 {
 	ucontext_t * last_thread;
 
@@ -374,8 +363,7 @@ Thread *newthd;
 	return curthd;
 }
 
-Thread *thread_kill(thd)
-Thread *thd;
+Thread *thread_kill(Thread *thd)
 {
 	free(thd->uc_stack);	/* free the stack space buffer */
 	free(thd);	/* free the context save buffer */
@@ -398,38 +386,46 @@ Thread *thread_setup()
 	int status;
 	int policy;
 	pthread_attr_t attr;
+	struct sched_param params;
+
+#if defined(__bsdi__)
+	fprintf(stderr,"thread_setup() starting\n");
+#endif
 
 	curthd = (pthread_t *) malloc(sizeof(pthread_t));
 	*curthd = pthread_self();
 
 	status=pthread_attr_getschedpolicy(&attr, &policy);
-	if (status !=0) {
+	if (status != 0) {
 		perror("pthread_attr_getschedpolicy");
 		exit(17);
 	}
-	status=pthread_attr_setschedpolicy(&attr, SCHED_RR);
-	if (status !=0) {
+	status=pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
+	if (status != 0) {
 		perror("pthread_attr_setschedpolicy");
 		exit(17);
 	}
-
 #if 0
-	status=pthread_setscheduler(*curthd,SCHED_FIFO,PRI_FIFO_MAX);
+	params.sched_priority = PTHREAD_SCHED_MAX_PRIORITY;
+#endif
+	status = pthread_attr_getschedparam(&attr, &params);
 	if (status != 0) {
-		perror("pthread_setscheduler");
-		printf("If OSF/Alpha, do you have real-time [RT] subsets?\n");
+		perror("pthread_attr_getschedparam");
 		exit(17);
 	}
+#if defined(__bsdi__)
+	fprintf(stderr,"thread_setup() finishing\n");
 #endif
+
 	return curthd;
 }
 
-Thread *thread_init(buf, bufsize, func)
-char *buf;  /* NOTE: stack is allocated within pthreads */
-unsigned int bufsize;
-void (*func)();
+Thread *thread_init(char *buf, unsigned int bufsize, int(*(func(void))))
+/* NOTE: By default, the stack for each thread is allocated internally */
+/* in pthreads, so bufsize is really ignored, at least for now. */
 {
 	pthread_attr_t prog_attr;
+	struct sched_param params;
 	int status;
 
 	status = pthread_attr_init(&prog_attr);
@@ -437,12 +433,33 @@ void (*func)();
 		perror("pthread_attr_init");
 		exit(17);
 	}
-	pthread_attr_setinheritsched(&prog_attr,PTHREAD_EXPLICIT_SCHED);
-	pthread_attr_setschedpolicy(&prog_attr,SCHED_RR);
+	status = pthread_attr_getschedparam(&prog_attr, &params);
+	if (status != 0) {
+		perror("pthread_attr_getschedparam");
+		exit(17);
+	}
+
+	/* first, setup everything for round-robin scheduling */
+	pthread_attr_setschedpolicy(&prog_attr,SCHED_FIFO);
+
+	/* then, give the about-to be created thread a really low priority */
+	params.sched_priority = PTHREAD_SCHED_MIN_PRIORITY;
+	pthread_attr_setschedparam(&prog_attr, &params);
+
 #if 0
-	pthread_attr_setprio(&prog_attr,PRI_FIFO_MIN);
-#endif
 	pthread_attr_setstacksize(&prog_attr, (long) STACK_SIZE);
+#endif
+	/* finally, tell the system to use what we just cobbled up */
+	pthread_attr_setinheritsched(&prog_attr,PTHREAD_EXPLICIT_SCHED);
+
+#if defined(__bsdi__)
+	/* non-portable, but might be worth it... */
+	status = pthread_attr_setsuspendstate_np(&prog_attr,PTHREAD_CREATE_SUSPENDED);
+	if (status != 0) {
+		perror("pthread_attr_setsuspendstate_np PTHREAD_CREATE_SUSPENDED");
+		exit(17);
+	}
+#endif
 
 	status=pthread_create((Thread *) buf, &prog_attr,
 	(void *) func, (void *) 0);
@@ -454,28 +471,64 @@ void (*func)();
 	return (Thread *) buf;
 }
 
-Thread *thread_switch(newthd)
-Thread *newthd;
+Thread *thread_switch(Thread *newthd)
 {
 	Thread *oldthd;
 
 	pthread_testcancel();
-	if (curthd != newthd) {
+	if (pthread_equal((pthread_t)curthd, (pthread_t) newthd) == 0) {
+		int status;
+		pthread_attr_t attr;
+		struct sched_param params;
+
+		fprintf(stderr,"thread_switch() -> switching\n");
 		oldthd = curthd;
 		curthd = newthd;
 #if 0
-		pthread_setprio(*oldthd,PRI_FIFO_MIN);
-		pthread_setprio(*newthd,PRI_FIFO_MAX);
+		/* now, lower the old thread's priority, so it runs */
+		status = pthread_attr_getschedparam(&attr, &params);
+		if (status != 0) {
+			perror("pthread_attr_getschedparam");
+		}
+		params.sched_priority = PTHREAD_SCHED_MIN_PRIORITY;
+		pthread_attr_setschedparam(&attr, &params);
 #endif
+
+		/* give over control */
+#if defined(__bsdi__)
+		status = pthread_resume_np(*newthd);
+		if (status) {
+			perror("pthread_resume_np");
+		}
+		fprintf(stderr,"pthread_resume_np() called (%x)\n", *newthd);
+		pthread_yield();
+		sleep(1);
+		fprintf(stderr,"about to pthread_suspend_np(%x)\n", *oldthd);
+		status = pthread_suspend_np(*oldthd);
+		if (status) {
+			perror("pthread_suspend_np");
+		}
+#else
+		fprintf(stderr,"calling pthread_yield()\n");
 		pthread_yield();
 		pthread_testcancel();
+#endif
+
+#if 0
+		/* now, raise the new thread's priority, so it runs */
+		status = pthread_attr_getschedparam(&attr, &params);
+		if (status != 0) {
+			perror("pthread_attr_getschedparam");
+		}
+		params.sched_priority = PTHREAD_SCHED_MAX_PRIORITY;
+		pthread_attr_setschedparam(&attr, &params);
+#endif
 		return oldthd;
 	}
 	return curthd;
 }
 
-Thread *thread_kill(thd)
-Thread *thd;
+Thread *thread_kill(Thread *thd)
 {
 	int status;
 
@@ -485,7 +538,7 @@ Thread *thd;
 		printf("Couldn't kill a thread\n");
 		exit(17);
 	}
-	pthread_detach(thd);
+	pthread_detach((pthread_) thd);
 	return thd;
 }
 
@@ -497,27 +550,22 @@ Thread *thd;
 ** Empty implementation used when no threads package is available.
 */
 
-Thread *thread_setup()
+Thread *thread_setup(void)
 {
 	return (Thread *)0;
 }
 
-Thread *thread_init(buf, bufsize, func)
-char *buf;
-unsigned int bufsize;
-int (*func) ();
+Thread *thread_init(char *buf, unsigned int bufsize, int (*)func(void))
 {
 	return (Thread *) 0;
 }
 
-Thread *thread_switch(newthd)
-Thread *newthd;
+Thread *thread_switch(Thread *newthd)
 {
 	return newthd;
 }
 
-Thread *thread_kill(thd)
-Thread *thd;
+Thread *thread_kill(Thread *thd)
 {
 	return thd;
 }

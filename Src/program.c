@@ -49,8 +49,7 @@ Thread *scheduler_thread;
 ** Changes the current vehicle pointer to the specified vehicle.
 ** All xtanklib functions act on the current vehicle.
 */
-set_current_vehicle(v)
-Vehicle *v;
+set_current_vehicle(Vehicle *v)
 {
 	cv = v;
 }
@@ -200,7 +199,13 @@ Vehicle *v;
 	Program *prog;
 	int i;
 
+#ifdef __bsdi__
+	/* Set the current vehicle pointer to this vehicle for xtanklib */
+	set_current_vehicle(v);
+#endif
+
 	for (i = 0; i < v->num_programs; i++) {
+		/* Set the current program in the vehicle */
 		prog = &v->program[i];
 
 		if (prog->thread_buf == NULL) {
@@ -224,6 +229,7 @@ Vehicle *v;
 
 		prog->next_message = 0;	/* no new messages yet */
 		prog->cleanup = NULL;	/* no cleanup function yet */
+		v->current_prog = (Program *) NULL;
 	}
 }
 
@@ -272,6 +278,9 @@ Program *prog;
 	start_counter();
 
 	/* Call the function */
+#ifdef __bsdi__
+	fprintf(stderr,"Switching to %s\n", cv->owner->name);
+#endif
 	thread_switch((Thread *) prog->thread);
 
 	/* Stop the interval timer */
@@ -296,8 +305,13 @@ check_time()
 	if (cv->current_prog != (Program *) NULL) {
 		/* If the program has been running too long, stop it */
 		get_clock(&current_time);
-		if (compare_clocks(&current_time, &end_time) == -1)
+		if (compare_clocks(&current_time, &end_time) == -1) {
+#ifdef __bsdi__
+			fprintf(stderr,"check_time: Switching to %s\n",
+				cv->owner->name);
+#endif
 			thread_switch(scheduler_thread);
+		}
 	}
 }
 
@@ -315,6 +329,10 @@ stop_program()
 		if (compare_clocks(&current_time, &temp) == 1) {
 			write_clock(&current_time, PROGRAM_ALLOT);
 		}
+#ifdef __bsdi__
+		fprintf(stderr,"stop_program: Switching to %s\n",
+			cv->owner->name);
+#endif
 		thread_switch(scheduler_thread);	/* Stop the program */
 	} else {
 		printf("stop_program(): no program??\n");

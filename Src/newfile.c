@@ -23,7 +23,7 @@
 
 #ifdef UNIX
 #include <sys/param.h>
-#if !defined(__hpux) && !defined(SVR4)
+#if !defined(__hpux) && (!defined(sun) || !defined(SVR4))
 #include <sys/dir.h>
 #endif
 #endif

@@ -155,12 +155,18 @@ char **client;
 #endif
 
 #ifndef USE_DLOPEN
-#ifdef mips	
-#include <sys/exec.h>
-#include <nlist.h>
-#else
-#include <a.out.h>
-#endif
+# ifdef mips
+#  include <sys/exec.h>
+#  include <nlist.h>
+# else
+#  if defined(sun) && defined(SVR4)
+#   include <sys/exechdr.h>
+#   include <fcntl.h>
+#   include <nlist.h>
+#  else
+#   include <a.out.h>
+#  endif
+# endif
 #else /* USE_DLOPEN */
 #include <dlfcn.h>
 #endif
@@ -364,7 +370,11 @@ char *output_name, *error_name;
 	nlstend = nlst + (hdr.a_syms / sizeof(struct nlist));
 
 	for (nlp = nlst; nlp < nlstend; nlp++) {
+#if !defined(sun) || !defined(SVR4)
 		if (!strcmp(symbol_name, nlp->n_un.n_name)) {
+#else
+		if (!strcmp(symbol_name, nlp->n_name)) {
+#endif
 			/* Fill in the symbol and code pointers */
 			*symbol = (char *) nlp->n_value;
 			*code = func;
@@ -435,12 +445,16 @@ struct exec *hdr;				/* Pointer to exec struct which is filled in */
 		free(stbl);
 		return ((struct nlist *) 0);
 	}
-	/* Rearrange the namelist to point at the character strings rather than
-       have offsets from the start of the string table. */
+	/* Rearrange the namelist to point at the character strings rather */
+	/* than have offsets from the start of the string table. */
 	nlstend = nlst + (hdr->a_syms / sizeof(struct nlist));
 
 	for (nlp = nlst; nlp < nlstend; nlp++)
+#if !defined(sun) || !defined(SVR4)
 		nlp->n_un.n_name = nlp->n_un.n_strx + stbl;
+#else
+		nlp->n_name = nlp->n_numaux + stbl;
+#endif
 
 	/* Return the namelist we just constructed. */
 	return (nlst);
