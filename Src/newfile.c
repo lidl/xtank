@@ -28,7 +28,7 @@ $Id: newfile.c,v 1.1.1.1 1995/02/01 00:25:37 lidl Exp $
 
 #ifdef UNIX
 #include <sys/param.h>
-#ifndef __hpux
+#if !defined(__hpux) && !defined(SVR4)
 #include <sys/dir.h>
 #endif
 #endif

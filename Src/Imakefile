@@ -144,11 +144,13 @@
     SYS_LIBRARIES = -lm43 -lbsd -lsun
 #endif
 #ifdef SunArchitecture
+#if OSMajorVersion == 4
     SYS_LIBRARIES = /usr/lib/debug/malloc.o -llwp
+#endif
 #if defined(HasGcc) || defined(FORCE_GCC)
-        CCOPTIONS = -static $(EXTRA_CCOPTS)
+        CCOPTIONS = $(EXTRA_CCOPTS)
 #else
-        CCOPTIONS = -Bstatic /usr/lib/libm.il $(EXTRA_CCOPTS)
+        CCOPTIONS = /usr/lib/libm.il $(EXTRA_CCOPTS)
 #endif
 #ifdef SparcArchitecture
 /**/# Sun4 only options go here

@@ -774,7 +774,7 @@ Event event[];
 					    break;
 					  /* Changed 127 to DEL_CHAR (HAK) */
 					  if (!isprint(buf[0]) 
-					      && buf[0] !='\r' 
+					      && buf[0] != '\r'
 					      && buf[0] != '\t'
 					      && buf[0] != 0x08
 					      && buf[0] != 0x7f) 
@@ -950,7 +950,7 @@ make_gcs()
 #endif
 	fc = get_default("foreground", "Foreground", (char *) NULL);
 	bc = get_default("background", "Background", (char *) NULL);
-	rv = get_default("reverseVideo", "ReverseViedo", (char *) NULL);
+	rv = get_default("reverseVideo", "ReverseVideo", (char *) NULL);
 
 	/* Get foreground and background pixel values */
 	if (rv != NULL &&

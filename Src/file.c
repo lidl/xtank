@@ -30,7 +30,9 @@ $Id: file.c,v 1.1.1.1 1995/02/01 00:25:35 lidl Exp $
 #define MAXNAMLEN NAME_MAX
 #endif
 #ifndef __hpux
+#if !defined(SVR4)
 #include <sys/dir.h>
+#endif
 #endif
 #endif
 #if defined(SVR4) || defined(SYSV)

@@ -154,7 +154,8 @@ char **client;
 /* Dynamic loading includes */
 
 /* really for the decstation, but seems to work for sgi, too */
-#if defined(__alpha) && defined(__osf__) /* May work on others too */
+/* May work on others too */
+#if (defined(__alpha) && defined(__osf__)) || defined(SVR4)
 #define USE_DLOPEN
 #endif
 
@@ -491,8 +492,7 @@ char *output_name, *error_name;
 	case 'o':
 		/* Do the link */
 		sprintf(command,
-		"ld -o %s -expect_unresolved '*' -shared -all %s.o -lm -lc > %
-s 2>&1",
+		"ld -o %s -expect_unresolved '*' -shared -all %s.o -lm -lc > %s 2>&1",
 		output_name, module_name,error_name);
 #ifdef DEBUG
 		printf("link command: %s\n", command);

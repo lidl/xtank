@@ -26,7 +26,11 @@ $Id: interface.c,v 1.1.1.1 1995/02/01 00:25:35 lidl Exp $
 
 #ifdef UNIX
 #include <sys/param.h>
+#ifndef SVR4
 #include <sys/dir.h>
+#else
+#include <dirent.h>
+#endif
 #endif
 #include "clfkr.h"
 
@@ -1837,11 +1841,15 @@ int batch;
 		"Program loaded", "Improper filename", "Compiler errors",
 		"Linker errors", "Can't read output", "Can't parse symbol table",
 		"Missing description"};
+#if 0
 	char *strdup();
+#endif
 	char *ptr;
 
 #if !defined(hpux) && !defined(i860) && !defined(NeXT) && !defined(__alpha)
+#if 0
 	char *rindex();
+#endif
 #endif
 	char output_name[MAXPATHLEN], temp[MAXPATHLEN];
 	char *error_name, *code;

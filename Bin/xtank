@@ -42,6 +42,12 @@ else
 	exit 1
 fi
 
+if [ -f /bin/uname ]; then
+	if [ `/bin/uname -s` == 'Linux' ]; then
+		arch="linux"
+	fi
+fi
+
 if [ "X$arch" = "Xmips" -a -f /etc/ris ]; then
 	arch="mips-el"
 fi

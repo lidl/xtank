@@ -45,7 +45,8 @@ static double temp_drem;
 #endif
 
 /* If you have no cbrt in your library, try this */
-#if defined(sequent) || defined(__hpux) || defined(linux)
+/* also included linux -- not needed any more (it breaks too) */
+#if defined(sequent) || defined(__hpux)
 #define cbrt(n) pow(n, 1.0/3.0)
 #endif
 

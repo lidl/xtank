@@ -183,7 +183,8 @@ Thread *(*func) ();
 
 #ifdef linux
 	/* Stack grows downwards.  Align to 32-bit boundary */
-	thd->state->__jmpbuf->__sp = bufend & ~3;
+	/*	thd->state->__jmpbuf->__sp = bufend & ~3; */
+	thd->state->__jmpbuf[JB_SP] = bufend & ~3;
 #endif
 
 #if defined(__alpha) && defined(__osf__)

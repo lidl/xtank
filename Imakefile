@@ -11,7 +11,7 @@
         TARFILE = /tmp/xtank.tar
         EXCLUDE = /tmp/excluded
        COMPRESS = gzip -v -9
-         GNUTAR = gnutar
+         GNUTAR = tar
            FLEX = flex
 
         SUBDIRS = Src

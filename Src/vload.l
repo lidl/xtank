@@ -21,6 +21,7 @@ $Id: vload.l,v 1.1.1.1 1995/02/01 00:25:38 lidl Exp $
 #endif
 #define YY_DECL yylex(d) Vdesc *d;
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
