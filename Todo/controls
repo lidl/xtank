@@ -1,0 +1,131 @@
+These are some ideas from kahuna about how a player should be able
+to control a vehicle:
+
+
+Hello again Terry,
+
+This is in reply to your reply to my comments about xtank:
+
+***	About the driver/gunner controls:
+
+	I think this would add quite a bit to the game, as I said
+before.  However, this was also a feature in xtrek (remember  xtrek...)
+and it didn't work very well.   If you can implement it smoothly this
+feature would be awsome.  Keeping the multi-player things local will no
+doubt help.  In fact gunner and driver will probobly want to be in
+earshot of each other.  In my opinion multi-player control of a single
+tank should be a high priority.
+
+***	Rigidly mounted weapons:
+
+	The obvious solution is to use the arrow keys on the keyboard
+since they are configured perfectly for this use.  They probobly are
+represented by an odd string of characters so you may want to use the
+keypad.  Using the keypad could make getting to the speed controls and
+back tough.  Perhaps something like:
+
+
+
+	7: nothng	8: fire		9:nothing	-: accelerate
+			  front				   one speed
+
+	4: fire		5: fire		6: fire		,: Deccelerate
+	   left		  mortar	   right	    one speed
+
+	1: nothing	2: fire		3: nothing	Enter: fire
+			   rear				    turret
+
+	0: Panic stop		.: drop mine
+	   speed zero
+
+
+
+	You would still activate and deactivate weapons the some way,
+you would just do it less often - i.e. only to conserve ammo or save
+heat.  This way what your fire is controlled by what you press not what's activated.
+	The mortar is assumed to be aimed like the turret but with the
+targeting cursor marking the impact zone.  Since one would rarely want
+to fire both mortars and direct fire weapons (the turret weapons) they
+should have separate buttons.
+If the tank doesn't have a mortar the button is a "nothing".
+	The directions buttons are obvious.  This would allow VERY
+usefull items like side mounted flame throwers to be used effectivly.
+	The speed controls shouls still exist on the numeric row but
+the three speed control buttons shouls allow for speed control in
+combat where the plaer need his fingers at the fire controls.  Panic
+stop is like hitting speed zero.
+	Mine dropper is straightforeward.  It is different enough in
+function to require a sepatare button from the rear weapons.  Another
+option would be to have the mines be a static-mount only weapon (every
+direction but front).  The mine could be ejected some distance from the
+tank.  A tank dropping a double row of mines (left an right mounted
+mine droppers) thus creating a "road" that only "friends" behind him
+could use without damage could be and interesting tactic for
+cooperative-xtank.  Perhaps a simple "drop a mine out the back" button
+is enough. Again if there is no mine layer on board the button is a "nothing".
+
+	I would be curious to know how mortars are going to be
+implemented.  Are they going to be fixed distance weapons that are
+unaffeced by walls (the simplest option). Or, can the player vary the
+range too.  If range is variable the so is hang time ouf course so
+aiming would be a trick - but a good challege as well.  Since you have
+variable quality weapons may I suggest the following quality parameters
+for mortars and mines:
+
+	Mines:
+		Damage		-	obvious
+ 		Visibility	_	The cheapest mines might be visible
+					without a mine detector.
+		Charges		-	Expensive ones might be able to do damage
+					more than once.
+
+
+
+	Mortars:
+		Damage		-	Duh.
+		Arc rate	- 	I'm not sure how you would want
+to express this but here the basic idea: Cheap mortars are fixed charge
+fired so they must stay in the air for a long time for close shots. 
+Expensive mortars are more like guided missles - they climb only as his
+as needed to clear the walls.  At close range they'd be somewhat like
+slow moving direct fire weapons.  Both kinds of mortars land where the
+crosshair was when they were fired.
+
+		Accuracy	-	How far from the intended target the
+					mortar might stray.
+		Area of effect	-	If you miss you might still get some
+					side armor damage.
+
+	These are in addition to the usual parameters (heat, weight, etc.)
+
+	Finally, can mortars blow up mines? A cheap one might make a
+good mine sweeper.  Players can detect mines if the spend money, what
+about mortars.  Perhaps they shouldn't be able to see then without a
+detector of some kind - tanks don't have windows on the roof.  If they
+really spend money they could get some warning of were incoming mortars
+are due to land - a blinking warning marker or someting.  Specials are
+a cool thing - you never know what you opponent has got.  Pehaps you
+could add different levels of radars (perhaps make the stealth tank be
+more than just a name?)  Perhaps players could scan an opponent to see
+how his armour is doing.  Then, of course, they'll want ECM devices to
+prevent this.  All of these neat gadgets cost money of course.  The
+idea is to get success to be based on brain as well a braun in design. 
+Also, if multi-player team xtank is developed players could build
+specialized tanks (mine sweapers, mortar lobbers, ECM generators,
+stealth assault vehicles etc)
+
+	Of well that's probobly plenty to consider and quite enough to
+actually program.  Keep it up.
+
+
+					Kahuna
+
+
+
+
+
+
+
+
+
+	

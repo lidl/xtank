@@ -1,0 +1,48 @@
+			    MESSAGE PASSING
+
+
+A message is made up of 3 parts, the recipient, the opcode, and the data.
+
+A recipient can be a combatant, a team, or everyone.
+
+The following opcodes exist:
+
+Opcode		Data		Meaning
+------		----		-------
+Location	(x,y)		I am at this location
+Goto		(x,y)		Go to the location
+Follow		combatant	Follow the combatant
+Help		(x,y)		I am in trouble at this location
+Attack		combatant	Attack the combatant
+Text		string		Any
+
+Open		(x,y)		I am open at this location
+Throw		(x,y)		I am throwing the disc to the location
+Caught		(x,y)		I caught the disc at this location
+
+
+User interface:
+
+Click on opcode in message area.
+	Click on square of map or anim screen to enter location.
+	Click on combatant on map or anim to enter combatant.
+	Type in test to enter string.
+
+
+Program interface:
+
+message(recipient,opcode,data)
+	Byte recipient,opcode;
+	Byte *data;
+
+
+Internal representation:
+
+typdef struct {
+  Byte sender;
+  Byte sender_team;
+  Byte recipient;
+  Byte opcode;
+  Byte *data;
+} Message;
+

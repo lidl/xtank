@@ -1,0 +1,92 @@
+/*
+**  This is the object file for map landmarks.
+*/
+
+#define map_landmarks_views 15
+
+static Picture map_landmarks_pic[map_landmarks_views] = {
+      { 6, 6, -2, -2 },
+      { 6, 6, -2, -2 },
+      { 6, 6, -2, -2 },
+      { 6, 6, -2, -2 },
+      { 6, 6, -2, -2 },
+      { 6, 6, -2, -2 },
+      { 6, 6, -2, -2 },
+      { 6, 6, -2, -2 },
+      { 6, 6, -2, -2 },
+      { 6, 6, -2, -2 },
+      { 6, 6, -2, -2 },
+      { 6, 6, -2, -2 },
+      { 6, 6, -2, -2 },
+      { 6, 6, -2, -2 },
+      { 6, 6, -2, -2 } 
+};
+
+static Object map_landmarks_obj = {
+	"map landmarks",
+	map_landmarks_views,
+	map_landmarks_pic
+};
+
+static unsigned char map_fuel_bits[] = {
+    0x3e, 0x02, 0x1e, 0x02, 0x02, 0x02};
+
+static unsigned char map_ammo_bits[] = {
+    0x11, 0x11, 0x11, 0x15, 0x15, 0x0a};
+
+static unsigned char map_armor_bits[] = {
+    0x0e, 0x11, 0x11, 0x1f, 0x11, 0x11};
+
+static unsigned char map_goal_bits[] = {
+    0x0c, 0x12, 0x21, 0x21, 0x12, 0x0c};
+
+static unsigned char map_outpost_bits[] = {
+    0x3f, 0x3f, 0x33, 0x33, 0x3f, 0x3f};
+
+static unsigned char map_scroll_n_bits[] = {
+    0x0c, 0x1e, 0x3f, 0x2d, 0x0c, 0x0c};
+
+static unsigned char map_scroll_ne_bits[] = {
+    0x3e, 0x38, 0x3c, 0x2e, 0x26, 0x00};
+
+static unsigned char map_scroll_e_bits[] = {
+    0x0c, 0x18, 0x3f, 0x3f, 0x18, 0x0c};
+
+static unsigned char map_scroll_se_bits[] = {
+    0x00, 0x26, 0x2e, 0x3c, 0x38, 0x3e};
+
+static unsigned char map_scroll_s_bits[] = {
+    0x0c, 0x0c, 0x2d, 0x3f, 0x1e, 0x0c};
+
+static unsigned char map_scroll_sw_bits[] = {
+    0x00, 0x19, 0x1d, 0x0f, 0x07, 0x1f};
+
+static unsigned char map_scroll_w_bits[] = {
+    0x0c, 0x06, 0x3f, 0x3f, 0x06, 0x0c};
+
+static unsigned char map_scroll_nw_bits[] = {
+    0x1f, 0x07, 0x0f, 0x1d, 0x19, 0x00};
+
+static unsigned char map_slip_bits[] = {
+    0x12, 0x09, 0x09, 0x12, 0x12, 0x09};
+
+static unsigned char map_slow_bits[] = {
+    0x15, 0x2a, 0x15, 0x2a, 0x15, 0x2a};
+
+static unsigned char *map_landmarks_bitmap[map_landmarks_views] = {
+	map_fuel_bits,
+	map_ammo_bits,
+	map_armor_bits,
+	map_goal_bits,
+	map_outpost_bits,
+	map_scroll_n_bits,
+	map_scroll_ne_bits,
+	map_scroll_e_bits,
+	map_scroll_se_bits,
+	map_scroll_s_bits,
+	map_scroll_sw_bits,
+	map_scroll_w_bits,
+	map_scroll_nw_bits,
+	map_slip_bits,
+	map_slow_bits
+};

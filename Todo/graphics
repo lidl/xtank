@@ -1,0 +1,262 @@
+A spec for the graphics toolkit currently in use.
+
+			      GRAPHICS TOOLKIT
+
+/**************************
+** Structures, constants **
+**************************/
+
+typedef struct {
+  int win;
+  Byte type;
+  int x;
+  int y;
+  char key;
+} Event;
+
+#define EVENT_RBUTTON   0
+#define EVENT_LBUTTON   1
+#define EVENT_MBUTTON   2
+#define EVENT_RBUTTONUP 3
+#define EVENT_LBUTTONUP 4
+#define EVENT_MBUTTONUP 5
+#define EVENT_KEY       6
+#define EVENT_MOVED     7
+
+#define S_FONT	  0
+#define M_FONT	  1
+#define L_FONT	  2
+#define XL_FONT	  3
+#define MAX_FONTS 4
+
+#define DRAW_XOR	0
+#define DRAW_COPY	1
+#define MAX_DRAW_FUNCS	2
+
+#define BLACK      0
+#define WHITE      1
+#define MAX_COLORS 2
+
+/*********************
+** Window functions **
+*********************/
+
+/*
+** Initializes everything dealing with graphics.
+*/
+open_graphics()
+
+/*
+** Frees all allocated storage for graphics.
+*/
+close_graphics()
+
+/*
+** Sets the current video.
+*/
+set_video()
+
+/*
+** Makes a video, initializes it.
+** Returns a pointer to the video.
+*/
+Video *make_video(name)
+     char *name;
+
+/*
+** Destroys the specified video.
+*/
+close_video(video)
+     Video *video;
+
+/*
+** Makes a window with the specified characteristics.
+*/
+make_window(win,x,y,width,height,border)
+     int x,y,width,height,border;
+
+/*
+** Destroys the window.
+*/
+close_window(w)
+     int w;
+
+/*
+** Displays the window on the screen.
+*/
+map_window(w)
+     int w;
+
+/*
+** Removes the window from the screen.
+*/
+unmap_window(w)
+     int w;
+
+/*
+** Clears the window.
+*/
+clear_window(w)
+     int w;
+
+/**********************
+** Drawing functions **
+**********************/
+
+/*
+** Draws a line from (x1,y1) to (x2,y2) in the specified window.
+** with the specified drawing function and color.
+*/
+draw_line(w,x1,y1,x2,y2,func,color)
+     int w,x1,y1,y2,x2,func,color;
+
+/*
+** Draws a vertical line from (x,y) with the specified length.
+*/
+draw_vert(w,x,y,length,func,color)
+     int w,x,y,length,func,color;
+
+/*
+** Draws a horizontal line from (x,y) with the specified length.
+*/
+draw_hor(w,x,y,size,func,color)
+     int w,x,y,size,func,color;
+
+/*
+** Draws a rectangle with ulc at (x,y) with the specified width and height.
+*/
+draw_rect(w,x,y,width,height,func,color)
+     int w,x,y,width,height,func,color;
+
+/*
+** Draws a filled rectangle.
+*/
+draw_filled_rect(w,x,y,width,height,func,color)
+     int w,x,y,width,height,func,color;
+
+/*
+** Draws a square at (x,y) with the specified size.
+*/
+draw_square(w,x,y,size,func,color)
+     int w,x,y,size,func,color;
+
+/*
+** Draws a filled square.
+*/
+draw_filled_square(w,x,y,size,func,color)
+     int w,x,y,size,func,color;
+
+/*
+** Draws a picture at (x,y).
+*/
+draw_picture(w,x,y,pic,func,color)
+     int w,x,y;
+     Picture pic;
+     int func,color;
+
+/*
+** Use this routine to draw text in an arbitrary position in a window.
+** The (x,y) coordinate specifies the center of the string to be drawn.
+*/
+draw_text(w,x,y,str,font,func,color)
+     int w,x,y;
+     char *str;
+     int font,func,color;
+
+/*
+** Use this routine to draw text in a text type window.  Func is DRAW_COPY.
+** The x and y values in the word structure are interpreted as
+** a row and column in the window.
+*/
+draw_text_rc(w,pword,font,color)
+     int w;
+     Word *pword;
+     int font,color;
+
+/******************
+** I/O functions **
+******************/
+
+/*
+** Performs all graphics operations that have been queued up.
+*/
+flush_output()
+
+/*
+** Performs all graphics operations and waits until all input is received.
+*/
+sync_output(discard)
+     Boolean discard;
+
+/*
+** Gets up to *num_events input events, handling the expose events
+** by setting the WIN_expose flag.  Events are stored in the event
+** array, with num_events holding the number of events placed there.
+*/
+get_events(num_events,event)
+     int *num_events;
+     Event event[];
+
+/*
+** Causes EVENT_MOVED to be enabled or disabled in get_events().  
+*/
+follow_mouse(w,status)
+     int w;
+     Boolean status;
+
+/*
+** Causes EVENT_*BUTTONUP to be enabled or disabled in get_events().
+*/
+button_up(w,status)
+     int w;
+     Boolean status;
+
+/****************************
+** Cursors, fonts, pixmaps **
+****************************/
+
+/*
+** Sets the cursor to the appropriate value
+*/
+set_cursor(cursor)
+     int cursor;
+
+/*
+** Returns height of the specified font.
+*/
+font_height(font)
+     int font;
+
+/*
+** Returns width of the string in the specified font.
+*/
+font_string_width(str,font)
+     char *str;
+     int font;
+
+/*
+** Makes all the pixmaps for the specified object.
+*/
+Object *make_object(obj,bitmap)
+     Object *obj;
+     Bitfield **bitmap;
+
+/*
+** Frees all the pixmaps used by the object.
+*/
+free_object(obj)
+     Object *obj;
+
+/*
+** Puts a copy of pic rotated 90 degrees into rot_pic.
+*/
+unsigned short *rotate_pic_90(pic,rot_pic,bitmap)
+     Picture *pic,*rot_pic;
+     unsigned short *bitmap;
+
+/*
+** Puts a copy of pic rotated 180 degrees into rot_pic.
+*/
+unsigned short *rotate_pic_180(pic,rot_pic,bitmap)
+     Picture *pic,*rot_pic;
+     unsigned short *bitmap;

@@ -1,0 +1,145 @@
+
+This file contains a record of the modifications to xtank.
+
+After every version number follows a list of the changes made
+to the program since the previous version.
+
+v0.01
+	Added scoring (+100 for killing a tank, -1 for shooting a bullet)
+	Fixed bug with command line entry of maze density
+	Made tanks take speed/3 damage in front armor for hitting a wall
+	Added pause key to stop action
+
+v0.02
+	Added difficulty levels (0-10) that control types of tanks found
+	Added primitive expose event handler.
+	Density, # of enemies, and difficulty can be changed within game
+	Better scoring: 100 for easy tanks, 200/400 for medium, 600 for hard
+	Fixed backward crash bug
+	Random rotations of tanks and turrets at start of game
+
+v0.10
+	Made vehicle objects more general, allowing multiple turrets,
+		arbitrary polygons, non-centered turrets, etc.
+	Now 4 vehicle objects and 3 bullet objects
+	Demo mode which plays game from perspective of each vehicle type.
+	Added redesign vehicle option to reallocate armor points as desired
+	Random starting location at start of game.
+	Removed cheat key 'm' that mapped entire maze.
+	Made vehicle control programs more robust and generally smarter.
+	Made defaults in brackets for choices.
+	Made terminal abstraction to allow multiple players.
+	Added a preliminary high score feature.
+
+v0.20
+	Now 10 vehicle objects, 14 bullet objects, and 7 explosion objects.
+	Vehicle design implemented as separate program
+	Multi-player implemented, with robot tanks and humans.
+	Overheating implemented.
+	Score now based on relative cost of victim.
+	Fast high-score database implemented.
+	Console, Mapper, and Radar special abilities added
+	Robot programs made even smarter, they now hunt you down (slowly)
+	Landmarks added for refueling, repairing, and reammoing.
+	multiple weapons and multiple turrets fully implemented.
+	documentation, credits, and motd are now available from main menu.
+
+v0.50
+	Maze design implemented as separate program
+	Collision damage made proportional to kinetic energy of collision.
+	Improved collision detection implemented (still not perfect).
+	Turret turn rate inversely proportional to turret weight.	
+	Deceleration rate constant for all vehicles.
+	Improved high score list looks.
+
+v0.55
+	Names added to vehicle display in multi-player
+	Robots smarter in multi-player (they no longer fire randomly)
+	Robots given infinite ammo and fuel to prevent ridiculous scores
+	  gotten by waiting for the robots to run out of ammo/fuel...
+	Minor improvements in change settings questioning
+	Improved firing and moving algorithms for robots
+
+v0.60 (Battle version)
+	Added xtanklib, a programmer's interface to xtank
+	Added battle mode to allow programs to fight each other
+	Added message window for programs to display messages
+
+v0.65 (Battle version)
+	Added names to vehicle display in all modes
+	Minor improvements in change settings questioning
+
+v0.70 (Tournament version)
+	Can now switch perspective on battle and track any tank
+	Also can enter roving xtank blimp to watch action from anywhere
+	Fixed redisplay problems with explosions, and in general.
+
+v0.75 (Test version)
+	Added ricochetting bullets option
+	Cleaned up many parts of the code
+	Bullet vs. wall collisions now done correctly
+	Sped up check_time() by a factor of at least 5
+	Added done() call to xtanklib so programs don't waste cpu time
+	Added discs which orbit vehicles
+	Added mines which move for a while and then stop
+	Redesign of collision/hit code (modularized)
+	Added outposts, destructible walls, scrolling boxes, team owned boxes,
+	  slip boxes, slow boxes.
+	Prog_desc structure to give useful info about robot programs
+
+v0.85 (Menu version)
+	Added machine independent graphics toolkit
+	Added support for three graphics systems (x10.c, x11.c, amigagfx.c)
+	Added menu toolkit to support heirarachical menus
+	Added top-level menu-driven user interface to control program
+	Integrated maze design and vehicle design into program
+	Revamped physics of game to allow for skidding vehicles
+	Added bouncing to vehicle vs. vehicle and vehicle vs. wall collisions
+	Added dynamic addition and removal of players
+	Added viewing option for vehicles and mazes
+	Vehicle design revamped, added treads, bumpers, size, mine layers
+	Added new games to play (Ultimate, Capture, War, Race)
+	Added point bullets option to speed up bullet display
+	
+v0.90 (Message version)
+	Added message passing code
+	Removed obsolete/slow/wasteful/non-portable high score code
+	Added dynamic loading of xtank programs.  No need for battle version!
+	Fixed combatants menu, giving user full control over combatants list
+	Added primitive end of game result display
+	Added primitive eliza program to test out xtanklib message functions
+	Added Help Pictures, which displays all the pictures
+
+v0.95 (Cleanup version)
+	Bound button clicks to return on all input prompts
+	Bug fixes for erasing prompts, help window, XGetDefaults, etc.
+	Combatant gets 10x points in money when he gets points
+	Separated settings flags into separate menu
+	Explosion size and bullet types based on vehicle size and ammo left
+	Added send button to message window
+	Added get_self(), number_vehicles(), and get_team() calls to lowlib
+	Added chaser robot that chases discs
+	Dynamic linking now links against libc.a
+	Added top armor display on the console
+	Added Heat seeker weapon that affects top armor
+	Added Oil slick weapon that causes vehicle to slide
+	Made safe turns default to off
+	Scoring now based on ratio between cost of vehicles (not squared)
+ 	Removed avail_weapons array, putting all info in weapon_stat array
+        Cleaned up weapon structure saving 4K
+	Cleaned up bullets structure saving 4K
+	Fixed dissappearing Random maze menu option
+	Added 3D wall display
+	Added Heat-seeking missiles and Oil slicks
+	Menuized vehicle design
+
+v1.0 (Release version)
+	Outposts now move, shoot leading, and can be killed
+	Pause mode added back in (this time correctly)
+	Added linetext to 3d mode to allow writing on the walls
+	Added smart warrior robot, removed tester
+	Fixed subtle bug in clear_path and its variants
+	Added lowlib functions for getting settings, etc.	
+	Added option to have all vehicles start with a full map
+	Put abilities in program descriptions
+	

@@ -1,0 +1,9 @@
+DJChello1.c : this program says hello & goodbye
+DJChello2.c : this program " " " " & shoots
+DJChello3.c : this program same function as DJChello2.c, but was reformatted in
+              preparation for incorperation of DJCmove code.
+DJChello4.c : this program explores, chases down blips, fires at enemies, says
+	      hello and goodbye, and replenishes fuel, ammo, and armor.  It still
+              is being debugged and therefore sends a lot of messages over the com. 
+DJCshoot    : this program just shoots
+DJCmove     : this explores the maze.  It still sends lots of debug messages.

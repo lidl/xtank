@@ -1,0 +1,18 @@
+%
+% header.latex
+%
+
+\addtolength{\topmargin}{-.6in}
+\setlength{\textheight}{9in}
+\setlength{\textwidth}{6.0in}
+\setlength{\oddsidemargin}{0in}
+\setlength{\evensidemargin}{.5in}
+
+\newcommand{\vitem}[1]{\item[{\tt #1}]}
+\newcommand{\xx}{\vspace{-4ex}}
+\newcommand{\xtank}{{\sc Xtank}}
+\newcommand{\xtanklib}{$\mbox{\sc Xtank}_{\mbox{\sc lib}}$}
+\newcommand{\comment}[1]{({\em #1})}
+
+\pagenumbering{arabic}
+\pagestyle{plain}

@@ -1,0 +1,16 @@
+
+The Hanging Bug has been fixed!            Xtank should no longer hang
+The font sizes have been fixed!            Text should look nicer
+
+Thanks to wchuang@athena for helping me debug remotely from California.
+
+Documentation can be found in /mit/games/src/vax/xtank/Doc:
+
+essential.dvi How to play xtank       vdesign.dvi  How to design vehicles
+mdesign.dvi   How to design mazes     xtanklib.dvi How to write robot programs
+
+dvi2ps -r essential.dvi | lpr -Ppname
+
+is the command to print out the file essential.dvi to the printer named pname.
+
+10/22/89      Terry Donahue      tmdonahu@athena  (comments to xtank@athena)

@@ -1,0 +1,24 @@
+				Setups
+
+Setups consist of settings and a combatants list.
+The settings can be modified from the settings menu.
+The combatant list can be modified from the combatants interface.
+
+Combatants Interface
+
+  Clicking on a grid item will cause it to be highlighted.
+    If the right button was clicked, the selection will be erased.
+
+  Clicking on the lower menu which matches the selection inserts that item.
+  Clicking on empty space does not affect the selection contents.
+    If the left button was clicked, the selection will move right.
+    If the middle button was clicked, the selection will move down.
+    If the right button was clicked, the selection will not move.
+
+  Clicking on a lower menu which does not match the selection has no effect.
+
+  A combatant without a vehicle is ignored.
+  A combatant without a team will default to team neutral.
+  A combatant CAN have a player and a program at the same time.
+
+This combatant list is used for Play Customized.

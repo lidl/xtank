@@ -1,0 +1,194 @@
+\documentstyle[sprite]{article}
+
+\input{header.latex}
+
+\title{Maze Design in \xtank}
+\author{Dan Schmidt}
+\date{\today}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\maketitle
+
+\input{maze_sprites.tex}
+
+\section{It's Maze Design, not just Maze Creation}
+
+An \xtank\ maze is much more than just a collection of walls.  Many 
+additional factors must be taken into account, such as what kind of
+game will be played in it and how difficult it will be for the
+vehicles to achieve their goals.
+
+A well-designed maze will have a reason for every wall and landmark.
+Random scattering of obstacles just for the sake of giving vehicles
+something to avoid is discouraged.
+
+\section{The Contents of a Maze}
+
+\subsection{Walls}
+
+Walls are the building blocks of a maze.  Their main functions are to
+surround the maze and separate areas of the maze from each other.  They
+are also often used to make it harder or more time-consuming to get to
+a particular area.
+
+Walls can be destructible; every time a destructible
+wall is hit by a vehicle or bullet, it has a chance of disappearing.
+
+Your maze must be completely surrounded by walls; no leaks are
+allowed.  You are not allowed to place a destructible wall on your
+maze's perimeter.
+
+\subsection{Landmarks}
+
+Walls determine what squares vehicles can or cannot go to; landmarks,
+on the other hand, determine what squares vehicles will want to reach
+or avoid.  They are as least as important as walls in determining the
+maze's ``feel.''  When placing a landmark, keep in mind its purpose.
+A maze full of landmarks will be too busy and leave no room for tanks
+to fight normal battles.
+
+\begin{itemize}
+
+\item[\Fuel] {\bf Fuel} When a vehicle is in the center of a square with this
+landmark and is not moving, it will slowly regain fuel until its fuel tank
+is full.  Fuel costs money; better fuel (used in more powerful
+engines) will cost more.  If the vehicle is out of money, staying in
+this square will do no good.
+
+\item[\Ammo] {\bf Ammo} (the W stands for ``weapon'') A stationary
+vehicle in the center of a square with this landmark will start
+reloading its weapons.  Only weapons which are turned off will be
+reloaded.  More expensive weapons cost more to reload.
+
+\item[\Armor] {\bf Armor} A stationary vehicle in the center of a square with
+this landmark will regain armor on any side which has less armor than
+it started with.  More expensive armor costs more to replace.  A
+vehicle can never get more armor than it started with.
+
+\item[\Goal] {\bf Goal} The effect of this landmark varies with
+different games.  In the {\bf ultimate} game, a point is scored if a
+disc is brought into an enemy's goal.  In {\bf capture}, putting all
+the discs in one goal wins the game.  In {\bf race}, the first vehicle
+to get to a goal wins the game.  Note that a goal landmark, despite the small
+size of its symbol, applies to the entire square it is in.
+
+\item[\Outpost] {\bf Outpost} Outposts fire lots of bullets at any
+enemy vehicle which enters its square.  An enemy vehicle is defined as
+being a vehicle which belongs to any team other than the team which
+the outpost is on.  {\em Exception\/}: A neutral Outpost will fire at 
+anyone, even neutral tanks.
+
+\item[\Scroll] {\bf Scroll} There are 8 of these landmarks, each
+with a different direction.  When a vehicle enters a scroll square, it
+will begin to slide in the direction of the arrow.  Scroll squares do
+not show up on the player's screen, but they will appear on his
+mapper.  Placing a scroll square so that it will force a vehicle into
+a wall is strongly discouraged.
+
+\item[\Slip] {\bf Slip} The friction of a square containing a slip
+landmark is decreased, so vehicles will turn slower and slide more.
+Slip landmarks will show up on the mapper but not the screen.
+
+\item[\Slow] {\bf Slow} A square containing a slow landmark has a
+sticky or muddy floor, so that vehicles in it will move at a fraction
+of their normal speed.
+
+\item[\Start] {\bf Starting Location} When a battle begins, \xtank\
+will attempt to place vehicles in the starting locations specified by
+these landmarks.  Starting locations for a specific team can be made
+by making them owned by that team.
+\end{itemize}
+
+\subsection{Teams}
+
+Squares in \xtank\ can be neutral or owned by a team.  Having a square
+owned by a team is useful for two reasons:
+
+\begin{itemize}
+
+\item The outcome of a game of {\bf War} depends on who owns how many
+squares.
+
+\item The {\bf Goal}, {\bf Outpost}, and {\bf Start} landmarks act
+differently when owned by a team (see above).
+
+\end{itemize}
+
+\section{Using the Interface}
+
+Designing a maze is very easy.  The mouse is used to place walls, and
+the keyboard is used to place landmarks.  The mouse can be held down
+and dragged; this results in walls being drawn or erased wherever the
+mouse is moved.
+
+\begin{itemize}
+
+\vitem{left button} Create a normal wall.
+
+\vitem{center button} Create a destructible wall.
+
+\vitem{right button} Erase a wall.
+
+\vitem{shift 1-6} Set the team ownership of this square.  For example,
+to make the square owned by the second team, type \verb|@|.
+
+\vitem{shift 0} Make the square not owned by any team.
+
+\vitem{a} Create an armor repair landmark.
+
+\vitem{w} Create a ammo dump landmark.
+
+\vitem{f} Create a fuel depot landmark.
+
+\vitem{g} Create a goal landmark.
+
+\vitem{o} Create an outpost landmark.
+
+\vitem{-} Create a slip landmark.
+
+\vitem{=} Create a slow landmark.
+
+\vitem{1-9} Create a scroll landmark.  The direction of the scrolling
+corresponds to the location of the key on the numeric keypad.  For
+example to make a square that scrolls to the northeast, type \verb|9|.
+
+\vitem{x} Create a start landmark.
+
+\vitem{m} Move area.  Drag the mouse over the the area you wish to
+move, then click it at the upper left corner of the area you wish to
+move it to.  The original area will be erased.
+
+\vitem{c} Copy area.  This works just like move area, but the original
+area is not erased.
+
+\vitem{e} Erase area.  Drag the mouse over the area you wish to be
+erased.
+
+\vitem{L} Load a maze which has previously been designed.
+
+\vitem{E} Erase the entire maze.
+
+\vitem{S} Save the maze.  You will be asked to click on a box inside
+the maze; this is so \xtank\ will know which boxes are in the maze and
+which are outside it.  You will then be prompted for the default game
+to be played in the maze and a short description of it.
+
+\vitem{Q} Quit the maze design module and return to \xtank's main menu.
+
+\end{itemize}
+
+\section{Notes}
+
+Mazes are stored in \verb|/mit/games/src/vax/xtank/Mazes|.
+
+To view a maze without starting \xtank, use the \verb|pmaze| utility,
+located in \verb|/mit/games/src/vax/xtank|.  Just type \verb|pmaze
+your_maze|, where \verb|your_maze| is the maze you wish to look at.
+You may want to do this in a large xterm with the micro font for best
+results (\verb|xterm -fn micro -geometry 80x80 &|).
+
+\end{document}
+

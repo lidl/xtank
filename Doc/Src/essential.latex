@@ -1,0 +1,590 @@
+\documentstyle{article}
+
+\input{header.latex}
+
+\newcommand{\menu}[1]{{\bf #1}}
+\newcommand{\mitem}[1]{\item[\menu{#1}]}
+
+\title{Essential \xtank}
+\author{Dan Schmidt}
+\date{\today}
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\maketitle
+
+\section{Getting Started}
+
+\subsection{What \xtank\ is}
+
+\xtank\ is a multi-player vehicle combat game played in a large maze. 
+You control a vehicle, equipped with armor, weapons, and other
+goodies, and try to destroy opposing tanks in the maze before they do
+the same to you.  Winning the game requires a delicate combination of
+outsmarting your opponents, dodging bullets, and firing accurately.
+
+In a single-player game, the enemy tanks are computer controlled
+robots, widely varying in intelligence, speed, strength, and
+firepower.  In a multi-player game, the enemy tanks are controlled by
+other human players, who have designed their vehicles with the sole
+intent of destroying yours.
+
+One of \xtank's primary features is its large degree of
+customizability.  The user may design vehicles, mazes, and even robot
+programs to suit his or her desires.
+
+\xtank\ was written by Terry Donahue '89.
+
+\subsection{This document}
+
+This document describes the different features available in \xtank\
+and how to get to them.  It also provides pointers to other
+documentation available for it.  If you read only one \xtank\
+document, this should be it.
+
+\subsection{How to start up \xtank}
+
+If you have not attached the games filesystem yet, type \verb|attach
+games|. Then type \verb|/mit/games/vaxbin/xtank|.
+
+In a few seconds \xtank\ will ask you for your name.  Enter the name
+by which you would like to be called during the game.
+
+It will then ask you for your desired vehicle.  If you have a
+predesigned vehicle which you would like to use, enter its name.
+Otherwise, just hit Return.  \xtank\ will now bring up a menu
+containing the various options you have.
+
+If you are planning to play a multiplayer game, just one person should
+start \xtank.  The other players should type \verb|xhost| {\em
+server-machine}, where {\em server-machine\/} is the name of the
+machine on which \xtank\ was started.  The player who is running the
+\xtank\ process can then add the other players once the game is
+running.  See {\bf Add Players}, page \ref{add_players}.
+
+\subsection{How to start playing without reading the rest of this document}
+
+Once you're in \xtank, the simplest way to start playing is to click
+on \menu{Play} from the main menu.  Then click on \menu{Standard} from
+the play menu.  You will start playing with the default vehicle in the
+default maze against the default robots.  To learn how to use
+vehicles, mazes and robots other than the defaults, see {\bf The Menu
+System}, page \ref{menu_system}.
+
+A help window will be displayed at the bottom of the screen.  
+
+\section{What All the Keys Do}
+
+\subsection{The basics}
+
+\begin{itemize}
+
+\vitem{left button} {\bf fire weapons} Your vehicle will fire all of its
+weapons which are currently on in the direction of the mouse.  If its
+turrets are not already pointed in the desired direction, they will
+begin to do so.
+
+\vitem{center button} {\bf turn turret} Move the mouse to the
+target and press the center button; all of your turrets will begin to
+turn towards the target.
+
+\vitem{right button} {\bf turn vehicle} Your vehicle will begin to
+turn in the direction of the mouse.  This may take a while unless you
+have safe turning off (off by default).   See {bf safe turns}, page
+\ref{safe_turns}.
+
+\vitem{space} {\bf fire weapons} This is identical to pressing the
+left button, but no aiming takes place; pressing \verb|space| does not
+cause the turrets to move.
+
+\vitem{t} {\bf turn turret} Identical to pressing the center button.
+
+\vitem{g} {\bf turn vehicle} Identical to pressing the right button.
+
+\vitem{0-9} {\bf set forward drive} Set your vehicle's drive to a
+fraction of its maximum speed; 9 means drive at full speed and 0 means
+come to a full stop.  Your speed will not change immediately; how fast
+it does change depends on your vehicle's acceleration.
+
+\vitem{-} {\bf reverse drive 9} Go backwards at relative speed 9.  
+
+\vitem{shift 1--6} {\bf toggle weapons} Turn your weapons on and
+off.  To toggle a particular weapon, type the number of the weapon
+while holding the shift key down.  For example, to toggle your third
+weapon, type \verb|#|.
+
+\vitem{return} {\bf send message} Send off the message which you have
+composed in the message window (the upper right corner of the screen).
+See {\bf Messages}, page \ref{messages}.
+
+\vitem{C} {\bf toggle console} Turn your console on or off.  Your
+console is the window in the middle of the right side of the screen
+which displays information about your armor, weapons, etc.
+
+\vitem{M} {\bf toggle mapper} Turn your mapper on or off.  Your mapper
+is the window in the bottom right corner containing a compressed view
+of the maze.
+
+\vitem{R} {\bf toggle radar} Turn your sweep radar on or off.  Your 
+radar is displayed in the mapper window.
+
+\vitem{z} {\bf toggle safety} \label{safe_turns} Turn safe turning 
+on or off.  If safe turning is on, your vehicle will never turn faster
+than it can comfortably handle.  If it is off, your vehicle can turn
+as fast as you desire, but it may skid and slip if you turn too fast.
+Safe turning is off by default.
+
+\vitem{c} {\bf stop} Bring your vehicle to a complete stop.  It is
+identical to typing \verb|0|.
+
+\vitem{v} {\bf speed up} Set your vehicle's relative drive to one
+higher than it is currently.  For example, if you were at a full stop,
+typing \verb|v| three times would be equivalent to typing \verb|3|.
+
+\vitem{x} {\bf slow down} Set your vehicle's relative drive to one
+less than it is currently.  For example, if you were going at full
+speed, typing \verb|x| three times would be equivalent to typing
+\verb|6|.
+
+\end{itemize}
+
+\subsection{Disc control}
+
+These commands only apply to games in which a disc is used.  Currently
+these games are \menu{Ultimate} and \menu{Capture}.
+
+\begin{itemize}
+
+\vitem{s} {\bf spin counterclockwise} Cause all discs orbiting you to
+spin counterclockwise.
+
+\vitem{d} {\bf spin toggle} Reverse the direction of all discs
+orbiting you.
+
+\vitem{f} {\bf spin clockwise} Cause all discs orbiting you to spin
+clockwise.
+
+\vitem{w} {\bf throw slow} Release all discs orbiting you at a slow
+speed.
+
+\vitem{e} {\bf throw medium} Release all discs orbiting you at a
+medium speed.
+
+\vitem{r} {\bf throw fast} Release all discs orbiting you at a fast
+speed.
+
+\end{itemize}
+
+\subsection{Game functions}
+
+\begin{itemize}
+
+\vitem{Q} {\bf quit game} Quit the current game and return to the main
+menu.  If you are in a multiplayer game and are not on the machine
+running \xtank, this exits you from \xtank\ entirely.
+
+\vitem{P} {\bf pause game} Freeze the game.  Hit any key or button to
+restart.  Not currently implemented.
+
+\vitem{<} {\bf slow down game} Slow the game down.  Not currently
+implemented.
+
+\vitem{>} {\bf speed up game} Speed the game up.  Note that there is a
+limit to this!  Generally \xtank\ goes as fast as it can unless you
+specifically slow it down.  Not currently implemented.
+
+\end{itemize}
+
+\subsection{3D functions}
+
+3D mode is still under construction.  Currently it is not feasible to
+play a real game in 3D mode, since xtanks and bullets are not
+displayed.  It's still fun to look at, though.
+
+\begin{itemize}
+
+\vitem{T} {\bf toggle 3D view} Switch between a normal (birds-eye)
+view of the action and a 3D view from your tank's perspective.
+
+\vitem{W} {\bf toggle wide} Switch between a relatively narrow view
+and one with better peripheral vision.
+
+\vitem{D} {\bf toggle distance} Toggle the distance you can see (short
+and long).
+
+\vitem{E} {\bf toggle extend} Switch between seeing only the bottom edges
+of walls and seeing all of them.
+
+\vitem{L} {\bf toggle clipping} Toggle hidden-line removal.  Not
+currently implemented.
+
+\end{itemize}
+
+\subsection{Sync control}
+
+Every once in a while \xtank\ makes sure that the program and the
+display are in sync; otherwise the program might execute too fast for
+the display to catch up, and you would be seeing and reacting to
+events that happened a while ago.  You can control how often \xtank\
+syncs.  Basically, if you sync less often, things will happen faster,
+but the display will jump more often.
+
+\begin{itemize}
+
+\vitem{i} {\bf every frame}
+
+\vitem{o} {\bf every 2 frames}
+
+\vitem{p} {\bf every 4 frames}
+
+\vitem{[} {\bf every 8 frames}
+
+\vitem{]} {\bf every 16 frames}
+
+\end{itemize}
+
+\section{The Menu System} \label{menu_system}
+
+Everything besides actually playing the game is accessed through
+\xtank's menu system.  In general, to choose a menu option, just click
+any mouse button on it.  When asked for keyboard input, type your
+response and press Return.
+
+\subsection*{Play}
+
+Begin playing the game.  Your choices are:
+
+\begin{itemize}
+
+\mitem{Standard} You against a bunch of robots.
+
+\mitem{Players} Multiplayer, no robots.  This only makes sense if you
+have added players, or if you want to practice by yourself.
+
+\mitem{Robots} A bunch of robots against each other.
+
+\mitem{Customized} Use the players, robots, vehicles, and teams as set
+up in the \menu{Combatants} menu.  Once you get the hang of this, you
+will probably use it more often than any other choice.
+
+\end{itemize}
+
+\subsection*{Settings}
+
+Here, you can change all the user-settable parameters of \xtank.
+
+\begin{itemize}
+
+\mitem{Vehicle} Choose the vehicle that you will use when playing the
+\menu{Standard} or \menu{Players} games.
+
+\mitem{Maze} Choose the maze that the game will be played in.
+
+\mitem{Game} Choose the game to be played:
+
+  \begin{description}
+
+  \mitem{Combat} Attempt to kill all the tanks not on your team.  This
+is the default.
+
+  \mitem{War} Win by taking over territory.  This doesn't make much
+sense unless you are playing in teams.
+
+  \mitem{Ultimate} Sort of a cross between ultimate frisbee and
+hockey.  Score by catching the disc in the opponents' goal.
+
+  \mitem{Capture} A variant of ``Capture the Flag.''  Win by
+collecting all the discs into your goal.
+
+  \mitem{Race} Win by being the first vehicle to get to a goal.
+
+  \end{description}
+
+\mitem{Flags} Options which can be set on or off:
+
+  \begin{description}
+
+  \mitem{Point bullets} Display bullets as points instead of using the
+normal bitmaps.  Turning this on will speed up the game.
+
+  \mitem{Ricochet} If on, bullets can bounce off walls.  If off, they
+explode when they hit a wall.
+
+  \mitem{Relative shooting} If on, your velocity is added to the
+velocity of your bullet when you fire.  This is more realistic, but
+some find it less intuitive.
+
+  \mitem{No wear} If on, vehicles cannot take damage, and they never
+run out of fuel.  This is often turned on when playing the
+\menu{Ultimate} game.
+
+  \mitem{Restart} If on, when a vehicle dies it is immediately
+resurrected somewhere else in the maze.  Otherwise, once you die,
+you're out of the game.
+
+  \mitem{Commentator} Whether or not to use the commentator when you
+play the \menu{Ultimate} game.
+
+  \end{description}
+
+\mitem{Winning score} When any vehicle reaches this score, the game
+ends.
+
+\mitem{Difficulty} This sets the difficulty of your opposition when 
+playing the \menu{Standard} game.
+
+\mitem{Outpost strength} This controls the amount and quality of the
+ammunition that outposts fire.
+
+\mitem{Scroll speed} This controls the speed of scroll squares.
+
+\mitem{Box slowdown} This controls how much slowdown squares slow you
+down.
+
+\mitem{Disc friction} This controls how quickly an unowned frisbee
+will slow down.
+
+\mitem{Owner slowdown} This controls how much you will be slowed down
+when carrying a frisbee.
+
+\end{itemize}
+
+\subsection*{Combatants}
+
+This is one of the most powerful options.  Here, you can set exactly
+which players, robots, vehicles, and teams will be used in the game.
+
+This information is set up in the form of a table.  Each line
+corresponds to one vehicle.  To fill in an entry, first click with the
+left button in the entry, then click in the desired line of the menu below.  
+
+\begin{itemize}
+
+\vitem{left button} Enter the thing you click on into the active
+entry.  The active entry is moved right one column.
+
+\vitem{center button} Enter the thing you click on into the active
+entry.  The active entry is moved down one row.
+
+\vitem{right button} Erase the contents of the active entry.
+
+\end{itemize}
+
+\subsection*{View}
+
+Use this to get quick information about something without having to go
+into editing mode.  You can see information about any \menu{Player},
+\menu{Program}, \menu{Vehicle}, \menu{Maze} or \menu{Setup}.
+\menu{Player} and \menu{Setup} are not currently implemented.
+
+\subsection*{Load}
+
+Use this to load something into \xtank\ which you previously designed.
+
+You can load a \menu{Vehicle}, \menu{Maze}, \menu{Program}, or
+\menu{Setup}.  \menu{Setup} is not currently implemented.
+
+For your information: \\
+Vehicles are saved in \verb|/mit/games/src/vax/xtank/Vehicles|. \\
+Mazes are saved in \verb|/mit/games/src/vax/xtank/Mazes|. \\
+
+\subsection*{Design}
+
+Here you can design mazes and vehicles to be used in \xtank.
+It's easier than you might think; don't be afraid to try!
+
+\begin{itemize}
+
+\mitem{Maze} Look in \verb|mdesign.PS| for details.
+
+\mitem{Vehicle} Look in \verb|vdesign.PS| for details.
+
+\end{itemize}
+
+\subsection*{Add players} \label{add_players}
+
+Use this to let players from other machines join your game.  First,
+they must \verb|xhost| to your machine (for example, \verb|xhost
+w20-575-53|).  When you add them, use the name of their machine plus a
+\verb|:0| on the end (for example, \verb|w20-575-56:0|).  When they
+want to quit, they should type \verb|Q| from inside the game.
+
+\subsection*{Help}
+
+Here you can get on-line help.  Try looking at \verb|Pictures|.
+
+\subsection*{Quit}
+
+Quit the game.
+
+\section{Playing \xtank}
+
+\subsection{Weapons}
+
+There are many different types of weapons.  The properties of each are
+detailed in the vehicle design document (\verb|vdesign.PS|).  Most of
+them fire bullets which travel in a straight line and do some amount
+of damage when they hit the target.  Exceptions to this rule are
+listed here.
+
+\begin{description}
+
+\item[Mine Layer] Releases a mine which travels a little away from the
+vehicle and stops.  Mines damage vehicles' bottom armor.
+
+\item[Oil Slick] Releases a few puddles of oil.  Vehicles which travel
+through oil lose control for a short time.
+
+\item[Heat Seeker] Heat-seeking missiles can make turns and go around
+corners in order to get to their target.  Their tracking ability
+increases as the target's heat rises.  They damage vehicles' top
+armor.
+
+\end{description}
+
+\subsection{Heat}
+
+Weapons generate heat when fired; the amount depends on the type of
+the weapon.  The only way to decrease heat is by putting heat sinks in
+your vehicle; your heat will go down by one per heat sink every five
+frames.  You get one heat sink for free.  If your heat reaches 100,
+you will not be able to fire until it comes back below 100.
+
+\subsection{Armor}
+
+You have armor on six different sides --- front, back, left, right,
+top, and bottom.  Top armor can only be damaged by heat-seeking
+missiles.  Bottom armor can only be damaged by mines.
+
+When your armor on any side goes below zero, you explode.
+
+There are two ways to take damage: being hit by a bullet, or crashing
+into a wall or another vehicle.  You will damaged more by
+higher-energy crashes.
+
+\subsection{Walls}
+
+Some walls are destructible.  When a destructible wall is hit, the
+chance that it will be destroyed is proportional to the damage of the
+hit.  Walls which are destroyed simply disappear.
+
+\subsection{Landmarks}
+
+Landmarks are special boxes in a maze which perform some function.
+Some types help you, some types hurt you.
+
+\begin{description}
+
+\item[Fuel depot] You regain fuel if you sit on this.  Fuel costs
+money; the better the engine, the costlier the fuel.
+
+\item[Ammo dump] You regain ammo if you sit on this.  Only weapons
+which are turned off will be reloaded.  Ammo costs money.
+
+\item[Armor repair] You regain armor if you sit on this.  It costs
+money.
+
+\item[Goal] In some games, you want to enter the goal or put a disc in
+it.
+
+\item[Outpost] Shoots at enemy vehicles in its box.
+
+\item[Scroll boxes] Move you in one of 8 directions.  Think of them as
+conveyor belts.
+
+\item[Slip] Friction is decreased in these squares, making it harder
+to turn.
+
+\item[Slow] Driving through these squares causes the vehicle's speed
+to be decreased.
+
+\end{description}
+
+\subsection{Messages} \label{messages}
+
+You can send messages to other players.  The most common type of
+message is a text string, but you can also send specialized types of
+messages.  To send a message, select the appropriate comoponents of it
+and then press Return.
+
+There are three things you must specify when composing a message: 
+
+\begin{itemize}
+
+\item The recipient.  This can be a single vehicle, a whole team, or
+everybody.  Click on the appropriate menu entry.
+
+\item The type of message.  Click on the appropriate menu entry.
+
+\item The data.  This can be
+
+\begin{description}
+
+\item[box] Click the mouse on the appropriate square of the maze (in
+the main window) before sending the message.
+
+\item[vehicle] Click the mouse on the appropriate vehicle (in the main
+window) before sending the message.
+
+\item[text] Type the message while the mouse is in the message window.
+
+\end{description}
+
+\end{itemize}
+
+The types of messages are:
+
+\begin{description}
+
+\item[Location] [box] Announce your location.
+
+\item[Goto] [box] Tell a vehicle to go to a certain square.
+
+\item[Follow] [vehicle] Tell a vehicle to follow another vehicle.
+
+\item[Help] [box] Ask for help.
+
+\item[Attack] [vehicle] Tell a vehicle to attack another vehicle.
+
+\item[Open] [box] Ask to be thrown a disc.
+
+\item[Throw] [box] Annouce that you've thrown a disc.
+
+\item[Caught] [box] Announce that you've caught a disc.
+
+\item[Ack] [box] Acknowledge another message.
+
+\item[Text] [text] Send a text message.
+
+\end{description}
+
+\subsection{Scoring}
+
+{\it put scoring formula here}
+
+\section{Where To Get More Information}
+
+All the xtank documentation is in \verb|/mit/games/src/vax/xtank/Doc|.
+You can print out the files on any postscript printer.
+The files are:
+
+\begin{description}
+
+\vitem{essential.PS} {\bf Essential \xtank}  This document.
+
+\vitem{vdesign.PS} {\bf Vehicle Design in \xtank} How to design
+vehicles.
+
+\vitem{mdesign.PS} {\bf Maze Design in \xtank} How to design mazes.
+
+\vitem{xtanklib.PS} {\bf How to Write an \xtank\ Robot Program} How to
+write robot programs using the C language.
+
+\end{description}
+
+Comments, questions, and bug reports are welcome.  Please send them to
+\verb|xtank@athena|.  If that doesn't work, try \verb|tmdonahu@athena|.
+
+\end{document}

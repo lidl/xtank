@@ -1,0 +1,6 @@
+This is the current version of the multi-threading code.
+It is machine dependent and currently works for the Vax and RT.
+On most systems, switching between threads requires saving registers
+and the stack, and then doing a setjmp() or longjmp(), with little
+or no assembly hacking.  One of the systems that requires assembly
+hacking is the VAX.  One of the systems that doesn't is the RT.

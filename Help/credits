@@ -1,0 +1,43 @@
+I would like to thank the following people for their contributions to xtank:
+
+Laura Baldwin	 fiery explosion bitmap
+
+Doug Church	 Menu interface code
+		 Design of user interface
+
+Eric Esterling	 playtester
+		 Unix consultant
+
+Rob Fullmer	 Gaming consultant
+		 Head playtester
+		 tank bitmap designer
+
+Eon Harry	 Title logo and Head tank bitmap designer
+		 Aesthetics and marketing consultant (Mr. Organic Flowthru)
+
+Joe Killian	 Severe optimization of 90 and 180 degree bitmap rotation
+
+Evan Reidell	 explosion bitmaps
+
+Dan Schmidt	 Development of vehicle design program
+		 Development of maze design program
+		 Documentation
+
+John Smolin	 playtester
+		 algorithm consultant
+
+Bill Sommerfeld  Dynamic loading module for xtank programs
+		 Unix consultant
+
+Erik Winfree	 Amiga Graphics Toolkit
+		 Amiga support and porting
+		 Code reviewer and improver
+
+Steve Worley	 Efficient solution to inelastic collision problem
+		 Fountain of game extensions and ideas
+
+Mike Zehr	 Head algorithm consultant
+		 playtester
+		 design of vehicle design system
+		 large tank explosion
+		 Vehicle physics algorithm designer

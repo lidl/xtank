@@ -1,0 +1,7 @@
+This directory contains programs to dynamically link into Xtank.
+Many of them are for testing or are unfinished.  Some of them
+(notably frog.c, runner.c, goalie.c) actually play some of the games
+in Xtank.  Not all of them will work with Xtank as it currently stands,
+requiring simple changes to the Prog_desc structure.  Programs
+that #include "xtanklib.h" still need to be modified.  Programs that
+#include "xtanklibnew.h" will work with the current version.

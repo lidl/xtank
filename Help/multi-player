@@ -1,0 +1,51 @@
+                             Multi-player
+
+To start a multi-player game, do the following:
+
+   1.  On one machine type 'xtank' to start up an xtank program.  This
+       machine is called the server.
+
+   2.  Have all other machines add the server machine to their
+       xhosts (type 'xhost <server_machine>').
+
+	    Ex.  xhost w20-575-41
+
+   3.  On the server, click Add Players, enter the number of machines to
+       add, and enter their names as <machine1>:0, <machine2>:0, etc. 
+
+	    Ex.  w20-575-42:0
+
+The server will then put up an xtank window on every machine.
+Everyone in turn will be asked to enter their xtank name and vehicle
+name.  All future games will involve all added players.  If an added
+player wants to exit the game, he or she can simply type 'Q' during a
+game.
+
+			Ways to speed up multi-player Xtank
+
+1.  Startup xtank on a separate machine that no one is using, (in this
+    example, w20-575-30).  Have all the players type
+
+		xhost w20-575-30
+
+    Then on w20-575-30, type
+
+		xtank w20-575-51:0 w20-575-52:0 w20-575-53:0 w20-575-54:0
+
+    This will start a game where machine 51 has the menu interface,
+    and 52, 53, and 54 will be playing.  You can also add more players
+    with the Add Players menu option.
+
+    The important thing here is that the Xtank program is NOT running
+    on a machine that is displaying the graphics.  Thus the work is spread
+    out over 5 machines (in this case) instead of 4 machines (with one
+    doing computation and display at the same time).
+
+2.  Change the sync mode to 2,4,8, or 16 frames using the keys o,p,[, and ].
+    Higher numbers make the game faster, but animation is more jumpy.
+
+3.  Don't play with any robot programs.
+4.  Play on RT's or PVAX machines
+5.  Play with point bullets turned on.  (faster but more confusing)
+6.  Don't use programs that draw on the screen during the game (xclock,xload)
+

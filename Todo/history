@@ -1,0 +1,509 @@
+This file contains possible changes and improvements to xtank.
+
+This file is world WRITABLE for your suggestions!  If it gets deleted,
+hacked, etc, it will no longer be world writable, and a neat idea will
+disappear. 
+
+Feel free to add suggestions to the list yourself, if you want to.  
+Kindly mention your userid, version of xtank, and the date with your
+suggestion so I can keep everything straight.  Hopefully the
+suggestions here, however minor or catastrophic, will improve the game
+for everyone.  I reserve the right to delete/modify any that are
+either too hard to do or just plain bad.
+
+When a feature has been implemented, or a change has been made, I will
+insert a brief description of the change after the suggestion. This
+way people can keep track of what is going on.  From time to time the
+file xtank.doc will be modified to reflect these changes.
+
+Please remember that xtank is in a pre-release form.  It is by no
+means polished or complete, and the amount of time and energy I can
+spend on it varies as wildly as my academic workload.
+
+IMPORTANT:  If when you try to save your changes, you receive a 
+message from emacs like "file has been modified since last read"
+you should NOT save the file!  You will probably overwrite changes
+which someone else made while editing the file the same time you were.
+Instead, read the new xtank.changes file into another buffer,
+cut+paste your changes over, and save the new file.
+
+----------------------------------------------------------------------------
+Scoring!  either in a kill ratio format or in straight points.
+tmdonahu	v0.0	10/24/87
+
+v0.01	Simple scoring implemented.  +100 for each tank killed,
+	-1 for each bullet fired.
+
+v0.02	More correct scoring system created.  See message below.
+
+----------------------------------------------------------------------------
+key for pausing the game
+
+
+tmdonahu	v0.0	10/24/87
+
+v0.01	pause key added with Game paused message
+
+----------------------------------------------------------------------------
+Tanks should take damage when they crash something.
+tmdonahu 	v0.0	10/26/87
+
+v0.01	Tanks take speed/3 (rounded down) damage to front armor when
+	they crash.
+
+v0.10	Tanks take damage to back armor when they run into something backwards
+
+----------------------------------------------------------------------------
+Should fix bug which prevented xtank from recognizing the density argument
+passed to it when run from the shell.
+celine          v0.0    10/26/87
+
+v0.01	Fixed bug, command line argument for maze density works again.
+
+v0.02	No longer can density be specified from the command line.
+	Presently only the machine display setting can be set on the
+	command line.  i.e.  xtank m11-116-10:0
+
+----------------------------------------------------------------------------
+implement difficulty levels, slower weaker tanks running dumb progs
+and faster stronger tanks running killer progs.
+tmdonahu	v0.0	10/24/87
+
+v0.02   Difficulty levels implemented (0-10).  Stronger faster better tanks
+	on level 10 than on level 0.  Smooth transition of difficulty.
+
+----------------------------------------------------------------------------
+When scoring is done, definitely give different scores for leaders
+and drones, since the leaders are quite a bit harder.  May I suggest
+about a three to one point ratio.
+celine          v0.0    10/26/87
+
+v0.02	Scoring based on tank difficulty.  100 for straight easy tank
+	(difficulty levels 0-4), 200/400 for straight/leading medium
+	tank (difficulty levels 1-9), 600 for leading hard tank
+	(difficulty levels 6-10).
+
+----------------------------------------------------------------------------
+At the moment, although it's a pre-game release and I'm no good at these     
+games, it's a bit too hard. Perhaps since you could make each 
+shot decrease armor by 1 instead of 3, or make it a variable like density
+and enemies. 
+ereidell        v0.01   10/27/87
+
+v0.02	Difficulty levels implemented.  Default setting is 0, so new
+	players will have an easier time winning the game.  If level
+	0 is still too hard, let me know.
+
+----------------------------------------------------------------------------
+window refresh on expose events (i.e. when the window is uncovered).
+tmdonahu	v0.0	10/24/87
+
+v0.02	Primitive screen refreshing is implemented for most windows.
+	Map window still loses all info when covered up.
+
+----------------------------------------------------------------------------
+make all tanks start out in random locations in the maze at random
+rotations.
+tmdonahu	v0.0	10/24/87
+
+v0.02	Random rotations of tanks and turrets implemented.  I am holding
+	off on random locations until I decide whether or not traversing
+	the entire maze to get to the enemies is a good thing.
+
+v0.10	Everything starts at random locations in the maze.
+
+----------------------------------------------------------------------------
+tank-wall collision for the ends of walls.
+tmdonahu	v0.0	10/24/87
+
+v0.10	Collisions with all parts of walls implemented, but still not
+	correct.  Walls are much fatter than they appear.
+
+----------------------------------------------------------------------------
+memory for robot master programs.
+tmdonahu	v0.0	10/24/87
+
+----------------------------------------------------------------------------
+status descriptors and correct display of them.
+tmdonahu	v0.0	10/24/87
+
+----------------------------------------------------------------------------
+generalize turrets to all multiple turrets not in the center of the
+tank.
+tmdonahu	v0.0	10/24/87
+
+v0.10	Implemented, but bullets still emanate from center of tank.  Ooops.
+
+----------------------------------------------------------------------------
+redesign object and picture structs for faster animation.
+tmdonahu	v0.0	10/24/87
+
+v0.10	Redesigned, but not faster, because pictures have not been clipped
+	down to take full advantage of new system.
+
+----------------------------------------------------------------------------
+make radar have a certain limited range.
+tmdonahu	v0.0	10/24/87
+
+----------------------------------------------------------------------------
+display number of enemies still alive.
+tmdonahu	v0.0	10/24/87
+
+----------------------------------------------------------------------------
+Convert armor, fuel, (ammo?) to bar graphs, pictorially showing
+damage, etc.
+tmdonahu	v0.0	10/24/87
+
+----------------------------------------------------------------------------
+Implement weapon/vehicle overheating.
+tmdonahu	v0.0	10/24/87
+
+----------------------------------------------------------------------------
+Have tanks which lead the target consider your future location when
+deciding whether or not to shoot at you.
+tmdonahu	v0.0	10/24/87
+
+v0.02	Implemented.  Some vehicles lead target, others don't.
+
+v0.10	A particularily nasty shooting routine developed.  Still not as
+	nasty as it could be...
+
+----------------------------------------------------------------------------
+Improve collision detection all-around, since right now all rotations
+are approximated by the same big rectangle.
+tmdonahu	v0.0	10/24/87
+
+----------------------------------------------------------------------------
+Put in lots of special abilities (ideas like Jump, Nitro Boost,
+Directional Shield? Repair, Auto-pilot, Invisibility?, Radar Jamming,
+Ejection Seat, Remote Control, Turret Lock-on, Ram, Tractor Beam?,
+Wall Disintegrator, Mines, Smoke Screen, Cruise Missile, Oil Slick,
+Radar Detector, etc. (yes, I've thought about this a bit))  These
+would make the game incredibly complex, and lead to neat multi-player
+possibilities, but all require reasonably involved implementation.
+Don't expect them all, and don't expect them soon.
+tmdonahu	v0.0	10/24/87
+
+----------------------------------------------------------------------------
+Eventually, take out the 'm' key (maps entire maze) since it is just
+for debugging purposes (and to make the player's tank look
+insignificant).
+tmdonahu	v0.0	10/24/87
+
+v0.10	'm' key removed.  Now maze exploration is really exploration.
+
+----------------------------------------------------------------------------
+Make lots of different tanks, with different strengths and
+weaknesses. (work on this is underway (in case no one has noticed,
+your tank and the enemy tanks have many differences (max speed, weapon
+damage, turning speed, acceleration, etc.)))
+tmdonahu	v0.0	10/24/87
+
+
+----------------------------------------------------------------------------
+Make many different pictures for the tanks and their bullets.  Work on
+this is also underway.
+tmdonahu	v0.0	10/24/87
+
+v0.10	Work completed.  ~20 tanks drawn.  Only 4 in game so far.
+
+----------------------------------------------------------------------------
+Change master progs so that robot tanks don't get stuck on walls so
+often (tanks are pretty easy to kill when they are stuck to walls)
+tmdonahu	v0.0	10/24/87
+
+----------------------------------------------------------------------------
+Build an RT executable, so we can try it out from an RT.
+hindmost	v?.??	10/29/87
+
+----------------------------------------------------------------------------
+At difficulty level 2, hits to the front of my armour were all registered
+against my rear armour.  Also, when I ran into a wall backwards, the damage
+went against my front armour instead of the rear.  Finally, the instructions
+box should tell you how to stop moving backwards.
+jackal	v 0.02  11/2/87
+
+Since bullet vs. tank collisions are not correct yet (i.e. bullets are
+compared with the rectangle around the tank)  Occasionally, bullets will
+go through tanks partway, and hit the wrong side of the vehicle.
+tmdonahu
+
+----------------------------------------------------------------------------
+At difficulty level 7, I was able to position myself such that a tank which
+was stuck against a wall fired at me but couldn't hit.  After a few minutes,
+it was out of ammo and was easily killed.  I suppose fixing the tanks getting
+stuck on walls will fix this problem too (indirectly) but you may want to 
+lower the range at which they'll open fire by a bit.
+tada	v 0.02  11-10-87
+
+v0.10	Tanks now fire only when they think you're in range.
+
+----------------------------------------------------------------------------
+Make different styles of tanks, each with its own special features
+(e.g tanks that maneuver well but don't fire well, or tanks with lots
+of protection and fire power but little speed). Also, I don't know if
+this is possible, but could you fix the kill ratio so that it doesn't
+go to zero everytime you die, but maybe loses 1.00 and then gain every
+time you kill someone. It would be really cool if you could save your
+stats somewhere after each game, and as your kill ratio increases you
+get special powers or something like a better tank. It would be like
+ranking players based on how they play all the time, not just one
+game.
+madpit  v 0.02 11-12-87
+
+v0.10	Tanks have varied firepower, speed, armor, and shooting patterns.
+
+-----------------------------------------------------------------------------
+Tell how many tanks you have killed, and how many are remaining.
+
+Explain how to use mouse buttons in .doc and help window.
+
+Give defaults when entering parameters, i.e.:
+
+	Difficulty (0-10)[0]: 
+
+v0.10	Doc file expanded, defaults added to prompts.
+
+enprabha v 0.02 11-13-87
+-----------------------------------------------------------------------------
+Graphical depiction of armor, fuel, temperature, ...  would be good.
+
+Can the cannon/or other weapon and engine over heat?
+
+Perhaps additional fuel/ammunition can be picked up at supply dumps.
+
+It would be nice if the cannon automatically slewed to the desired direction
+of fire instead of having to command that seperately, but the way it is
+currently done may be an interesting feature of the game.
+
+Sometimes the robot tanks kill each other.
+
+The speed displayed is 1 higher that the speed I type.
+coffee v 0.02 11-16-87
+
+
+I consider the present method of turret control an interesting feature of
+the game.  Others have made a similar point about combined turret/shooting
+control.  I have looked into this, and have pretty much decided against it,
+for a number of reasons (one being the delay between hitting "fire" and
+actually firing).
+
+Robot tanks are supposed to be able to kill each other.  presently they
+aren't smart enough not to.  A bullet will always hurt someone if it hits.
+
+The speed displayed is your actual speed.  The speed number you hit is
+your "speed level" from 0-9 which is a fraction (in ninths) of your maximum
+speed.  This is done to allow different max speeds for different types of
+vehicles while still allowing the range of speed control to be 0-9.
+tmdonahu (the guy writing xtank).
+
+-------------------------------------------------------------------------------
+Make enemy bullets appear different than your own.  I confuse them with
+my own when firing rapidly.
+blvogel v0.02 12-1-87
+
+v0.10	Three types of bullet pictures now exist.  Unfortunately there
+	are four types of weapons.
+
+-------------------------------------------------------------------------------
+It is possible to kill the enemy tanks when they are against a wall
+but on the opposite side of it from your tank by shooting the wall
+near them.  It makes the game rather simple since they obviously
+cannot shoot back.  Bitchin' awesome game ... keep it up.
+badbrad v0.02 12-02-87 on Pale-Ale.mit.edu
+
+Thanks for the support.  I have a lot to fix will bullet collisions.
+Soon I'll rewrite all the bullet code to fix these bugs, and hopefully
+speed things up a bit in the process.
+
+-------------------------------------------------------------------------------
+I want a multi-player version...
+
+I also notice the ability to kill tanks that are behind walls.  I can't however
+do it consistently.
+
+Enemy bullets don't always get caught by the ends of wall (seriously).
+
+I notice you plan to add more weapons and stuff DO IT this game is cool...
+
+If you give the enemy tanks some maze running ability you could place
+them around the maze - which would be a good idea since 80% of the
+maze is unused.
+
+And if you don't have anything else to do (classes, finals etc) add a
+3rd dimension to the game - like mortars, enemy bombers, jumping tanks
+or ramps/trenches...
+
+KAHUNA v0.02 12-4-87
+
+Work on the multi-player version has begun!!!!!!!
+I should have something working sometime during IAP.
+Most likely it will be a single cluster game that can be started
+by anyone.  This will keep the network traffic to a minimum, since
+it won't go across gateways.  Also, no one will complain about too many
+players, since you can always start up another game!
+tmdonahu
+
+------------------------------------------------------------------------------
+The walls extend farther than they look; you can get caught on the end of them
+when it doesn't look like you're touching them.
+
+Incorporate armor remaining into the score - perhaps add all armor points to
+score at the end, or subtract one point from score for each point of armor
+lost.
+
+Make graphics for exploding tanks! I wanna see them burn!
+
+dschmidt v0.10 12-5-87
+
+------------------------------------------------------------------------------
+Is there a way to repair? Some sort of repair would be nice.  I realize
+if you just repaired with time, that it would be too easy, because you
+could just sit and wait, but maybe something.....
+
+Also, I have heard an alternate weapon mentioned...Is that in the works?
+
+I take it the other stuff in the status window like money, health,
+etc... has to do with things you hope to implement in the future...
+
+mkeirnan v0.10 12-14-87
+
+------------------------------------------------------------------------------
+One of the "problem" with the game right now is that tanks can get stuck to
+the wall.  I imagine that it will be fixed in the future.  But the fact is
+that it is fun to have dead target around.  Therefore, I would like to suggest
+the following:  Rather than having the game's purpose as destroying all robot
+tanks, those robot tanks should be protecting some dead targets, such as 
+army bases, and the purpose of the game would be to destroy all dead targets.
+
+Another suggestion is that since the control of the turret and the direction
+is separate; in a multi-player version, you can have two players controlling
+the same tank with one handling the shooting and the other driving the tank.
+
+wong v0.02 12-16-87
+
+------------------------------------------------------------------------------
+Well, version 0.10 is now the default.  After 4 short months, I think I
+finally have something visually appealing, and fun to play.  I'd like to
+thank everyone who has made comments about the game.  Look for multi-player
+xtank after IAP!
+
+Now for a nice relaxing Christmas.
+
+tmdonahu	v0.10	12-20-87
+------------------------------------------------------------------------------
+A difficult game....
+
+cpc          v0.10          Thu Jan 14 14:23:19 EST 1988
+
+------------------------------------------------------------------------------
+hey dude it's great... too bad we couldn't get time to play more
+
+cssk          v0.10          Thu Jan 28 03:21:37 EST 1988
+
+------------------------------------------------------------------------------
+It would be neat to have it look at an environment variable to find out your
+xtank name, so you could have it be something other than your boring
+run-of-the-mill login name.
+
+dschmidt          v0.10          Thu Feb 4 22:13:49 EST 1988
+
+------------------------------------------------------------------------------
+The walls are alot more sensitive than they look, and so are the tanks. 
+A more easily read status chart, i.e. bar graphs, etc. ESPECIALLY WEAPON
+HEAT!!!!
+How about some new gadgets, i.e. Cloaking, Mines, Oil, etc.?
+ 
+Great game!! Keep it up!!
+
+yhyuan          v0.20          Wed Mar 9 22:05:48 EST 1988
+
+------------------------------------------------------------------------------
+It clears the score after each death or completion of a scenario,
+can you change it so that when you finish a level, the score stays
+the same and the difficulty increases or something?
+
+yhyuan          v0.20          Wed Mar 9 22:21:07 EST 1988
+
+------------------------------------------------------------------------------
+
+Nice Job.  I've been playing this game for a while and...
+
+1)  I don't like the current implementation of the multi-player game.
+	- There should be some robots since rarely do ten or 15 people  
+          the game at once.  Perhaps the players should work together.  You
+	  could make the robots much tougher - I seem to remember they used to
+	  have better aim at higher levels.  Then five players vs.
+	  five robots might be a blast!!
+	  Think of all the tactical aspects this wouls add to the game.
+	- I would very much like to see two people be able to control the same
+	  tank. (i.e. driver and gunner) It is fun to do both but with two sets
+	  of mouse buttons you could implement more/easier controls of both
+          weapons and maneuvering.
+
+2) I suspect you intend to include weapons that effect top and bottom armour.
+	- Mortars and mines would add much to the game.  Mines would lead
+	  into the creation of a new "special" - the mine detector.  Great, you
+	  probobly thought of all this already.
+	- But, new, odd-functioning weapons would not be compatable with
+	  your current control scheme.  You have only one fire button.  Since,
+	  all your current weapons are direct-fire in nature this is O.K. 
+	  (but not great).  If the player needs to activate and deactivate
+	  weapons continously the game would get annoying.
+	- ADD EXTRA FIRE CONTROLS.  Preferably, one for the turret and one 
+	  each for each side that weapons can be mounted on (since fixed
+	  weapons are basically useless because the player has to continously
+	  switch them one and off) finally there should be one or two for
+	  special weapons like mine layers or mortars.
+
+3)  Tank design is cool but..
+	- The point scoring system is weighted toward people who build
+big slow monsters with lots of guns.  I realize that score is loosly
+based on cost ratio but if a $20,000 tank kills another $20,000 tank
+he gets less points that if a $100,000 tank kills a $100,000 tank.
+You allow people to build custom tanks for various maze densities
+without point penalties, why not cost?  Perhaps you should change your
+parameters so that the player can select the average cost of the tank
+he's fighting and the level (maze running ability, aiming, group
+tactics) of his opponents.  Then make the score strictly a cost ratio.
+This way players who favor fast, maneuverable tanks can score with the
+leviatan builders.
+
+4)  What's the point?
+	- how about giving this game a goal other that shoot-em-up
+before they do it to you?  The most effective killing machines are big
+crusher tanks that cost alot.  But what if the goal what to get from
+point A to poing B?  Then players would have to choose between
+something that will blast its way there or something that will quickly
+maneuver its way there or something in between - while still banacing
+cost considerations.  Perhaps if points were given for actions other
+that elimination of the enemy (i.e. getting his supply base, carrying
+something or getting a civillian out of enemy territory) then the
+point scoring imbalence mentioned above could also be corrected.
+
+I am impressed with the game, and your ability to create it while
+being a student - are you failing out?  Keep it up.
+
+
+
+kahuna          v0.50          Mon Mar 21 20:06:21 EST 1988
+
+------------------------------------------------------------------------------
+
+boosman          v0.55          Thu May 19 14:06:26 EDT 1988
+
+------------------------------------------------------------------------------
+Hey Terry,
+  I was trying to get back up on top of the list today, and a couple of funny things happened.  First I designd
+a new tank (Eric's) which I couldn't save. then I went to a different workstaition and was able to save it.  then I tried to play, but the screen froze up a second after I started to move.  Then a minute or so later, it went back to xswitch 
+mode and said "segmentation violation". this happenned a few times.
+   Just thougt I'd tell you.
+                                                  -Clapton
+
+boo          v0.55          Sun Jun 5 13:46:38 EDT 1988
+
+------------------------------------------------------------------------------
+
+han          v0.55          Fri Jun 24 13:48:55 EDT 1988
+
+------------------------------------------------------------------------------

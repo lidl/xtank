@@ -1,0 +1,49 @@
+Routines needed by this program:
+
+Note : movement routines must not wait to complete their tasks,
+since the conditions leading to decisions can change.
+
+Strategy:
+	1. if I am in a square I wasn't in a second ago,
+		mark this square as occupied
+
+	2. wander about, exploring the maze.  Each adjacent
+		square is given a weighted score representing
+		its desirability. A simple score will consider:
+
+		Number of visits to neighbor squares
+		Number of visitss to target square
+		Obsticle in square and adjaacent squares
+		( enemy outposts are very bad
+		  movement squares are bad
+	          friendly outposts are good
+		  food and fuel are weighted according to need )
+		presence of vehicles
+
+scoring algorithm:
+	each square gets a score by summing points of features
+	total desirability = 
+
+
+int close_move(location)
+
+	Move directly to the location given if there is a clear
+	line of sight.  If there is no line of sight, return
+	an error.
+
+int local_score(box)
+
+	provides the score of a box's desirability
+
+int neighbor_scores(box)
+
+	provides the desirability score of a box's neighbors
+
+int total_score(box)
+
+	the score of a box's desirability, including its neighbors
+
+Location  get_destination()
+
+	return to where the tank should roll next
+

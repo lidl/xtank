@@ -1,0 +1,177 @@
+/*
+** This is the object file for the small turret
+*/
+
+#define turret_sm_views 32
+
+static Picture turret_sm_pic[turret_sm_views] = {
+      { 6, 1, -1, 0 },
+      { 6, 3, -1, 0 },
+      { 5, 3, -1, 0 },
+      { 5, 3, -1, -1 },
+      { 4, 4, -1, -1 },
+      { 3, 5, -1, -1 },
+      { 3, 5, 0, -1 },
+      { 3, 6, 0, -1 },
+      { 1, 6, 0, -1 },
+      { 3, 6, 2, -1 },
+      { 3, 5, 2, -1 },
+      { 3, 5, 3, -1 },
+      { 4, 4, 4, -1 },
+      { 5, 3, 5, -1 },
+      { 5, 3, 5, 0 },
+      { 6, 3, 6, 0 },
+      { 6, 1, 6, 0 },
+      { 6, 3, 6, 2 },
+      { 5, 3, 5, 2 },
+      { 5, 3, 5, 3 },
+      { 4, 4, 4, 4 },
+      { 3, 5, 3, 5 },
+      { 3, 5, 2, 5 },
+      { 3, 6, 2, 6 },
+      { 1, 6, 0, 6 },
+      { 3, 6, 0, 6 },
+      { 3, 5, 0, 5 },
+      { 3, 5, -1, 5 },
+      { 4, 4, -1, 4 },
+      { 5, 3, -1, 3 },
+      { 5, 3, -1, 2 },
+      { 6, 3, -1, 2 } 
+};
+
+static Object turret_sm_obj = {
+	"sm. turret",
+	turret_sm_views,
+	turret_sm_pic,
+};
+
+static unsigned char turret_sm_bits0[] = {
+    0x3f};
+
+static unsigned char turret_sm_bits1[] = {
+    0x03, 0x1c, 0x20};
+
+static unsigned char turret_sm_bits2[] = {
+    0x01, 0x06, 0x18};
+
+static unsigned char turret_sm_bits3[] = {
+    0x03, 0x04, 0x18};
+
+static unsigned char turret_sm_bits4[] = {
+    0x01, 0x02, 0x04, 0x08};
+
+static unsigned char turret_sm_bits5[] = {
+    0x01, 0x01, 0x02, 0x04, 0x04};
+
+static unsigned char turret_sm_bits6[] = {
+    0x01, 0x02, 0x02, 0x04, 0x04};
+
+static unsigned char turret_sm_bits7[] = {
+    0x01, 0x01, 0x02, 0x02, 0x02, 0x04};
+
+static unsigned char turret_sm_bits8[] = {
+    0x01, 0x01, 0x01, 0x01, 0x01, 0x01};
+
+static unsigned char turret_sm_bits9[] = {
+    0x04, 0x04, 0x02, 0x02, 0x02, 0x01};
+
+static unsigned char turret_sm_bits10[] = {
+    0x04, 0x02, 0x02, 0x01, 0x01};
+
+static unsigned char turret_sm_bits11[] = {
+    0x04, 0x04, 0x02, 0x01, 0x01};
+
+static unsigned char turret_sm_bits12[] = {
+    0x08, 0x04, 0x02, 0x01};
+
+static unsigned char turret_sm_bits13[] = {
+    0x18, 0x04, 0x03};
+
+static unsigned char turret_sm_bits14[] = {
+    0x10, 0x0c, 0x03};
+
+static unsigned char turret_sm_bits15[] = {
+    0x30, 0x0e, 0x01};
+
+static unsigned char turret_sm_bits16[] = {
+    0x3f};
+
+static unsigned char turret_sm_bits17[] = {
+    0x01, 0x0e, 0x30};
+
+static unsigned char turret_sm_bits18[] = {
+    0x03, 0x0c, 0x10};
+
+static unsigned char turret_sm_bits19[] = {
+    0x03, 0x04, 0x18};
+
+static unsigned char turret_sm_bits20[] = {
+    0x01, 0x02, 0x04, 0x08};
+
+static unsigned char turret_sm_bits21[] = {
+    0x01, 0x01, 0x02, 0x04, 0x04};
+
+static unsigned char turret_sm_bits22[] = {
+    0x01, 0x01, 0x02, 0x02, 0x04};
+
+static unsigned char turret_sm_bits23[] = {
+    0x01, 0x02, 0x02, 0x02, 0x04, 0x04};
+
+static unsigned char turret_sm_bits24[] = {
+    0x01, 0x01, 0x01, 0x01, 0x01, 0x01};
+
+static unsigned char turret_sm_bits25[] = {
+    0x04, 0x02, 0x02, 0x02, 0x01, 0x01};
+
+static unsigned char turret_sm_bits26[] = {
+    0x04, 0x04, 0x02, 0x02, 0x01};
+
+static unsigned char turret_sm_bits27[] = {
+    0x04, 0x04, 0x02, 0x01, 0x01};
+
+static unsigned char turret_sm_bits28[] = {
+    0x08, 0x04, 0x02, 0x01};
+
+static unsigned char turret_sm_bits29[] = {
+    0x18, 0x04, 0x03};
+
+static unsigned char turret_sm_bits30[] = {
+    0x18, 0x06, 0x01};
+
+static unsigned char turret_sm_bits31[] = {
+    0x20, 0x1c, 0x03};
+
+static unsigned char *turret_sm_bitmap[turret_sm_views] = {
+	turret_sm_bits0,
+	turret_sm_bits1,
+	turret_sm_bits2,
+	turret_sm_bits3,
+	turret_sm_bits4,
+	turret_sm_bits5,
+	turret_sm_bits6,
+	turret_sm_bits7,
+	turret_sm_bits8,
+	turret_sm_bits9,
+	turret_sm_bits10,
+	turret_sm_bits11,
+	turret_sm_bits12,
+	turret_sm_bits13,
+	turret_sm_bits14,
+	turret_sm_bits15,
+	turret_sm_bits16,
+	turret_sm_bits17,
+	turret_sm_bits18,
+	turret_sm_bits19,
+	turret_sm_bits20,
+	turret_sm_bits21,
+	turret_sm_bits22,
+	turret_sm_bits23,
+	turret_sm_bits24,
+	turret_sm_bits25,
+	turret_sm_bits26,
+	turret_sm_bits27,
+	turret_sm_bits28,
+	turret_sm_bits29,
+	turret_sm_bits30,
+	turret_sm_bits31
+};

@@ -1,0 +1,7 @@
+ignore 26
+alias l list
+alias n next
+alias s step
+alias p print
+alias w where
+alias r run

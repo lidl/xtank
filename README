@@ -1,0 +1,14 @@
+This is the main Xtank directory.  The subdirectories are as follows:
+
+Doc		Documentation on how to play Xtank
+Help		Files used by the on-line help system in Xtank
+Todo		Ideas for the future, lists from the past
+Mazes		Files describing Mazes used in Xtank (stickybitted)
+Programs	Files for robot programs to load into Xtank (stickybitted)
+README		This file
+Src		Source code for Xtank
+Util		Random utilities used in writing Xtank
+Vehicles	Files describing vehicles used in Xtank (stickybitted)
+xtank		Shell script to run Xtank
+.xtank.vax	VAX executable
+.xtank.rt	RT executable

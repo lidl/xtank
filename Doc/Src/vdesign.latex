@@ -1,0 +1,540 @@
+\documentstyle{article}
+
+\input{header.latex}
+
+\title{Vehicle Design in \xtank}
+\author{Terry Donahue \and Dan Schmidt}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Overview}
+
+Designing a vehicle requires some thought.  You will need to make
+several choices about the type of body, engine, armor, weapons, and
+special abilities that your vehicle will have.  Each choice that you
+make will affect various attributes of the vehicle.  These attributes,
+such as cost, weight, engine power, and drag value, will in
+turn determine how your vehicle performs in combat.
+
+\subsection*{Selected Characteristics}
+
+\begin{description}
+  \item [Body:]        The external shape of your vehicle
+  \item [Engine:]      The driving force inside the vehicle
+  \item [Weapons:]     Unsubtle ways to defeat your opponents
+  \item [Armor:]       Protection from enemy attacks
+  \item [Specials:]    Subtle ways to defeat your opponents
+  \item [Heat Sinks:]  Remove heat created by firing weapons
+  \item [Suspension:]  Keeps the vehicle stable during turns
+  \item [Treads:]      Increases your traction
+  \item [Bumpers:]     Reduces damage from collisions
+\end{description}
+
+What you choose for these characteristics will in turn determine your
+vehicle's calculated characteristics, such as maximum speed and turning
+rate.  Formulas for these characteristics can be found in {\bf Formulas}.
+
+\subsection*{The Interface}
+
+The interface to \xtank's vehicle design module is very intuitive.
+You simply click on the menu entry corresponding to the part you would
+like to change.  When you are asked to type in a response, type it and
+then press Return.
+
+\newpage
+
+\section{Bodies}
+
+Choosing a body is the most important decision to make when designing
+a vehicle.  It determines the basic attributes of the vehicle.
+
+\begin{description}
+  \item [Size:]  The general size of your vehicle.  Generally, the bigger
+your vehicle, the more costly and heavy its accessories will be.
+  \item [Weight:]  How much the body weighs.
+  \item [Weight Limit:]  How much weight the body can carry.
+  \item [Space Limit:]  How much space is available inside the body for
+things like weapons and engines.
+  \item [Drag Value:]  How aerodynamic the body is, used to determine maximum
+speed.  The higher the value, the better.
+  \item [Handling:]  How maneuverable the body is, used to determine
+things like your maximum turning rate.  See {\bf Suspension}.
+  \item [Turrets:]  The number of turrets the body has to fire weapons from.
+  \item [Cost:]  The basic cost of this vehicle.
+\end{description}
+
+\begin{center}
+{\small
+\begin{tabular}{|l|r|r|r|r|r|r|r|r|}                                    \hline
+\multicolumn{9}{|c|}{\huge Bodies}                                  \\ \hline
+     &      &        & Weight & Space & Drag  &          &         &    \\
+Body & Size & Weight & Limit  & Limit & Value & Handling & Turrets & Cost
+\\ \hline \hline
+Lightcycle & 2 & 200 Kg & 800 Kg & 600 L & 0.10 & 8 & 0 & 3000 
+\\ \hline
+Hexo & 3 & 1500 Kg & 5000 Kg & 4000 L & 0.25 & 6 & 1 & 4000            
+\\ \hline
+Spider & 3 & 2500 Kg & 8000 Kg & 3000 L & 0.40 & 7 & 1 & 5000          
+\\ \hline
+Psycho & 4 & 5000 Kg & 18000 Kg & 8000 L & 0.60 & 4 & 1 & 5000         
+\\ \hline
+Tornado & 4 & 7000 Kg & 22000 Kg & 12000 L & 0.80 & 4 & 1 & 7000       
+\\ \hline
+Marauder & 5 & 9000 Kg & 28000 Kg & 18000 L & 1.00 & 3 & 2 & 10000     
+\\ \hline
+Tiger & 6 & 11000 Kg & 35000 Kg & 22000 L & 1.50 & 5 & 1 & 12000       
+\\ \hline
+Rhino & 7 & 12000 Kg & 40000 Kg & 30000 L & 2.00 & 3 & 2 & 10000       
+\\ \hline
+Medusa & 7 & 14000 Kg & 40000 Kg & 25000 L & 1.20 & 4 & 3 & 15000      
+\\ \hline
+Malice & 5 & 4000 Kg & 20000 Kg & 15000 L & .40 & 7 & 1 & 17000        
+\\ \hline
+\end{tabular}
+}
+\end{center}
+
+\newpage
+
+\section{Engines}
+
+\subsection*{Normal Engines}
+\begin{description}
+  \item [Electric:]  Very small, super light, very low power. 
+                     Good for motorcycles and small tanks.
+  \item [Internal Combustion:]  Small, light, low power.      
+                                Good for small tanks.
+  \item [Turbine:]  Average size, weight and power.           
+                    Good for all tanks.
+\end{description}
+
+\subsection*{Esoteric Engines}
+
+\begin{description}
+  \item [Fuel Cell:]  Very small, high power.
+                      Good for small but fast tanks.
+  \item [Fission:]  Huge, high power and long time between refills.
+                    Good for big tanks.
+  \item [Breeder Fission:]  huger, stronger, version of fission engine.
+                            Good for big fast tanks.
+  \item [Fusion:]  Ultimate powerhouse, very heavy, stays on the 
+                   road for a while.  Good for behemoth tanks.
+\end{description}
+
+\subsection*{What the Numbers Mean}
+\begin{description}
+  \item [Power:]  Affects maximum speed and acceleration.
+  \item [Weight:] How much the engine weighs.
+  \item [Space:]  How much space the engine takes up.
+  \item [Fuel Type:] Means nothing in the game; included for the curious.
+  \item [Fuel Cost:] How much each liter of fuel will cost you when you
+                     refuel during a battle.
+  \item [Capacity:] How much fuel the engine can hold.
+  \item [Cost:]  How much the engine costs.  Comes with a free full tank.
+\end{description}
+	
+\begin{center}
+{\small
+\begin{tabular}{|l|r|r|r|l|r|r|r|}                                   \hline
+\multicolumn{8}{|c|}{\huge Engines}                            \\ \hline
+ & & & & & Fuel & &                                 \\
+Engine & Power & Weight & Space & 
+   Fuel Type & Cost & Capacity & Cost               \\ \hline \hline
+Small Electric & 50 hp & 100 Kg & 20 L & Electricity & 5 & 200 & 1500
+\\ \hline
+Medium Electric & 100 hp & 150 Kg & 30 L & Electricity & 5 & 300 & 2200
+\\ \hline
+Large Electric & 200 hp & 200 Kg & 40 L & Electricity & 5 & 400 & 3000
+\\ \hline
+Super Electric & 300 hp & 250 Kg & 50 L & Electricity & 5 & 500 & 6000
+\\ \hline
+Small Combustion & 300 hp & 400 Kg & 200 L & Gasoline & 8 & 200 & 2000
+\\ \hline
+Medium Combustion & 400 hp & 500 Kg & 300 L & Gasoline & 8 & 300 & 2500
+\\ \hline
+Large Combustion & 500 hp & 600 Kg & 400 L & Gasoline & 8 & 400 & 3000
+\\ \hline
+Super Combustion & 600 hp & 1000 Kg & 600 L & Gasoline & 8 & 500 & 4000
+\\ \hline
+Small Turbine & 600 hp & 1000 Kg & 800 L & Kerosene & 10 & 350 & 4000   
+\\ \hline
+Medium Turbine & 700 hp & 1200 Kg & 1000 L & Kerosene & 10 & 450 & 5000 
+\\ \hline
+Large Turbine & 800 hp & 1500 Kg & 1500 L & Kerosene & 10 & 550 & 7000  
+\\ \hline
+Turbojet Turbine & 1000 hp & 2000 Kg & 2000 L & Kerosene & 10 & 750 & 10000 
+\\ \hline
+Fuel Cell & 1200 hp & 1000 Kg & 400 L & Hydrogen & 20 & 600 & 15000         
+\\ \hline
+Fission & 1500 hp & 3000 Kg & 3500 L & Uranium & 15 & 1000 & 20000         
+\\ \hline
+Breeder Fission & 1800 hp & 4000 Kg & 4000 L & Plutonium & 15 & 1250 & 25000
+\\ \hline
+Fusion & 2250 hp & 4000 Kg & 2500 L & Deuterium & 5 & 1500 & 40000         
+\\ \hline
+\end{tabular}
+}
+\end{center}
+
+\newpage
+
+\section{Weapons}
+
+\subsection*{Types of Weapons}
+
+\begin{description}
+  \item [Machine Guns:]  Short range, high firing rate.  Low cost way to
+do damage.
+  \item [Pulse Rifles:]  Medium-long range, slower firing rate.  More expensive,
+but wins out in long range battles.
+  \item [Autocannons:]  High damage, medium range, high firing rate.  Best
+qualities of first two; priced to match.
+  \item [Rocket Launchers:]  Super damage, long range, slow firing rate.
+Nastiest weapon, but not much ammo.
+  \item [Acid Sprayer:]  High damage, very short range, high firing rate.
+Great to use after running into an enemy.
+  \item [Flame Thrower:] Low damage, super firing rate, short range.
+Good against lightly armored enemies.
+  \item [Mine Layer:] High damage, the only way to damage a vehicle's bottom
+armor.
+  \item [Heat Seeker:] High damage, turn in midair to track down
+enemies.  The only way to damage a vehicle's top armor.  Very
+expensive, very large.  
+  \item [Oil Slick:] No damage, but vehicles driving through it lose control.
+\end{description}
+
+\subsection*{What the Numbers Mean}
+
+\begin {description}
+  \item [Damage:]  How much damage a bullet from this weapon will do to
+other vehicles.  Note that the quality of their armor may reduce the damage 
+they take from it.  See {\bf Armor}.
+  \item [Range:]  How far the weapon can fire.
+  \item [Ammo:]  How many bullets the weapon can hold.
+  \item [Reload Time:]  After you have shot a weapon, how long it takes
+to get the next shot off.
+  \item [Ammo Speed:]  The speed of the weapon's bullets.
+  \item [Ammo Cost:]  How much it costs to buy one bullet during a battle.
+  \item [Heat:]  How much the heat of your vehicle will be increased every
+time you fire this weapon.  See {\bf Heat Sinks}.
+  \item [Weight:]  How much the weapon weighs.  Ammo has no weight.
+  \item [Space:]  How much space the weapon takes up.
+  \item [Cost:]  How much the weapon costs.  A full supply of ammo is
+included free.
+\end {description}
+
+In addition to deciding what weapons to use, you must also determine where
+to mount each weapon.  Mounting a weapon on a turret gives it the most
+flexibility, but the turning rate of a turret is inversely proportional to
+the weight of the stuff on it, so each additional weapon placed on a turret 
+slows it down.
+
+\begin{center}
+{\footnotesize
+\begin{tabular}{|c|r|r|r|r|r|r|r|r|r|r|}                            \hline
+\multicolumn{11}{|c|}{\huge Weapons}                             \\ \hline
+       &     &       &      & Reload & Ammo & Ammo & & & &      \\
+Weapon & Dam & Range & Ammo & Time & Speed  & Cost & 
+   Heat & Weight & Space & Cost                            \\ \hline \hline 
+
+Light Machine Gun & 2 & 360 & 300 & 3 & 17 & 1 & 0 & 20 Kg & 200 L & 1000
+\\ \hline
+Machine Gun & 3 & 360 & 250 & 3 & 17 & 2 & 1 & 50 Kg & 225 L & 2200
+\\ \hline
+Heavy Machine Gun & 4 & 360 & 200 & 3 & 17 & 3 & 2 & 100 Kg & 250 L & 3000
+\\ \hline
+Light Pulse Rifle & 2 & 480 & 250 & 4 & 20 & 2 & 1 & 50 Kg & 200 L & 1500
+\\ \hline
+Pulse Rifle & 3 & 480 & 225 & 4 & 20 & 3 & 2 & 125 Kg & 225 L & 3300
+\\ \hline
+Heavy Pulse Rifle & 4 & 480 & 200 & 4 & 20 & 4 & 3 & 300 Kg & 250 L & 4500
+\\ \hline
+Light Autocannon & 3 & 400 & 250 & 3 & 22 & 4 & 2 & 200 Kg & 300 L & 3000
+\\ \hline
+Autocannon & 4 & 400 & 225 & 3 & 22 & 5 & 3 & 300 Kg & 350 L & 6000
+\\ \hline
+Heavy Autocannon & 5 & 400 & 200 & 3 & 22 & 6 & 4 & 500 Kg & 400 L & 10000
+\\ \hline
+Light Rkt Launcher & 4 & 600 & 150 & 7 & 25 & 8 & 3 & 600 Kg & 800 L & 7000
+\\ \hline
+Rkt Launcher & 6 & 600 & 125 & 7 & 25 & 9 & 5 & 900 Kg & 1200 L & 10000
+\\ \hline
+Heavy Rkt Launcher & 8 & 600 & 100 & 7 & 25 & 10 & 7 & 900 Kg & 1600 L & 15000
+\\ \hline
+Acid Sprayer & 6 & 160 & 100 & 3 & 10 & 10 & 0 & 300 Kg & 500 L & 3000
+\\ \hline
+Flame Thrower & 3 & 200 & 300 & 1 & 12 & 2 & 1 & 700 Kg & 500 L & 4000
+\\ \hline
+Mine Layer & 6 & 50 & 50 & 2 & 10 & 10 & 2 & 1000 Kg & 1000 L & 8000
+\\ \hline
+Heat Seeker & 8 & 1250 & 15 & 15 & 25 & 50 & 9 & 1000 Kg & 1800 L & 20000
+\\ \hline
+Oil Slick & 0 & 50 & 50 & 5 & 10 & 10 & 0 & 300 Kg & 500 L & 2000
+\\ \hline
+\end{tabular}
+}
+\end{center}
+
+\newpage
+
+\section{Armor}
+
+\subsection*{How Armor Works}
+
+Although there are many types of armor, you can have only one type
+of armor on your vehicle.  Armor cost, weight, and space are proportional to
+size of your vehicle's body, since a larger vehicle
+has more area to cover with armor.
+Each unit of armor provides one point of protection in one area of your 
+vehicle.
+The `hits off' of the armor determines how resistant the armor is to damage.
+Vehicles armored with $x$ `hits off' take no damage from
+weapons that do only $x$ damage, and sustain $x$ less damage from
+better weapons.  When your armor on any side goes below zero, your vehicle
+will explode.
+
+\begin{description}
+  \item [Example 1:]  Steel armor has 0 hits off, so if a bullet that does 5
+points of damage hit a vehicle with steel armor, 5 points of steel armor
+would be destroyed.
+
+  \item [Example 2:]  Titanium armor has 2 hits off, so a bullet that does 5 
+points of damage would only destroy 3 points of titanium armor.  The 2 
+`hits off' negate 2 of the 5 damage points.
+
+  \item [Example 3:]  Tungsten armor has 3 hits off, so a bullet that does 5 
+points of damage would only destroy only 2 points of tungsten armor.  A 
+bullet that does 3 points of damage would not affect tungsten armor at all.
+
+\end{description}
+
+\subsection*{What the Numbers Mean}
+
+\begin{description}
+  \item [Hits Off:]  Explained above.  The protection factor of the armor.
+  \item [Weight Ratio:]  This multiplied by the size of your vehicle (see
+{\bf Bodies}) will tell you how much each unit of armor will weigh.
+  \item [Cost Ratio:]  This multiplied by the size of your vehicle (see
+{\bf Bodies}) will tell you how much each unit of armor will cost.
+\end{description}
+
+\begin{center}
+{\large
+\begin{tabular}{|l|r|r|r|}                              \hline
+\multicolumn{4}{|c|}{\huge Armor}                   \\ \hline
+      & Hits & Weight & Cost  \\
+Armor & Off  & Ratio  & Ratio                 \\ \hline \hline
+Steel & 0 & 8 & 10                                   \\ \hline
+Kevlar & 0 & 3 & 20                                  \\ \hline
+Hardened Steel & 1 & 8 & 20                          \\ \hline
+Composite & 1 & 4 & 30                               \\ \hline
+Compound Steel & 2 & 8 & 40                          \\ \hline
+Titanium & 2 & 5 & 70                                \\ \hline
+Tungsten & 3 & 20 & 100                              \\ \hline
+\end{tabular}
+}
+\end{center}
+
+\newpage
+
+\section{Specials}
+
+Special abilities make your vehicle easier to use, and gives it a
+wider variety of functions.  Each special is a separate
+self-contained module capable of performing some useful function.
+
+\begin{description}
+  \item [Console:]  This module displays vital information about your vehicle
+and its contents.  Don't leave home without it.
+
+  \item [Mapper:]  This module remembers the locations
+of all stationary objects in the maze that you have seen.
+This allows you to plan routes through the maze efficiently, and also
+helps you avoid getting cornered in dead ends.
+
+  \item [Radar:]  This module detects all vehicles within 300 meters
+and displays their approximate locations.  This not only helps to prevent
+ambush, but allows you to track and chase down enemy vehicles.
+Unfortunately, the radar is not foolproof, so occasionally vehicles will
+slip by radar.  Also ghosting may occur (two blips for one vehicle).
+\end{description}
+
+\begin{center}
+{\large
+\begin{tabular}{|l|r|}    \hline
+\multicolumn{2}{|c|}{\huge Specials}  \\ \hline
+Special & Cost  \\ \hline \hline
+Console & 250  \\ \hline
+Mapper & 500   \\ \hline
+Radar & 1000  \\ \hline
+\end{tabular}
+}
+\end{center}
+
+\section{Heat Sinks}
+
+Many weapons have the annoying habit of creating heat in your
+vehicle.  If this heat is not dissipated, you will not be able to fire
+(when your heat reaches 100).
+
+Each heat sink in your vehicle will reduce your vehicle's heat by one
+every 5 frames (about 1/2 second during normal play).  Most vehicles have
+at least one heat sink, usually 3 to 6.  If you plan on shooting many weapons
+that generate lots of heat, consider buying 7 or more heat sinks.
+
+Each heat sink weighs 500 Kg, takes up 1000 L of space, and costs 500.
+
+\newpage
+
+\section{Suspension}
+
+\subsection*{How Suspension Works}
+
+The cost of a standard suspension is included in the cost of the body.
+If you want a better turning rate, you can use a heavy or active suspension
+to improve your handling by 1 or 2 points.  This has the unfortunate
+side effect of increasing the cost of the body.
+On the other hand, if you don't need as much agility as the body has,
+you can opt for a light suspension, saving on the cost of the body.
+
+\subsection*{What the Numbers Mean}
+
+\begin{description}
+  \item [Handling Bonus:]  Add this to your vehicle's basic handling (see
+{\bf Bodies}) to get the handling of your vehicle.
+  \item [Cost Ratio:]  This multiplied by the size of your vehicle (see
+{\bf Bodies}) will tell you how much it costs to use this kind of suspension.
+\end{description}
+
+\begin{center}
+{\large
+\begin{tabular}{|l|r|r|}            \hline
+\multicolumn{3}{|c|}{\huge Suspension}   \\ \hline
+           & Handling & Cost \\
+Suspension & Bonus    & Ratio \\ \hline \hline
+Light & -1 & 100    \\ \hline
+Standard & 0 & 200  \\ \hline
+Heavy & +1 & 400    \\ \hline
+Active & +2 & 1000  \\ \hline
+\end{tabular}
+}
+\end{center}
+
+\section{Treads}
+
+Wearing treads with better traction means that you will skid and slip less,
+making it easier to make those tight turns.  However, because of the added
+friction, your maximum speed will decrease.
+
+\begin{description}
+  \item [Friction:]  The percent of the maximum friction possible that
+your vehicle has.
+  \item [Cost Ratio:]  This multiplied by the size of your vehicle (see 
+{\bf Bodies}) will tell you how much it costs to use these kind of treads.
+\end{description}
+
+\begin{center}
+{\large
+\begin{tabular}{|l|r|r|}    \hline
+\multicolumn{3}{|c|}{\huge Treads}  \\ \hline
+Treads & Friction & Cost Ratio    \\ \hline \hline
+Smooth & .70 & 100  \\ \hline
+Normal & .80 & 200  \\ \hline
+Chained & .90 & 400 \\ \hline
+Spiked & 1.00 & 1000 \\ \hline
+\end{tabular}
+}
+\end{center}
+
+\newpage
+
+\section{Bumpers}
+
+If you wear better bumpers, you will rebound from obstacles (such as walls
+and other vehicles) faster, and also take less damage than usual. 
+
+\begin{description}
+  \item [Elasticity:]  A general measure of the elasticity of your bumpers.
+  \item [Cost Ratio:]  This multiplied by the size of your vehicle (see 
+{\bf Bodies}) will tell you how much it costs to use these kind of bumpers.
+\end{description}
+
+\begin{center}
+{\large
+\begin{tabular}{|l|r|r|}  \hline
+\multicolumn{3} {|c|}{\huge Bumpers}  \\ \hline
+Bumpers & Elasticity & Cost Ratio    \\ \hline \hline
+None & 0 & 0       \\ \hline
+Normal & .05 & 200 \\ \hline
+Rubber & .15 & 400 \\ \hline
+Retro & .25 & 1000  \\ \hline
+\end{tabular}
+}
+\end{center}
+
+\section{Formulas}
+
+Herein lie all the formulas for calculating all aspects of your vehicle.
+In general, you don't need to worry about them; Xtank will do all of the
+work for you.  They are included for the curious.
+
+\begin{center}
+\(
+\mbox{Total weight} = \mbox{body weight} + \mbox{engine weight} 
+  + \mbox{total armor} \times \mbox{armor cost ratio} \times
+    \mbox{body size} \) \\ \(
+  + \mbox{heat sinks} \times \mbox{heat sink weight}
+  + \mbox{total weapon weight}
+\) \\ 
+\end{center}
+
+\begin{center}
+\(
+\mbox{Total space} = \mbox{engine space} + 
+  + \mbox{total armor} \times 3 \times
+    \mbox{body size} \) \\ \(
+  + \mbox{heat sinks} \times \mbox{heat sink space} 
+  + \mbox{total weapon space}
+\) \\ 
+\end{center}
+
+\begin{center}
+\(
+\mbox{Total cost} = \mbox{body cost} + \mbox{engine cost} 
+  + \mbox{heat sinks} \times \mbox{heat sink cost} \) \\ \(
+  + \mbox{total weapon cost} + \mbox{total special cost} 
+  + (\mbox{total armor} \times \mbox{armor cost ratio} \) \\ \(
+  + \mbox{suspension cost ratio} + \mbox{tread cost ratio} 
+  + \mbox{bumper cost ratio}) \times \mbox{body size}
+\) \\ 
+\end{center}
+
+\begin{center}
+\(
+\mbox{Handling} = \mbox{body handling base} 
+                    + \mbox{suspension handling adj}
+\) \\ 
+\end{center}
+
+\begin{center}
+\(
+\mbox{Max. speed} = {\frac{\sqrt[3]{\frac{\mbox{engine power}}
+                       {\mbox{body drag}}}}{\mbox{tread friction}}}
+\) \\ 
+\end{center}
+
+\begin{center}
+\(
+\mbox{Acceleration} = 16 \times {\frac{\mbox{engine power}}
+                         {\mbox{total weight}}}
+\) \\
+\end{center}
+
+\end{document}
+
+
+
+

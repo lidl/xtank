@@ -1,0 +1,116 @@
+
+                         MDESIGN DOCUMENTATION
+
+                            By  Dan Schmidt
+
+
+That's Mdesign, the "new state-of-the-art maze design auxilliary
+module" (TM) for xtank, everybody's favorite tank battle game!  That's
+right!  No longer must you submit to the random and arbitrary 
+mazes created by xtank, mazes which are fine as mazes, to be sure, but
+which somehow lack that certain sparkle, that shine, that certain
+je-ne-sais-quoi that only a human being can impart to that normally
+soulless object - the maze.  Now you too can unleash your imagination,
+your pent-up creativity that has been longing to express itself in
+that greatest of art forms - the maze.  Don't delay!  Use mdesign
+today!  And, for a limited time only, receive a free heat sink!
+
+Xtank mazes are, by default, 40 by 40 squares.  If you want a smaller
+maze, just put walls around it and don't worry about the blank space
+left over.  If you want a bigger maze, just pretend the squares are
+twice as big.
+
+Your primary tool in creating the maze will be that noble rodent and
+pointing device, the mouse.  If you've ever used 'bitmap', you'll feel
+right at home, since I ripped off the button functions from it.  But
+if you haven't, don't despair, it's as easy as 1 2 3:
+
+  1 -->    The left button creates a wall wherever the cursor happens
+	   to be at the time.
+
+  2 -->    The middle (or center, if you prefer) button toggles the
+ 	   wall wherever the cursor happens to be at the time.  That
+	   is, if the wall was there, it will disappear, and if it
+	   wasn't there, it will reappear.  It's definitely the most
+	   fun button to play around with.
+
+  3 -->    The right button deletes the wall wherever the cursor
+	   happens to be at the time.  What if there isn't any wall
+	   there?  Does Mdesign create a wall made of antimatter?
+	   What happens when tanks hit it?  Never fear - using
+	   advanced artificial intelligence techinques developed by
+	   the author, Mdesign will automatically detect when you're
+	   trying to delete a nonexistent wall and not let you!  Amazing!
+
+If you want to make or destroy lots of walls without lots of wear and
+tear on your button and button finger, you can keep the button
+depressed!  That's right!  Keep the button down as you move the mouse
+and it will do its stuff to every wall you come in contact with!  Keep
+the right button down and pretend you're a wrecking ball!  What fun!
+
+What about armor repair, fuel depots, and ammo dumps, you wonder?
+Will xtank scatter them willy-nilly throughout the maze?  Of course
+not.  You can tell Mdesign where to place our friends, the landmarks,
+by gently depressing the appropriate key while positioning the mouse
+in the desired square.  This maneuver requires two hands, so it may
+take some practice, but don't despair - it will soon be second nature.
+What are the appropriate keys?  I thought you would never ask!
+
+  A   creates an 'armor repair' landmark.
+
+  W   creates an 'ammo dump' landmark.  The W stands for 'weapon', of
+      course, since A was already taken.  We could call them 'weapon
+      refills' or something, but that's not what they're called in
+      xtank.  But you won't have to memorize it, because all the key
+      functions are displayed in a handy-dandy table below your maze!
+      Incredible!  It's just our way of saying 'thank you' to you, the
+      xtank community.
+
+  F   (almost forgot about that one in the preceding excitement) 
+      creates a 'fuel depot' landmark.
+
+      (that's a space, sort of hard to see unless you squint) erases a
+      landmark you created back when you were playing around with landmarks
+      which you now decide isn't such a hot idea anymore.
+
+Fine, you say, the landmarks are in the right portion of the maze, but
+how about the tanks?  Do I have any control over where they start out?
+Of course you do.  Just use the number keys conveniently located at the
+top of your keyboard to place the tanks' initial positions.  The first
+tank will start wherever you put the '0', the second tank will start
+wherever you put the '1', and so on.  If, in your haste to try out
+your brand-new maze, you forget to put in the starting position for a
+tank, xtank will place it randomly.  That's what you deserve for being
+so forgetful.  But wait, you say, why is the first tank represented by
+0 instead of 1?  Isn't that confusing?  Yeah, I suppose, but it made
+it easier to program.
+
+Well, now you've been playing around with walls and landmarks for a
+while and have managed to make a complete mess.  How do you clean it
+up?  Easy - simply type 'E' and the entire maze will be erased so that
+you can make a complete mess on a totally clean slate.  What if you
+had just finished creating an incredible maze when your hand slipped
+and struck the 'E' key?  Is there any way to get it back?  No, sorry.
+
+But you could have prevented such a disaster by using the handy 'S'
+and 'L' keys!  What do 'S' and 'L' do?  Save and load mazes, of
+course.  When you're done creating your dream maze, type 'S' and
+Mdesign will store away your maze for easy retrieval at a later time.
+Just type 'L' and tell Mdesign which maze you want to load, and
+presto, it will reappear before your very eyes!  Unbelievable!
+
+If your maze has big empty spots, or if it doesn't take up the whole
+screen, xtank would be unable to tell what parts of the screen you
+really want in your maze, unless you gave it some extra information.
+And the extra information is exactly what you provide xtank when you
+use the 'I' key.  Simply put the cursor in a square that you know for
+sure is definitely in the maze and type 'I' (short for 'inside maze').
+Mdesign will automatically figure out all the other squares in the
+maze too!  Wow! If things aren't in the right place when you play
+xtank, it's probably because you forgot to use 'I'.  I warned you - 
+don't blame me if you screw up.
+
+Well, that's all you have to know in order to become a bona fide maze
+engineer!  You're now ready to design the maze you always wanted to
+drive a tank in, I mean in which you always wanted to drive a tank.
+Have fun, and be careful out there.

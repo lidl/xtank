@@ -1,0 +1,24 @@
+
+Specials and landmarks
+----------------------
+
+Jump		Allow passage over walls
+Nitro boost	Double acc, 50% higher max speed, sets speed to max
+Repair		Allows you to trade fuel for armor
+Turret lock-on	Program that automatically tracks the nearest enemy with turret
+Ram		Double damage to whatever you hit.  Half damage to you
+Smoke screen	Makes smoke which can't be seen through
+Heat seeker	Intelligent missile that seeks out heat sources.  Hits top
+Oil slick	Makes oil which acts as a slip square
+Radar detector	Detects when someone is using radar on you
+Radar jammer	Makes enemy radar within a given range useless
+Radar cloak	Makes you invisible to radar
+Bases		Intelligent non-movable armored defense installations
+
+Display Modes
+-------------
+
+LOS	Only display things that you can see by line of sight
+3D	Perspective display of things.  tanks+bullets are polygons
+night	Only display things that have light shed on them from light source
+

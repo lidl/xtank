@@ -1,0 +1,83 @@
+%%%%%%%%%%% SPRITEUSE.TEX %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Example for the use of SPRITE.STY ( Martin Costabel 27-Oct-1987 )
+\documentstyle[12pt,sprite]{article}
+\begin{document}
+\newsavebox{\CalH} \sbox{\CalH}{${\cal H}$} % Get the size of \cal H.
+\newcommand{\ScriptH}%                        Some fine-tuning of the
+{\raisebox{-0.5 pt}{\SH}\kern 1 pt}%          positioning might be necessary
+\sprite{\SH}(33,65)[\wd\CalH, \ht\CalH]     % The size will be the same
+                                            % as for \cal H.
+                                            % Resolution ca. 250x500 dpi
+:..........BBBBBBBB.............BBB..................BBBBBB....... |
+:........BBBB....BBB..........BBBBB..............BBBBBB...BBBB.... |
+:........BB.......BBB.......BBB.BBB............BBBBBB.......BBBB.. |
+:........BB.......BBB.....BBB..BBBB..........BBBBBB..........BBB.. |
+:........BB.......BBB....BB...BBBB.........BBBBBB............BBBB. |
+:........BB.......BBB...BB....BBBB.........BBBBB.............BBBB. |
+:..................BBBBBB.....BBB.........BBBBB..............BBBB. |
+:............................BBBB........BBBBBB..............BBBB. |
+:...........................BBBB.........BBBBB...............BBBB. |
+:...........................BBBB.........BBBBB...............BBB.. |
+:..........................BBBB.........BBBBB...............BBBB.. |
+:..........................BBBB.........BBBB...............BBBB... |
+:.........................BBBB.........BBBBB..............BBBB.... |
+:.........................BBBB.........BBBB..............BBBB..... |
+:........................BBBBB.........BBBB............BBBBB...... |
+:........................BBBB.........BBBB..........BBBBBB........ |
+:.......................BBBBB.........BBBB.....BBBBBBBB........... |
+:..........BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB................ |
+:.......BBBB...........BBBBB.........BBBB......................... |
+:.....BBBB.............BBBBB........BBBBB......................... |
+:....BBB...............BBBB.........BBBB.......................... |
+:...BB................BBBB.........BBBBB.......................... |
+:..BBB...............BBBBB.........BBBB........................... |
+:.BBB................BBBB..........BBBB........................... |
+:.BBB...............BBBB..........BBBB............................ |
+:BBB...............BBBBB..........BBBB..................B......... |
+:BBB..............BBBBB...........BBBB.................BB......... |
+:BBB.............BBBBB............BBBB................BBB......... |
+:BBB............BBBBB..............BBBB..............BBB.......... |
+:BBB...........BBBBB................BBBB...........BBBB........... |
+:.BBBB........BBBB...................BBBB........BBBB............. |
+:...BBB.....BBBB.......................BBBB....BBBBB.............. |
+:.....BBBBBBB.............................BBBBBBB................. |
+\endsprite
+
+\def\schwa{\FormOfSchwa\kern 1 pt} % Only necessary if \kern... is wanted
+\sprite{\FormOfSchwa}(16,24)[0.4 em, 1 ex] % Resolution ca. 200x340 dpi.
+:.......BBBBBBBBBB....... |
+:....BBBB........BBBB.... |
+:..BBB.............BBBB.. |
+:.BB.................BBB. |
+:.B...................BBB |
+:.....................BBB |
+:.....................BBB |
+:.....................BBB |
+:BBBBBBBBBBBBBBBBBBBBBBBB |
+:BBB..................BBB |
+:BBB..................BBB |
+:BBB.................BBB. |
+:.BBB...............BBB.. |
+:..BBBB...........BBBB... |
+:....BBBBB.....BBBBB..... |
+:.......BBBBBBBB......... |
+\endsprite
+% Now we can use it
+
+\section{Here is a script \protect\ScriptH :} % It is fragile!
+You can use it also in Formulas:
+$$ H \neq \ScriptH \neq {\cal H}$$
+And we defined also some kind of Sch\schwa wa.
+
+\newpage
+\section{\TeX\ capacity exceeded?}
+If you have too many of these on one page, your \TeX\ might give up:
+A \ScriptH \\
+B \schwa   \\
+C \ScriptH \
+D \schwa   \\
+E \ScriptH \\
+F \schwa   \\
+G \ScriptH \ etc.
+\end{document}
+%%%%%%%%%%%%%End of SPRITEUSE.TEX %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

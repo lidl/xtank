@@ -1,0 +1,13 @@
+#!/bin/csh -f
+setenv XTANKDIR     /mit/games/src/vax/xtank/
+setenv VEHICLESDIR  Vehicles/
+setenv MAZESDIR     Mazes/
+setenv PROGRAMSDIR  Programs/
+
+if (`machtype` == "vax") then
+   echo "Running .xtank.vax"
+   ${XTANKDIR}.xtank.vax $*
+else
+   echo "Running .xtank.rt"
+   ${XTANKDIR}.xtank.rt $*
+endif       

@@ -1,0 +1,111 @@
+/*
+**  This is the object file for all bullets.
+*/
+
+#define all_bullets_views 18
+
+static Picture all_bullets_pic[all_bullets_views] = {
+      { 2, 2, 0, 0 },
+      { 3, 3, 1, 1 },
+      { 3, 3, 1, 1 },
+      { 3, 3, 1, 1 },
+      { 4, 4, 1, 1 },
+      { 5, 5, 2, 2 },
+      { 3, 3, 1, 1 },
+      { 4, 4, 1, 1 },
+      { 5, 5, 2, 2 },
+      { 4, 4, 1, 1 },
+      { 5, 5, 2, 2 },
+      { 5, 5, 2, 2 },
+      { 5, 5, 2, 2 },
+      { 7, 7, 3, 3 },
+      { 5, 5, 2, 2 },
+      { 7, 7, 3, 3 },
+      { 9, 9, 4, 4 },
+      { 15, 15, 7, 7 }
+};
+
+static Object all_bullets_obj = {
+	"all_bullets",
+	all_bullets_views,
+	all_bullets_pic
+};
+
+static unsigned char lmg_bits[] = { 
+    0x03, 0x03};
+
+static unsigned char mg_bits[] = { 
+    0x02, 0x07, 0x02};
+
+static unsigned char hmg_bits[] = { 
+    0x07, 0x07, 0x07};
+
+static unsigned char lpr_bits[] = { 
+    0x05, 0x02, 0x05};
+
+static unsigned char pr_bits[] = { 
+    0x09, 0x06, 0x06, 0x09};
+
+static unsigned char hpr_bits[] = { 
+    0x11, 0x0e, 0x0e, 0x0e, 0x11};
+
+static unsigned char la_bits[] = { 
+    0x07, 0x05, 0x07};
+
+static unsigned char a_bits[] = { 
+    0x06, 0x09, 0x09, 0x06};
+
+static unsigned char ha_bits[] = { 
+    0x0e, 0x1b, 0x11, 0x1b, 0x0e};
+
+static unsigned char lrl_bits[] = { 
+    0x06, 0x0f, 0x0f, 0x06};
+
+static unsigned char rl_bits[] = { 
+    0x04, 0x0e, 0x1f, 0x0e, 0x04};
+
+static unsigned char hrl_bits[] = { 
+    0x0e, 0x1f, 0x1f, 0x1f, 0x0e};
+
+static unsigned char as_bits[] = { 
+    0x0e, 0x15, 0x1f, 0x15, 0x0e};
+
+static unsigned char ft_bits[] = { 
+    0x14, 0x3c, 0x2a, 0x6d, 0x56, 0x3a, 0x14};
+
+static unsigned char ml_bits[] = { 
+    0x11, 0x0a, 0x04, 0x0a, 0x11};
+
+static unsigned char seeker_bits[] = {
+   0x49, 0x2a, 0x14, 0x63, 0x14, 0x2a, 0x49};
+
+static unsigned char slick_bits[] = {
+   0x38, 0x00, 0x44, 0x00, 0x84, 0x00, 0x02, 0x01, 0x01, 0x01, 0x81, 0x00,
+   0x86, 0x00, 0x98, 0x00, 0x60, 0x00};
+
+static unsigned char disc_bits[] = { 
+    0xe0, 0x03, 0xf8, 0x0f, 0x0c, 0x18, 0xe6, 0x33, 
+    0xe2, 0x27, 0x2b, 0x6c, 0x0b, 0x68, 0x8b, 0x68, 
+    0x0b, 0x68, 0x1b, 0x6a, 0xf2, 0x23, 0xe6, 0x33, 
+    0x0c, 0x18, 0xf8, 0x0f, 0xe0, 0x03};
+
+static unsigned char *all_bullets_bitmap[all_bullets_views] = {
+	lmg_bits,
+	mg_bits,
+	hmg_bits,
+	lpr_bits,
+	pr_bits,
+	hpr_bits,
+	la_bits,
+	a_bits,
+	ha_bits,
+	lrl_bits,
+	rl_bits,
+	hrl_bits,
+	as_bits,
+	ft_bits,
+	ml_bits,
+	seeker_bits,
+	slick_bits,
+	disc_bits
+};

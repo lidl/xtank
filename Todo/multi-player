@@ -1,0 +1,32 @@
+				MULTI-PLAYER
+
+This file attempts to deal with the problem of multi-player
+xtank across a modem between two personal computers.
+
+
+The main restriction is data transfer speed (approximately 1200 bits/second)
+of the modem.  This requires an incredibly space efficient representation
+for the events that occur each frame in the game.  Small deltas must
+be passed, instead of the entire state of the screen.  This requires
+that large amounts of data be stored on both computers.  Both computers
+will be doing duplicate processing, to decrease the amount of information
+that needs to be sent back and forth.
+
+The only viable model to use is a server-client one.
+Clients control one player.  Server controls one player and many
+robots.  Server is also responsible for adding in new robots/players.
+Everyone has full state of the game.
+
+Clients send all actions to the server.
+Server sends all actions to each client.
+Processing and display occur.
+
+Actions are passed back an forth.  This is done with opcode+data format.
+Need a NO_ACTIONS opcode (a common occurrence)
+Heavily used opcodes should be shorter.
+Angles represented by 16 bits.
+Vehicles represented by as many bits as necessary.
+
+No need to send vehicle id's from client to server or vice-versa,
+since we can send the information in a specific order (lowest combatant
+to highest).

@@ -1,0 +1,56 @@
+This is very old, but still sort of relevant...
+
+
+I.  xtank the single player arcade game
+	This is what xtank currently is.  For the near future, I plan
+	to be the main driving force behind it.  I am interested in
+	porting it to the pc environment (amiga, atari, mac) once it
+	is closer to being finished.  I might even be able to make
+	a profit.  The UNIX version will eventually be distributed
+	to whoever wants it, for free.
+
+	Much of the work yet to be done here is optimization.
+	The algorithms that I am using now are reasonably efficient,
+	but could use improvements.  Certain annoying things, like
+	accurate collision detection, are not finished yet.  Ever
+	tried to write code to that determines where two arbitrarily
+	shaped moving polygons collide?  Another thing that needs
+	work is the art.  The explosions are circular because circles
+	are easy to draw in the bitmap editor.  The new tanks being
+	added in v0.10 were drawn by friends of mine.
+
+II.  xtank the multi-player arcade game
+	This is what everyone wants xtank to be (including me).  I
+	won't be able to do it without some help from people
+	knowledgable with networking.  This version probably wouldn't
+	do so well in the pc environment, so it will be solely UNIX.
+
+III.  xtank the computerized battle simulator
+	This will allow programmers to design vehicles and write
+	programs to control their actions.  In this way various
+	strategies for movement, and attacking can be tested.  Something
+	similar to this, but on a smaller scale, has been done in
+	programs like Mazewar and Crobots.  In fact there was a
+	"Battle of the Crobots" contest last year, which I helped
+	organize.  Hopefully this spring there will be a "Battle of
+	the xtanks" where interested participants can design their
+	very own vehicles and programs, test them, and watch them
+	compete in a tournament (complete with prizes, commentators,
+	music, pizza, and an audience, like last year's Crobots contest).
+	
+	I want to
+	design a user interface to design vehicles (along with a point
+	allocation system to build the vehicle up from its respective
+	pieces).  Also a programmer interface needs to be made.  This
+	would specify the primitives that a vehicle control program could
+	use to interact with the xtank world (turn_turret, accelerate,
+	fire_weapon, activate_radar, etc.)
+
+IV.  Mazelords the multi-player arcade/adventure/role-playing game
+	This will be the ultimate futuristic ground combat game.  I will
+	never finish it.  It will incorporate xtank combat into a
+	Road Warrior world filled with barren wastelands, lone outposts,
+	fortresses, towns, mazes, etc.  There will be computer simulated
+	enemies, with personalities.  Large scale battles between human
+	and computer controlled vehicles will take place to gain control
+	of resources, political power, territory, etc.

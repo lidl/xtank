@@ -1,0 +1,211 @@
+                             General
+
+XTANK is a multi-player vehicle combat game played in mazes of various
+sizes and types.  You control a vehicle (usually a tank) equipped with
+the latest in armor and weaponry.  Your objective is to destroy the
+enemy vehicles in the maze before they do the same to you.
+
+Winning the game requires a delicate combination of quick-thinking, dodging,
+and accurate firing.
+
+There are two Modes to XTANK and several Games that can be played in
+those modes.
+
+In Single-player mode, the enemy tanks are computer controlled robots,
+widely varying in intelligence, speed, strength, and firepower.  
+The only Game available in this mode is Combat.
+
+In Multi-player mode, the enemy tanks are controlled by other human
+players, who have designed their vehicles with the sole intent of destroying
+yours.
+Games available in this mode are: Combat, Ultimate, Capture, and War
+
+XTANK also gives you the option of designing your own vehicles and mazes.
+Customize your vehicle to your playing style, or challenge others to beat
+you in your own maze.
+
+Vehicle Control
+---------------
+
+You control your vehicle using the mouse and the keyboard simultaneously.
+Learning how to control your vehicle well takes time and practice.
+
+Direction control:
+
+	Move the cursor to the direction that you want your vehicle to
+	face and click the right mouse button or the 'g' key.
+	This specifies a direction ONLY, not a distance.  Your vehicle
+	will begin to turn to the desired direction.
+
+	To help prevent a vehicle from skidding, its turn rate is
+	computer controlled to be slower when the vehicle is moving
+	quickly.  This safety feature can be toggled on and off with
+	the 'z' key.  Turning off the safety allows your vehicle to turn
+	to the desired direction as quickly as it can, but the vehicle
+	will probably continue skidding in the direction it was going
+	before.  This allows you to make moonshiner turns, donuts, and
+	all the fancy driving maneuvers you can think of. 
+
+Speed control:
+
+	Press any key from 0 to 9 to set your drive to that number.
+	Press the '-' key to set your drive to -9.
+
+	The 'x' key decreases your drive by 1.
+	The 'v' key increases your drive by 1.
+	The 'c' key sets your drive to 0.
+
+	Your vehicle will begin to accelerate to that drive.
+
+	If you're slowing down, the acceleration will be your braking
+	acceleration, which is based on how good your tires are.
+
+	If you're speeding up, the acceleration will be your engine
+	acceleration, which is based on your engine power and vehicle weight.
+	Your engine acceleration can never be greater than your braking
+	acceleration.
+
+	NOTE:  	Drive and speed are DIFFERENT!  Drive varies from
+		-9 to 9 as speed varies from -max speed to max speed.
+		So if drive = x, speed = (max speed * x / 9)
+
+Turning your turret:
+
+	Move the cursor to the direction that you want your turret to face
+	and click the middle mouse button or the 't' key.
+	Your turret will start to turn to the desired direction.
+
+Weapons
+-------
+
+The space bar fires all weapons that are on.
+The left mouse button turns all turrets towards the cursor and fires all
+weapons.  Note that the weapons may not fire towards the cursor, since
+the turrets take time to turn.  To conserve ammunition, turn the turret
+to the general direction using the middle button, and then fire with the
+left button, making small changes in the cursor position.
+
+There are 15 different kinds of weapons, each with unique characteristics.
+Up to 6 weapons may be mounted on a vehicle.
+
+Weapons can be toggled on and off using the keys shift 1, through shift 6.
+
+Heat
+----
+
+Weapons generate different amounts of heat, depending on their type.
+One unit of heat is removed by each heat sink in your vehicle every 5
+refreshes of the screen.  If your heat exceeds 100, your weapons will
+not be able to fire.
+
+Armor
+-----
+
+Armor is divided up into 6 different areas:
+		
+Area	Abbr	Conditions when area gets damaged
+----	----	---------------------------------
+front	Ft	contact in front 90 degree arc from center of tank
+back	Bk	contact in back 90 degree arc from center of tank 
+left	Lt  	contact in left 90 degree arc from center of tank
+right	Rt  	contact in right 90 degree arc from center of tank
+top	Tp	getting hit by a heat seeker
+bottom	Bm  	running over a mine
+
+
+When a bullet hits a tank, the hits off of the armor is
+subtracted from the damage of the bullet.  Any remaining damage is
+subtracted from the armor in the area that was hit.  When any side
+drops below zero, the vehicle explodes in a shower of bullets.
+
+Crashing
+--------
+
+When a vehicle crashes into a wall or another vehicle, it bounces off
+of it.  Since momentum is conserved in these collisions, a heavy vehicle's
+motion will tend to be less affected in a collision than a light vehicle's.
+The vehicles with better bumpers will tend to bounce with a higher velocity.
+They will also tend to take less damage from the collision.
+
+A vehicle also receives damage in proportion to the kinetic energy of
+the collision.  Travelling at high speeds can be dangerous, since the
+damage increases with the square of the velocity.
+
+Walls
+-----
+
+Some walls are destructible, others are indestructible.  If the bullet
+explosions on a wall are tinks, then the wall is indestructible.
+If the explosions are big, the wall is destructible.  Every time a
+destructible wall is damaged, there is a (2 x damage) percent chance
+that the wall will disappear.  Walls can be damaged by bullets, or by
+colliding vehicles.
+
+Landmarks
+---------
+
+Landmarks are special boxes in a maze which perform some function.
+Some types help you, some types hurt you.
+
+There are 3 types of supply landmarks:
+
+	Fuel depot	regain fuel
+	Ammo dump	regain ammo in all weapons that are OFF
+	Armor repair	regain armor on all sides
+
+To gain the benefits of a supply landmark, you must be stopped within
+within 25 pixels of the center of the landmark.  There is a price to pay
+for the supplies given.  The cost of each unit of fuel, ammo, or armor
+is automatically subtracted from your money.  If you run out of money,
+you will not receive the supplies.
+
+There are 3 types of surface landmarks:
+
+	Scroll boxes	move vehicle in one of 8 compass directions
+	Slow boxes	slow vehicle's motion
+	Slip boxes	decrease traction making turns harder
+
+The effects of surface landmarks are felt anywhere in that box.
+
+The two remaining types of landmarks:
+
+	goal		place to get to in some games
+	outpost		shoots at you if you are in the box
+
+Scoring
+-------
+
+Scoring is determined using the following formula:
+
+	points = 1000 * victim's cost / killer's cost
+
+So if a vehicle which cost 50000 dollars kills a vehicle worth 200000 dollars,
+he would receive 1000 * 200000 / 50000 = 4000 points.
+
+Specials
+--------
+
+There are three types of specials:
+
+   Console: Shows important information about your vehicle.   Toggle with 'C'
+   Mapper:  Automatically maps any walls that you have seen.  Toggle with 'M'
+   Radar:   Detects locations of vehicles within range.       Toggle with 'R'
+
+Suspension
+----------
+
+A better suspension increases your handling, allowing your vehicle
+to turn around faster.
+
+Treads
+------
+
+Better treads increase your traction, improving your turning ability,
+acceleration and braking.  Since better treads create more friction with
+the ground, they decrease your maximum speed.
+
+Bumpers
+-------
+
+Better bumpers make collisions more elastic.  They also reduce the amount
+of damage done to your vehicle in a collision.
