@@ -2,9 +2,21 @@
 
 /*
 $Author: lidl $
-$Id: vehicle.h,v 2.7 1992/01/29 08:39:11 lidl Exp $
+$Id: vehicle.h,v 2.11 1992/08/31 01:50:45 lidl Exp $
 
 $Log: vehicle.h,v $
+ * Revision 2.11  1992/08/31  01:50:45  lidl
+ * changed to use tanktypes.h, instead of types.h
+ *
+ * Revision 2.10  1992/05/19  22:56:08  lidl
+ * post chris moore patches
+ *
+ * Revision 2.9  1992/03/31  21:49:23  lidl
+ * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
+ *
+ * Revision 2.8  1992/03/31  04:05:52  lidl
+ * pre-aaron patches, post 1.3d release (ie mailing list patches)
+ *
  * Revision 2.7  1992/01/29  08:39:11  lidl
  * post aaron patches, seems to mostly work now
  *
@@ -38,7 +50,7 @@ $Log: vehicle.h,v $
 #define _VEHICLE_H_
 
 
-#include "types.h"
+#include "tanktypes.h"
 #include "message.h"
 #include "vdesc.h"
 #include "special.h"
@@ -80,11 +92,12 @@ typedef struct {
     Special special[MAX_SPECIALS];
     Boolean safety;		/* TRUE means turn rate is limited */
     Boolean teleport;		/* FALSE means never teleport (for dumb robots) */
+    Boolean mouse_speed;	/* FALSE means only use keyboard to set speed */
     int   num_discs;		/* number of discs owned by the vehicle */
     int   color;		/* color for vehicle and bullets it owns */
     int   death_timer;		/* countdown until resurrection */
     int   slide_count;
-#ifndef NO_NEW_RADAR
+    Boolean just_ported;	/* TRUE means we ported this frame */
     int   have_IFF_key[MAX_VEHICLES]; /* array of which IFF keys I have gotten*/
     int   offered_IFF_key[MAX_VEHICLES]; /* array of which IFF keys I have offered*/
     lCoord target;		/* Saved location for a smart weapon */
@@ -94,8 +107,22 @@ typedef struct {
  * behavior if they are not aware this infomation is common between
  * them. Of course that might be a feature...
  */
-     float rcs;			/* radar cross section */
-#endif /* !NO_NEW_RADAR */
+     float rcs;			/* current radar cross section */
+     float stealthy_rcs;	/* stealthy radar cross section */
+     float normal_rcs;		/* un-stealthy radar cross section */
+#ifndef NO_CAMO
+
+    int time_to_camo;   /* How long it takes to get into camo (in frames) */
+    Boolean camod;              /* are we invisible now? */
+    Boolean old_camod;              /* were we invisible? */
+
+    struct ILL {
+        int gx, gy;
+	int color;
+    } illum[MAX_VEHICLES];
+
+#endif /* !NO_CAMO */
+
 } Vehicle;
 
 typedef struct _Combatant {
@@ -111,7 +138,11 @@ typedef struct _Combatant {
     int   score;
     int   kills;
     int   deaths;
+    int   keep_score;
+    int   keep_kills;
+    int   keep_deaths;
     Vehicle *vehicle;
+    int   mouse_speed;
 } Combatant;
 
-#endif ndef _VEHICLE_H_
+#endif /* _VEHICLE_H_ */

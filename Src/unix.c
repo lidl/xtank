@@ -7,10 +7,16 @@
 */
 
 /*
-$Author: senft $
-$Id: unix.c,v 2.15 1992/02/07 05:46:33 senft Exp $
+$Author: lidl $
+$Id: unix.c,v 2.17 1992/08/19 04:55:44 lidl Exp $
 
 $Log: unix.c,v $
+ * Revision 2.17  1992/08/19  04:55:44  lidl
+ * made uglier, to support linking on hpux machines
+ *
+ * Revision 2.16  1992/03/31  04:04:16  lidl
+ * pre-aaron patches, post 1.3d release (ie mailing list patches)
+ *
  * Revision 2.15  1992/02/07  05:46:33  senft
  * added code to skip -s 's parameter.
  *
@@ -398,23 +404,46 @@ struct nlist nl[3];
 	p = module_name;
 
     (void) strcpy(symbol_name, "_");
+
+#ifdef mips
+    (void) strcpy(symbol_name, p);
+#else    
     (void) strcat(symbol_name, p);
+#endif
+
     (void) strcat(symbol_name, "_prog");
+
+#ifndef mips    
     nlstend = nlst + (hdr.a_syms / sizeof(struct nlist));
     for (nlp = nlst; nlp < nlstend; nlp++) {
 	if (!strcmp(symbol_name, nlp->n_un.n_name)) {
 	    /* Fill in the symbol and code pointers */
 	    *symbol = (char *) nlp->n_value;
 	    *code = func;
-
-	    return 0;
+            return 0;
 	}
     }
+
+#else
+    (void) strcpy(code_name, p);
+    (void) strcat(code_name, "_main");
+    nl[0].n_name = symbol_name;
+    nl[1].n_name = code_name;
+    nl[2].n_name = NULL;
+    nlist(output_name,nl);
+    if (nl[0].n_type != 0 || nl[1].n_type != 0) {
+      *symbol = (char *) nl[0].n_value;
+      *code = (char *) nl[1].n_value;
+      return 0;
+      }
+#endif	    
+
 
     free(func);
     return 6;
 }
 
+#ifndef mips
 /*
 ** Returns the entire symbol table of the given executable.
 ** If anything goes wrong, NULL is returned.
@@ -468,6 +497,7 @@ struct exec *hdr;		/* Pointer to exec struct which is filled in */
     /* Return the namelist we just constructed. */
     return (nlst);
 }
+#endif       /* ifndef mips */
 
 #else				/* hp9000s800 */
 
@@ -523,7 +553,11 @@ char *output_name, *error_name;
 	    }
 	case 'o':
 	    /* Do the link */
+#ifdef __hpux
+	    sprintf(command, "/bin/ld -x -a archive -A %s -R %s -e %s_main -o %s %s.o -lm -lc > %s 2>&1",
+#else
 	    sprintf(command, "/bin/ld -x -N -A %s -R %s -e %s_main -o %s %s.o -lm -lc > %s 2>&1",
+#endif
 		    executable_name, address, sym, output_name, module_name, error_name);
 
 #ifdef DEBUG
@@ -662,3 +696,5 @@ char *output_name, *error_name;
 }
 
 #endif				/* DYNALOAD */
+
+

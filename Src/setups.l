@@ -48,13 +48,26 @@ f		{B}[0-9]+("."[0-9]*)?
 ^Robots\ Don't\ Win{b}/\n	{ cv_bool(yval(), &settings.robots_dont_win); }
 ^Max\ Armor\ Scale{b}/\n	{ cv_bool(yval(), &settings.max_armor_scale); }
 ^Nametags{b}/\n				{ cv_bool(yval(), &settings.si.no_nametags); }
-^No\ Radar{b}/\n            { cv_bool(yval(), &settings.si.no_radar); }
+^No\ Radar{b}/\n			{ cv_bool(yval(), &settings.si.no_radar); }
 ^Team\ Score{b}/\n			{ cv_bool(yval(), &settings.si.team_score); }
+^Player\ Teleport{b}/\n		{ cv_bool(yval(), &settings.si.player_teleport); }
+^Disc\ Teleport{b}/\n		{ cv_bool(yval(), &settings.si.disc_teleport); }
+^Teleport\ From\ Team{b}/\n	{ cv_bool(yval(), &settings.si.teleport_from_team); }
+^Teleport\ From\ Neutral{b}/\n	{ cv_bool(yval(), &settings.si.teleport_from_neutral); }
+^Teleport\ To\ Team{b}/\n	{ cv_bool(yval(), &settings.si.teleport_to_team); }
+^Teleport\ To\ Neutral{b}/\n	{ cv_bool(yval(), &settings.si.teleport_to_neutral); }
+^Teleport\ Any\ To\ Any{b}/\n	{ cv_bool(yval(), &settings.si.teleport_any_to_any); }
+^War\ Goals\ Only{b}/\n		{ cv_bool(yval(), &settings.si.war_goals_only); }
+^Relative\ Disc{b}/\n		{ cv_bool(yval(), &settings.si.relative_disc); }
+^Ultimate\ Own\ Goal{b}/\n	{ cv_bool(yval(), &settings.si.ultimate_own_goal); }
 ^"Winning Score"{i}/\n		{ cv_int( yval(), &settings.si.winning_score); }
 ^"Outpost Strength"{i}/\n	{ cv_int( yval(), &settings.si.outpost_strength); }
 ^"Scroll Speed"{f}/\n		{ cv_flt( yval(), &settings.si.scroll_speed); }
 ^"Box slowdown"{f}/\n		{ cv_flt( yval(), &settings.si.box_slowdown); }
 ^"Disc Friction"{f}/\n		{ cv_flt( yval(), &settings.si.disc_friction); }
+^"Disc Speed"{f}/\n			{ cv_flt( yval(), &settings.si.disc_speed); }
+^"Disc Damage"{f}/\n		{ cv_flt( yval(), &settings.si.disc_damage); }
+^"Disc Heat"{f}/\n			{ cv_flt( yval(), &settings.si.disc_heat); }
 ^"Owner Slowdown"{f}/\n		{ cv_flt( yval(), &settings.si.owner_slowdown); }
 ^"Slip Friction"{f}/\n		{ cv_flt( yval(), &settings.si.slip_friction); }
 ^"Normal Friction"{f}/\n	{ cv_flt( yval(), &settings.si.normal_friction); }

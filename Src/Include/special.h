@@ -3,14 +3,9 @@
 #ifndef _SPECIAL_H_
 #define _SPECIAL_H_
 
-#include "types.h"
+#include "tanktypes.h"
 #include "xtanklib.h"
-
-#ifndef NO_NEW_RADAR
-#ifndef _XTANK_H_
 #include "xtank.h"
-#endif
-#endif /* !NO_NEW_RADAR */
 
 typedef struct {
     char  string[MAX_STRING];
@@ -18,11 +13,63 @@ typedef struct {
     int   color;
 } Entry;
 
+#ifdef OLDCONSOLE
 typedef struct {
     Entry _entry[MAX_ENTRIES];
     int   num_changes;
     int   change[MAX_ENTRIES];	/* indices of entries that changed */
 } Console;
+#else
+typedef enum {
+	CINT,
+	CFLOAT,
+	CNONE,
+	CSTRING_CONST,
+	CSTRING_ARRAY,
+	CVBAR,
+	CHBAR,
+	CHFBAR
+} cstype;
+
+typedef struct cstat {
+	cstype type;
+	void (*action)();		/* NYI */
+
+	/* Non-string */
+	int red, white, green;
+	/* If white == 0, white will allways be rendered */
+	/* Either red < white < green, or green < white < red */
+
+	int old_color;
+
+	/* Values (for all types) */
+	float *fval;
+	int *ival;
+	float oldf;
+	int oldi;
+
+	/* For everything */
+	int changed;			/* Set this to force re-draw */
+	char *str_const;
+
+	/* For the string types only */
+	char **str_array;
+	int *color_array;		/* If NULL use RWG */
+
+	/* Positions (filled out by con_init), for everyone */
+	int x, y;
+
+	/* Size for bars (spec'ed in chars, gets changed to pixels in con_init) */
+	int w, h;
+	int min, max;
+} cstat;
+
+typedef struct {
+	cstat item[MAX_ENTRIES];
+	int num;
+	int changed;
+} crecord, Console;
+#endif
 
 typedef struct {
     Boolean need_redisplay;
@@ -39,7 +86,6 @@ typedef struct {
     Landmark_info landmark[MAX_LANDMARKS];
 } Mapper;
 
-#ifndef NO_NEW_RADAR
 
 typedef struct {
    Coord draw_loc;
@@ -55,14 +101,12 @@ typedef struct {
 } newBlip;
 
 typedef struct {
-   int rad_frame_updated;
-   int tac_frame_updated;
+   int frame_updated;
    Boolean need_redisplay;
    newBlip blip[MAX_VEHICLES];
    newBlip *map[GRID_WIDTH][GRID_HEIGHT];
 } newRadar;
 
-#endif /* NO_NEW_RADAR */
 
 typedef struct {
     Byte  x;
@@ -85,21 +129,108 @@ typedef struct {
 
 typedef enum {
     SP_nonexistent, SP_off, SP_on, SP_broken
-#ifndef NO_NEW_RADAR
     , real_MAX_SPEC_STATS
-#endif /* !NO_NEW_RADAR */
 } SpecialStatus;
 
-#ifndef NO_NEW_RADAR
 #define MAX_SPEC_STATS ((int)real_MAX_SPEC_STATS) 
-#endif /* !NO_NEW_RADAR */
 
 typedef struct {
     SpecialStatus status;	/* status of the special */
     int (*proc)();		/* function to call for special */
     void *record;		/* pointer to special structure */
-    Boolean shared;		/* flag for shared record space */
 } Special;
 
+#ifndef NO_HUD
+
+typedef struct {
+    int old_xspeed, old_yspeed;
+    int frame_updated;
+    int saved_status[MAX_WEAPONS];
+    Boolean need_redisplay_weap;
+    Boolean need_redisplay_arm;
+
+    Boolean armor_draw[MAX_SIDES];
+    Boolean armor_drawn[MAX_SIDES];
+
+    Angle drawn_arm_angle;
+    Angle draw_arm_angle;
+
+    struct {
+	int x1, y1, x2, y2;
+	int color;
+	int weapon;
+    } draw[NUM_MOUNTS], drawn[NUM_MOUNTS];
+
+    struct {
+	Angle old_angle;
+    } turret[MAX_TURRETS];
+
+    /* should just need to arrays of int type */
+
+#ifdef GLORGON
+    struct {
+	int type;
+    } draw[NUM_MOUNTS], drawn[NUM_MOUNTS];
+    struct {
+        int range;
+	int type;
+    } display_weapon[NUM_MOUNTS];
+#endif
+
+} Hud;
+
+#endif /* !NO_HUD */
+
+#ifndef NO_CAMO
+
+#define STEALTH_DELAY 96
+
+/*
+ * If PERSIST is 24, ie, the update rate for
+ * both new and old radar, RDF lines won't
+ * blink as they are updated, the will just be
+ * replaced with the new data.
+ *
+ * 23 makes them blink off for a frame just
+ * before the update comes in
+ */
+#define PERSIST 23
+
+#define MAP_OFF (MAP_BOX_SIZE / 2)
+
+typedef struct {
+    int   camo_countdown;       /* how many frames till we are invisible */
+} Camo;
+
+typedef struct {
+   struct LINEPAIR {
+       int start_x, start_y;
+       int end_x, end_y;
+       int color;
+   } draw, drawn;
+   Boolean to_draw;
+   Boolean is_drawn;
+} Trace;
+
+typedef struct {
+    Boolean zapped;
+    Trace trace[MAX_VEHICLES][MAX_VEHICLES];
+} Rdf;
+
+
+typedef struct {
+    int   activate_frame;       /* frame we can be stealty */
+} Stealth;
+
+typedef struct {
+   int frame_updated;
+} Taclink;
+
+
+#endif /* !NO_CAMO */
+
+#define TAC_UPDATE_INTERVAL 12
+#define RAD_UPDATE_INTERVAL 24
 
 #endif ndef _SPECIAL_H_
+

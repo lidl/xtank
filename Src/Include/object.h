@@ -2,9 +2,15 @@
 
 /*
 $Author: lidl $
-$Id: object.h,v 2.4 1991/12/10 01:21:04 lidl Exp $
+$Id: object.h,v 2.6 1992/08/31 01:50:45 lidl Exp $
 
 $Log: object.h,v $
+ * Revision 2.6  1992/08/31  01:50:45  lidl
+ * changed to use tanktypes.h, instead of types.h
+ *
+ * Revision 2.5  1992/04/09  04:18:45  lidl
+ * changed to use tanklimits.h and not limits.h
+ *
  * Revision 2.4  1991/12/10  01:21:04  lidl
  * change all occurances of "float" to "FLOAT"
  *
@@ -29,9 +35,9 @@ $Log: object.h,v $
 #define _OBJECT_H_
 
 
-#include "types.h"
+#include "tanktypes.h"
 #include "xtanklib.h"
-#include "limits.h"
+#include "tanklimits.h"
 
 
 /* Indices for all the objects in the random_obj array */

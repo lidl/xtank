@@ -1,0 +1,12 @@
+#!/usr/local/bin/perl
+
+opendir(D, ".") || die;
+@d = readdir(D);
+
+foreach $V (grep(m/\.V$/, @d)) {
+	$V{$V} = 1;
+}
+
+foreach $v (grep(m/\.v$/, @d)) {
+	print "$v\n" unless $V{$v};
+}

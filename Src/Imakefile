@@ -1,7 +1,7 @@
 /**/#
 /**/# Imakefile for ./Src - part of the UMDENG X-Tank distribution
 /**/#
-/**/# $Id: Imakefile,v 1.26 1992/02/06 07:57:38 lidl Exp $
+/**/# $Id: Imakefile,v 1.36 1992/09/06 21:13:57 lidl Exp $
 /**/#
 
 #include "../Imakefile.Config"
@@ -9,39 +9,41 @@
       CDEBUGFLAGS = -g
           DEPLIBS = $(DEPXLIB)
   LOCAL_LIBRARIES = $(XLIB)
-             SRCS = 3d.c XMultiSync.c actions.c animate.c box.c collision.c \
-                    console.c cosell.c display.c escher.c explosion.c \
-                    file.c game.c gr.c graphics.c highlib.c hit.c icounter.c \
-                    init.c input.c interface.c intersect.c lowlib.c main.c \
-                    malloc.c mapper.c maze.c mdesign.c menu.c message.c \
-                    objects.c program.c radar.c repair.c scroll.c setup.c \
-                    setups.c status.c sysdep.c thread.c unix.c update.c \
-                    util.c vdesign.c vehicle.c newfile.c vload.c \
+             SRCS = 3d.c XMultiSync.c actions.c animate.c box.c camo.c \
+                    collision.c cosell.c disc.c display.c escher.c \
+                    explosion.c file.c game.c gr.c graphics.c highlib.c \
+                    hit.c hud.c icounter.c init.c input.c interface.c \
+                    intersect.c lowlib.c main.c malloc.c mapper.c maze.c \
+                    mdesign.c menu.c message.c newconsole.c objects.c \
+                    program.c radar.c repair.c scroll.c setup.c setups.c \
+                    status.c sysdep.c thread.c unix.c update.c util.c \
+                    vdesign.c vehicle.c players.c newfile.c vload.c \
                     version.c $(SRCS2)
-             OBJS = 3d.o XMultiSync.o actions.o animate.o box.o collision.o \
-                    console.o cosell.o display.o escher.o explosion.o \
-                    file.o game.o gr.o graphics.o highlib.o hit.o icounter.o \
-                    init.o input.o interface.o intersect.o lowlib.o main.o \
-                    malloc.o mapper.o maze.o mdesign.o menu.o message.o \
-                    objects.o program.o radar.o repair.o scroll.o setup.o \
-                    setups.o status.o sysdep.o thread.o unix.o update.o \
-                    util.o vdesign.o vehicle.o newfile.o vload.o \
+             OBJS = 3d.o XMultiSync.o actions.o animate.o box.o camo.o \
+                    collision.o cosell.o disc.o display.o escher.o \
+                    explosion.o file.o game.o gr.o graphics.o highlib.o \
+                    hit.o hud.o icounter.o init.o input.o interface.o \
+                    intersect.o lowlib.o main.o malloc.o mapper.o maze.o \
+                    mdesign.o menu.o message.o newconsole.o objects.o \
+                    program.o radar.o repair.o scroll.o setup.o setups.o \
+                    status.o sysdep.o thread.o unix.o update.o util.o \
+                    vdesign.o vehicle.o players.o newfile.o vload.o \
                     version.o $(OBJS2)
              INCL = Include/bullet.h Include/common.h Include/cosell.h \
                     Include/disc.h Include/game.h Include/globals.h \
                     Include/gr.h Include/graphics.h Include/icounter.h \
-                    Include/interface.h Include/limits.h Include/loc.h \
-                    Include/lowlib.h Include/malloc.h Include/map.h \
-                    Include/maze.h Include/mdesign.h Include/menu.h \
-                    Include/message.h Include/object.h Include/outpost.h \
-                    Include/program.h Include/screen.h Include/scroll.h \
-                    Include/settings.h Include/setup.h Include/special-defs.h \
-                    Include/special.h Include/sysdep.h Include/team.h \
-                    Include/terminal.h Include/thread.h Include/tread-defs.h \
-                    Include/types.h Include/vdesc.h Include/vehicle.h \
+                    Include/interface.h Include/loc.h Include/lowlib.h \
+                    Include/malloc.h Include/map.h Include/maze.h \
+                    Include/mdesign.h Include/menu.h Include/message.h \
+                    Include/object.h Include/outpost.h Include/program.h \
+                    Include/screen.h Include/scroll.h Include/settings.h \
+                    Include/setup.h Include/special-defs.h Include/special.h \
+                    Include/sysdep.h Include/tanklimits.h Include/tanktypes.h \
+                    Include/team.h Include/terminal.h Include/thread.h \
+                    Include/tread-defs.h Include/vdesc.h Include/vehicle.h \
                     Include/vehicleparts.h Include/vstructs.h \
                     Include/weapon-defs.h Include/xtank.h Include/xtanklib.h
-            XINCL = Include/Xlibos.h Include/x11.h
+            XINCL = Include/x11.h
 
 /**/# Note that both x11.c and mazeconv.c are included in other .c files,
 /**/# so they are not listed above!
@@ -59,6 +61,8 @@
 
 #ifdef i860Architecture
     SYS_LIBRARIES = -lnsl
+            SRCS2 = floor.c
+            OBJS2 = floor.o
 #endif
 #ifdef ApolloArchitecture
     SYS_LIBRARIES = -L/usr/X11/lib
@@ -66,7 +70,7 @@
 #ifdef HPArchitecture
     SYS_LIBRARIES = -lBSD -lmalloc
 # ifdef hp9000s800
-            SRCS2 = flush_hp9k8.c
+            SRCS2 = flush_hp9k8.s
             OBJS2 = flush_hp9k8.o
 # endif
 #endif
@@ -89,15 +93,25 @@
 #endif
 #ifdef SunArchitecture
     SYS_LIBRARIES = /usr/lib/debug/malloc.o -llwp
-        CCOPTIONS = -Bstatic
-#ifdef SparcArchitecture
-/**/# Sun4
+#if HasGcc
+        CCOPTIONS = -static $(EXTRA_CCOPTS)
 #else
-/**/# Sun3
+        CCOPTIONS = -Bstatic /usr/lib/libm.il $(EXTRA_CCOPTS)
+#endif
+#ifdef SparcArchitecture
+/**/# Sun4 only options go here
+#else
+/**/# Sun3 only options go here
 #endif
 #endif
 #ifdef UltrixArchitecture
 #ifdef MipsArchitecture
+# You might need to uncomment the following lines, depending on your
+# system, and it's configuration, and your compiler.
+#
+#           SYS_LIBRARIES = -ldnet
+#           CCOPTIONS = -Wl,-D,1000000
+#           STD_INCLUDES = $(EXTRA_INCLUDES) -I/usr/include/mit
             SRCS2 = mipssj.s
             OBJS2 = mipssj.o
 #endif

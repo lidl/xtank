@@ -2,13 +2,16 @@ We would like to thank the following people for their contributions to xtank:
 
 Terry Donahue       For writing most all of the code, and then giving it to us!
 
-Gordon H. Smith    (aahz@eng.umd.edu)
-     &
-Josh M. Osborne    (stripes@eng.umd.edu)
-        For this release, and quite possibly the next few, code maintainers.
+Josh M. Osborne    (stripes@pix.com)
+        For this release, and quite possibly the next few, the
+        primary code maintainer.
 
 Kurt Lidl          (lidl@pix.com)
         Struggling Artist and patch-meister.
+	SVR4 threading.
+
+Gordon H. Smith    (aahz@eng.umd.edu)
+        Many bug fixes, previous yeoman's service as code maintainer.
 
 Robert Potter      (rpotter@grip.cis.upenn.edu)
         General hacking, tweaking and frobbing.  Cool robot designs!
@@ -27,16 +30,25 @@ Sean Barrett       (buzzard@eng.umd.edu)
         Bootlegger.
 
 William Katz       (wk5w@virginia.edu)
-        Gnat & Ronin code.
+        Gnat code.
 
 Chris Moore        (moore@src.bae.co.uk)
         Teleport mode.
+
+Vaughan Clarkson   (vaughan@ewd.dsto.oz.au)
+        HP code fixes, to hopefully get things working.
+
+Olaf Becker        (n9030166@rowlf.cc.wwu.edu)
+        Disk and Delta body designs.
 
 Adam Bryant        (adb@cs.bu.edu)
         Bullet removing armor from wrong side fix.
 
 Tony Ambardar      (bird@sevior.physics.ubc.ca)
-        Ported to DECstations running ultrix.
+        Ported to DECstations running ultrix. (Both Ultrix 3.1 and 4.2)
+
+Bob Manson         (manson@magnus.acs.ohio-state.edu)
+        Misc fixes to a couple of robots, and other minor irritating things.
 
 Hans Jeppesen      (lucifer@iesd.auc.dk)
         Pzkw_I, dum_maze, runner and roadrunner robots.
@@ -50,43 +62,56 @@ Lachlan Brown      (lb@s2.elec.uq.oz.au)
 Christopher North-Keys
         Escher Menu Code.
 
-Laura Baldwin      Fiery explosion bitmap
+Laura Baldwin
+        Fiery explosion bitmap
 
-Doug Church        Menu interface code
+Doug Church
+        Menu interface code
         Design of user interface
 
-Eric Esterling     Playtester
+Eric Esterling
+        Playtester
         Unix consultant
 
-Rob Fullmer        Gaming consultant
+Rob Fullmer
+        Gaming consultant
         Head playtester
         Tank bitmap designer
 
-Eon Harry          Title logo and Head tank bitmap designer
+Eon Harry
+        Title logo and Head tank bitmap designer
         Aesthetics and marketing consultant (Mr. Organic Flowthru)
 
-Joe Killian        Severe optimization of 90 and 180 degree bitmap rotation
+Joe Killian
+        Severe optimization of 90 and 180 degree bitmap rotation
 
-Evan Reidell       Explosion bitmaps
+Evan Reidell
+        Explosion bitmaps
 
-Dan Schmidt        Development of vehicle design program
+Dan Schmidt
+        Development of vehicle design program
         Development of maze design program
         Documentation
 
-John Smolin        Playtester
+John Smolin
+        Playtester
         Algorithm consultant
 
-Bill Sommerfeld    Dynamic loading module for xtank programs
+Bill Sommerfeld
+        Dynamic loading module for xtank programs
         Unix consultant
 
-Erik Winfree       Amiga Graphics Toolkit
+Erik Winfree
+        Amiga Graphics Toolkit
         Amiga support and porting
         Code reviewer and improver
 
-Steve Worley       Efficient solution to inelastic collision problem
+Steve Worley
+        Efficient solution to inelastic collision problem
         Fountain of game extensions and ideas
 
-Mike Zehr          Head algorithm consultant
+Mike Zehr
+        Head algorithm consultant
         Playtester
         Design of vehicle design system
         Large tank explosion

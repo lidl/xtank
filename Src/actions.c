@@ -8,9 +8,21 @@
 
 /*
 $Author: lidl $
-$Id: actions.c,v 2.7 1992/01/29 08:35:48 lidl Exp $
+$Id: actions.c,v 2.11 1992/08/18 05:40:06 lidl Exp $
 
 $Log: actions.c,v $
+ * Revision 2.11  1992/08/18  05:40:06  lidl
+ * added tac nuke changes
+ *
+ * Revision 2.10  1992/06/07  02:45:08  lidl
+ * Post Adam Bryant patches and a manual merge of the rejects (ugh!)
+ *
+ * Revision 2.9  1992/05/19  22:57:19  lidl
+ * post Chris Moore patches, and sqrt to SQRT changes
+ *
+ * Revision 2.8  1992/03/31  21:45:50  lidl
+ * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
+ *
  * Revision 2.7  1992/01/29  08:35:48  lidl
  * post aaron patches, seems to mostly work now
  *
@@ -101,32 +113,26 @@ int dx, dy;
 ** Creates a bullet from the specified weapon type at the given location,
 ** owned by the vehicle v, moving at the specified angle.
 */
-#ifdef NO_NEW_RADAR
-make_bullet(v, loc, type, angle)
-#else /* NO_NEW_RADAR */
 /*
  * New function for generating smart (has an internal coordinate)
  * bullets.  The original function is replaced by a macro (someplace...)
  * that points here.
  */
 make_smart_bullet(v, loc, type, angle, target)
-#endif /* NO_NEW_RADAR */
 Vehicle *v;
 Loc *loc;
 WeaponType type;
 Angle angle;
-#ifndef NO_NEW_RADAR
 lCoord *target;
-#endif /* NO_NEW_RADAR */
 {
+    extern set_disc_team();
     Weapon_stat *ws;
     extern Bset *bset;
     Bullet *b;
+    static int discteam = 0;
 
-#ifndef NO_NEW_RADAR
     if ((target == NULL) && (type == HARM))
 	return;
-#endif /* NO_NEW_RADAR */
 
     if (bset->number >= MAX_BULLETS)
 	return;			/* too many bullets */
@@ -139,7 +145,6 @@ lCoord *target;
     b->loc = &b->loc1;
     b->old_loc = &b->loc2;
 
-#ifndef NO_NEW_RADAR
 /*
  *
  * Note that this "height" idea here is an extensive change. It moves a buncha
@@ -159,7 +164,6 @@ lCoord *target;
     		b->old_loc->z = b->loc->z = 0;
 		break;
      }
-#endif
 
     /* Find the weapon_stat structure */
     ws = &weapon_stat[(int)type];
@@ -177,12 +181,15 @@ lCoord *target;
     b->type = type;
     b->life = ws->frames;
     b->hurt_owner = FALSE;
-#ifndef NO_NEW_RADAR
     if (type == HARM) {
         b->target.y = target->y;
         b->target.x = target->x; 
     }
-#endif /* NO_NEW_RADAR */
+    if (type == DISC) {
+	set_disc_team(b, discteam++);
+    } else {
+	discteam = 0;
+    }
 }
 
 /*
@@ -197,16 +204,49 @@ int damage;
 
     /* Determine type of explosion from the amount of damage the bullet did */
     type = (damage <= 4) ? (EXP_DAM0 + damage) : EXP_DAM4;
-    make_explosion(b->loc, type);
+#ifdef NO_GAME_BALANCE
+    if (b->type == NUKE) {
+	expl_nuke(b);
+    } else
+#endif
+        make_explosion(b->loc, type);
 
-    /* I think this makes bullets that explode before they are displayed not
+    /* I think this makes bullets that explode before they are displayed
        not get erased, but I'm not sure... (sigh) */
-
-    if (b->life == weapon_stat[(int)b->type].frames - 1)
-	b->life = -2;		/* undisplayed bullet */
-    else
-	b->life = -1;
+    if (b->type != DISC) {
+	if (b->life == weapon_stat[(int)b->type].frames - 1)
+	    b->life = -2;		/* undisplayed bullet */
+	else
+	    b->life = -1;
+    }
 }
+
+#ifdef NO_GAME_BALANCE
+#define NUKE_DIST 215
+expl_nuke(b)
+Bullet *b;
+{
+	double dist;
+	int dx, dy, i, j, damage;
+
+	make_explosion(b->loc, EXP_NUKE);
+	for (i = 0; i < num_veh_alive; i++) {
+	dx = live_vehicles[i]->loc->x - b->loc->x;
+	dy = live_vehicles[i]->loc->y - b->loc->y;
+	dist = sqrt((double)(dx*dx + dy*dy));
+	if ((int)dist <= NUKE_DIST) {
+		damage = (int)(200*(1.0-dist/NUKE_DIST));
+		for ( j = FRONT; j <= BOTTOM; j++) {
+			live_vehicles[i]->armor.side[j] -= damage;
+			if (live_vehicles[i]->armor.side[j] < 0) {
+				live_vehicles[i]->armor.side[j] = 0;
+				kill_vehicle(live_vehicles[i], b->owner);
+				}
+			}
+		}
+	}
+}
+#endif
 
 /*
 ** Does the specified action for the specified special in the
@@ -219,15 +259,8 @@ unsigned int action;
 {
     Special *s;
 
-    if (special_num == REPAIR)
-    {
-        if (v->special[(int)REPAIR].status == SP_nonexistent)
-	    return;
-	if (settings.si.no_wear) /* GHS */
-	    return;		/* GHS */
-	if (v->vector.speed != 0.0) /* GHS */
-	    return;		/* GHS */
-    }				/* GHS */
+    /* deleted all of the REPAIR crap, let the special handle it -ane */
+
     /* First make sure the special is really there */
     s = &v->special[(int)special_num];
     if (s->status == SP_nonexistent)
@@ -239,6 +272,23 @@ unsigned int action;
  * Use the "activate" and "deactivate" for robots,
  * the "on" and "off" for humans.
  */
+
+ /*
+  * Well, calling do_special from inside of a special
+  * was a big mistake.  hacka hacka hacka...
+  *
+  * In order for a special to refuse
+  * to activate, the specials can now return a value
+  * in the case of an SP_activate & return either a 
+  * SP_on or a SP_off.             --ane
+  */
+
+/*
+ * To answer RDP's question, the tests for SP_on & SP_off
+ * inhibit anything but a SP_repair from changing the state
+ * of a broken special.
+ */
+
       case SP_update:
       case SP_redisplay:
       case SP_draw:
@@ -249,18 +299,7 @@ unsigned int action;
       case SP_activate:
 	if (s->status == SP_off)	/* why this test? -RDP */
 	{
-#ifdef NO_NEW_RADAR
-/*
- * I'm not sure I'm using this re-arangement, but please incorporate
- * it as it makes a class of operation on specials easier and
- * more consistant.
- */
-	    s->status = SP_on;
-#endif /* NO_NEW_RADAR */
-	    (*s->proc) (v, s->record, SP_activate);
-#ifndef NO_NEW_RADAR
-	    s->status = SP_on;
-#endif /* !NO_NEW_RADAR */
+	    s->status = (*s->proc) (v, s->record, SP_activate);
 	}
 	break;
       case SP_deactivate:
@@ -273,14 +312,8 @@ unsigned int action;
       case SP_toggle:
 	if (s->status == SP_off)
 	{
-#ifdef NO_NEW_RADAR
-	    s->status = SP_on;
-#endif /* NO_NEW_RADAR */
-	    (*s->proc) (v, s->record, SP_activate);
-#ifndef NO_NEW_RADAR
-	    s->status = SP_on;
-#endif /* !NO_NEW_RADAR */
-	    (*s->proc) (v, s->record, SP_draw);
+	    if ((s->status = (*s->proc) (v, s->record, SP_activate)) == SP_on)
+		(*s->proc) (v, s->record, SP_draw);
 
 	}
 	else if (s->status == SP_on)
@@ -300,22 +333,13 @@ unsigned int action;
 	s->status = SP_broken;
 	break;
       case SP_repair:
-#ifdef NO_NEW_RADAR
-	    s->status = SP_on;
-#endif /* NO_NEW_RADAR */
-	(*s->proc) (v, s->record, SP_activate);
-#ifndef NO_NEW_RADAR
-	    s->status = SP_on;
-#endif /* !NO_NEW_RADAR */
-	(*s->proc) (v, s->record, SP_draw);
+	    if ((s->status = (*s->proc) (v, s->record, SP_activate)) == SP_on)
+		(*s->proc) (v, s->record, SP_draw);
 	break;
-#ifndef NO_NEW_RADAR
       case SP_on:
 	if (s->status == SP_off) {
-	    (*s->proc) (v, s->record, SP_activate);
-	    s->status = SP_on;
-	    (*s->proc) (v, s->record, SP_draw);
-
+	    if ((s->status = (*s->proc) (v, s->record, SP_activate)) == SP_on)
+		(*s->proc) (v, s->record, SP_draw);
 	}
 	break;
       case SP_off:
@@ -325,7 +349,6 @@ unsigned int action;
 	    (*s->proc) (v, s->record, SP_erase);
 	}
 	break;
-#endif /* !NO_NEW_RADAR */
     }
 }
 
@@ -461,102 +484,6 @@ switch_view(num)
     expose_win(ANIM_WIN, TRUE);
     expose_win(CONS_WIN, TRUE);
     expose_win(MAP_WIN, TRUE);
-}
-
-/*
-** Disc functions
-*/
-
-/*
-** Releases all discs owned by a vehicle.  Sets speed of discs to speed.
-** Allows one update if delay is set.  This allows robots to throw to
-** an accuracy of one frame.
-*/
-release_discs(v, dspeed, delay)
-Vehicle *v;
-FLOAT dspeed;
-Boolean delay;
-{
-    extern Bset *bset;
-    Bullet *b;
-    FLOAT ratio;
-    FLOAT curspeed;
-    int i;
-
-    if (v->num_discs > 0)
-    {
-	for (i = 0; i < bset->number; i++)
-	{
-	    b = bset->list[i];
-	    if (b->type == DISC && b->owner == v)
-	    {
-		if (delay)
-		    update_disc(b);
-		curspeed = sqrt(b->xspeed * b->xspeed + b->yspeed * b->yspeed);
-                ratio = dspeed / curspeed;
-		b->xspeed *= ratio;
-		b->yspeed *= ratio;
-		/* display_bullets(ON); */
-		b->owner = (Vehicle *) NULL;
-		b->thrower = v->color;
-		/* display_bullets(ON); */
-
-		/* Inform the commentator about the throw */
-		if (settings.commentator)
-		    comment(COS_OWNER_CHANGE, COS_IGNORE, (Vehicle *) NULL,
-			    (Vehicle *) NULL);
-	    }
-	}
-	v->num_discs = 0;
-    }
-}
-
-/*
-** Makes all discs owned by the vehicle spin in the specified direction.
-*/
-set_disc_orbit(v, dir)
-Vehicle *v;
-Spin dir;
-{
-	switch (dir)
-	{
-		case CLOCKWISE:
-			v->status &= ~VS_disc_spin;
-			break;
-		case COUNTERCLOCKWISE:
-			v->status |= VS_disc_spin;
-			break;
-		case TOGGLE:
-			v->status ^= VS_disc_spin;
-			break;
-	}
-}
-
-/*
-** Sets the owner of the specified disc to the specified vehicle.
-*/
-set_disc_owner(b, v)
-Bullet *b;
-Vehicle *v;
-{
-	/* Take it away from previous owner */
-	if (b->owner != (Vehicle *) NULL)
-	{
-		b->owner->num_discs--;
-		b->thrower = b->owner->color;
-	}
-	else
-	{
-		if (b->thrower == -1)
-			b->thrower = WHITE;
-	}
-
-	/* Give it to new owner */
-	/* display_bullets(OFF); */
-	b->owner = v;
-	/* display_bullets(OFF); */
-	if (b->owner != (Vehicle *) NULL)
-		b->owner->num_discs++;
 }
 
 /*

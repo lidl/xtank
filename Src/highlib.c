@@ -7,10 +7,13 @@
 */
 
 /*
-$Author: rpotter $
-$Id: highlib.c,v 2.3 1991/02/10 13:50:40 rpotter Exp $
+$Author: lidl $
+$Id: highlib.c,v 2.4 1992/03/31 21:45:50 lidl Exp $
 
 $Log: highlib.c,v $
+ * Revision 2.4  1992/03/31  21:45:50  lidl
+ * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
+ *
  * Revision 2.3  1991/02/10  13:50:40  rpotter
  * bug fixes, display tweaks, non-restart fixes, header reorg.
  *
@@ -76,7 +79,8 @@ int fire_all_weapons()
 	return BAD_VALUE;
     }
     for (i = 0; i < cv->num_weapons; i++)
-	fire_weapon(i);
+        if (cv->weapon[i].type != HARM)
+	    fire_weapon(i);
 
     return 0;
 }

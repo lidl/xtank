@@ -4,7 +4,7 @@
 ** Hacked on a bit by lidl@pix.com
 */
 
-/* $Id: vload.l,v 1.6 1992/02/06 09:01:46 aahz Exp $ */
+/* $Id: vload.l,v 1.8 1992/09/06 22:15:00 lidl Exp $ */
 
 %{
 #ifdef YY_DECL
@@ -43,6 +43,7 @@ char *zval(), *strtoke();
 void cv_str(), cv_kw2i(), cv_bool(), cv_int(), cv_flt();
 void cv_armr(), cv_body(), cv_bump(), cv_engine();
 void cv_special(), cv_susp(), cv_tread(), cv_weap();
+void cv_int_m();
 
 %}
 
@@ -62,12 +63,12 @@ f		{B}[0-9]+("."[0-9]*)?
 ^Engine{s}/\n			{ cv_engine(zval(), d); }
 ^W#[0-5]{s}/\n			{ cv_weap(yytext[2], zval(), d); }
 ^Armor\ Type{s}/\n		{ cv_armr(zval(), d); }
-^Front{s}/\n			{ cv_int(zval(), &d->armor.side[FRONT]); }
-^Back{s}/\n				{ cv_int(zval(), &d->armor.side[BACK]); }
-^Left{s}/\n				{ cv_int(zval(), &d->armor.side[LEFT]); }
-^Right{s}/\n			{ cv_int(zval(), &d->armor.side[RIGHT]); }
-^Top{s}/\n				{ cv_int(zval(), &d->armor.side[TOP]); }
-^Bottom{s}/\n			{ cv_int(zval(), &d->armor.side[BOTTOM]); }
+^Front{s}/\n			{ cv_int_m(zval(), &d->armor.side[FRONT], &d->armor.max_side); }
+^Back{s}/\n				{ cv_int_m(zval(), &d->armor.side[BACK], &d->armor.max_side); }
+^Left{s}/\n				{ cv_int_m(zval(), &d->armor.side[LEFT], &d->armor.max_side); }
+^Right{s}/\n			{ cv_int_m(zval(), &d->armor.side[RIGHT], &d->armor.max_side); }
+^Top{s}/\n				{ cv_int_m(zval(), &d->armor.side[TOP], &d->armor.max_side); }
+^Bottom{s}/\n			{ cv_int_m(zval(), &d->armor.side[BOTTOM], &d->armor.max_side); }
 ^Special{s}/\n			{ cv_special(zval(), d);}
 ^Heat\ sinks{s}/\n		{ cv_int(zval(), &d->heat_sinks);}
 ^Suspension{s}/\n		{ cv_susp(zval(), d); }
@@ -75,6 +76,20 @@ f		{B}[0-9]+("."[0-9]*)?
 ^Bumpers{s}/\n			{ cv_bump(zval(), d);}
 
 %%
+
+void cv_int_m(vstr, addr, max_addr)
+char *vstr;
+int *addr;
+int *max_addr;
+{
+	int v = atoi(vstr);
+
+	if (v > *max_addr) {
+		*max_addr = v;
+	}
+
+	*addr = v;
+}
 
 char *zval()
 {

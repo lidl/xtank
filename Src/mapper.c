@@ -7,10 +7,13 @@
 */
 
 /*
-$Author: aahz $
-$Id: mapper.c,v 2.8 1992/01/30 03:19:22 aahz Exp $
+$Author: lidl $
+$Id: mapper.c,v 2.9 1992/03/31 21:45:50 lidl Exp $
 
 $Log: mapper.c,v $
+ * Revision 2.9  1992/03/31  21:45:50  lidl
+ * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
+ *
  * Revision 2.8  1992/01/30  03:19:22  aahz
  * made the terminal's vehicle appear as an x in team color on the mapper.
  *
@@ -91,7 +94,7 @@ extern int team_color_bright[];
 /*
 ** Handles all mapper actions for the specified vehicle.
 */
-special_mapper(v, record, action)
+SpecialStatus special_mapper(v, record, action)
     Vehicle *v;
     char *record;
     unsigned int action;
@@ -103,10 +106,8 @@ special_mapper(v, record, action)
     int left_x, top_y, line_x, line_y;
     unsigned int flags;
     int i, x, y;
-#ifndef NO_NEW_RADAR
     int veh;
     Vehicle *mv;
-#endif /* !NO_NEW_RADAR */
 
     switch (action)
     {
@@ -257,6 +258,9 @@ special_mapper(v, record, action)
 
 	m->initial_update = TRUE;
 	m->map_invalid = FALSE;
+
+	return SP_on;
+
 	break;
       case SP_deactivate:
 	break;
@@ -321,10 +325,10 @@ draw_symbol(s)
 	draw_vert(MAP_WIN, s->x, s->y, MAP_BOX_SIZE, DRAW_XOR, WHITE);
 	break;
       case NORTH_DEST_SYM:
-	draw_hor(MAP_WIN, s->x, s->y, MAP_BOX_SIZE, DRAW_XOR, GREY);
+	draw_hor(MAP_WIN, s->x, s->y, MAP_BOX_SIZE, DRAW_XOR, DEST_WALL);
 	break;
       case WEST_DEST_SYM:
-	draw_vert(MAP_WIN, s->x, s->y, MAP_BOX_SIZE, DRAW_XOR, GREY);
+	draw_vert(MAP_WIN, s->x, s->y, MAP_BOX_SIZE, DRAW_XOR, DEST_WALL);
 	break;
       default:
 	pic = &landmark_obj[1]->pic[(int)s->type - 1];

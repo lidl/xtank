@@ -7,10 +7,20 @@
  */
 
 /*
-$Author: aahz $
-$Id: x11.c,v 2.16 1992/02/01 21:48:43 aahz Exp $
+$Author: lidl $
+$Id: x11.c,v 2.19 1992/05/19 22:57:19 lidl Exp $
 
 $Log: x11.c,v $
+ * Revision 2.19  1992/05/19  22:57:19  lidl
+ * post Chris Moore patches, and sqrt to SQRT changes
+ *
+ * Revision 2.18  1992/03/31  21:45:50  lidl
+ * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
+ *
+ * Revision 2.17  1992/03/26  23:23:30  lidl
+ * fixed typo in resource classes
+ * now has the mouse speed kludge in it...
+ *
  * Revision 2.16  1992/02/01  21:48:43  aahz
  * part of the CPU sucking code fix
  *
@@ -97,6 +107,12 @@ $Log: x11.c,v $
 struct _XRegion {int x;};	/* avoid lint complaint */
 #endif
 
+#ifdef DEBUG_SYNC
+Boolean un_stingy = TRUE;
+#else /* DEBUG_SYNC */
+Boolean un_stingy = FALSE;
+#endif
+
 
 #ifdef NEED_AUX_FONT
 
@@ -115,7 +131,7 @@ int get_num_default();
 #ifdef BATCH_LINES
 #ifdef BATCH_COLOR_LINES
 	XSegment lineBatch[MAX_COLORS][BATCHDEPTH];
-	int linesBatched[MAX_COLORS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	int linesBatched[MAX_COLORS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	int lineBatchFunc = -20;
 	int lineBatchWin = -20;
 #else /* BATCH_COLOR_LINES */
@@ -128,7 +144,7 @@ int get_num_default();
 #endif
 #ifdef BATCH_POINTS
         XPoint pointBatch[MAX_COLORS][BATCHPDEPTH];
-        int pointsBatched[MAX_COLORS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        int pointsBatched[MAX_COLORS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         int pointBatchFunc = -20;
         int pointBatchWin = -20;
 #endif
@@ -161,6 +177,7 @@ static char *color_titles[MAX_COLORS] = {
 	"color.violet",		/* Violet Team */
 	"color.neutral",	/* Neutral Team */
 	"color.cursor",		/* Cursor, tink, commentator, radar */
+	"color.dashed",		/* dashed line for mono tubes */
 };
 
 static char *color_classes[MAX_COLORS] = {
@@ -174,6 +191,7 @@ static char *color_classes[MAX_COLORS] = {
 	"Color.Team",		/* Violet Team */
 	"Color.Team",		/* Neutral Team */
 	"Color.Cursor",		/* Cursor, tink, commentator, radar */
+	"Color.Team",		/* dashed line color */
 };
 
 static char *colorname[MAX_COLORS] = {
@@ -191,6 +209,7 @@ static char *colorname[MAX_COLORS] = {
 	"Violet",		/* Violet Team */
 	"grey71",		/* Neutral Team */
 	"cyan",			/* Cursor, tink, commentator, radar */
+	"White",		/* dashed line color */
 };
 
 int team_color[] = {GREY, RED, ORANGE, YELLOW, GREEN, BLUE, VIOLET};
@@ -306,6 +325,24 @@ char *name;
 	video->num_pixids = 0;
 	video->escher_width = get_num_default("escherWidth", "Width", 10);
 
+	/*
+	 * Intended for debugging, probably no reason to advertise
+	 * that these can be set by resource                  -ane
+	 */
+
+	DEST_WALL = get_num_default("color.dest_wall_index", "Color.Team", 
+	            (vid->planes > 1) ? GREY : DASHED);
+
+        if (DEST_WALL < BLACK || DEST_WALL >= MAX_COLORS)
+	    DEST_WALL = GREY;
+
+	RDF_SAFE = get_num_default("color.green_rdf", "Color.Team", 
+	            (vid->planes > 1) ? GREEN : DASHED);
+
+        if (RDF_SAFE < BLACK || DEST_WALL >= MAX_COLORS)
+	    RDF_SAFE = GREEN;
+
+
 	/* Do these with the tri-nary because they are bitfields and */
 	/* I don't want to deal with having some moron setting thier values */
 	/* to something other than 0 or 1 */
@@ -369,7 +406,7 @@ make_parent()
 			   program_name, icon, NULL, 0, &size);
 
     classHint.res_name = "xtank";
-    classHint.res_class = "Xtank";
+    classHint.res_class = "XTank";
     XSetClassHint(vid->dpy, vid->parent_id, &classHint);  
 
     wmhints.input = TRUE;
@@ -812,6 +849,7 @@ make_gcs()
     strncpy(vid->kludge.tank_name,
 	    get_default("tankName",   "TankName",   &dummy),
 	    MAX_STRING);
+    vid->kludge.mouse_speed = get_num_default("mouseSpeed", "MouseSpeed", 0);
 #ifdef KEYPAD_DETECT
 	vid->kludge.wants_keypad = get_num_default("keypad", "Keypad", 0);
 #endif
@@ -914,6 +952,16 @@ make_gcs()
     {
 	for (j = 0; j < MAX_DRAW_FUNCS; j++)
 	{
+	    /*
+	     * Note that the following ONLY apply if 
+	     * the mask is set, ie, these are normally
+	     * NOT copied into the GC, they are used only
+	     * if the color is DASHED        -ane
+	     */
+
+	    values.dashes = 1;
+	    values.line_style = LineOnOffDash;
+
 	    switch (j)
 	    {
 	      case DRAW_XOR:
@@ -931,6 +979,16 @@ make_gcs()
 		break;
 	    }
 
+	    /*
+	     * Switching GC's is one of the more expensive
+	     * operations, both on the server and the client.  
+	     *
+	     * If we are on a mono tube, create only necessary GC's and
+	     * make everything else point to them.    -ane
+	     */
+
+    if (vid->planes > 1) {
+
 	    /* Make a gc for each font in this color,func */
             mask = GCForeground | GCBackground | GCFont | GCFunction |
 		GCGraphicsExposures;
@@ -938,12 +996,60 @@ make_gcs()
 	    {
 		values.font = vid->fs[k]->fid;
 		vid->text_gc[k][j][i] = XCreateGC(vid->dpy, rw, mask, &values);
+
 	    }
 
 	    /* Make a gc for drawing in this color,func */
             mask = GCForeground | GCBackground | GCFunction |
 		GCGraphicsExposures;
+
+                /*
+		 * if this color is DASHED, set the line style  -ane
+		 */
+                if (i == DASHED)
+		    mask |= GCDashList | GCLineStyle;
+
 	    vid->graph_gc[j][i] = XCreateGC(vid->dpy, rw, mask, &values);
+
+    } else {
+
+/*
+ * Warning, code depends on WHITE being numerically less than 
+ * all other colors                                     -ane
+ */
+
+	    if (i == WHITE || i == BLACK || i == DASHED) {
+
+		/* Make a gc for each font in this color,func */
+		mask = GCForeground | GCBackground | GCFont | GCFunction |
+		    GCGraphicsExposures;
+		for (k = 0; k < MAX_FONTS; k++) {
+		    values.font = vid->fs[k]->fid;
+		    vid->text_gc[k][j][i] = XCreateGC(vid->dpy, rw, mask, &values);
+		}
+
+		/* Make a gc for drawing in this color,func */
+		mask = GCForeground | GCBackground | GCFunction |
+		    GCGraphicsExposures;
+
+                /*
+		 * if this color is DASHED, set the line style  -ane
+		 */
+
+                if (i == DASHED)
+		    mask |= GCDashList | GCLineStyle;
+
+		vid->graph_gc[j][i] = XCreateGC(vid->dpy, rw, mask, &values);
+
+	    } else {
+
+		for (k = 0; k < MAX_FONTS; k++)
+		    vid->text_gc[k][j][i] = vid->text_gc[k][j][WHITE];
+
+		vid->graph_gc[j][i] = vid->graph_gc[j][WHITE];
+
+	    }
+    }
 	}
     }
     return 0;
@@ -1141,6 +1247,8 @@ int font;
 	return (fwidth[font] * strlen(str));
 }
 
+static int printed_openwindows_warning = 0;
+
 /*
  * Makes the picture from the bitmap and the size given in the picture.
  */
@@ -1189,14 +1297,20 @@ char *bitmap;
 
     if (w < pic->width || h < pic->height)
     {
-	fprintf(stderr, "The XServer gave bogus size for XQueryBestSize!\n");
-	fprintf(stderr, 
-		"It gave new size (%d, %d) smaller than the original (%d,%d).\n\n",
-		w, h, pic->width, pic->height);
-	fprintf(stderr, "We are thus going to ignore the bogofied results!\n");
-	fprintf(stderr, "This is a known OpenWindows bug (what do you get when\n");
-	fprintf(stderr, "you open windows?  BUGS!)\n");
-	fprintf(stderr, "Send your XServer vendor hate mail!\n");
+      if (printed_openwindows_warning == 0)
+	{
+	  printed_openwindows_warning = 1;
+
+	  fprintf(stderr, "The XServer gave bogus size for XQueryBestSize!\n");
+	  fprintf(stderr, 
+		  "It gave new size (%d, %d) smaller than the original (%d,%d).\n\n",
+		  w, h, pic->width, pic->height);
+	  fprintf(stderr, "We are thus going to ignore the bogofied results!\n");
+	  fprintf(stderr, "This is a known OpenWindows bug (what do you get when\n");
+	  fprintf(stderr, "you open windows?  BUGS!)\n");
+	  fprintf(stderr, "Send your XServer vendor hate mail!\n");
+	}
+
 	w = pic->width;
 	h = pic->height;
     }

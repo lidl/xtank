@@ -7,10 +7,31 @@
 */
 
 /*
-$Author: lidl $
-$Id: vdesign.c,v 2.8 1992/01/29 08:37:01 lidl Exp $
+$Author: stripes $
+$Id: vdesign.c,v 2.15 1992/09/07 02:44:24 stripes Exp $
 
 $Log: vdesign.c,v $
+ * Revision 2.15  1992/09/07  02:44:24  stripes
+ * 0 space armor now works.
+ *
+ * Revision 2.14  1992/09/07  00:01:03  lidl
+ * Bill Woodall's patches that add menus, etc
+ *
+ * Revision 2.13  1992/08/30  19:52:36  lidl
+ * fixed up new body additions
+ *
+ * Revision 2.12  1992/08/22  23:59:04  stripes
+ * Fixed a minor kurt bug...
+ *
+ * Revision 2.11  1992/08/22  20:28:06  lidl
+ * Messed up while adding Disk and Delta bodies.
+ *
+ * Revision 2.10  1992/03/31  21:45:50  lidl
+ * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
+ *
+ * Revision 2.9  1992/02/17  09:15:21  lidl
+ * removed extraneous debugging info
+ *
  * Revision 2.8  1992/01/29  08:37:01  lidl
  * post aaron patches, seems to mostly work now
  *
@@ -98,8 +119,11 @@ extern Terminal *term;
     vprint(str,x,DISPLAY_ROW+y); \
   }
 
-#define clear_vdesign_input() \
-  clear_text_rc(ANIM_WIN,0,INPUT_ROW,80,8,VDESIGN_FONT)
+#define clear_vdesign_input() {\
+  clear_text_rc(ANIM_WIN,0,INPUT_ROW,80,8,VDESIGN_FONT); \
+  clear_text_rc(ANIM_WIN,0,INPUT_ROW+1,80,8,VDESIGN_FONT); \
+}
+
 #define clear_vdesign_display() \
   clear_text_rc(ANIM_WIN,0,DISPLAY_ROW,80,MENU_ROW-DISPLAY_ROW,VDESIGN_FONT)
 
@@ -126,7 +150,12 @@ Armor_stat armor_stat[MAX_ARMORS] = {
     {"Composite",      1,  4,  3,  30},
     {"Compound Steel", 2,  8,  3,  40},
     {"Titanium",       2,  5,  3,  70},
-    {"Tungsten",       3, 20,  3, 100}
+    {"Tungsten",       3, 20,  3, 100},
+    {"New Steel",      0,  5,  3,   1},
+    {"Carapice",       1,  8,  1,  80},
+    {"Porcelain",      1,  2,  5,  80},
+    {"New Tungsten",   3, 14,  3, 120},
+    {"Crumple",      -15,  1,  0,  50}
 };
 
 Engine_stat engine_stat[MAX_ENGINES] = {
@@ -165,7 +194,9 @@ Body_stat body_stat[MAX_BODIES] = {
     {"Medusa",     7, 14000, 40000, 25000, 1.20,  4,  3, 15000},
     {"Malice",     5,  4000, 20000, 15000,  .40,  7,  1, 17000},
     {"Trike",      2,   400,  1600,  1200,  .15,  6,  0,  4000},
-    {"Panzy",      8, 22000, 70000, 45000, 3.00,  3,  4, 25000}
+    {"Panzy",      8, 22000, 70000, 45000, 3.00,  3,  4, 25000},
+    {"Disk",       7, 15000, 35000, 25000,  .15,  6,  2, 15000},
+    {"Delta",      6, 10000, 20000, 18000,  .15,  6,  2, 14000},
 };
 
 Suspension_stat suspension_stat[MAX_SUSPENSIONS] = {
@@ -192,12 +223,25 @@ Special_stat special_stat[MAX_SPECIALS] = {
 #undef  QQ
 };
 
+#ifdef NO_TIMED_REFILL
+
 Weapon_stat weapon_stat[VMAX_WEAPONS] = {
 #define QQ(sym,type,dam,rng,ammo,tm,spd,wgt,spc,fr,ht,ac,cost) \
     {type,dam,rng,ammo,tm,spd,wgt,spc,fr,ht,ac,cost},
 #include "weapon-defs.h"	/* read this file for an explanation */
 #undef QQ
 };
+
+#else /* NO_TIMED_REFILL */
+
+Weapon_stat weapon_stat[VMAX_WEAPONS] = {
+#define QQ(sym,type,dam,rng,ammo,tm,spd,wgt,spc,fr,ht,ac,cost,refill) \
+    {type,dam,rng,ammo,tm,spd,wgt,spc,fr,ht,ac,cost,refill},
+#include "weapon-defs.h"	/* read this file for an explanation */
+#undef QQ
+};
+
+#endif /* NO_TIMED_REFILL */
 
 Tread_stat tread_stat[MAX_TREADS] = {
 #define QQ(sym,type,fric,cost) {type,fric,cost},
@@ -217,6 +261,15 @@ char *mount_entries[] = {
 
 char *side_entries[] = {
 "Front", "Back", "Left", "Right", "Top", "Bottom", "All"};
+
+char *engine_title = "Engines             power weight space fuel$ fuelcap   cost";
+char *weapon_title = "Weapons            dam rng ammo tm spd wgt spc heat ammo$ cost";
+char *armor_title = "Armors          hitsoff weight space cost";
+char *body_title = "Bodies      weight wghtlim  space drag hndl trts   cost";
+char *special_title = "Specials       cost";
+char *suspension_title = "Suspension hndl cost";
+char *tread_title = "Treads     fric   cost";
+char *bumper_title = "Bumpers     elas   cost";
 
 static char *weapnum_entries[] = {"1", "2", "3", "4", "5", "6"};
 
@@ -239,7 +292,6 @@ static Boolean modified = FALSE;	/* if the vehicle has been modified
 design_vehicle()
 {
     Vdesc *d;
-printf("vmax weapons %i \n", VMAX_WEAPONS);
 
     /* Initialize everything */
     d = &design_vdesc;
@@ -259,24 +311,24 @@ init_vdesign_interface()
 
     menu_norm_make(&menu_sys, MAIN_MENU, "Vdesign", 14, 0,
 		   LEV0_X, LEV0_Y, main_entries, M_FONT);
-    menu_norm_make(&menu_sys, ENGINES_MENU, "Engines", MAX_ENGINES, 0,
+    menu_norm_make(&menu_sys, ENGINES_MENU, engine_title, MAX_ENGINES, 0,
 		   LEV1_X, LEV0_Y, engine_entries, M_FONT);
-    menu_norm_make(&menu_sys, WEAPONS_MENU, "Weapons", VMAX_WEAPONS, 0,
+    menu_norm_make(&menu_sys, WEAPONS_MENU, weapon_title, VMAX_WEAPONS, 0,
 		   LEV1_X, LEV0_Y, weapon_entries, M_FONT);
-    menu_norm_make(&menu_sys, ARMORS_MENU, "Armors", MAX_ARMORS, 0,
+    menu_norm_make(&menu_sys, ARMORS_MENU, armor_title, MAX_ARMORS, 0,
 		   LEV1_X, LEV0_Y, armor_entries, L_FONT);
-    menu_norm_make(&menu_sys, BODIES_MENU, "Bodies", MAX_BODIES, 0,
+    menu_norm_make(&menu_sys, BODIES_MENU, body_title, MAX_BODIES, 0,
 		   LEV1_X, LEV0_Y, body_entries, M_FONT);
     menu_norm_make(&menu_sys, MOUNTS_MENU, "Mounts", NUM_MOUNTS, 0,
 		   LEV1_X, LEV0_Y, mount_entries, L_FONT);
-    menu_flag_make(&menu_sys, SPECIALS_MENU, "Specials", MAX_SPECIALS, 0,
+    menu_flag_make(&menu_sys, SPECIALS_MENU, special_title, MAX_SPECIALS, 0,
 		   LEV1_X, LEV0_Y, special_entries, L_FONT);
-    menu_norm_make(&menu_sys, SUSPENSIONS_MENU, "Suspensions",
-		   MAX_SUSPENSIONS, 0,
-		   LEV1_X, LEV0_Y, suspension_entries, L_FONT);
-    menu_norm_make(&menu_sys, TREADS_MENU, "Treads", MAX_TREADS, 0,
+    menu_norm_make(&menu_sys, SUSPENSIONS_MENU, suspension_title,
+		   MAX_SUSPENSIONS, 0, LEV1_X, LEV0_Y,
+		   suspension_entries, L_FONT);
+    menu_norm_make(&menu_sys, TREADS_MENU, tread_title, MAX_TREADS, 0,
 		   LEV1_X, LEV0_Y, tread_entries, L_FONT);
-    menu_norm_make(&menu_sys, BUMPERS_MENU, "Bumpers", MAX_BUMPERS, 0,
+    menu_norm_make(&menu_sys, BUMPERS_MENU, bumper_title, MAX_BUMPERS, 0,
 		   LEV1_X, LEV0_Y, bumper_entries, L_FONT);
     menu_norm_make(&menu_sys, SIDES_MENU, "Sides", 7, 0,
 		   LEV1_X, LEV0_Y, side_entries, L_FONT);
@@ -436,8 +488,14 @@ vdesign_interface(d)
 				menu_display(&menu_sys, SPECIALS_MENU);
 				break;
 			    case 6:
+				(void) sprintf(temp, "Heat sink weight:%4d  space:%4d  cost:%4d",
+					heat_sink_stat.weight, 
+					heat_sink_stat.space, 
+					heat_sink_stat.cost );
+				vprint(temp, 0, INPUT_ROW);
+
 				d->heat_sinks = input_int(ANIM_WIN, "Number of heat sinks",
-					      0, INPUT_ROW, d->heat_sinks, 0,
+					      0, INPUT_ROW+1, d->heat_sinks, 0,
 							  99, VDESIGN_FONT);
 				modified = changed = TRUE;
 				menu_unhighlight(&menu_sys, MAIN_MENU);
@@ -608,11 +666,18 @@ init_vdesc(d)
 
     d->specials = 0;
     for (i = 0; i < MAX_SPECIALS; i++) {
-#ifndef NO_NEW_RADAR
-	if (i == (int) CONSOLE || i == (int) MAPPER || i == (int) RADAR || i == (int) NEW_RADAR || i == (int) TACLINK)
-#else /* !NO_NEW_RADAR */
-	if (i == (int) CONSOLE || i == (int) MAPPER || i == (int) RADAR)
-#endif /* !NO_NEW_RADAR */
+#ifndef NO_CAMO
+#ifndef NO_HUD
+        if ( i == (int) HUD || i == (int) CONSOLE || i == (int) MAPPER || i == (int) RADAR || i ==
+(int) NEW_RADAR || i == (int) TACLINK || i == (int) CAMO || i == (int) STEALTH || i == (int) RDF )
+#else /* !NO_HUD */
+        if (i == (int) CONSOLE || i == (int) MAPPER || i == (int) RADAR || i ==
+(int) NEW_RADAR || i == (int) TACLINK || i == (int) CAMO || i == (int) STEALTH || i == (int) RDF )
+#endif /* !NO_HUD */
+#else /* !NO_CAMO */
+        if (i == (int) CONSOLE || i == (int) MAPPER || i == (int) RADAR || i ==
+(int) NEW_RADAR || i == (int) TACLINK)
+#endif /* !NO_CAMO */
 	    d->specials |= (1 << i);
     }
 }
@@ -626,6 +691,8 @@ compute_vdesc(d)
 {
     int total_armor, size;
     int i;
+    
+    int rharms = 0, lharms = 0;
 
     problems = 0;
     total_armor = 0;
@@ -654,13 +721,28 @@ compute_vdesc(d)
 	    bumper_stat[d->bumpers].cost * size;
 
     for (i = 0; i < d->num_weapons; i++) {
-#ifndef NO_NEW_RADAR
 	/*
 	 * Checks that HARMs are only on side mounts.
 	 */
+#if 0
 	if ( !(IS_SIDE(d->mount[i])) && (d->weapon[i] == HARM) )
 	    problems |= MIS_MOUNT;
-#endif /* !NO_NEW_RADAR */
+        /* 
+	 * Restrict HARM's to one per side
+	 */
+
+        if ( d->mount[i] == MOUNT_LEFT && d->weapon[i] == HARM ) {
+	    ++lharms;
+	    if (lharms > 1)
+		problems |= MIS_MOUNT;
+        }
+
+        if ( d->mount[i] == MOUNT_RIGHT && d->weapon[i] == HARM ) {
+	    ++rharms;
+	    if (rharms > 1)
+		problems |= MIS_MOUNT;
+        }
+#endif
 	d->weight += weapon_stat[(int) d->weapon[i]].weight;
 	d->space += weapon_stat[(int) d->weapon[i]].space;
 	d->cost += weapon_stat[(int) d->weapon[i]].cost;
@@ -718,6 +800,7 @@ display_vdesc(d, status)
     Picture *pic;
     char temp[80];
     int i, row, col;
+    int wgt_left, spc_left, armor_units_left;
 
     (void) sprintf(temp, "Name:       %s", d->name);
     dprint(temp, (strcmp(od.name, d->name)), 0, 0);
@@ -778,12 +861,10 @@ display_vdesc(d, status)
 	   ((problems & OVER_SPACE) != (oproblems & OVER_SPACE)), 8, 41);
     dprint(((problems & BAD_MOUNT) ? "BAD WEAPON MOUNT" : ""),
 	   ((problems & BAD_MOUNT) != (oproblems & BAD_MOUNT)), 9, 41);
-#ifndef NO_NEW_RADAR
     dprint(((problems & MIS_MOUNT) ? "WEAPON MISMOUNTED" : ""),
 	   ((problems & MIS_MOUNT) != (oproblems & MIS_MOUNT)), 10, 41);
-#endif /* !NO_NEW_RADAR */
 
-    dprint("# Weapon             Mount", FALSE, 13, 0);
+    dprint("# Weapon             Mount", FALSE, 14, 0);
     for (i = 0; i < d->num_weapons; ++i) {
 	(void) sprintf(temp, "%1d %-18s %s", i + 1,
 		       weapon_stat[(int) d->weapon[i]].type,
@@ -800,6 +881,21 @@ display_vdesc(d, status)
 	for (i = d->num_weapons; i < od.num_weapons; i++)
 	    dprintn("", i + 14, 0);
 
+/*
+ * print some valuable armor info - WNW
+ */
+    wgt_left = (int) (body_stat[d->body].weight_limit - d->weight) /
+		(armor_stat[d->armor.type].weight * body_stat[d->body].size);
+    if (armor_stat[d->armor.type].space) {
+		spc_left = (int) (body_stat[d->body].space - d->space) /
+			(armor_stat[d->armor.type].space * body_stat[d->body].size);
+	} else {
+		spc_left = wgt_left;
+	}
+    armor_units_left = MIN(wgt_left, spc_left);
+    (void) sprintf(temp, "Armor Units Left: %d", armor_units_left);
+    dprint(temp, TRUE, 12, 31);
+
     (void) sprintf(temp, "Armor: %s", armor_stat[d->armor.type].type);
     dprint(temp, (od.armor.type != d->armor.type), 13, 31);
     for (i = 0; i < MAX_SIDES; ++i) {
@@ -808,17 +904,17 @@ display_vdesc(d, status)
     }
 
     /* Draw a picture of the body inside a box */
-    if (status == REDISPLAY && od.body != d->body)
 	draw_filled_rect(ANIM_WIN, VEH_X - VEHICLE_SIZE / 2,
 			 VEH_Y - VEHICLE_SIZE / 2,
 			 VEHICLE_SIZE, VEHICLE_SIZE, DRAW_COPY, BLACK);
-    if (status == ON || od.body != d->body) {
+
 	pic = &vehicle_obj[d->body]->pic[12];
 	draw_picture(ANIM_WIN, VEH_X, VEH_Y, pic, DRAW_COPY, WHITE);
+
 	/* pretty rectangle around it */
 	draw_rect(ANIM_WIN, VEH_X - VEHICLE_SIZE / 2, VEH_Y - VEHICLE_SIZE / 2,
 		  VEHICLE_SIZE, VEHICLE_SIZE, DRAW_COPY, WHITE);
-    }
+
     /* Remember the vehicle description for next time */
     od = *d;
     oproblems = problems;
@@ -830,29 +926,83 @@ display_vdesc(d, status)
 init_vdesign()
 {
     int i;
+    char *temp;
+    char dummy[80];
+    char *strdup();
 
-    for (i = 0; i < VMAX_WEAPONS; i++)
-	weapon_entries[i] = weapon_stat[i].type;
+    temp = (char *) malloc(sizeof(dummy));
+
+    for (i = 0; i < VMAX_WEAPONS; i++) {
+	(void) sprintf(temp, "%-18s %3d %4d %4d %2d %3d %4d %4d %2d %3d %5d",
+		weapon_stat[i].type,
+		weapon_stat[i].damage,
+		weapon_stat[i].range,
+		weapon_stat[i].max_ammo,
+		weapon_stat[i].reload_time,
+		weapon_stat[i].ammo_speed,
+		weapon_stat[i].weight,
+		weapon_stat[i].space,
+		weapon_stat[i].heat,
+		weapon_stat[i].ammo_cost,
+		weapon_stat[i].cost );
+	weapon_entries[i] = strdup(temp);
+    }
     weapon_entries[VMAX_WEAPONS - 1] = "Remove weapon";
 
-    for (i = 0; i < MAX_ARMORS; i++)
-	armor_entries[i] = armor_stat[i].type;
+    for (i = 0; i < MAX_ARMORS; i++) {
+	(void) sprintf(temp, "%-14s  %7d %6d %5d %4d",
+		armor_stat[i].type,
+		armor_stat[i].defense, armor_stat[i].weight,
+		armor_stat[i].space, armor_stat[i].cost );
+	armor_entries[i] = strdup(temp);
+    }
 
-    for (i = 0; i < MAX_ENGINES; i++)
-	engine_entries[i] = engine_stat[i].type;
+    for (i = 0; i < MAX_ENGINES; i++) {
+	(void) sprintf(temp, "%-18s  %5d %6d %5d %5d %7d %6d",
+		engine_stat[i].type,
+		engine_stat[i].power, engine_stat[i].weight,
+		engine_stat[i].space, engine_stat[i].fuel_cost,
+		engine_stat[i].fuel_limit, engine_stat[i].cost );
+	engine_entries[i] = strdup(temp);
+    }
 
-    for (i = 0; i < MAX_SUSPENSIONS; i++)
-	suspension_entries[i] = suspension_stat[i].type;
+    for (i = 0; i < MAX_SUSPENSIONS; i++) {
+	(void) sprintf(temp, "%-8s  %2d %5d",
+		suspension_stat[i].type,
+		suspension_stat[i].handling_adj,
+		suspension_stat[i].cost );
+	suspension_entries[i] = strdup(temp);
+    }
 
-    for (i = 0; i < MAX_TREADS; i++)
-	tread_entries[i] = tread_stat[i].type;
+    for (i = 0; i < MAX_TREADS; i++) {
+	(void) sprintf(temp, "%-10s  %4.2f %5d",
+		tread_stat[i].type,
+		tread_stat[i].friction,
+		tread_stat[i].cost );
+	tread_entries[i] = strdup(temp);
+    }
 
-    for (i = 0; i < MAX_BUMPERS; i++)
-	bumper_entries[i] = bumper_stat[i].type;
+    for (i = 0; i < MAX_BUMPERS; i++) {
+	(void) sprintf(temp, "%-10s  %4.2f %5d",
+		bumper_stat[i].type,
+		bumper_stat[i].elasticity,
+		bumper_stat[i].cost );
+	bumper_entries[i] = strdup(temp);
+    }
 
-    for (i = 0; i < MAX_BODIES; i++)
-	body_entries[i] = body_stat[i].type;
+    for (i = 0; i < MAX_BODIES; i++) {
+	(void) sprintf(temp, "%-10s  %6d %7d %6d %4.2f %4d %4d %6d",
+		body_stat[i].type,
+		body_stat[i].weight, body_stat[i].weight_limit,
+		body_stat[i].space, body_stat[i].drag,
+		body_stat[i].handling_base, body_stat[i].turrets,
+		body_stat[i].cost );
+	body_entries[i] = strdup(temp);
+    }
 
-    for (i = 0; i < MAX_SPECIALS; i++)
-	special_entries[i] = special_stat[i].type;
+    for (i = 0; i < MAX_SPECIALS; i++) {
+	(void) sprintf(temp, "%-12s  %5d",
+		special_stat[i].type, special_stat[i].cost );
+	special_entries[i] = strdup(temp);
+    }
 }

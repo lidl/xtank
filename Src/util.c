@@ -8,9 +8,12 @@
 
 /*
 $Author: lidl $
-$Id: util.c,v 2.7 1991/12/10 03:41:44 lidl Exp $
+$Id: util.c,v 2.8 1992/03/31 21:45:50 lidl Exp $
 
 $Log: util.c,v $
+ * Revision 2.8  1992/03/31  21:45:50  lidl
+ * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
+ *
  * Revision 2.7  1991/12/10  03:41:44  lidl
  * changed float to FLOAT, for portability reasons
  *
@@ -205,3 +208,19 @@ free_everything()
 	/* Close the graphics system */
 	close_graphics();
 }
+
+/*
+ * Adapted from "Graphics Gems"
+ * gives approximate distance from loc1 to loc2
+ * with only overestimations, and then never by more
+ * than (9/8) + one bit uncertainty.
+ */
+
+long idist(x1, y1, x2, y2)
+long x1, y1, x2, y2;
+{
+    if ((x2 -= x1) < 0) x2 = -x2;
+    if ((y2 -= y1) < 0) y2 = -y2;
+    return (x2 + y2 - (((x2 > y2) ? y2 : x2) >> 1) );
+}
+

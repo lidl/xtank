@@ -8,9 +8,21 @@
 
 /*
 $Author: lidl $
-$Id: objects.c,v 2.6 1991/12/02 07:24:37 lidl Exp $
+$Id: objects.c,v 2.10 1992/08/22 23:56:54 lidl Exp $
 
 $Log: objects.c,v $
+ * Revision 2.10  1992/08/22  23:56:54  lidl
+ * missed some things for the new body types
+ *
+ * Revision 2.9  1992/08/19  05:25:29  lidl
+ * added two new tank bodies, disk, delta
+ *
+ * Revision 2.8  1992/08/18  05:41:55  lidl
+ * added tac nuke patches
+ *
+ * Revision 2.7  1992/04/09  04:14:48  lidl
+ * changed limits.h to tanklimits.h
+ *
  * Revision 2.6  1991/12/02  07:24:37  lidl
  * added stuff for the new panzy body type
  *
@@ -37,7 +49,7 @@ $Log: objects.c,v $
  * 
 */
 
-#include "limits.h"
+#include "tanklimits.h"
 #include "malloc.h"
 #include "xtank.h"
 #include "graphics.h"
@@ -55,6 +67,8 @@ $Log: objects.c,v $
 #include "Objects/malice.obj"
 #include "Objects/trike.obj"
 #include "Objects/panzy.obj"
+#include "Objects/disk.obj"
+#include "Objects/delta.obj"
 
 #include "Objects/turret_sm.obj"
 
@@ -69,6 +83,10 @@ $Log: objects.c,v $
 #include "Objects/electric.obj"
 #include "Objects/bullets.obj"
 
+#ifdef NO_GAME_BALANCE
+#include "Objects/nuke.obj"
+#endif
+
 #include "Objects/anm_lmarks.obj"
 #include "Objects/map_lmarks.obj"
 #include "Objects/des_lmarks.obj"
@@ -76,7 +94,6 @@ $Log: objects.c,v $
 #include "Objects/xtank.obj"
 #include "Objects/team.obj"
 #include "Objects/terp.obj"
-
 
 int num_vehicle_objs;
 Object *vehicle_obj[MAX_VEHICLE_OBJS];
@@ -138,6 +155,8 @@ make_objects()
     vehicle_obj[num++] = make_object(&malice_obj, malice_bitmap);
     vehicle_obj[num++] = make_object(&trike_obj, trike_bitmap);
     vehicle_obj[num++] = make_object(&panzy_obj, panzy_bitmap);
+    vehicle_obj[num++] = make_object(&disk_obj, disk_bitmap);
+    vehicle_obj[num++] = make_object(&delta_obj, delta_bitmap);
     num_vehicle_objs = num;
 
 
@@ -157,6 +176,9 @@ make_objects()
     exp_obj[num_exp_objs++] = make_object(&exhaust_obj, exhaust_bitmap);
     /*GHS*/
     exp_obj[num_exp_objs++] = make_object(&electric_obj, electric_bitmap);
+#ifdef NO_GAME_BALANCE
+    exp_obj[num_exp_objs++] = make_object(&nuke_obj, nuke_bitmap);
+#endif
 
     /* Make the bullet object */
     bullet_obj = make_object(&all_bullets_obj, all_bullets_bitmap);
@@ -251,6 +273,8 @@ rotate_objects()
 	rotate_object(&malice_obj, malice_bitmap);
 	rotate_object(&trike_obj, trike_bitmap);
 	rotate_object(&panzy_obj, panzy_bitmap);
+	rotate_object(&disk_obj, disk_bitmap);
+	rotate_object(&delta_obj, delta_bitmap);
 }
 
 /*

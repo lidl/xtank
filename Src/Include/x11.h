@@ -8,9 +8,15 @@
 
 /*
 $Author: lidl $
-$Id: x11.h,v 2.5 1992/01/29 08:39:11 lidl Exp $
+$Id: x11.h,v 2.7 1992/03/31 21:49:23 lidl Exp $
 
 $Log: x11.h,v $
+ * Revision 2.7  1992/03/31  21:49:23  lidl
+ * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
+ *
+ * Revision 2.6  1992/03/31  04:05:52  lidl
+ * pre-aaron patches, post 1.3d release (ie mailing list patches)
+ *
  * Revision 2.5  1992/01/29  08:39:11  lidl
  * post aaron patches, seems to mostly work now
  *
@@ -53,6 +59,8 @@ struct _XrmHashBucketRec {int x;}; struct XKeytrans {int x;};
 #define DRAW_XOR	0
 #define DRAW_COPY	1
 #define MAX_DRAW_FUNCS	2
+
+extern Boolean un_stingy;
 
 /*********************
 ** Window functions **
@@ -279,6 +287,7 @@ struct Kludge_Defaults {
 	char player_name[MAX_STRING+1];
 	char tank_name[MAX_STRING+1];
 	int wants_keypad;
+	int mouse_speed;
 };
 
 typedef struct
@@ -303,7 +312,17 @@ typedef struct
     unsigned int beep_flag:1;
     unsigned int display_names_flag:1;
     struct Kludge_Defaults kludge;
+    int dest_wall;
+    int rdf_green;
 } Video;
+
+/*
+ * Pseudo colors, depends on set_video being
+ * called to set vid                 --ane
+ */
+
+#define DEST_WALL vid->dest_wall
+#define RDF_SAFE vid->rdf_green
 
 extern Video *vid;
 #endif

@@ -7,10 +7,13 @@
 */
 
 /*
-$Author: rpotter $
-$Id: repair.c,v 2.3 1991/02/10 13:51:33 rpotter Exp $
+$Author: lidl $
+$Id: repair.c,v 2.4 1992/05/15 04:00:22 lidl Exp $
 
 $Log: repair.c,v $
+ * Revision 2.4  1992/05/15  04:00:22  lidl
+ * Fix from Chris more, to make repair work correctly
+ *
  * Revision 2.3  1991/02/10  13:51:33  rpotter
  * bug fixes, display tweaks, non-restart fixes, header reorg.
  *
@@ -41,7 +44,7 @@ extern int frame;
 #define FUEL_SWAP 1
 
 /*ARGSUSED*/
-special_repair(v, record, action)
+SpecialStatus special_repair(v, record, action)
 Vehicle *v;
 char *record;
 unsigned int action;
@@ -49,14 +52,11 @@ unsigned int action;
 	int *side, *max_side;
 	int i;
 
-	if (settings.si.no_wear)
-		return;
-	if (v->vector.speed != 0.0)
-		return;
+	if ( action != SP_update || settings.si.no_wear
+		|| v->vector.speed != 0.0 || (frame % 12 != 0) )
+		return SP_on;
 
 	/* Add one armor point to all sides every 12 frames */
-	if (frame % 12 != 0)
-		return;
 
 	side = v->armor.side;
 	max_side = v->vdesc->armor.side;

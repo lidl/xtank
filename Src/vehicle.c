@@ -4,9 +4,27 @@
 **
 */
 
-/* $Id: vehicle.c,v 2.9 1992/02/08 08:28:23 aahz Exp $ */
+/* $Id: vehicle.c,v 2.15 1992/08/19 04:57:57 lidl Exp $ */
 /*
    $Log: vehicle.c,v $
+ * Revision 2.15  1992/08/19  04:57:57  lidl
+ * minor fix for hpux systems
+ *
+ * Revision 2.14  1992/08/18  05:41:19  lidl
+ * killer gleams when the victim dies
+ *
+ * Revision 2.13  1992/04/18  15:35:45  lidl
+ * minor fix for sequents
+ *
+ * Revision 2.12  1992/04/09  04:11:19  lidl
+ * corrected a small botch in the declaration of specials
+ *
+ * Revision 2.11  1992/03/31  21:45:50  lidl
+ * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
+ *
+ * Revision 2.10  1992/03/31  04:04:16  lidl
+ * pre-aaron patches, post 1.3d release (ie mailing list patches)
+ *
  * Revision 2.9  1992/02/08  08:28:23  aahz
  * the point penalty is now .7 times the points an opponent would get.
  *
@@ -76,20 +94,19 @@ void make_specials(v, which)
     Flag which;
 {
     extern int special_console(), special_mapper(), special_radar(),
-#ifndef NO_NEW_RADAR
 	special_new_radar(), special_taclink(),
-#endif /* !NO_NEW_RADAR */
+#ifndef NO_CAMO
+	special_camo(), special_stealth(), special_rdf(),
+#endif /* !NO_CAMO */
+#ifndef NO_HUD
+	special_hud(),
+#endif /* !NO_HUD */
         special_dummy(), special_repair();
     Special *s;
     int i;
 
     for (i = 0; i < MAX_SPECIALS; i++) {
 	s = &v->special[i];
-
-#ifndef NO_NEW_RADAR
-        s->record = NULL; /* So we can tell if it is initialized */
-        s->shared = FALSE; /* not sharing space */
-#endif /* !NO_NEW_RADAR */
 
 	/* make sure vehicle should have this special */
 	if (! tstflag(which, (1 << i))) {
@@ -110,20 +127,34 @@ void make_specials(v, which)
 		s->proc = special_radar;
 		s->record = calloc((unsigned) 1, sizeof(Radar));
 		break;
-#ifndef NO_NEW_RADAR
 	    case NEW_RADAR:
 		s->proc = special_new_radar;
 		s->record = calloc((unsigned) 1, sizeof(newRadar));
 		break;
 	    case TACLINK:
 		s->proc = special_taclink;
-                if ( (v->special[(int) NEW_RADAR]).record == NULL)
-		   s->record = calloc((unsigned) 1, sizeof(newRadar));
-                else
-                   s->record = (v->special[(int) NEW_RADAR]).record;
-                   s->shared = TRUE;
+		s->record = calloc((unsigned) 1, sizeof(Taclink));
 		break;
-#endif /* !NO_NEW_RADAR */
+#ifndef NO_CAMO
+            case CAMO:
+                s->proc = special_camo;
+                s->record = calloc((unsigned) 1, sizeof(Camo));
+                break;
+            case STEALTH:
+                s->proc = special_stealth;
+                s->record = calloc((unsigned) 1, sizeof(Stealth));
+                break;
+            case RDF:
+                s->proc = special_rdf;
+                s->record = calloc((unsigned) 1, sizeof(Rdf));
+                break;
+#endif /* !NO_CAMO */
+#ifndef NO_HUD
+            case HUD:
+                s->proc = special_hud;
+                s->record = calloc((unsigned) 1, sizeof(Hud));
+                break;
+#endif /* !NO_HUD */
 	    case REPAIR:
 		s->proc = special_repair;
 		s->record = calloc((unsigned) 1, 1);
@@ -150,9 +181,6 @@ void unmake_specials(v)
 	if (s->status == SP_nonexistent)
 	    continue;
 
-#ifndef NO_NEW_RADAR
-        if (!s->shared)
-#endif /* !NO_NEW_RADAR */
 	free((char *) s->record);
     }
 }
@@ -214,6 +242,10 @@ Vehicle *make_vehicle(d, c)
     /* Vehicles controlled soley by robots don't want to teleport by default */
     v->teleport = (c->num_players == 0) ? FALSE : TRUE;
     
+    v->mouse_speed = c->mouse_speed;
+
+    v->just_ported = FALSE;
+
     return v;
 }
 
@@ -262,7 +294,6 @@ int activate_vehicle(v)
     v->heat = 0;
     v->num_discs = 0;
 
-#ifndef NO_NEW_RADAR
 /*
  * Start with an approximation of the radar surface 
  *  v->rcs = (float) pow((double) v->vdesc->weight, 2.0/3.0) * 3.0;
@@ -270,7 +301,17 @@ int activate_vehicle(v)
  * too complex, and gives unesthetic answers... how bout...
  */
 
-    v->rcs = (float) cbrt((double) v->vdesc->weight);
+/* 
+ * Try this if you don't have cbrt in your library...
+ */
+#if defined(sequent) || defined(__hpux)
+# define cbrt(n) pow(n, 1.0/3.0)
+#endif
+
+    v->normal_rcs = (float) cbrt((double) v->vdesc->weight);
+    v->stealthy_rcs = 2.0;
+
+    v->rcs = v->normal_rcs;
 /*
  *   printf("rcs: %f weight: %d\n", v->rcs, v->vdesc->weight);
  */
@@ -291,13 +332,26 @@ int activate_vehicle(v)
 	for (i = 0; i < MAX_VEHICLES; i++)
 	   v->have_IFF_key[i] = v->offered_IFF_key[i] = FALSE;
 
-#endif /* NO_NEW_RADAR */
+#ifndef NO_CAMO
+    /*
+     * Make the time-to-camo a function of vehicle size.
+     */
+
+    v->time_to_camo = (v->vdesc->weight / 256) + 32;
+
+    v->camod = v->old_camod = FALSE;
+
+	for (i = 0; i < MAX_VEHICLES; i++)
+	    v->illum[i].color = -1;
+
+#endif /* !NO_CAMO */
 
     for (i = 0; i < v->num_weapons; i++) {
 	w = &v->weapon[i];
 	w->status = (WS_on | WS_func);
 	w->ammo = weapon_stat[(int) w->type].max_ammo;
 	w->reload_counter = 0;
+	w->refill_counter = weapon_stat[(int) w->type].refill_time;
     }
 
     /* Set up each player's terminal */
@@ -331,14 +385,12 @@ void inactivate_vehicle(victim)
 {
     int i;
 
-#ifndef NO_NEW_RADAR
 /*
  * Sortof a pending project...
  */
 
     if (tstflag(victim->status, VS_is_alive))
        zap_specials(victim);
-#endif /* !NO_NEW_RADAR */
 
     clrflag(victim->status, VS_is_alive);
 
@@ -486,6 +538,13 @@ kill_vehicle(victim, killer)
     }
 
     explode_vehicle(victim);
+
+    /* killer 'gleams' at kill */
+    if (killer==NULL) {
+        explode_location(victim->loc, 1, EXP_GLEAM);
+    } else {
+        explode_location(killer->loc, 1, EXP_GLEAM);
+    }
 
     /* Release at fast speed any discs the victim owned */
     release_discs(victim, DISC_FAST_SPEED, TRUE);

@@ -21,9 +21,6 @@ int explode P_((Bullet *b, int damage));
 int do_special P_((Vehicle *v, SpecialType special_num, unsigned int action));
 int move_view P_((int dx, int dy));
 int switch_view P_((int num));
-int release_discs P_((Vehicle *v, double dspeed, Boolean delay));
-int set_disc_orbit P_((Vehicle *v, Spin dir));
-int set_disc_owner P_((Bullet *b, Vehicle *v));
 int display_pause_message P_((void));
 int pause_game P_((Boolean state));
 int set_game_speed P_((int spd));
@@ -59,6 +56,18 @@ int display_bar P_((int w, int x, int y, int width, int height, int val, int *la
 
 /* cosell.c */
 int comment P_((int op, int dat, Vehicle *vh1, Vehicle *vh2));
+
+/* disc.c */
+void disc_init_history P_((void));
+void disc_new_owner P_((Bullet *b, Vehicle *vh1));
+Vehicle *disc_cur_owner P_((Bullet *b));
+Vehicle *disc_last_owner P_((Bullet *b));
+Vehicle *disc_old_owner P_((Bullet *b));
+int get_disc_team P_((Bullet *b));
+void set_disc_team P_((Bullet *b, int teamnum));
+int set_disc_owner P_((Bullet *b, Vehicle *v));
+int release_discs P_((Vehicle *v, double dspeed, Boolean delay));
+int set_disc_orbit P_((Vehicle *v, Spin dir));
 
 /* display.c */
 int display_terminal P_((unsigned int status, int lastterm));
@@ -139,7 +148,7 @@ Boolean get_closest_enemy P_((Vehicle_info *enemy));
 
 /* hit.c */
 Side find_affected_side P_((Vehicle *v, double angle));
-int vehicle_hit_vehicle P_((Vehicle *v1, Vehicle *v2));
+int vehicle_hit_vehicle P_((Vehicle *v1, Vehicle *v2, int width, int height, int shx, int shy));
 int vehicle_hit_wall P_((Vehicle *v, int grid_x, int grid_y, WallSide dir));
 int bounce_damage P_((double xspeed, double yspeed, double elast));
 int bul_hit_vehicle P_((Vehicle *v, Bullet *b, int dx, int dy));
@@ -441,6 +450,18 @@ int run_program P_((Program *prog));
 int check_time P_((void));
 int stop_program P_((void));
 int make_programs P_((Vehicle *v, int num_progs, int prog_num[]));
+
+#ifndef NO_CAMO
+/* camo.c */
+int special_camo P_((Vehicle *v, char *record, unsigned int action));
+int special_stealth P_((Vehicle *v, char *record, unsigned int action));
+int special_rdf P_((Vehicle *v, char *record, unsigned int action));
+#endif /* !NO_CAMO */
+
+#ifndef NO_HUD
+/* hud.c */
+int special_hud P_((Vehicle *v, char *record, unsigned int action));
+#endif /* !NO_HUD */
 
 /* radar.c */
 int special_radar P_((Vehicle *v, char *record, unsigned int action));

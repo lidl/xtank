@@ -1,8 +1,11 @@
 /*
 $Author: lidl $
-$Id: XMultiSync.c,v 2.5 1991/09/24 14:06:33 lidl Exp $
+$Id: XMultiSync.c,v 2.6 1992/03/31 04:04:16 lidl Exp $
 
 $Log: XMultiSync.c,v $
+ * Revision 2.6  1992/03/31  04:04:16  lidl
+ * pre-aaron patches, post 1.3d release (ie mailing list patches)
+ *
  * Revision 2.5  1991/09/24  14:06:33  lidl
  * Made to work with X11R5, also, Xlibint.h is not longer distributed here
  *
@@ -28,7 +31,7 @@ $Log: XMultiSync.c,v $
 */
 
 #ifdef MULTI_SYNC
-#include "malloc.h"
+/* #include "malloc.h" */
 
 #define NEED_REPLIES
 #define NEED_EVENTS

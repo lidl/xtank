@@ -8,9 +8,12 @@
 
 /*
 $Author: lidl $
-$Id: graphics.h,v 2.5 1991/09/19 05:30:16 lidl Exp $
+$Id: graphics.h,v 2.6 1992/03/31 21:49:23 lidl Exp $
 
 $Log: graphics.h,v $
+ * Revision 2.6  1992/03/31  21:49:23  lidl
+ * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
+ *
  * Revision 2.5  1991/09/19  05:30:16  lidl
  * added KEYPAD_DETECT ifdef
  *
@@ -80,7 +83,8 @@ typedef struct {
 #define VIOLET     7
 #define GREY       8	/* grey71 */
 #define CUR_COLOR  9
-#define MAX_COLORS 10
+#define DASHED     10
+#define MAX_COLORS 11
 
 #define CROSS_CURSOR 0
 #define PLUS_CURSOR  1

@@ -2,9 +2,15 @@
 
 /*
 $Author: lidl $
-$Id: bullet.h,v 2.4 1992/01/29 08:39:11 lidl Exp $
+$Id: bullet.h,v 2.6 1992/08/31 01:50:45 lidl Exp $
 
 $Log: bullet.h,v $
+ * Revision 2.6  1992/08/31  01:50:45  lidl
+ * changed to use tanktypes.h, instead of types.h
+ *
+ * Revision 2.5  1992/03/31  21:49:23  lidl
+ * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
+ *
  * Revision 2.4  1992/01/29  08:39:11  lidl
  * post aaron patches, seems to mostly work now
  *
@@ -30,7 +36,7 @@ $Log: bullet.h,v $
 
 #include "object.h"
 #include "vehicle.h"
-#include "types.h"
+#include "tanktypes.h"
 
 typedef struct {
     Vehicle *owner;		/* pointer to vehicle that shot bullet */
@@ -44,10 +50,8 @@ typedef struct {
     WeaponType type;
     int   life;			/* number of frames left before bullet dies */
     Boolean hurt_owner;	/* whether bullet can hurt owner or not */
-#ifndef NO_NEW_RADAR
     lCoord target;		/* last target update for a smart weapon */
     int state;                  /* what a smart bullet is up to */
-#endif /* !NO_NEW_RADAR */
 } Bullet;
 
 typedef struct {

@@ -8,9 +8,23 @@
 
 /*
 $Author: lidl $
-$Id: display.c,v 2.12 1992/01/29 08:37:01 lidl Exp $
+$Id: display.c,v 2.16 1992/06/07 02:45:08 lidl Exp $
 
 $Log: display.c,v $
+ * Revision 2.16  1992/06/07  02:45:08  lidl
+ * Post Adam Bryant patches and a manual merge of the rejects (ugh!)
+ *
+ * Revision 2.15  1992/04/22  19:25:35  lidl
+ * small patch to make oil slicks and mines show up, even when point
+ * bullets are turned on.
+ * Submitted by rgg@yarra-glen.aaii.oz.au (Rupert G. Goldie)
+ *
+ * Revision 2.14  1992/03/31  21:45:50  lidl
+ * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
+ *
+ * Revision 2.13  1992/03/31  04:04:16  lidl
+ * pre-aaron patches, post 1.3d release (ie mailing list patches)
+ *
  * Revision 2.12  1992/01/29  08:37:01  lidl
  * post aaron patches, seems to mostly work now
  *
@@ -191,26 +205,33 @@ unsigned int status;
     Picture *pic;
 
     /* Erase the old vehicle picture */
-    if (status != ON) {
+#ifdef NO_CAMO
+    if (status != ON)
+#else /* NO_CAMO */
+    if (status != ON && !v->old_camod) 
+#endif /* NO_CAMO */
+     {
 	old_loc = v->old_loc;
 	pic = &v->obj->pic[v->vector.old_rot];
-#ifdef STINGY_REDRAW
 	loc = v->loc;
-	if ( (status != REDISPLAY) ||
+	if ( status != REDISPLAY || un_stingy ||
 		(old_loc->screen_x[term->num] != loc->screen_x[term->num]) ||
+#ifndef NO_CAMO
+                (!v->old_camod && v->camod) ||
+#endif /* !NO_CAMO */
 		(old_loc->screen_y[term->num] != loc->screen_y[term->num]) ||
 		(v->vector.old_rot != v->vector.rot) )
-#endif /* STINGY_REDRAW */
 	draw_picture(ANIM_WIN, old_loc->screen_x[term->num],
 		     old_loc->screen_y[term->num], pic, DRAW_XOR, v->color);
 
 	/* Erase the string showing name and team */
 	if (!settings.si.no_nametags)
-#ifdef STINGY_REDRAW
-	if ( (status != REDISPLAY) ||
+	if ( status != REDISPLAY || un_stingy ||
 		(old_loc->screen_x[term->num] != loc->screen_x[term->num]) ||
+#ifndef NO_CAMO
+                (!v->old_camod && v->camod) ||
+#endif  /* !NO_CAMO */
 		(old_loc->screen_y[term->num] != loc->screen_y[term->num]) )
-#endif
 	if (should_disp_name())
 	    draw_text(ANIM_WIN,
 		      old_loc->screen_x[term->num],
@@ -219,26 +240,33 @@ unsigned int status;
     }
 
     /* Draw the new vehicle picture */
-    if (status != OFF) {
+#ifdef NO_CAMO
+    if (status != OFF)
+#else /* NO_CAMO */
+    if (status != OFF && !v->camod)
+#endif /* NO_CAMO */
+     {
 	loc = v->loc;
 	pic = &v->obj->pic[v->vector.rot];
-#ifdef STINGY_REDRAW
 	old_loc = v->old_loc;
-	if ( (status != REDISPLAY) ||
+	if ( status != REDISPLAY || un_stingy ||
 		(old_loc->screen_x[term->num] != loc->screen_x[term->num]) ||
+#ifndef NO_CAMO
+                (v->old_camod && !v->camod) ||
+#endif  /* !NO_CAMO */
 		(old_loc->screen_y[term->num] != loc->screen_y[term->num]) ||
 		(v->vector.old_rot != v->vector.rot) )
-#endif /* STINGY_REDRAW */
 	draw_picture(ANIM_WIN, loc->screen_x[term->num],
 		     loc->screen_y[term->num], pic, DRAW_XOR, v->color);
 
 	/* Display a string showing name and team */
 	if (!settings.si.no_nametags)
-#ifdef STINGY_REDRAW
-	if ( (status != REDISPLAY) ||
+	if ( status != REDISPLAY || un_stingy ||
 		(old_loc->screen_x[term->num] != loc->screen_x[term->num]) ||
+#ifndef NO_CAMO
+                (v->old_camod && !v->camod) ||
+#endif  /* !NO_CAMO */
 		(old_loc->screen_y[term->num] != loc->screen_y[term->num]) )
-#endif /* STINGY_REDRAW */
 
 	if (should_disp_name()) {
 	    draw_text(ANIM_WIN,
@@ -264,34 +292,35 @@ unsigned int status;
 	Coord *tcoord, *old_tcoord;
 	Turret *t;
 	int i;
-#ifdef STINGY_REDRAW
 	int mov_rot;
-#endif /* STINGY_REDRAW */
 
 	loc = v->loc;
 	old_loc = v->old_loc;
-#ifdef STINGY_REDRAW
-	mov_rot = ( (old_loc->screen_x[term->num] != loc->screen_x[term->num]) ||
+	mov_rot = ( old_loc->screen_x[term->num] != loc->screen_x[term->num] || un_stingy ||
 		(old_loc->screen_y[term->num] != loc->screen_y[term->num]) ||
 		(v->vector.old_rot != v->vector.rot) );
-#endif /* STINGY_REDRAW */
 	for (i = 0; i < v->num_turrets; i++)
 	{
 		t = &v->turret[i];
 		obj = t->obj;
 
 		/* erase the old turret */
-		if (status != ON)
-		{
+#ifdef NO_CAMO
+    if (status != ON)
+#else /* NO_CAMO */
+    if ((status != ON) && !v->old_camod)
+#endif /* NO_CAMO */
+    {
 			old_tcoord = &v->obj->picinfo[v->vector.old_rot].turret_coord[i];
 			pic = &obj->pic[t->old_rot];
-#ifdef STINGY_REDRAW
 			if ( (status != REDISPLAY) || mov_rot ||
+#ifndef NO_CAMO
+                (!v->old_camod && v->camod) ||
+#endif  /* !NO_CAMO */
 #ifdef NEW_TURRETS
 				(t->old_end.x != t->end.x) || (t->old_end.y != t->end.y) ||
-#endif
+#endif /* NEW_TURRETS */
 				(t->old_rot != t->rot) )
-#endif /* STINGY_REDRAW */
 #ifndef TEST_TURRETS
 			draw_picture(ANIM_WIN, old_loc->screen_x[term->num] + old_tcoord->x,
 						 old_loc->screen_y[term->num] + old_tcoord->y,
@@ -305,17 +334,22 @@ unsigned int status;
 #endif /* TEST_TURRETS */
 		}
 		/* draw the new turret */
-		if (status != OFF)
-		{
+#ifdef NO_CAMO
+    if (status != OFF)
+#else /* NO_CAMO */
+    if ((status != OFF) && !v->camod)
+#endif /* NO_CAMO */
+    {
 			tcoord = &v->obj->picinfo[v->vector.rot].turret_coord[i];
 			pic = &obj->pic[t->rot];
-#ifdef STINGY_REDRAW
 			if ( (status != REDISPLAY) || mov_rot ||
+#ifndef NO_CAMO
+                (v->old_camod && !v->camod) ||
+#endif /* !NO_CAMO */
 #ifdef NEW_TURRETS
 				(t->old_end.x != t->end.x) || (t->old_end.y != t->end.y) ||
-#endif
+#endif /* NEW_TURRETS */
 				(t->old_rot != t->rot) )
-#endif /* STINGY_REDRAW */
 #ifndef TEST_TURRETS
 			draw_picture(ANIM_WIN, loc->screen_x[term->num] + tcoord->x,
 						 loc->screen_y[term->num] + tcoord->y,
@@ -339,30 +373,54 @@ display_bullets(status, lastterm)
 unsigned int status;
 int lastterm;
 {
+    extern char team_char[];
     extern Bset *bset;
     Bullet *b;
     Picture *pic;
-    int i;
-    int bullet_color;
+    int i, bullet_color, obullet_color;
+    char buf[2], obuf[2];
 
+    /* blank the buffers */
+    buf[1] = obuf[1] = '\0';
     for (i = 0; i < bset->number; i++)
     {
 	b = bset->list[i];
         pic = &bullet_obj->pic[(int)b->type];
 
+	/* the old bullet color */
 	if (b->type == DISC && b->thrower != -1)
 	{
-	    bullet_color = b->thrower;
+	    if (b->thrower == -2) {
+		obullet_color = WHITE;
+		obuf[0] = '\0';
+	    } else {
+	    	obullet_color = b->thrower;
+		obuf[0] = team_char[obullet_color - 1];
+	    }
 	    if (lastterm)
 		b->thrower = -1;
 	}
 	else if (b->owner != NULL)
 	{
+	    obullet_color = b->owner->color;
+	    obuf[0] = team_char[b->owner->team];
+	}
+	else
+	{
+	    obullet_color = WHITE;
+	    obuf[0] = '\0';
+	}
+
+	/* the new bullet color */
+	if (b->owner != NULL)
+	{
 	    bullet_color = b->owner->color;
+	    buf[0] = team_char[b->owner->team];
 	}
 	else
 	{
 	    bullet_color = WHITE;
+	    buf[0] = '\0';
 	}
 
 	/* Erase the old picture of the bullet */
@@ -371,28 +429,28 @@ int lastterm;
             if (b->life < weapon_stat[(int)b->type].frames - 1 &&
 		b->life != -2)
 	    {
-		if (settings.point_bullets == TRUE && b->type != DISC)
+		if (settings.point_bullets == TRUE && b->type != DISC
+			&& b->type != MINE && b->type != SLICK)
 		{
 		    draw_point(ANIM_WIN, b->old_loc->screen_x[term->num],
 			       b->old_loc->screen_y[term->num], DRAW_XOR,
-			       bullet_color);
+			       obullet_color);
 		}
 		else
 		{
 		    draw_picture(ANIM_WIN, b->old_loc->screen_x[term->num],
 				 b->old_loc->screen_y[term->num],
 				 pic, DRAW_XOR,
-				 bullet_color);
+				 obullet_color);
+		    if ((b->type == DISC) &&
+			(obuf[0] != '\0')) {
+			draw_text(ANIM_WIN,b->old_loc->screen_x[term->num],
+				  b->old_loc->screen_y[term->num] - 4,
+				  obuf,S_FONT,DRAW_XOR,obullet_color);
+		      
+		    }
 		}
 	    }
-	}
-	if (b->owner != NULL)
-	{
-	    bullet_color = b->owner->color;
-	}
-	else
-	{
-	    bullet_color = WHITE;
 	}
 
 	/* Draw the new picture of the bullet */
@@ -400,7 +458,8 @@ int lastterm;
 	{
             if (b->life > 0 && b->life < weapon_stat[(int)b->type].frames)
 	    {
-		if (settings.point_bullets == TRUE && b->type != DISC)
+		if (settings.point_bullets == TRUE && b->type != DISC
+			&& b->type != MINE && b->type != SLICK)
 		{
 		    draw_point(ANIM_WIN, b->loc->screen_x[term->num],
 			       b->loc->screen_y[term->num], DRAW_XOR,
@@ -412,6 +471,12 @@ int lastterm;
 				 b->loc->screen_y[term->num],
 				 pic, DRAW_XOR,
 				 bullet_color);
+		    if ((b->type == DISC) &&
+			(buf[0] != '\0')) {
+			draw_text(ANIM_WIN,b->loc->screen_x[term->num],
+				  b->loc->screen_y[term->num] - 4,
+				  buf,S_FONT,DRAW_XOR,bullet_color);
+		    }
 		}
 	    }
 	}
@@ -460,13 +525,13 @@ unsigned int status;
 #define draw_north_wall(b,x,y) \
   if(b->flags & NORTH_WALL) \
     draw_hor(ANIM_WIN,x,y,BOX_WIDTH,DRAW_XOR, \
-	     (b->flags & NORTH_DEST) ? GREY : WHITE)
+	     (b->flags & NORTH_DEST) ? DEST_WALL : WHITE)
 
 /* Draws a west wall */
 #define draw_west_wall(b,x,y) \
   if(b->flags & WEST_WALL) \
     draw_vert(ANIM_WIN,x,y,BOX_HEIGHT,DRAW_XOR, \
-	      (b->flags & WEST_DEST) ? GREY : WHITE)
+	      (b->flags & WEST_DEST) ? DEST_WALL : WHITE)
 
 /* Draws fuel, ammo, armor, and goal in center, outpost wherever it is */
 #define draw_type(b,line_x,line_y,fr) \
@@ -546,9 +611,7 @@ unsigned int status;
 		    if (old_box(&temp, ox, oy))
 			ob = &temp;
 
-#ifdef STINGY_REDRAW
-		if ( (sloc->x != old_sloc->x) || (sloc->y != old_sloc->y) ) {
-#endif /* STINGY_REDRAW */
+		if ( sloc->x != old_sloc->x || sloc->y != old_sloc->y || un_stingy) {
 
 		/* Redisplay walls */
 		if (j) {
@@ -559,44 +622,34 @@ unsigned int status;
 		    draw_west_wall(ob, old_line_x, old_line_y);
 		    draw_west_wall(b, line_x, line_y);
 		}
-#ifdef STINGY_REDRAW
 		} else {
-			if ((b->flags & NORTH_WALL) != (ob->flags & NORTH_WALL)) {
+			if ((b->flags & NORTH_WALL) != (ob->flags & NORTH_WALL) || un_stingy) {
 
 				if (j) {
 					draw_north_wall(ob, old_line_x, old_line_y);
 					draw_north_wall(b, line_x, line_y);
 				}
 			}
-			if ((b->flags & WEST_WALL) != (ob->flags & WEST_WALL)) {
+			if ((b->flags & WEST_WALL) != (ob->flags & WEST_WALL) || un_stingy) {
 				if (i) {
 					draw_west_wall(ob, old_line_x, old_line_y);
 					draw_west_wall(b, line_x, line_y);
 				}
 			}
 		}
-#endif
-#ifdef STINGY_REDRAW
-		if ( (sloc->x != old_sloc->x) || (sloc->y != old_sloc->y) || (ob->type == OUTPOST) ) {
-#endif /* STINGY_REDRAW */
+		if ( sloc->x != old_sloc->x || sloc->y != old_sloc->y || ob->type == OUTPOST || un_stingy) {
 
 
 		/* Redisplay type */
 		draw_type(ob, old_line_x, old_line_y, frame - 1);
 		draw_type(b, line_x, line_y, frame);
-#ifdef STINGY_REDRAW
 		}
-#endif
 		/* Redisplay team */
-#ifdef STINGY_REDRAW
-		if ( (sloc->x != old_sloc->x) || (sloc->y != old_sloc->y) || (b->team != ob->team) ) {
-#endif /* STINGY_REDRAW */
+		if ( sloc->x != old_sloc->x || sloc->y != old_sloc->y || b->team != ob->team || un_stingy) {
 
 		draw_team(ob, old_line_x, old_line_y);
 		draw_team(b, line_x, line_y);
-#ifdef STINGY_REDRAW
 		}
-#endif
 
 		line_y += BOX_HEIGHT;
 		old_line_y += BOX_HEIGHT;
@@ -672,10 +725,21 @@ display_map(status)
 	if (tstflag(v->status, VS_is_alive)) {
 	    do_special(v, MAPPER, action);
 	    do_special(v, RADAR, action);
-#ifndef NO_NEW_RADAR
-		do_special(v, NEW_RADAR, action);
-		do_special(v, TACLINK, action);
-#endif /* !NO_NEW_RADAR */
+	    do_special(v, NEW_RADAR, action);
+	    do_special(v, TACLINK, action);
+#ifndef NO_CAMO
+	    do_special(v, STEALTH, action);
+	    do_special(v, CAMO, action);
+	    do_special(v, RDF, action);
+#endif /* !NO_CAMO */
+#ifndef NO_HUD
+/*
+ * Bzzzt!  Wrong place for this, the HUD is in the animation
+ * window.  Well, it looks good here, dontcha think?
+ */
+	    do_special(v, HUD, action);
+#endif /* !NO_HUD */
+
 	} else {
 	    if (v->death_timer == DEATH_DELAY - 1) {
 		do_special(v, RADAR, SP_erase);
@@ -775,16 +839,16 @@ unsigned int status;
 #ifdef S1024x864
 #define VEH_X 1
 #define VEH_Y 0
-#define VEHICLE_H 53
+#define VEHICLE_H 46
 #define VEHICLE_W 60
 
 #define BULLET_X  180
 #define BULLET_Y  0
-#define BULLET_H  31
+#define BULLET_H  26
 
 #define LAND_X    440
 #define LAND_Y    0
-#define LAND_H    32
+#define LAND_H    27
 #define LAND_W    85
 
 #define EXP_X     160
@@ -959,6 +1023,13 @@ init_box_names()
     box_type_name[PEACE]     = "peace";
     box_type_name[TELEPORT]  = "teleport";
     box_type_name[SCROLL_N]  = "scroll";
+    box_type_name[SCROLL_NE] = "scroll";
+    box_type_name[SCROLL_E]  = "scroll";
+    box_type_name[SCROLL_SE] = "scroll";
+    box_type_name[SCROLL_S]  = "scroll";
+    box_type_name[SCROLL_SW] = "scroll";
+    box_type_name[SCROLL_W]  = "scroll";
+    box_type_name[SCROLL_NW] = "scroll";
     box_type_name[SLIP]      = "slip";
     box_type_name[SLOW]      = "slow";
     box_type_name[START_POS] = "start";

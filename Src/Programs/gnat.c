@@ -1578,8 +1578,9 @@ static void check_friends(vars)
   Message msg;
 
   while (receive_msg(&msg)) {
-    if (msg.opcode == OP_TEXT && msg.data[0] >= MessageKey + FriendStatus &&
-	msg.data[0] <= MessageKey + DepotInfo) {
+    if (msg.opcode == OP_TEXT &&
+	(int)msg.data[0] >= (int)(MessageKey + FriendStatus) &&
+	(int)msg.data[0] <= (int)(MessageKey + DepotInfo)) {
       if (msg.sender == vars->us.id)  /* No need to read our own messages. */
 	continue;
       msg.data[0] -= MessageKey;

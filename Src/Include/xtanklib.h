@@ -8,9 +8,18 @@
 
 /*
 $Author: lidl $
-$Id: xtanklib.h,v 2.12 1992/01/29 08:39:11 lidl Exp $
+$Id: xtanklib.h,v 2.15 1992/05/19 22:56:08 lidl Exp $
 
 $Log: xtanklib.h,v $
+ * Revision 2.15  1992/05/19  22:56:08  lidl
+ * post chris moore patches
+ *
+ * Revision 2.14  1992/04/09  04:18:24  lidl
+ * changed to use tanklimits.h and not limits.h
+ *
+ * Revision 2.13  1992/03/31  21:49:23  lidl
+ * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
+ *
  * Revision 2.12  1992/01/29  08:39:11  lidl
  * post aaron patches, seems to mostly work now
  *
@@ -65,7 +74,7 @@ $Log: xtanklib.h,v $
 #include "common.h"
 #include "message.h"
 #include "team.h"
-#include "limits.h"
+#include "tanklimits.h"
 #include "vehicleparts.h"
 #include "game.h"
 #include "program.h"
@@ -141,25 +150,14 @@ typedef struct {
     int frames;			/* how long bullets live */
 } Weapon_info;
 
-#ifndef NO_NEW_RADAR
-
 typedef struct {
     int   x, y;                 /* box coordinates */
-    Boolean new;
     Team   team;
     int    number;
     Boolean radar;
     Boolean tactical;
     Boolean friend;
 } Blip_info;
-
-#else /* !NO_NEW_RADAR */
-
-typedef struct {
-    int	  x, y;			/* box coordinates */
-} Blip_info;
-
-#endif /* NO_NEW_RADAR */
 
 typedef struct {
     int grid_x, grid_y;		/* coordinates of the box */
@@ -177,6 +175,7 @@ typedef struct {
     Flag  flags;		/* bits for walls, inside maze, etc. */
     LandmarkType  type;		/* landmark, scroll, goal, outpost, etc. */
     Team  team;			/* number of team that owns the box */
+    Byte  teleport_code;	/* teleport serial number */
     Byte  strength;		/* strength of the scroll, outpost, etc. */
     void  *user_data;		/* robot programs can do whatever they want
 				   with this */
@@ -240,6 +239,13 @@ typedef struct {
 #define EMPTY_BOXES	(1<<7)
 #define MAZE_FLAGS	(INSIDE_MAZE|NORTH_WALL|WEST_WALL|NORTH_DEST|WEST_DEST)
 
+/* Flags for RDF on a "map" */
+#ifndef NO_CAMO
+#define RED_RDF		(1<<8)
+#define GREEN_RDF	(1<<9)
+#define YELLOW_RDF 	(1<<10)
+#endif NO_CAMO
+
 /* Program ability flags */
 #define PLAYS_COMBAT		(1<<0)
 #define PLAYS_WAR			(1<<1)
@@ -294,7 +300,6 @@ typedef struct {
 #define IS_TURRET(mount)	((int)(mount) >= (int)MOUNT_TURRET1 && \
 				 (int)(mount) <= (int)MOUNT_TURRET4)
 
-#ifndef NO_NEW_RADAR
 /*
 * Well, IS_TURRET is here, isn't it?
 */
@@ -310,8 +315,6 @@ typedef struct {
 #define make_bullet(v,loc,type,angle) make_smart_bullet(v,loc,type,angle,NULL)
 
 #define BOOST_PHASE 5 /* How many frames it moves ballisticly forward */
-
-#endif /* !NO_NEW_RADAR */
 
 #include "lowlib.h"
 

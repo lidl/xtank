@@ -7,13 +7,17 @@
 ** cosell.c
 **
 ** version basic simple lame non-complicated to the max (by Doug Church)
+** adjusted to better handle multiple discs by Adam Bryant.
 */
 
 /*
-$Author: rpotter $
-$Id: cosell.c,v 2.3 1991/02/10 13:50:18 rpotter Exp $
+$Author: lidl $
+$Id: cosell.c,v 2.4 1992/06/07 02:45:08 lidl Exp $
 
 $Log: cosell.c,v $
+ * Revision 2.4  1992/06/07  02:45:08  lidl
+ * Post Adam Bryant patches and a manual merge of the rejects (ugh!)
+ *
  * Revision 2.3  1991/02/10  13:50:18  rpotter
  * bug fixes, display tweaks, non-restart fixes, header reorg.
  *
@@ -57,6 +61,7 @@ extern Map real_map;
 #define SLICKED_THRESH  20
 #define BOBBLE_THRESH   50
 #define WICKET_THRESH    4
+#define CLEAR_THRESH    30
 
 #define HOWARD_SAYS_A_LITTLE(data) \
     compose_message(SENDER_COM, RECIPIENT_ALL, OP_TEXT, \
@@ -65,10 +70,6 @@ extern Map real_map;
 #define HOWARD_SAYS(data) \
   return (compose_message(SENDER_COM,RECIPIENT_ALL,OP_TEXT, \
 		  (Byte*)(sprintf data,buf)), 1)
-
-#define LAST_OWNER owners[(owner_index+9)%10]
-#define LAST_NAME LAST_OWNER->disp
-
 
 /*
  * Comment on a game of Ultimate or Capture.
@@ -92,17 +93,18 @@ extern Map real_map;
  *   COS_BEEN_SLICKED:
  *           the vehicle which was slicked.
  */
-comment(op, dat, vh1, vh2)
+comment(op, dat, vh1, vh2, db)
 char op;
 int dat;
 Vehicle *vh1, *vh2;
+Bullet *db;
 {
-    static int slick_frame;	/* frame when last slick was dropped */
+    extern Vehicle *disc_old_owner(), *disc_last_owner(), *disc_cur_owner();
+    static int slick_frame = 0;	/* frame when last slick was dropped */
     static int smash_frame;	/* frame when last big collision occurred */
     static int bobble_frame;	/* frame when owned disc last hit wall */
     static int change_frame;	/* frame when disc ownership last changed */
-    static int owner_index;	/* the index into the owner array */
-    static Vehicle *owners[10];	/* keep track of who had the disc */
+    static int clear_frame;	/* frame when disc clear message was given */
     static int slicked_frame[MAX_VEHICLES];
     Bullet *bul;
     Box *b;
@@ -111,16 +113,14 @@ Vehicle *vh1, *vh2;
 
     if (slick_frame == -1031)
     {
-	HOWARD_SAYS_A_LITTLE((buf, "And the tension runs hi"));
-	HOWARD_SAYS_A_LITTLE((buf, "As the players enter the"));
+	HOWARD_SAYS_A_LITTLE((buf, "And the tension runs high"));
+	HOWARD_SAYS_A_LITTLE((buf, "as the players enter the"));
 	HOWARD_SAYS_A_LITTLE((buf, "arena.  The fans are on"));
         HOWARD_SAYS_A_LITTLE((buf, "their many little feets."));
 	HOWARD_SAYS_A_LITTLE((buf, "Remember, on any given day"));
 	HOWARD_SAYS_A_LITTLE((buf, "any one tank can beat any"));
         HOWARD_SAYS_A_LITTLE((buf, "other tank."));
 	slick_frame = -500;
-	if (op == COS_OWNER_CHANGE)
-	    owners[owner_index = 0] = vh1;
         return 0;
     }
     else if (slick_frame == -1032)
@@ -130,20 +130,18 @@ Vehicle *vh1, *vh2;
 	HOWARD_SAYS_A_LITTLE((buf, "will be working a little"));
         HOWARD_SAYS_A_LITTLE((buf, "harder."));
 	slick_frame = -500;
-	if (op == COS_OWNER_CHANGE)
-	    owners[owner_index = 0] = vh1;
         return 0;
     }
+
     switch (op)
     {
       case COS_INIT_MOUTH:
 	for (smash_frame = 0; smash_frame < MAX_VEHICLES; smash_frame++)
 	    slicked_frame[smash_frame] = -1000;
-	slick_frame = smash_frame = change_frame = bobble_frame =
-	    -1032 + dat;
+	slick_frame = smash_frame = change_frame =
+	  bobble_frame = clear_frame = -1032 + dat;
 	break;
       case COS_OWNER_CHANGE:
-	owners[owner_index = (++owner_index) % 10] = vh1;
 	if (change_frame + CHANGE_THRESH > frame)
 	{
 	    if (bobble_frame + BOBBLE_THRESH < frame)
@@ -153,30 +151,34 @@ Vehicle *vh1, *vh2;
 	    }
 	}
 	change_frame = frame;
-	if (vh1 == NULL)
-	{
-	    if (dat == COS_WALL_HIT)
-		HOWARD_SAYS((buf, "%s screws up", LAST_NAME));
-	    else
-		HOWARD_SAYS((buf, "It's a pass from %s", LAST_NAME));
-	}
-	else
-	{
-	    if (LAST_OWNER == NULL)
-	    {			/* was in the air */
-		if (owners[(owner_index + 8) % 10]->team == vh1->team)
-		    HOWARD_SAYS((buf, "Pass complete to %s", vh1->disp));
-		else
-		    HOWARD_SAYS((buf, "Intercepted by %s", vh1->disp));
+	if (vh1 == NULL) {
+	    if (disc_last_owner(db) != NULL) {
+		if (dat == COS_WALL_HIT) {
+		    HOWARD_SAYS((buf, "%s screws up",
+				 disc_last_owner(db)->disp));
+		} else {
+		    HOWARD_SAYS((buf, "It's a pass from %s",
+				 disc_last_owner(db)->disp));
+		}
 	    }
-	    else
-	    {
-		if (LAST_OWNER->team == vh1->team)
+	} else {
+	    if (disc_last_owner(db) == NULL) {		/* was in the air */
+		if (disc_old_owner(db) != NULL) {
+		    if (disc_old_owner(db)->team == vh1->team)
+			HOWARD_SAYS((buf, "Pass complete to %s", vh1->disp));
+		    else
+		      HOWARD_SAYS((buf, "Intercepted by %s", vh1->disp));
+		} else {
+		    HOWARD_SAYS((buf, "%s controls the disc", vh1->disp));
+		}
+	    } else {
+		if (disc_last_owner(db)->team == vh1->team)
 		    HOWARD_SAYS((buf, "Handoff to %s", vh1->disp));
 		else
 		    HOWARD_SAYS((buf, "Stolen by %s", vh1->disp));
 	    }
 	}
+	break;
       case COS_SLICK_DROPPED:
 	if (slick_frame + SLICK_THRESH < frame)
 	    if (bset->number > TOO_MANY_SLICKS * num_veh_alive)
@@ -187,8 +189,15 @@ Vehicle *vh1, *vh2;
 		}
 	break;
       case COS_BIG_SMASH:
-	if (rnd(3) && (dat > 40))
-	    HOWARD_SAYS((buf, "%s + %s go BOOM", vh1->disp, vh2->disp));
+	if (rnd(3)) {
+	    if (dat>40)
+		HOWARD_SAYS((buf,"%s + %s go BOOM",vh1->disp,vh2->disp));
+	    else if (dat>20)
+		HOWARD_SAYS((buf,"%s + %s bump heads", vh1->disp, vh2->disp));
+	    else if (dat>5 && !rnd(3))
+		HOWARD_SAYS((buf,"%s + %s hit fenders", vh1->disp,
+			     vh2->disp));
+	}
 	break;
       case COS_GOAL_SCORED:
 	HOWARD_SAYS((buf, "Goal scored by %s", vh1->disp));
@@ -207,15 +216,7 @@ Vehicle *vh1, *vh2;
        say something else, pretty clever of us if I say so ourselves. */
     if (!rnd(3))
     {
-	if ((op = COS_OWNER_CHANGE) && (vh1 != NULL))
-	{
-	    for (i = 0, j = 0; i < 10; i++)
-		if (owners[i] && owners[i]->number == vh1->number)
-		    j++;
-	    if (j > WICKET_THRESH)
-		HOWARD_SAYS((buf, "%s is running the show", vh1->disp));
-	}
-	if (LAST_OWNER == NULL)
+	if ((vh1 = disc_cur_owner(db)) == NULL)
 	{			/* This will tell if discs are free in goal */
 	    for (i = 0; i < bset->number; i++)
 	    {
@@ -228,13 +229,15 @@ Vehicle *vh1, *vh2;
 				     teams_entries[b->team]));
 		}
 	    }
-	}
-	if (owners[owner_index] != NULL)
-	{			/* Do we have it in a goal */
-            if (real_map[owners[owner_index]->loc->grid_x]
-		[owners[owner_index]->loc->grid_y].type == GOAL)
-                HOWARD_SAYS((buf, "%s better clear the disc",
-			     owners[owner_index]->disp));
+	} else if (clear_frame + CLEAR_THRESH > frame) {
+	    /* Do they have it in a goal */
+	    b = &real_map[bul->loc->grid_x][bul->loc->grid_y];
+	    if ((b->type == GOAL) &&
+		(vh1->team != b->team)) {
+		clear_frame = frame;
+		HOWARD_SAYS((buf, "%s better clear the disc",
+			     vh1->disp));
+	    }
 	}
     }
 

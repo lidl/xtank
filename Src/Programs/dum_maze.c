@@ -1,8 +1,11 @@
 /*
 $Author: lidl $
-$Id: dum_maze.c,v 1.4 1991/09/29 15:40:22 lidl Exp $
+$Id: dum_maze.c,v 1.5 1992/02/17 09:14:28 lidl Exp $
 
 $Log: dum_maze.c,v $
+ * Revision 1.5  1992/02/17  09:14:28  lidl
+ * now have static variables where they should have before
+ *
  * Revision 1.4  1991/09/29  15:40:22  lidl
  * changed all occurances of atan2 to ATAN2, so it uses the correct macro
  *
@@ -34,7 +37,7 @@ $Log: dum_maze.c,v $
 
 #define abs(x) ((x)>0?(x):(-x))
 
-Vehicle_info my_vehicle;
+static Vehicle_info my_vehicle;
 
 void dum_maze_main();
 

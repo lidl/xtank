@@ -7,10 +7,16 @@
 */
 
 /*
-$Author: stripes $
-$Id: animate.c,v 2.5 1991/10/07 02:13:43 stripes Exp $
+$Author: senft $
+$Id: animate.c,v 2.7 1992/04/21 05:11:58 senft Exp $
 
 $Log: animate.c,v $
+ * Revision 2.7  1992/04/21  05:11:58  senft
+ * Added support for no o and no delay options.
+ *
+ * Revision 2.6  1992/03/31  21:45:50  lidl
+ * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
+ *
  * Revision 2.5  1991/10/07  02:13:43  stripes
  * Fixed rpotter bug, no longer core's when you quit a game, but leaves
  * tank in game (removes player Ok, and leaves robots with PLAY_* running).
@@ -39,8 +45,10 @@ $Log: animate.c,v $
 #include "xtank.h"
 #include "terminal.h"
 #include "globals.h"
+#include "clfkr.h"
 
 extern int frame;
+extern struct CLFkr command_options;
 
 /* # frames between display synchronizations */
 #ifndef LOCK_GAME_CONTROLS
@@ -198,6 +206,8 @@ animate()
     if ((retval = game_rules(FALSE)) != GAME_RUNNING)
 	return retval;
 
+    if (!command_options.NoIO)
+	{
     /* Update screen locations, and display everything on each terminal */
     for (i = 0; i < num_terminals; i++)
     {
@@ -205,6 +215,34 @@ animate()
 	update_screen_locs();
 	display_terminal(REDISPLAY, i == num_terminals - 1);
     }
+    }
+
+#ifndef NO_CAMO
+/*
+ * kind of a funny place, eh?  It's because old_camod actually
+ * refers to if it has been drawn as a "camod" vehicle yet by
+ * display.c; I must have been up too late when I thought of
+ * this scheme.
+ * 
+ * This could be moved to update_vehicle(), but it would require that
+ * the update_vehicle be called after display_terminal, not before.
+ *
+ * Seemed a little risky!
+ *
+ * The reson for updating everyone, instead of just the "live vehicles"
+ * is that I'm not sure how the "death-delay" thing works, I didn't want
+ * to risk a screwup if you blew up a camo'd tank.  Feel free to try
+ * it with live_vehicles.
+ *
+ * I'm welcome to suggestions for alternate hacks, several occured 
+ * to me, but this was by far the simplest, though it is a bit
+ * "ugly" on the surface.   --ane
+ *
+ */
+    for (i = 0; i < MAX_VEHICLES; i++)
+	actual_vehicles[i].old_camod = actual_vehicles[i].camod;
+
+#endif /* !NO_CAMO */
 
     /* Synchronize all terminals every sync_rate frames */
     if ((frame % sync_rate) == 0)

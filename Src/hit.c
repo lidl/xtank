@@ -8,9 +8,20 @@
 
 /*
 $Author: lidl $
-$Id: hit.c,v 2.7 1991/12/10 03:41:44 lidl Exp $
+$Id: hit.c,v 2.10 1992/06/07 02:45:08 lidl Exp $
 
 $Log: hit.c,v $
+ * Revision 2.10  1992/06/07  02:45:08  lidl
+ * Post Adam Bryant patches and a manual merge of the rejects (ugh!)
+ *
+ * Revision 2.9  1992/04/18  15:33:24  lidl
+ * minor botch in Ultimate fixed -- now doesn't get points for killing
+ * outposts in an Ultimate game.  Fix by manson@magnus.acs.ohio-state.edu
+ * (Bob Manson)
+ *
+ * Revision 2.8  1992/03/31  21:45:50  lidl
+ * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
+ *
  * Revision 2.7  1991/12/10  03:41:44  lidl
  * changed float to FLOAT, for portability reasons
  *
@@ -57,7 +68,6 @@ $Log: hit.c,v $
 extern Map real_map;
 extern Settings settings;
 
-
 Side find_affected_side(v, angle)    
 Vehicle *v;                     
 FLOAT angle;                    
@@ -89,11 +99,12 @@ FLOAT angle;
 ** Damage based on kinetic energy and elasticity of collision.
 ** Better bumpers result in less damage in general and less to that vehicle.
 */
-vehicle_hit_vehicle(v1, v2)
+vehicle_hit_vehicle(v1, v2, width, height, shx, shy)
 Vehicle *v1, *v2;
+int width, height, shx, shy;
 {
     FLOAT ang, bump1, bump2, elast;
-    int dx, dy, damage;
+    int vx, vy, tx, ty, dx, dy, damage;
     int damage1, damage2;
     Side side;
     int has_ramplate1, has_ramplate2;
@@ -110,10 +121,53 @@ Vehicle *v1, *v2;
     }
 #endif
 
-    /* Compute delta position */
+    /* Compute the REAL angle of the collision */
     dx = v2->loc->x - v1->loc->x;
     dy = v2->loc->y - v1->loc->y;
+    vx = v2->vector.xspeed - v1->vector.xspeed;
+    vy = v2->vector.xspeed - v1->vector.xspeed;
+
+    /* check for any possible adjustment */
+    if ((vx != 0) && (vy != 0)) {
+	/* find 100 * time to reach x edge */
+	if (vx > 0) {
+	    tx = (100 * (width + dx)) / vx;
+	} else {
+	    tx = (100 * -(width - dx)) / vx;
+	}
+
+	/* find 100 * time to reach y edge */
+	if (vy > 0) {
+	    ty = (100 * (height + dy)) / vy;
+	} else {
+	    ty = (100 * -(height - dy)) / vy;
+	}
+
+	/* which hit first? */
+	if (tx > ty) {
+	    /* y did; put it on y edge */
+	    dy = SIGN(-vy) * height;
+	    dx -= (ty * vx) / 100;
+	} else {
+	    /* x did; put it on x edge */
+	    dx = SIGN(-vx) * width;
+	    dy -= (tx * vy) / 100;
+	}
+
+    } else {
+
+	if (vx != 0) {
+	    dx = SIGN(-vx) * width;
+	} else if (vy != 0) {
+	    dy = SIGN(-vy) * height;
+	}
+
+    }
     ang = ATAN2(dy, dx);
+
+    /* now perform the needed shifts */
+    adjust_loc(v1->loc, -shx, -shy);
+    adjust_loc(v2->loc, shx, shy);
 
     /* Compute the elasticity of the collision, based on bumpers */
     bump1 = bumper_stat[v1->vdesc->bumpers].elasticity;
@@ -178,7 +232,7 @@ Vehicle *v1, *v2;
     damage_vehicle(v2, v1, damage2, PI - ang, 0);       
 
     if (settings.commentator)
-	comment(COS_BIG_SMASH, damage * 3, v1, v2);
+	comment(COS_BIG_SMASH, damage * 3, v1, v2, (Bullet *) NULL);
 }
 
 /*
@@ -332,15 +386,41 @@ Vehicle *v;
 Bullet *b;
 int dx, dy;
 {
+    extern Vehicle *disc_last_owner(), *disc_old_owner();
+    Vehicle *shoot_v;
     FLOAT angle;
-    int damage, height;
+    int vx, vy, damage, height;
 
     switch (b->type)
     {
       case DISC:
+      
 	set_disc_owner(b, v);
 	if (settings.commentator)
-	    comment(COS_OWNER_CHANGE, COS_IGNORE, v, (Vehicle *) NULL);
+	    comment(COS_OWNER_CHANGE, COS_IGNORE, v, (Vehicle *) NULL, b);
+
+	/* determine if there was any damage done */
+	if (settings.si.disc_damage > 0.0) {
+
+	    /* Compute angle from center of vehicle that the bullet hits */
+	    angle = ATAN2((double) dy, (double) dx);
+	    if (settings.si.relative_disc) {
+		vx = b->xspeed - v->vector.xspeed;
+		vy = b->yspeed - v->vector.yspeed;
+	    } else {
+		vx = b->xspeed;
+		vy = b->yspeed;
+	    }
+	    damage = (settings.si.disc_damage *
+		      (vx * vx + vy * vy)) / 5;
+	    if (damage > 0) {
+		if ((shoot_v = disc_last_owner(b)) == NULL) {
+		    shoot_v = disc_old_owner(b);
+		}
+		damage = damage_vehicle(v, shoot_v, damage, angle, 0);
+		explode(b, damage);
+	    }
+	}
 	break;
       case SLICK:
 	if (v->vdesc->treads != HOVER_TREAD)
@@ -348,24 +428,22 @@ int dx, dy;
 	    v->status |= VS_sliding;
 	    v->slide_count = 16;
 	    if (settings.commentator)
-		comment(COS_BEEN_SLICKED, 0, v, (Vehicle *) NULL);
+		comment(COS_BEEN_SLICKED, 0, v, (Vehicle *) NULL,
+			(Bullet *) NULL);
 	}
 	break;
       default:
-	/* Determine height of damage */
-	if (b->type == MINE)
-	{
-	    height = -1;
-	    if (v->vdesc->treads == HOVER_TREAD)
-		--height;
-	}
-	else if (b->type == SEEKER)
-	    height = 1;
-	else
-	    height = 0;
+      /* 
+       * Use new height info in loc
+       */
 
-	if (height > -2)
-	{
+	height = b->loc->z;
+
+      /*
+       * Ignore -1 heights if we have the infamous HOVER_TREAD
+       */
+
+        if (!(height == -1 && v->vdesc->treads == HOVER_TREAD)) {
 	    Box *bx;
 	    int ShouldDamageVehicle = 1;
 	    Loc *loc = v->loc;
@@ -433,8 +511,10 @@ int grid_x, grid_y;
 		if (b->owner != (Vehicle *) NULL &&
 				(b->owner->team == 0 || b->owner->team != bbox->team))
 		{
-			b->owner->owner->score += damage << 6;
-			b->owner->owner->money += damage << 8;
+			if (settings.si.game != ULTIMATE_GAME) {
+				b->owner->owner->score += damage << 6;
+				b->owner->owner->money += damage << 8;
+			}
 		}
 		if (damage > 0 && change_box(bbox, grid_x, grid_y))
 		{
@@ -498,13 +578,14 @@ bul_hit_wall(b, grid_x, grid_y, dir)
     if (b->type == DISC)
     {
 	/* Notify the commentator if a vehicle lost the disc on a wall */
-	if (settings.commentator && b->owner != (Vehicle *) NULL)
-	    comment(COS_OWNER_CHANGE, COS_WALL_HIT, (Vehicle *) NULL,
-		    (Vehicle *) NULL);
-	if (b->owner != (Vehicle *) NULL)
-	    b->thrower = b->owner->color;
-	set_disc_owner(b, (Vehicle *) NULL);
+	if (b->owner != (Vehicle *) NULL) {
+	    set_disc_owner(b, (Vehicle *) NULL);
+	    if (settings.commentator)
+		comment(COS_OWNER_CHANGE, COS_WALL_HIT, (Vehicle *) NULL,
+			(Vehicle *) NULL, b);
+	}
     }
+
     /* If bullet is a disc, bounce the bullet. If wall isn't damaged by bullet,
        and ricochet is on, bounce the bullet, otherwise explode the bullet. */
     if (b->type == DISC)

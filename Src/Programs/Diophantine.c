@@ -19,10 +19,16 @@
 */
 
 /*
-$Author: rpotter $
-$Id: Diophantine.c,v 2.3 1991/02/10 13:49:58 rpotter Exp $
+$Author: lidl $
+$Id: Diophantine.c,v 2.5 1992/08/19 05:18:46 lidl Exp $
 
 $Log: Diophantine.c,v $
+ * Revision 2.5  1992/08/19  05:18:46  lidl
+ * changed to use FLOAT, instead of float
+ *
+ * Revision 2.4  1992/08/19  05:13:49  lidl
+ * changed sqrt to SQRT
+ *
  * Revision 2.3  1991/02/10  13:49:58  rpotter
  * bug fixes, display tweaks, non-restart fixes, header reorg.
  *
@@ -79,11 +85,11 @@ struct g_struct
 {
 	int D_lastshotat, D_shootcounter;
 	int ANYONE_HERE;
-	float sav_WANTED_SPEED;
-	float WANTED_SPEED;
-	float acc_freedom;
-	float crange;
-	float inv_speed;
+	FLOAT sav_WANTED_SPEED;
+	FLOAT WANTED_SPEED;
+	FLOAT acc_freedom;
+	FLOAT crange;
+	FLOAT inv_speed;
 	int num_weap;
 	int max_weap_range;
 	int weap_range[6];
@@ -153,16 +159,16 @@ Diophantine_watch_out_t(gstruct)
 struct g_struct *gstruct;
 {
 	static int hurtamt[14] = {0, 2, 4, 0, 2, 4, 2, 4, 6, 4, 8, 12, 8, 2};
-	static float angles[11] = {0.0, 0.4, -0.4, 0.8, -0.8, -1.5, 1.5, 2.3, -2.3, PI};
-	float spe, ang;
+	static FLOAT angles[11] = {0.0, 0.4, -0.4, 0.8, -0.8, -1.5, 1.5, 2.3, -2.3, PI};
+	FLOAT spe, ang;
 	Location my_loc;
-	float xs[5], ys[5], angl[5];
+	FLOAT xs[5], ys[5], angl[5];
 	int dam[5];
 	Bullet_info bullet[MAX_BULLETS];
 	Bullet_info *b;
 	int num_bullets, count;
 	int ax, ay, t, dx, dy, dis, s, ldam, ws, num;
-	float sx, sy, sumsq, diff;
+	FLOAT sx, sy, sumsq, diff;
 
 	dbg("Diophantine_watch_out_t()");
 
@@ -247,10 +253,10 @@ struct g_struct *gstruct;
 
 
 Diophantine_gonna_hit(loc, ang, spe)
-float ang, spe;
+FLOAT ang, spe;
 Location *loc;
 {
-	float xs, ys, xt, yt;
+	FLOAT xs, ys, xt, yt;
 	int xi, yi, xd, yd;
 	int ret;
 
@@ -357,15 +363,15 @@ Diophantine_watch_out_a(gstruct)
 struct g_struct *gstruct;
 {
 	static int hurtamt[14] = {0, 1, 2, 0, 1, 2, 1, 2, 3, 2, 4, 6, 4, 1};
-	float spe, ang;
+	FLOAT spe, ang;
 	Location my_loc;
-	float xs[4], ys[4];
+	FLOAT xs[4], ys[4];
 	int dam[4];
 	Bullet_info bullet[MAX_BULLETS];
 	Bullet_info *b;
 	int num_bullets;
 	int ax, ay, t, dx, dy, dis, s, ldam, ws;
-	float sx, sy, want, ca, sa, sumsq, diff;
+	FLOAT sx, sy, want, ca, sa, sumsq, diff;
 
 	dbg("Diophantine_watch_out_a()");
 
@@ -451,9 +457,9 @@ struct g_struct *gstruct;
 {
 	Location my_loc;
 	int i, num, range;
-	float xsp, ysp, leadang;
-	float trans;
-	float dy, dx, dis;
+	FLOAT xsp, ysp, leadang;
+	FLOAT trans;
+	FLOAT dy, dx, dis;
 	Vehicle_info vehicle[MAX_VEHICLES];
 	int num_veh_alive;
 
@@ -494,7 +500,7 @@ struct g_struct *gstruct;
 	dy = BOX_HEIGHT * (vehicle[num].loc.grid_y - my_loc.grid_y) +
 		vehicle[num].loc.box_y - my_loc.box_y + 1.5 * ysp;
 
-	dis = sqrt(dx * dx + dy * dy);
+	dis = SQRT(dx * dx + dy * dy);
 
 	trans = ((dx * ysp - dy * xsp) * gstruct->inv_speed / dis);
 
@@ -537,10 +543,10 @@ struct g_struct *gstruct;
 	int ax, ay, not_done;
 	int i, absx, absy;
 	int qual[MAX_VEHICLES];
-	float dx, dy, ang;
-	float xsp, ysp, highang;
-	float leadang[MAX_VEHICLES];
-	float trans, ta, r, rng;
+	FLOAT dx, dy, ang;
+	FLOAT xsp, ysp, highang;
+	FLOAT leadang[MAX_VEHICLES];
+	FLOAT trans, ta, r, rng;
 	int hrange, range[MAX_VEHICLES];
 	int hid, highqual, di[MAX_VEHICLES], ohighqual;
 
@@ -575,7 +581,7 @@ struct g_struct *gstruct;
 		dx = BOX_WIDTH * v->loc.grid_x + v->loc.box_x - absx;
 		dy = BOX_HEIGHT * v->loc.grid_y + v->loc.box_y - absy;
 
-		r = sqrt(dx * dx + dy * dy);
+		r = SQRT(dx * dx + dy * dy);
 		if (r < gstruct->crange)
 		{
 			gstruct->crange = r;
@@ -583,7 +589,7 @@ struct g_struct *gstruct;
 		dx += 3.0 * xsp;
 		dy += 3.0 * ysp;
 
-		rng = sqrt(dx * dx + dy * dy);
+		rng = SQRT(dx * dx + dy * dy);
 		if (rng > 0.0)
 		{
 			trans = (dx * ysp - dy * xsp) * gstruct->inv_speed / rng;
@@ -842,9 +848,9 @@ end:
 
 
 Diophantine_abs_ang(a, b)
-float a, b;
+FLOAT a, b;
 {
-	float t;
+	FLOAT t;
 
 	dbg("Diophantine_abs_ang()");
 

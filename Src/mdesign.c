@@ -8,10 +8,16 @@
 */
 
 /*
-$Author: stripes $
-$Id: mdesign.c,v 2.4 1992/01/06 07:52:49 stripes Exp $
+$Author: lidl $
+$Id: mdesign.c,v 2.6 1992/05/19 22:57:19 lidl Exp $
 
 $Log: mdesign.c,v $
+ * Revision 2.6  1992/05/19  22:57:19  lidl
+ * post Chris Moore patches, and sqrt to SQRT changes
+ *
+ * Revision 2.5  1992/03/31  04:04:16  lidl
+ * pre-aaron patches, post 1.3d release (ie mailing list patches)
+ *
  * Revision 2.4  1992/01/06  07:52:49  stripes
  * Changes for teleport
  *
@@ -68,6 +74,7 @@ Event *event;
 			make_landmark(&bloc, PEACE);
 			break;
 		case 't':
+			set_teleport_code(&bloc);
 			make_landmark(&bloc, TELEPORT);
 			break;
 		case 'f':
@@ -597,6 +604,28 @@ int teamnum;
 	show_box(loc);
 }
 
+set_teleport_code(loc)
+BoxC *loc;
+{
+  int code;
+
+  /* Check that this location is inside the maze area. */
+  if (!check_box(loc))
+    return;
+
+  /* If it was already a teleport, the default code is the current code,
+   * otherwise default to 1.
+   */
+
+  code = (real_map[loc->x][loc->y].type == TELEPORT) ?
+    real_map[loc->x][loc->y].teleport_code :
+      1;
+
+  code = input_int(ANIM_WIN, "Code number", 0, INPUT_Y, code, 1, 255, MD_FONT);
+  real_map[loc->x][loc->y].teleport_code = code;
+  mdesign_clear_input();
+}
+
 /*
 ** Shows team only if non-zero. Shows only north and west walls.
 */
@@ -973,17 +1002,29 @@ figure_insideness()
 	BoxC boxes[GRID_WIDTH * GRID_HEIGHT];
 	BoxC temp;
 	int size = 0;
-	unsigned int flags;
+	unsigned int flags = 0;
 
 	for (i = 0; i < GRID_WIDTH; ++i)
 		for (j = 0; j < GRID_HEIGHT; ++j)
 			real_map[i][j].flags &= ~INSIDE_MAZE;
 
-	get_inside_spot(&temp);
-
-	i = temp.x;
-	j = temp.y;
-	add_to_maze(i, j, boxes, &size);
+	for (i = 0; i < GRID_WIDTH; ++i)
+		for (j = 0; j < GRID_HEIGHT; ++j)
+		  if (real_map[i][j].type == TELEPORT)
+		    {
+		      add_to_maze(i, j, boxes, &size);
+		      flags = 1;
+		    }
+	
+	if (flags == 0)
+	  {
+	    get_inside_spot(&temp);
+	    i = temp.x;
+	    j = temp.y;
+	    add_to_maze(i, j, boxes, &size);
+	  }
+	else
+	  flags = 0;
 
 	while (size)
 	{

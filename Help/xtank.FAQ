@@ -1,0 +1,462 @@
+$Id: xtank.FAQ,v 1.10 1992/09/08 01:26:01 lidl Exp $
+
+FAQ for the rec.games.xtank.{play|programmer} newsgroups:
+
+There are three major sections in this revision of the
+rec.games.xtank.{play|programmer} FAQ.  Please make sure
+that you check this FAQ before posting to the newsgroups.
+Thanks.
+
+If you have comments or corrections to this posting, please
+mail them to xtank-request@eng.umd.edu.  Thanks.
+
+Section 1 -- General information topics
+Section 2 -- Playing information topics
+Section 3 -- Installation, compiling, & porting information
+
+General Topics:
+====================
+01)  What type of postings should be posted in rec.games.xtank.play?
+02)  What type of postings should be posted in rec.games.xtank.programmer?
+03)  What is Xtank all about?
+04)  What is the latest Xtank release?
+05)  Where can I get the Xtank release from?
+06)  How do I use "ftpmail" to get Xtank?
+07)  How do I make a patch file for Xtank?
+08)  Is there a place that I can get binaries from?
+
+Playing Topics:
+====================
+09)  Why can't I place HARMs on the vehicles I design?
+
+Installation, compiling and porting Topics:
+==============================
+
+10)  What software tools do I need to make a version of Xtank?
+11)  Will Xtank work on my unix system ?
+12)  What are some of the common problems with Xtank installs?
+13)  What does "Alarm Clock" mean, when I run Xtank?
+14)  What should I do if Xtank doesn't compile/work on my unix system ?
+15)  How should I go about porting Xtank to a new (unsupported) system?
+16)  Why won't Xtank compile on my DECstation?
+
+=========================== ANSWERS to the FAQ ============================
+
+01)  What type of postings should be posted in rec.games.xtank.play?
+
+This newsgroup is intended to be used for (but not limited to)
+discussion of:
+
+   - exchange of ideas and strategy for human players
+   - game play between humans and robots
+   - discussion of combinations for robot competitions
+   - feature rants for a given program
+   - wish lists for future robots
+   - feedback to game designers about robot features and strategies
+     that are effective against their robots, from a human perspective
+
+02)  What type of postings should be posted in rec.games.xtank.programmer?
+
+This newsgroup is intended to be used for (but not limited to)
+discussion of:
+
+   - Modifications to the code of the Xtank program proper
+   - Modifications to robot programs that are contained in the
+     standard distribution
+   - Programmers  of xtank robot programs should use this group
+     to solicit feedback from other programmers
+   - Bug reports and fixes for robots and the core distribution
+   - Reports of installation problems, but not general inquiries!
+     See the section on installations in this FAQ before posting!
+
+This newsgroup is *NOT* intended for answering requests like:
+
+   - Does Xtank run on a <foo>?  Where <foo> is a specific machine
+     type.  Get the package, or finish reading this FAQ.  The authors
+     and maintainers will *NOT* respond to these questions, and if
+     anyone else that gets USENET news does, you've been very lucky.
+     See the section on installations in this FAQ before posting!
+
+In general, if you haven't read through the code of the main game
+modules, or the robot you have a question about, this probably isn't
+the correct place to post your question.
+
+03)  What is Xtank all about?
+
+Briefly put, Xtank is a multi-player vehicular-based (normally
+combat-oriented) game played in mazes of various sizes and types.
+Humans control a vehicle (usually a tank) equipped with a variety of
+armor and weaponry.  Your objective depends on the type of game you
+play.  There are five different game scenarios for Xtank:
+
+   A) Combat -- Attempt to kill all the tanks not on your team.
+      (This is the default game for Xtank.)  Players get a quantity of
+      points for killing opponents, and lose points for killing friends.
+      The amount of points received depends on the relative values of
+      your vehicle and the vehicle that you destroy.
+   B) War -- Win by taking over territory.  You take over territory by
+      traveling over it in your vehicle.
+   C) Ultimate -- Sort of a cross between ultimate frisbee and
+      hockey.  Score by catching the disc in the opponents' goal.
+   D) Capture -- A variant of ``Capture the Flag.''  Win by collecting
+      all the discs into your goal.
+   E) Race -- Win by being the first vehicle to get to a goal.
+
+One of the more unique features about xtank is that it is a
+multi-threaded game.  This allows players to load a robot program
+file (either written in "C" or a "C" linkable language) into the
+running Xtank image and start playing with that program.  Thus, each
+player can have a robot program that can control (or share control) of
+a vehicle for the duration of a game.  On some systems, robot programs
+can be dynamically loaded into a running game (works on DECstations,
+Suns, maybe others).
+
+The games are played in an maze (think of it as a type of gladiator
+arena), which a play can design.
+
+The vehicles described above are also player designed.  The design of
+playable vehicles is an art unto itself, so you will most likely have
+to try a good many vehicles before you get one that is worth keeping.
+
+04)  What is the latest Xtank release?
+
+The latest release of Xtank is the 1.3e release.
+
+05)  Where can I get the Xtank release from?
+
+In general, the latest release of Xtank can be anonymously
+FTP'ed from the host ftp.eng.umd.edu, in the directory /pub/xtank.
+
+Please make sure that you get the latest version of Xtank if you are
+installing it for the first time.  We are continually fixing bugs in
+the release, as well as implementing new features, and merging in
+changes from the various contributors to Xtank.
+
+Here are the hosts that are known to have the latest release
+of Xtank available for anonymous FTP:
+
+Host mojo.eng.umd.edu   (129.2.90.15)
+    Location: /pub/xtank
+           FILE -rw-r--r--    1549811  Feb 13 06:54  xtank1.3e.tar.Z
+
+Host azathoth.sura.net  (128.167.254.184)
+    Location: /pub/xtank
+           FILE -rw-r--r--    1549811  Feb 17 07:21  xtank1.3e.tar.Z
+
+Host export.lcs.mit.edu (18.24.0.12)
+    Location: /contrib
+           FILE -rw-r--r--    1549811  Feb 13 06:54  xtank1.3e.tar.Z
+
+If you don't have anonymous FTP access, please *DON'T* mail or post
+asking people to mail you a copy.  The release is just too damn big
+to do that often.  Instead, see the section on "ftpmail".
+
+06)  How do I use "ftpmail" to get Xtank?
+
+Mail the following message to "ftpmail@decwrl.dec.com", with
+just about anything as the "Subject:" line (it is ignored).
+
+connect ftp.eng.umd.edu
+binary
+chdir /pub/xtank
+get xtank1.3e.tar.Z
+
+If this doesn't work (like the version number has changed) you can
+get more info about the ftpmail program by by mailing ftpmail@decwrl.dec.com,
+with the word "help" in the body (the Subject: line is ignored).
+
+Please remember that the ftpmail service is their to help everyone, so
+please don't abuse the privilege!  Thanks.
+
+07)  How do I make a patch file for Xtank?
+
+Basically, for each changed file, you do the following:
+
+diff -c5 oldfile newfile
+
+Please do *not* send "unidiff" differences, as I don't like dealing
+with them, and we don't have a patch installed that is capable of
+handling them, at least yet.  This message will be updated to reflect
+any changes in the status of our patch program...
+
+========================
+
+08)  Is there a place that I can get binaries from?
+
+[For the 1.3e release, the current answer is "No".  This will
+hopefully change at some point in the near future.]
+
+For version 1.3d read the following:
+
+The answer to this is, "It depends."  In general, just grabbing a
+binary is not the best idea.  You should really get the source code
+to the release and compile it yourself.  You will probably learn
+something, and it doesn't take too long to do it.
+
+That said, on to the topic at hand.  On occasion, binaries of Xtank
+have been made available through AFS.  The current locations of the
+binaries are in the following cell:
+
+/afs/wam.umd.edu/usr20/smaug/bin
+
+Under this directory, there are directories for sun4, mips, NeXT and
+so forth.  There may or may not be binaries in those directories.  If
+there is a file named "xtank", it is probably a working binary for
+whatever platform the directory is named after.  These files may or
+may not work for you.  Good luck.
+
+There is at least one site that has world accessable AFS cells
+available through anonymous FTP.  You might be able to get a binary
+through this FTP server.  If it works, great, if it doesn't, build it
+yourself.  The AFS cell that provides this service is
+citi.umich.edu.  (Thanks to Jeff Rogers (rogerj@rpi.edu) for pointing
+this out.)
+
+If you take the binary via FTP from this AFS site, make sure that you
+also get the current xtank distribution, because you will need to
+unpack the Vehicles, Mazes, Help and Bin directories.  You don't need
+the Doc directory, but it does have useful information in it.
+
+========================
+
+09)  Why can't I place HARMs on the vehicles I design?
+
+HARMs can only be installed on the side mounts of a vehicle body.
+Try placing them there, and you should have a good experience.
+Additionally, they are fired differently than the other weapons
+in Xtank -- you click on the target in the Radar mapper to
+aim these puppies.  Good luck.
+
+========================
+
+10)  What software tools do I need to make a version of Xtank?
+
+Well the short and sweet of it is: -->  Imake  <---
+     
+If you don't have this, you will need to get this.  Imake is
+available via FTP from export.lcs.mit.edu.  Thanks to the foresight
+of the members of the MIT staff and the X Consortium, you can grab
+just the source to imake, and its configuration files.  They are in
+the directory /pub/R5untarred/mit/config.  You will need to get all
+the files there, and edit the "site.def" file to reflect where the X
+Window Systems has actually been located on your machine, for your
+particular X Window installation.
+
+You don't need "flex" to re-build xtank, but you do need to read the
+instructions!  We include "pre-flexed" grammars for your compiling
+pleasure.  However, if you plan on changing either the vehicle save
+format, or the vehicle structures such that you will need to save
+more info, you will need to have a relatively recent version of flex
+installed on your system.  I'm not too sure how recent, but version
+2.3 of flex is good enough for us.
+
+flex is available via FTP from prep.ai.mit.edu
+
+11) Will Xtank work on my system ?
+
+Xtank is, shall we say, a large and complex body of code, some of which
+works in a rather arcane way.  It's not terribly portable, but we are
+working on porting it to systems that have a fairly high-level way
+of doing light-weight processes/threads.  This is invariably where the
+hard part of porting Xtank comes in.
+
+Offhand, I know that Xtank runs on the following systems:
+
+Sun hardware, Sun 3 (SunOS 3.5 or higher) or Sun 4 (SunOS 4.0 or
+higher).  DECstations, running either Ultrix 3.1, 4.1 or 4.2.
+
+These are the only three platforms we have access to test releases on
+before we ship the code.  (Generally, we test Xtank on Sun4 systems
+and DECstations, and not the Sun3 systems.)
+
+We have finished the port of Xtank to a SVR4 machine, using the
+SVR4 low-level threading available via makecontext()/swapcontext().
+Outside of adding the stub things needed in the Imakefile(s), Xtank
+should work on those systems.
+
+Someday, we
+may even support MACH threads.  We may even support POSIX threads,
+if they ever straighten out *that* mess.)
+
+In the past, Xtank has compiled and run on the following machines.  This
+may or may not work on the latest release.  We can't test it, but we
+do actively apply fixes that people send us that are supposed to fix things.
+
+   NeXT machines
+   HP9000, series 300, running both 4.3BSD and HP-UX
+   HP9000, series 800 and series 700
+   IBM RS6000
+   IBM PC/RT
+   VAXes running Ultrix
+   Silicon Graphics
+   Motorola SysV boxes
+   Encore Multimaxes (Sys 5 universe)
+   Sequents (i386 based)
+
+Not all features are working on all platforms.  If your platform doesn't
+have a particular feature, port it and send us a patch file!
+
+12)  What are some of the common problems with Xtank installs?
+
+Many people have improperly installed X11 on their systems such that
+system include files get included explicitly before the program
+specific include file directories.  It used to be that there was
+very little chance that Xtank would compile properly on your system.
+We've cleaned up the include files to the point that it ought to
+work properly for your machines.  If you have problems, let us know
+the solutions.
+
+Sometimes, people on non-BSD derived systems have configured their
+X11 system to link with system libraries in the wrong place on
+the compile line.  This is also a no-go issue for Xtank.  If you
+have this problem, you should try to find a local guru to help
+you.
+
+13)  What does "Alarm Clock" mean, when I run Xtank?
+
+If you run Xtank, and setup a game, and then try to run it,
+and Xtank dies after one frame of animation, you probably have
+lied to Xtank about your system.  This error typically shows up
+in compiled copies of Xtank that were compiled with "-DSYSV", when
+they should have been compiled with "-DSVR4".  System V systems
+prior to SVR4 handle signals differently, and this is a typical
+indication of the resulting incompatibilities...
+
+If you are working on a Unix machine that supports both SYSV, and BSD
+(eg SunOS), this probably means that you have compiled something with
+the SYSV version of the C compiler, rather then the BSD C compiler.
+
+14)  What should I do if Xtank doesn't compile/work on my unix system ?
+
+First, make sure that you are trying to install the latest version
+of Xtank.  If you are not, then get the latest version, and try again.
+
+Second, you should investigate exactly what is wrong with the
+system.  If you can't fix it yourself, then you should carefully
+gather all the information in the BETA-README file and post that to
+the network, in the rec.games.xtank.programmer.  *WARNING* Failing to
+submit a full description of the machine, and the error message is
+liable to generate a flame in response to your posting. *WARNING*
+
+For your convience, here is the list of questions to be filled out:
+(taken from the BETA-README file)
+
+  * What your setup is:
+       - Hardware platform (eg Sun SPARCstation 1+)
+       - OS version (eg SunOS 4.1.2)
+       - Windowing System (eg OpenWin 3, or MIT X11R5, DecWindows, etc)
+       - Compiler used (eg gcc 1.37, vendor supplied cc, etc)
+       - any non-default Imakefile.Config -D flags
+       - what version of Xtank that you are trying to run
+
+Please be as specific as possible.  All the maintainers of Xtank
+would much rather have too much information than too little.
+
+Finally, you should include the line in the compile that caused the
+install to die.
+
+If xtank compiles OK, but does not run, and the release of Xtank that
+you have is 1.3e or later, run "xtank.arch -V" and include that
+output in your submitted bug report.  (Where "xtank.arch" is the
+generated executable for your architecture.) This is *very*
+important.
+
+If you have Makefile problems, try investigating the debugging flags
+that you system supports, if any.  Some systems support a "-d" or
+"-D" flag, even though it is not documented.  You've got nothing to
+lose if you try it, even if your "make" manpage doesn't mention it.
+
+15)  How should I go about porting Xtank to a new (unsupported) system?
+
+Many Unix systems out there have most of the support needed to run
+Xtank, in at least some form or another.
+
+Outside of needed to have reasonable X11 support, Xtank needs to have
+access to good floating point routines.  Additionally, there are two
+sticky issues in porting Xtank -- both of which don't affect the
+"core" game program.  The two issues are the need for doing a
+light-weight threading (how the robot programs are run) and the
+ability to load in object files on the fly...
+
+Having a light-weight threading package make Xtank a lot more fun,
+because it is not just human players then, but also machine players.
+Having the dynamic loading code working makes it much easier to write
+and debug new robot programs.  Obviously, it doesn't make sense to
+work on dynamic loading if you don't have the threading working.
+
+There are currently three ways of doing the light-weight threading --
+use the SunOS LWP package, use the SVR4 style threading package,
+or use the longjmp() hack.  This are listed in roughly the order they
+are preferred.  Obviously, the LWP solution only works if you have
+SunOS, or something like a Solbourne running their SunOS derived OS.
+
+The SVR4 solution should work on any system that is SVR4 derived and
+has a full SVR4 implementation.  At least a few vendors have released
+SVR4 ports that have broken threading.  If your vendor has done this,
+complain bitterly, and loudly.
+
+If neither of the above systems work for you, investigate any
+packages or light-weight threading packages that you might have
+available to you.  For example, on MACH derived systems, you should
+have a good threading interface.  The same can be said for Sprite (I
+think).  If you have a system available to you, try to use it, the
+chances are that you won't have to do it again...
+
+Finally, if neither of the above solutions are available to you, you
+should investigate the longjmp() hack.  This is not for the faint of
+heart, however.  It involves adding more knowledge to Xtank about
+very, very, *very*, system specific things, like the format of a
+saved longjmp() buffer, and whether or not your system's longjmp()
+call can jump both up and down your system's stack (not all can, on
+all platforms).  If you longjmp() can't jump up and down your stack,
+you will need to implement your own longjmp() call, that can.  You
+will need to do this in assembly (we *did* warn you...).  There are
+sample assembly pieces written for the IBM RS6000, DEC VAX machines,
+and MIPS R[23]000 cpu's.
+
+Assuming that you have a working longjmp() routine, you will need to
+teach Xtank about the structure of your longjmp save buffers.
+Examine the code the "thread.h" file, and see how it is done on other
+platforms.  Then write one that is tailored to your hardware...  We
+won't be able to help you out with this, because we don't have a
+platform of whatever you are porting to help out on.  If you want to
+donate a particular hardware platform that runs Unix to us, we'll try
+awfully hard to port Xtank to that platform.  If you have gotten this
+far, you should maybe check with your platform vendor to see if they
+have done a port of Xtank themselves.  A great number of people have
+ported Xtank to various systems, but then never released those
+changes back to us.  Ask them, it can't hurt.
+
+Assuming that you get the threading done and working reliably, you
+should then attempt to get dynamic program loading working on your
+platform.  This is the other area that could use some work for
+Xtank.  We will be adding dynamic loading support via a dlopen()
+interface, so people with SVR4-ish systems should be able to use
+that.  Otherwise, the current system will have to modified, or a new
+system developed.  The "current" system relies on the ability of "ld"
+to generate a file that is supposed to be started at a particular
+address.  The object file is created on the fly (if needed) and then
+opened by Xtank and the symbol table extracted from the file and
+examined.
+
+This is all roughly explained in the comments to the "unix.c" file --
+you should check there for all the gory details.  Typically, this
+would be easiest to port if your system uses the "a.out" format for
+storing object files.  If your system uses "COFF", you should closely
+examine the DECstation code in the "unix.c" file, as it uses a COFF
+like file header.
+
+The above really just covers some of the difficult parts in porting
+Xtank.  If you have suggestions or additions to the above text,
+please send them to me, via the address listed at the beginning of
+this FAQ.
+
+16)  Why won't Xtank compile on my DECstation?
+
+You need to use GCC to compile Xtank on the DECstations, at least
+for ones running Ultrix 4.2(A).  DEC has done something to the C
+compiler that causes it to die in compiling Xtank.  I don't frankly
+care why -- the same code will compile just fine under Ultrix 4.2
+on a vax, and compiles fine using GCC v2.2.2 on the same DECstation.
+
+Complain to DEC, or install GCC.  Don't complain to us.

@@ -3,10 +3,13 @@
 /* uses the "artful" V */
 
 /*
-$Author: rpotter $
-$Id: artful.c,v 2.3 1991/02/10 13:50:08 rpotter Exp $
+$Author: lidl $
+$Id: artful.c,v 2.4 1992/08/19 05:18:46 lidl Exp $
 
 $Log: artful.c,v $
+ * Revision 2.4  1992/08/19  05:18:46  lidl
+ * changed to use FLOAT, instead of float
+ *
  * Revision 2.3  1991/02/10  13:50:08  rpotter
  * bug fixes, display tweaks, non-restart fixes, header reorg.
  *
@@ -54,11 +57,11 @@ It's ultimate speed and manouverability make it  difficult to hit.Its one \
 };
 
 
-float artful_tw();
+FLOAT artful_tw();
 
 static Location myloc;
-static float dir;
-static float myspeed;
+static FLOAT dir;
+static FLOAT myspeed;
 
 void message(string)
 char *string;
@@ -414,9 +417,9 @@ artful_avoid(b, isabullet)
 Bullet_info *b;
 int isabullet;
 {
-	float movedir;
-	float theta;
-	float phi;
+	FLOAT movedir;
+	FLOAT theta;
+	FLOAT phi;
 	int bulx, buly, mex, mey;
 	int closeness;
 	int oldcloseness;
@@ -461,7 +464,7 @@ int isabullet;
 		}
 		if (important)
 		{
-            theta = (float) ATAN2(b->yspeed, b->xspeed);
+            theta = (FLOAT) ATAN2(b->yspeed, b->xspeed);
 			phi = dir - theta - PI / 2;
 
             if ((ABS(sin((double) (dir - theta))) > .7) && !behindme)
@@ -480,7 +483,7 @@ int isabullet;
 	}
 	else
 	{
-        theta = (float) ATAN2(myloc.box_y - b->loc.box_y,
+        theta = (FLOAT) ATAN2(myloc.box_y - b->loc.box_y,
                               myloc.box_x - b->loc.box_x);
 		if (artful_ok(theta - PI / 2))
 			movedir = dir - PI / 2;
@@ -491,10 +494,10 @@ int isabullet;
 	}
 }
 
-float artful_tw(angle)
-float angle;
+FLOAT artful_tw(angle)
+FLOAT angle;
 {
-	float answer = angle;
+	FLOAT answer = angle;
 
 	while (answer < 0)
 		answer += 2 * PI;
@@ -502,7 +505,7 @@ float angle;
 }
 
 artful_ok(angle)
-float angle;
+FLOAT angle;
 {
 	if ((myloc.box_x < 100) && (wall(WEST, myloc.grid_x, myloc.grid_y))
 			&& (angle > PI / 2) && (angle < 3 * PI / 2))

@@ -8,9 +8,12 @@
 
 /*
 $Author: lidl $
-$Id: shooter.c,v 2.6 1991/12/15 20:22:49 lidl Exp $
+$Id: shooter.c,v 2.7 1992/08/19 05:19:46 lidl Exp $
 
 $Log: shooter.c,v $
+ * Revision 2.7  1992/08/19  05:19:46  lidl
+ * changed to use SQRT instead of sqrt
+ *
  * Revision 2.6  1991/12/15  20:22:49  lidl
  * changed all "float" occurances to "FLOAT"
  *
@@ -199,7 +202,7 @@ shooter_shoot(sinfo, myloc, t)
 	    if (range > wi->range)
 		continue;
 	    /* Lead the target approximately, shoot fanning */
-	    lead_factor = 2 * sqrt(0.0 + range) / wi->ammo_speed;
+	    lead_factor = 2 * SQRT(0.0 + range) / wi->ammo_speed;
 	    dx += (int) (t->xspeed * lead_factor * (FLOAT) rnd(20) / 19.0);
 	    dy += (int) (t->yspeed * lead_factor * (FLOAT) rnd(20) / 19.0);
 

@@ -7,10 +7,25 @@
 */
 
 /*
-$Author: stripes $
-$Id: update.c,v 2.8 1992/02/10 05:26:49 stripes Exp $
+$Author: lidl $
+$Id: update.c,v 2.13 1992/08/18 05:41:55 lidl Exp $
 
 $Log: update.c,v $
+ * Revision 2.13  1992/08/18  05:41:55  lidl
+ * added tac nuke patches
+ *
+ * Revision 2.12  1992/06/07  02:45:08  lidl
+ * Post Adam Bryant patches and a manual merge of the rejects (ugh!)
+ *
+ * Revision 2.11  1992/05/19  22:57:19  lidl
+ * post Chris Moore patches, and sqrt to SQRT changes
+ *
+ * Revision 2.10  1992/03/31  21:45:50  lidl
+ * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
+ *
+ * Revision 2.9  1992/03/31  04:04:16  lidl
+ * pre-aaron patches, post 1.3d release (ie mailing list patches)
+ *
  * Revision 2.8  1992/02/10  05:26:49  stripes
  * Exaust trails for various crap.
  *
@@ -52,9 +67,7 @@ $Log: update.c,v $
 #include "bullet.h"
 #include "terminal.h"
 #include "globals.h"
-#ifndef NO_NEW_RADAR
 #include "graphics.h"
-#endif /* !NO_NEW_RADAR */
 
 extern Boolean intersect_wall();
 
@@ -134,9 +147,18 @@ update_vehicle(v)
 
     /* Decrement heat by heat_sinks every five frames */
     if ((frame % 5) == 0) {
-	v->heat -= v->vdesc->heat_sinks + 1;
-	if (v->heat < 0)
+	if ((v->num_discs > 0) &&
+	    (settings.si.disc_heat < 1.0)) {
+	    v->heat += 10 * (1.0 - settings.si.disc_heat);
+	    v->heat -= (v->vdesc->heat_sinks * settings.si.disc_heat + 1);
+	} else {
+	    v->heat -= v->vdesc->heat_sinks + 1;
+	}
+	if (v->heat < 0) {
 	    v->heat = 0;
+	} else if (v->heat > 110) {
+	    v->heat = 110;
+	}
     }
     /* Stop vehicle from sliding every 16 frames */
     if (v->status & VS_sliding) {
@@ -157,7 +179,8 @@ update_vehicle(v)
     v->old_loc = old_loc = v->loc;
     v->loc = loc;
 
-    update_loc(old_loc, loc, vector->xspeed + xadj, vector->yspeed + yadj);
+    if (v->just_ported == FALSE)
+      update_loc(old_loc, loc, vector->xspeed + xadj, vector->yspeed + yadj);
 
     /* Update turrets */
     if (v->num_turrets > 0)
@@ -176,6 +199,12 @@ update_vector(v)
     FLOAT turning_rate, friction, max_diff, accel, ratio;
     Box *b;
     Vector *vector = &v->vector;
+
+    /*
+     * Stash the old heading away for anyone who wants it     -ane
+     */
+
+     vector->old_heading = vector->heading;
 
     /* don't let them turn or accelerate if they are slicked with oil */
     if (v->status & VS_sliding)
@@ -237,7 +266,7 @@ update_vector(v)
 		v->vdesc->tread_acc : v->vdesc->engine_acc) * friction;
 
     /* Make certain you're not accelerating by more than allowed amount */
-    accel = sqrt(xaccel*xaccel + yaccel*yaccel);
+    accel = SQRT((double) xaccel*xaccel + yaccel*yaccel);
     if (accel > max_diff) {
 	ratio = max_diff/accel;
 	xaccel *= ratio;
@@ -272,6 +301,12 @@ update_vector(v)
     FLOAT desired_acc;		/* how much the driver wants to speed up */
     FLOAT drive_acc;		/* acceleration from engine power */
     FLOAT ground_friction;
+
+    /*
+     * Stash the old heading away for anyone who wants it     -ane
+     */
+
+     vector->old_heading = vector->heading;
 
     /* don't let them turn or accelerate if they are slicked with oil
        (actually, air friction should be taken into account, but I'm lazy) */
@@ -353,6 +388,7 @@ update_vector(v)
            does NOT mean more slowdown) */
         desired_speed *= settings.si.owner_slowdown;
     }
+
     desired_acc = desired_speed - roll_speed;
 
     /* take engine power limit into account */
@@ -486,8 +522,13 @@ update_bullets()
 	{
 		b = bset->list[i];
 
-		/* decrement life and see if it's dead */
-		while (--b->life < 0)
+		/* decrement life and see if it's dead.
+		 * If it is dead, swap it with the last bullet in the list, 
+		 * decrememt the number of bullets in the list, leave b 
+		 * pointing to the bullet which was previously at the end 
+		 * of the list and repeat until it's not dead
+		 */
+		while ((b->type != DISC) && (--b->life < 0))
 		{
 			/* if not last on list fill up hole, otherwise, do next bullet */
 			if (i != --bset->number)
@@ -500,8 +541,7 @@ update_bullets()
 				break;
 		}
 
-		/* If it is a mine, seeker, slick, or disc run the special code for
-		   it */
+		/* run any special code for it */
 		switch (b->type)
 		{
 			case MINE:
@@ -518,11 +558,14 @@ update_bullets()
 			case DISC:
 				update_disc(b);
 				break;
-#ifndef NO_NEW_RADAR
 			case HARM:
 				update_harm(b);
 				break;
-#endif /* !NO_NEW_RADAR */
+#ifdef NO_GAME_BALANCE
+                        case NUKE:
+                                update_nuke(b);
+                                break;
+#endif
 		}
 
 		/* Update the bullet location */
@@ -533,6 +576,16 @@ update_bullets()
 		update_loc(old_loc, loc, b->xspeed, b->yspeed);
 	}
 }
+
+#ifdef NO_GAME_BALANCE
+update_nuke(b)
+Bullet *b;
+{
+	if (!b->life) {
+		expl_nuke(b);
+	}
+}
+#endif
 
 /*
 ** Stops the bullet after 5 frames of movement and lets it hurt its owner.
@@ -648,7 +701,7 @@ Bullet *b;
 		b->yspeed = ydir * sp;
 	    }
 	    else
-		b->xspeed = xdir * sqrt(sp2 - b->yspeed * b->yspeed);
+		b->xspeed = xdir * SQRT((double) sp2 - b->yspeed * b->yspeed);
 	}
 	else
 	{
@@ -659,52 +712,29 @@ Bullet *b;
 		b->xspeed = xdir * sp;
 	    }
 	    else
-		b->yspeed = ydir * sqrt(sp2 - b->xspeed * b->xspeed);
+		b->yspeed = ydir * SQRT((double) sp2 - b->xspeed * b->xspeed);
 	}
     }
 }
 
-#ifndef NO_NEW_RADAR
-
-/*
- * Adapted from "Graphics Gems"
- * gives approximate distance from loc1 to loc2
- * with only overestimations, and then never by more
- * than (9/8) + one bit uncertainty.
- */
-
-/* !!! Wrong place for this, move! !!! */
-
-long idist(loc1, loc2)
-lCoord loc1, loc2;
-{
-    if ((loc2.x -= loc1.x) < 0) loc2.x = -loc2.x;
-    if ((loc2.y -= loc1.y) < 0) loc2.y = -loc2.y;
-    return (loc2.x + loc2.y - (((loc2.x>loc2.y) ? loc2.y : loc2.x) >> 1) );
-}
-
-/*
- * 
- */
+int traceharm = FALSE;
 
 #define HARM_ACC 4
+#define UPDATE_RATE 1
 
 update_harm(b)
 Bullet *b;
 {
-    Loc *loc, best_loc;
-    lCoord bCoord, vCoord, best_vCoord;
+    lCoord bCoord, vCoord;
     float accel, sp, sp2, axs, ays, xdir, ydir;
     int i;
     
     int dx, dy, best_dx, best_dy;
     Vehicle *best_v;
     long best_dist, dist;
-    float angle;
-    int projected_x, projected_y, time_to_target;
-    int my_speed;
 
    make_explosion(b->loc, EXP_EXHAUST);
+
    /*
     * If age > BOOST_PHASE
     *   perform updates
@@ -712,27 +742,35 @@ Bullet *b;
     *   set elevation to flying
     */
 
+    if (traceharm) printf("uh: Begins.\n");
+
     b->state = RED;
 
     if (weapon_stat[(int)b->type].frames - b->life > BOOST_PHASE)  {
 
+        if (traceharm) printf("uh:   Past boost phase.\n");
+
+
+	/*
+	 * Set the initial strictness on a emitter lock
+	 * based on how far bullet is from the lock coord.
+	 */
+
+
+	bCoord.x = b->loc->x;
+	bCoord.y = b->loc->y;
+
+        if (idist(bCoord.x, bCoord.y, b->target.x, b->target.y) > BOX_WIDTH * 4)
+	    best_dist = 3 * BOX_WIDTH;
+        else
+	    best_dist = 1 * BOX_WIDTH;
+
+	if (traceharm) printf("uh:   Initail best dist %i\n", best_dist);
 
        /* 
         * Look at each vehicle, at determine it's brightness relative to
         * the last target coordinate.
         */
-
-        best_dist = 1<<30;
-
-       /*
-        * don't look for radar when we are within 1 boxes (they see us by now)
-        */
-
-	bCoord.x = b->loc->x;
-	bCoord.y = b->loc->y;
-
-
-        if (idist(bCoord, b->target) > BOX_WIDTH) 
             for (i = 0; i < num_veh_alive; i++) {
 
 
@@ -746,23 +784,30 @@ Bullet *b;
 	    * vehicle pointer we found last update!
             */
 
-	    if ( (b->owner->team == live_vehicles[i]->team)
-                 || (live_vehicles[i]->special[(SpecialType)NEW_RADAR].status != SP_on)
-                 || (live_vehicles[i]->special[(SpecialType)RADAR].status != SP_on)
+	    if ( (b->owner->team == live_vehicles[i]->team && b->owner->team != NEUTRAL)
+                 || ( (live_vehicles[i]->special[(SpecialType)NEW_RADAR].status != SP_on)
+                    && (live_vehicles[i]->special[(SpecialType)RADAR].status != SP_on) )
                  || (live_vehicles[i]->have_IFF_key[b->owner->number]) 
 		)
                 continue;
 
+	    if (traceharm) printf("uh:   v: %i ok for emmiter-lock\n", i);
 
 	    vCoord.x = live_vehicles[i]->loc->x;
 	    vCoord.y = live_vehicles[i]->loc->y;
 
-	    dist = idist(b->target, vCoord);
+	    dist = idist(b->target.x, b->target.y, vCoord.x, vCoord.y);
+
+	    /*
+	     * The distance from the lock coordinate to the target
+	     * vehicle not only has to be smaller than the last, it
+	     * has to be less than the initial best dist.
+	     */
 
 	    if (dist < best_dist) {
+		if (traceharm) printf("uh:  v: %i better than last! dist: %li best: %li \n", i, dist, best_dist);
 	        best_v = live_vehicles[i];
 	        best_dist = dist;
-	        best_vCoord = vCoord;
 		b->state = GREEN;
             }
 
@@ -770,45 +815,60 @@ Bullet *b;
 
 
        /* 
-        *  If nothing was emitting 2 boxes from our target, (or we are
-	*  within two boxes of our target, as best_dist will still be a
-	*  big num) look for something on radar near our target 
+        *  If nothing was emitting close to our target,
+	*  use radar near find something near our target 
 	*  coordinates.
         */
 
-#define MAGIC_RCS 10
+#define MAGIC_RCS 100
 
-        if (best_dist > BOX_WIDTH) for (i = 0; i < num_veh_alive; i++) {
+	if (traceharm) printf("uh:   Pre self-locking \n");
 
+        if (b->state == RED)
+	   for (i = 0; i < num_veh_alive; i++) {
 
-	    if ( (b->owner->team == live_vehicles[i]->team)
+	    if (traceharm) printf("uh:   self-locking v: %i\n", i);
+
+	    if ( (b->owner->team == live_vehicles[i]->team && b->owner->team != NEUTRAL)
                || (live_vehicles[i]->have_IFF_key[b->owner->number])
 	       || (live_vehicles[i]->rcs < MAGIC_RCS)
 		 )
                 continue;
 		
+	    if (traceharm) printf("uh:   eligible self-lock vehicle: %i \n", i);
+
 	    vCoord.x = live_vehicles[i]->loc->x;
 	    vCoord.y = live_vehicles[i]->loc->y;
 
-	    dist = idist(b->target, vCoord);
+	    dist = idist(b->target.x, b->target.y, vCoord.x, vCoord.y);
 
 	    if (dist < best_dist) {
+		if (traceharm) printf("uh:  v: %i better than last! dist: %li best: %li \n", i, dist, best_dist);
 	        best_v = live_vehicles[i];
 	        best_dist = dist;
-	        best_vCoord = vCoord;
 		b->state = YELLOW;
             }
 	}
 
 	/*
-         * make sure we locked on to something, then use code stolen from seeker
+         * make sure we locked on to something,
+	 * cheat and directly access his vector (this is a SMART weapon)
+	 * to update the lock coordinates,
+	 * then use code stolen from seeker
+	 *
+	 * Eventually might want to reduce rate at which update_harm
+	 * is called, that's what UPDATE_RATE is for.
          */
 
-	if (best_dist != 1<<30) {
+	if (b->state != RED) {
 
-	    b->target = best_vCoord;
-	    best_dx = (int) (best_v->loc->x - b->loc->x);
-	    best_dy = (int) (best_v->loc->y - b->loc->y);
+	    if (traceharm) printf("uh:   must not be in red state, cause we're locking on\n");
+
+	    b->target.x = best_v->loc->x + (best_v->vector.xspeed * UPDATE_RATE);
+	    b->target.y = best_v->loc->y + (best_v->vector.yspeed * UPDATE_RATE);
+
+	    best_dx = (int) (b->target.x - b->loc->x);
+	    best_dy = (int) (b->target.y - b->loc->y);
 
 	    sp = weapon_stat[(int)b->type].ammo_speed;
 	    sp2 = sp * sp;
@@ -831,28 +891,32 @@ Bullet *b;
 		    b->yspeed = ydir * sp;
 		}
 		else
-		    b->xspeed = xdir * sqrt(sp2 - b->yspeed * b->yspeed);
+		    b->xspeed = xdir * SQRT((double)sp2 - b->yspeed * b->yspeed);
 	    } else {
 		b->xspeed += ydir * accel;
 		if (ABS(b->xspeed) >= sp) {
 		    b->yspeed = 0;
 		    b->xspeed = xdir * sp;
 		} else
-		    b->yspeed = ydir * sqrt(sp2 - b->xspeed * b->xspeed);
+		    b->yspeed = ydir * SQRT((double)sp2 - b->xspeed * b->xspeed);
 	    }
 
         /*
-         * Dive on target if close
+         * Dive on target if close, un-dive if not
          */
 
-         if ( (best_dx < 10) && (best_dy < 10) ) b->loc->z = 1;
+	if ( idist(bCoord.x, bCoord.y, b->target.x, b->target.y) < 32)
+            b->loc->z = 1;
+        else
+	    b->loc->z = 9;
     }
 	} else if (weapon_stat[(int)b->type].frames - b->life == BOOST_PHASE)
 		b->loc->z = 9;
 
+	if (traceharm) printf("uh: leaving\n");
+
 }
 
-#endif /* !NO_NEW_RADAR */
 
 
 /*

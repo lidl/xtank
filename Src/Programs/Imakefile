@@ -1,19 +1,28 @@
 /**/#
 /**/# Imakefile for ./Src/Programs - part of the UMDENG X-Tank distribution
 /**/#
-/**/# $Id: Imakefile,v 1.12 1992/02/01 22:26:30 lidl Exp $
+/**/# $Id: Imakefile,v 1.15 1992/04/27 15:35:37 lidl Exp $
 /**/#
 
 #include "../../Imakefile.Config"
 
-#if !defined(i860) && !defined(sun)
-    CDEBUGFLAGS = -g
+#if !defined(i860) && !defined(SunArchitecture)
+    CDEBUGFLAGS = -g $(EXTRA_CCOPTS)
 #endif
 #ifdef i860Architecture
-    CDEBUGFLAGS = -gg
+    CDEBUGFLAGS = -gg $(EXTRA_CCOPTS)
 #endif
 #ifdef SunArchitecture
-    CDEBUGFLAGS = -O4
+#if !HasGcc
+    CDEBUGFLAGS = -O4 /usr/lib/libm.il
+#else
+    CDEBUGFLAGS = -O
+#endif
+#endif
+#ifdef UltrixArchitecture
+#if !HasGcc
+     EXTRA_CCOPTS = -Olimit 1024
+#endif
 #endif
            SRCS = tagman.c Bootlegger.c gnat.c \
                   drone.c warrior.c shooter.c eliza.c Buddy.c Flipper.c \

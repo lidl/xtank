@@ -1,8 +1,14 @@
 /*
 $Author: lidl $
-$Id: Pzkw_I.c,v 1.4 1991/09/29 15:40:22 lidl Exp $
+$Id: Pzkw_I.c,v 1.6 1992/08/19 05:18:46 lidl Exp $
 
 $Log: Pzkw_I.c,v $
+ * Revision 1.6  1992/08/19  05:18:46  lidl
+ * changed to use FLOAT, instead of float
+ *
+ * Revision 1.5  1992/02/17  09:14:28  lidl
+ * now have static variables where they should have before
+ *
  * Revision 1.4  1991/09/29  15:40:22  lidl
  * changed all occurances of atan2 to ATAN2, so it uses the correct macro
  *
@@ -39,7 +45,7 @@ $Log: Pzkw_I.c,v $
 
 #define abs(x) ((x)>0?(x):(-x))
 
-Vehicle_info my_vehicle;
+static Vehicle_info my_vehicle;
 
 void Pzkw_I_main();
 
@@ -53,7 +59,7 @@ Prog_desc Pzkw_I_prog = {
     Pzkw_I_main
 };
 
-static float angle_towards(x, y)/* return the approximated angle from robot
+static FLOAT angle_towards(x, y)/* return the approximated angle from robot
 				   to x,y */
 int x, y;
 {
@@ -62,7 +68,7 @@ int x, y;
     get_location(&myloc);
     return ATAN2((double) (y - myloc.y), (double) (x - myloc.x));
 }
-static float angle_towards_grid(x, y)
+static FLOAT angle_towards_grid(x, y)
 int x, y;
 {
     Location myloc;
@@ -71,11 +77,11 @@ int x, y;
     return ATAN2((double) (y - myloc.grid_y), (double) (x - myloc.grid_x));
 }
 
-static float correct_for_walls(x, y, v)
+static FLOAT correct_for_walls(x, y, v)
 int x, y;
-float v;
+FLOAT v;
 {
-    float w;
+    FLOAT w;
 
     w = ((v) > 0 ? (v) : (2 * PI + v));
     if (wall(NORTH, x, y))
@@ -112,7 +118,7 @@ int *x, *y;
 void Pzkw_I_main()
 {
     Vehicle_info enemy;		/* -1 if freind spotted */
-    float angle;
+    FLOAT angle;
     int i = 0;
     int loc_x, loc_y;
     int state = WAITS;

@@ -1,5 +1,7 @@
 #include "/usr/include/mips/asm.h"
 #include "/usr/include/mips/regdef.h"
+.set noat
+.set noreorder
 LEAF(setjmp)
 addiu sp,sp,-32
 sw    ra,28(sp)

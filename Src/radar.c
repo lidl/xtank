@@ -9,9 +9,12 @@
 
 /*
 $Author: lidl $
-$Id: radar.c,v 2.6 1992/01/29 08:37:01 lidl Exp $
+$Id: radar.c,v 2.8 1992/03/31 21:45:50 lidl Exp $
 
 $Log: radar.c,v $
+ * Revision 2.8  1992/03/31  21:45:50  lidl
+ * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
+ *
  * Revision 2.6  1992/01/29  08:37:01  lidl
  * post aaron patches, seems to mostly work now
  *
@@ -47,7 +50,6 @@ $Log: radar.c,v $
 #include "globals.h"
 
 extern Map real_map;
-Boolean traceaction = FALSE;
 
 /* Names for radar blip life numbers */
 #define RADAR_born	23
@@ -106,7 +108,7 @@ static int radar_num_swept[24] = {
 };
 
 
-special_radar(v, record, action)
+SpecialStatus special_radar(v, record, action)
 Vehicle *v;
 char *record;
 unsigned int action;
@@ -118,6 +120,10 @@ unsigned int action;
     int init_x, init_y;
     int x, y;
     int i;
+#ifndef NO_CAMO
+    int veh;
+    Vehicle *sv;
+#endif /* !NO_CAMO */
 
     r = (Radar *) record;
 
@@ -170,12 +176,51 @@ unsigned int action;
 	    /* If there is a vehicle in this box, make a blip */
 	    if (vehicle_flags)
 	    {
+
+#ifndef NO_CAMO
+
+#define S_THRESH 10.0
+ 
+            /* 
+             * This "crosses off" a vehicle out of the copy
+             * of vehicle-flags obtained above if they
+             * are being stealthy.
+             */
+
+            for (veh = 0; veh < MAX_VEHICLES; ++veh) {
+                sv = &actual_vehicles[veh];
+
+                if ( !tstflag(sv->status, VS_is_alive) 
+		    || !tstflag(vehicle_flags, (VEHICLE_0 << veh)) )
+                    continue;
+
+                if (sv->rcs < sv->normal_rcs)
+                    clrflag(vehicle_flags, (VEHICLE_0 << veh));
+
+		if (v->loc->grid_x != sv->loc->grid_x
+		  || v->loc->grid_y != sv->loc->grid_y) {
+		
+		    sv->illum[v->number].gx = v->loc->grid_x;
+		    sv->illum[v->number].gy = v->loc->grid_y;
+
+		    if (sv->rcs < sv->normal_rcs) {
+			sv->illum[v->number].color = GREEN;
+		    } else
+			sv->illum[v->number].color = RED;
+                }
+            }
+
+            if (vehicle_flags) {
+#endif /* !NO_CAMO */
 		b = &r->blip[r->num_blips++];
 		b->x = grid2map(x) + MAP_BOX_SIZE / 4;
 		b->y = grid2map(y) + MAP_BOX_SIZE / 4;
 		b->life = RADAR_born;
 		b->view = 0;
 		b->flags = vehicle_flags;
+#ifndef NO_CAMO
+             }
+#endif /* !NO_CAMO */
 	    }
 	}
 
@@ -236,10 +281,8 @@ unsigned int action;
 	}
 	break;
       case SP_activate:
-#ifndef NO_NEW_RADAR
 	if (v->special[(SpecialType) NEW_RADAR].status == SP_on)
-	    do_special(v, (SpecialType) NEW_RADAR, SP_off);
-#endif /* !NO_NEW_RADAR */
+	    return SP_off;
 	/* clear the blips left over from before */
 	r->num_blips = 0;
 
@@ -253,6 +296,8 @@ unsigned int action;
 	r->old_start_y = r->start_y;
 	r->old_end_x = r->end_x;
 	r->old_end_y = r->end_y;
+
+	return SP_on;
 	break;
       case SP_deactivate:
 	break;
@@ -312,10 +357,6 @@ int color;
 	draw_text(MAP_WIN, x, y, buf, S_FONT, DRAW_XOR, color);
 }
 
-#ifndef NO_NEW_RADAR
-
-#define TAC_UPDATE_INTERVAL 1 /* 2 is normal */
-#define RAD_UPDATE_INTERVAL 1 /* 6 is normal */
 
 /*
  * The idea of the blip is somewhat perverted in that
@@ -342,7 +383,6 @@ nr_draw_number(v, c)
 Vehicle *v;
 Coord *c;
 {
-	int x, y;
 	char buf[2];
 
 	buf[0] = '0' + v->number;
@@ -350,12 +390,14 @@ Coord *c;
 	draw_text(MAP_WIN, c->x, c->y, buf, S_FONT, DRAW_XOR, v->color);
 }
 
+Boolean traceaction = FALSE;
+
 /*
  * note that if a draw follows an activate, there must not have been an 
  * intervening redisplay, though an update is OK.
  */
 
-special_new_radar(v, record, action)
+SpecialStatus special_new_radar(v, record, action)
 Vehicle *v;
 char *record;
 unsigned int action;
@@ -364,42 +406,65 @@ unsigned int action;
     newRadar *r;
     newBlip *b;
     Vehicle *bv, *tv;
-    float dx, dy, dist_2;
+    long dist_2;
  
     r = (newRadar *) record;
 
     switch (action) {
+
 	case SP_redisplay:
 	    if (traceaction) if (v->number == 0) printf("snr: %i redisplay ", frame);
 	    if (r->need_redisplay) {
 		nr_t_redisplay(r);
-		r->need_redisplay = FALSE;
 		if (traceaction) if (v->number == 0) printf("-- redisplayed");
 	    }
 	    if (traceaction) if (v->number == 0) printf("\n");
 	    break;
+
 	case SP_update:
 	    if (traceaction) if (v->number == 0) printf("snr: %i update    ", frame);
-	    if (frame - r->rad_frame_updated >= RAD_UPDATE_INTERVAL) {
-		r->rad_frame_updated = frame;
+	    if (frame - r->frame_updated >= RAD_UPDATE_INTERVAL) {
+		r->frame_updated = frame;
 		for (veh = 0; veh < MAX_VEHICLES; veh++) {
 		    b = &r->blip[veh];
 		    bv = &actual_vehicles[veh];
 		    b->draw_radar = FALSE;
-		    b->draw_tactical = FALSE;
 		    if ( (bv == v) || !tstflag(bv->status, VS_is_alive) )
 			continue;
-		    b->draw_friend = v->have_IFF_key[bv->number] || (bv->team == v->team);
-		    dx = v->loc->x - bv->loc->x;
-		    dy = v->loc->y - bv->loc->y;
-		    dist_2 = SQR(dx) + SQR(dy); /* !!! Change this to the new fast routine !!! */
-		    if ((bv->rcs / dist_2) > THRESHOLD)
+
+                    /* sort of illegally scribbling on this, change in future */
+		    b->draw_friend = v->have_IFF_key[bv->number] || (bv->team == v->team && v->team != NEUTRAL);
+
+		    dist_2 = idist((long) bv->loc->x, (long) bv->loc->y, 
+				   (long) v->loc->x, (long) v->loc->y);
+		    dist_2 *= dist_2;
+
+		    if ((bv->rcs / dist_2) > THRESHOLD) {
 			b->draw_radar = TRUE;
-		    if (b->draw_radar) {
 			b->draw_loc.x = grid2map(bv->loc->grid_x) + shft + MAP_BOX_SIZE / 4;
 			b->draw_loc.y = grid2map(bv->loc->grid_y) + shft + MAP_BOX_SIZE / 4;
 			b->draw_grid.x = bv->loc->grid_x;
 			b->draw_grid.y = bv->loc->grid_y;
+#ifndef NO_CAMO
+                        if (!b->draw_friend) {
+                            if ( v->loc->grid_x != bv->loc->grid_x
+			     || v->loc->grid_y != bv->loc->grid_y) {
+				bv->illum[v->number].gx = v->loc->grid_x;
+				bv->illum[v->number].gy = v->loc->grid_y;
+				bv->illum[v->number].color = RED;
+			    }
+                        } 
+			/* want him to be able to see emmiters from 2x illiuminated distance. */
+		    } else if ((bv->normal_rcs / (dist_2 * .25)) > THRESHOLD) {
+                        if (!b->draw_friend) {
+                            if ( v->loc->grid_x != bv->loc->grid_x
+			     || v->loc->grid_y != bv->loc->grid_y) {
+				bv->illum[v->number].gx = v->loc->grid_x;
+				bv->illum[v->number].gy = v->loc->grid_y;
+				bv->illum[v->number].color = GREEN;
+			    }
+                        } 
+#endif /* !NO_CAMO */
 		    }
 		} 
 		r->need_redisplay = TRUE;
@@ -407,39 +472,35 @@ unsigned int action;
 	    }
 	    if (traceaction) if (v->number == 0) printf("\n");
 	    break;
+
 	case SP_draw:
-  	    if (traceaction) if (v->number == 0) printf("snr: %i draw\n", frame);
-	    for (veh = 0; veh < MAX_VEHICLES; veh++) {
-		b = &r->blip[veh];
-		bv = &actual_vehicles[veh];
-		if (b->drawn_radar)
-		    if (b->drawn_friend)
-			nr_draw_number(bv, b->drawn_loc);
-		    else
-			draw_filled_square(MAP_WIN, b->drawn_loc.x, b->drawn_loc.y, BLIP_SIZE, DRAW_XOR, CUR_COLOR);
-	    }
-	    break;
 	case SP_erase:
-  	    if (traceaction) if (v->number == 0) printf("snr: %i erase\n", frame);
+  	    if (traceaction) if (v->number == 0) printf("snr: %i draw/erase\n", frame);
 	    for (veh = 0; veh < MAX_VEHICLES; veh++) {
 		b = &r->blip[veh];
 		bv = &actual_vehicles[veh];
 		if (b->drawn_radar)
 		    if (b->drawn_friend)
-			nr_draw_number(bv, b->drawn_loc);
+			nr_draw_number(bv, &b->drawn_loc);
 		    else {
 			draw_filled_square(MAP_WIN, b->drawn_loc.x, b->drawn_loc.y, BLIP_SIZE, DRAW_XOR, CUR_COLOR);
-			r->map[b->drawn_grid.x][b->drawn_grid.y] = NULL;
+			if (action == SP_erase)
+			    r->map[b->drawn_grid.x][b->drawn_grid.y] = NULL;
 		    }
-		    b->drawn_radar = FALSE;
+		    if (action == SP_erase) b->drawn_radar = FALSE;
 	    }
 	    break;
+
 	case SP_activate:
   	    if (traceaction) if (v->number == 0) printf("snr: %i activate\n", frame);
+
 	    if (v->special[(SpecialType) RADAR].status == SP_on)
-		do_special(v, (SpecialType) RADAR, SP_off);
+		return SP_off;
+
 	    r->need_redisplay = TRUE;
-	    r->rad_frame_updated = frame - RAD_UPDATE_INTERVAL;
+
+	    r->frame_updated = frame - RAD_UPDATE_INTERVAL;
+
 	    for (veh = 0; veh < MAX_VEHICLES; veh++) {
 		b = &r->blip[veh];
 		b->drawn_radar = FALSE;
@@ -449,6 +510,7 @@ unsigned int action;
 		    b->drawn_tactical = FALSE;
 		}
 	    }
+
 	    if (v->special[(SpecialType) TACLINK].status != SP_on)
 		for (x = 0; x < GRID_WIDTH; x++)
 		    for (y = 0; y < GRID_WIDTH; y++)
@@ -458,7 +520,9 @@ unsigned int action;
 		    for (y = 0; y < GRID_WIDTH; y++)
                         if ( r->map[x][y] && !(r->map[x][y])->drawn_radar)
 			    r->map[x][y] = NULL;
+            return SP_on;
 	    break;
+
 	case SP_deactivate:
   	    if (traceaction) if (v->number == 0) printf("snr: %i deactivate\n", frame);
 	    for (veh = 0; veh < MAX_VEHICLES; veh++) {
@@ -466,6 +530,7 @@ unsigned int action;
 		b->draw_radar = FALSE;
 	    }
 	    break;
+
 	default:
 	    break;
     }
@@ -481,50 +546,120 @@ unsigned int action;
     newBlip *b;
     Vehicle *bv, *tv;
     float dx, dy, dist_2;
+    Taclink *t;
+    Rdf *rdf;
+    int i, vi;
+    Trace *tr;
 
-    r = (newRadar *) record;
+    t = (Taclink *) record;
+    r = (newRadar *)(v->special[(SpecialType) NEW_RADAR].record);
+    rdf = (Rdf *)(v->special[(SpecialType) RDF].record);
 
     switch (action) {
+
 	case SP_redisplay:
 	    if (traceaction) if (v->number == 0) printf(" st: %i redisplay  ", frame);
-	    if (r->need_redisplay) {
-		nr_t_redisplay(r);
-		r->need_redisplay = FALSE;
-		if (traceaction) if (v->number == 0) printf("-- redisplayed");
+	    if (v->special[(SpecialType) RDF].status != SP_nonexistent) {
+		for (vi = 0; vi < MAX_VEHICLES; vi++) {
+		    if (vi == v->number)
+			continue;
+		    for (i = 0; i < MAX_VEHICLES; i++) {
+			tr = &rdf->trace[vi][i];
+			if (tr->is_drawn && (tr->to_draw == PERSIST || !tr->to_draw)) {
+			    draw_line(MAP_WIN, grid2map(tr->drawn.start_x) + MAP_OFF,
+					      grid2map(tr->drawn.start_y) + MAP_OFF,
+					      grid2map(tr->drawn.end_x) + MAP_OFF,
+					      grid2map(tr->drawn.end_y) + MAP_OFF,
+					      DRAW_XOR, YELLOW);
+			    tr->is_drawn = FALSE;
+			}
+			if (tr->to_draw == PERSIST) {
+			    draw_line(MAP_WIN, grid2map(tr->draw.start_x) + MAP_OFF,
+                                       grid2map(tr->draw.start_y) + MAP_OFF,
+                                       grid2map(tr->draw.end_x) + MAP_OFF,
+                                       grid2map(tr->draw.end_y) + MAP_OFF,
+                                       DRAW_XOR, YELLOW);
+			    tr->is_drawn = TRUE;
+			    tr->drawn = tr->draw;
+			}
+		    }
+		}
+	    }
+	    if (v->special[(SpecialType) NEW_RADAR].status != SP_nonexistent) {
+		if (r->need_redisplay) {
+		    nr_t_redisplay(r);
+		    if (traceaction) if (v->number == 0) printf("-- redisplayed");
+		}
 	    }
 	    if (traceaction) if (v->number == 0) printf("\n");
 	    break;
+
 	case SP_update:
 	    if (traceaction) if (v->number == 0) printf(" st: %i update    ", frame);
-	    if (frame - r->tac_frame_updated >= TAC_UPDATE_INTERVAL) {
-		r->tac_frame_updated = frame;
-		for (veh = 0; veh < MAX_VEHICLES; veh++) {
-		    b = &r->blip[veh];
-		    bv = &actual_vehicles[veh];
-		    b->draw_tactical = FALSE;
-		    if ( (bv == v) || !tstflag(bv->status, VS_is_alive) )
-			continue;
-		    b->draw_friend = v->have_IFF_key[bv->number] || (bv->team == v->team);
-		    if ( b->draw_friend && bv->special[(SpecialType) TACLINK].status == SP_on)
-			b->draw_tactical = TRUE;
-		    else {
-			for (veh2 = 0; (veh2 < MAX_VEHICLES) && !b->draw_tactical; veh2++) {
-			    tv = &actual_vehicles[veh2];
-			    b->draw_tactical = (tstflag(tv->status, VS_is_alive) &&
-		                      (v->have_IFF_key[tv->number] || (tv->team == v->team)) &&
-				      tv != v &&
-				      tv->special[(SpecialType) TACLINK].status == SP_on &&
-				      ((newRadar *)(tv->special[(SpecialType) NEW_RADAR].record))->blip[veh].draw_radar);
+	    if (v->special[(SpecialType) RDF].status != SP_nonexistent) {
+		for (vi = 0; vi < MAX_VEHICLES; vi++) {
+		    tv = &actual_vehicles[vi];
+		    for (i = 0; i < MAX_VEHICLES; i++) {
+/*
+ * and you may ask yourself...
+ *  Q: why didn't I just spy into the tactical friends Rdf space instead
+ *  of all of this copying?  A:  I wanted to preserve flexibilty
+ *  so that I could alter the persistance rules for tactical info.
+ */
+			if (tv == v)
+			    continue;
+			if (rdf->trace[vi][i].to_draw) --rdf->trace[vi][i].to_draw;
+			if ( !tstflag(tv->status, VS_is_alive)
+			 || tv->special[(SpecialType) RDF].status != SP_on 
+			 || tv->special[(SpecialType) TACLINK].status != SP_on 
+		         || !( v->have_IFF_key[tv->number] 
+			      || (tv->team == v->team && v->team != NEUTRAL)))
+			    continue;
+			if (((Rdf *)(tv->special[(SpecialType) RDF].record))->trace[vi][i].to_draw == PERSIST) {
+			    rdf->trace[vi][i].to_draw = PERSIST;
+			    rdf->trace[vi][i].draw = ((Rdf *)(tv->special[(SpecialType) RDF].record))->trace[vi][i].draw;
+			    /*
+			    printf("got a tac rdf trace v: %i i: %i\n", vi, i);
+			    */
 			}
 		    }
-		    if (b->draw_tactical) {
+		}
+            }
+	    if (frame - t->frame_updated >= TAC_UPDATE_INTERVAL) {
+		t->frame_updated = frame;
+		if (v->special[(SpecialType) NEW_RADAR].status != SP_nonexistent) {
+		    for (veh = 0; veh < MAX_VEHICLES; veh++) {
+			b = &r->blip[veh];
+			bv = &actual_vehicles[veh];
+			b->draw_tactical = FALSE;
+
+			if ( (bv == v) || !tstflag(bv->status, VS_is_alive) )
+			    continue;
+
+                        /* illegally scribbling on this too, make a local variable */
+			b->draw_friend = v->have_IFF_key[bv->number] || (bv->team == v->team && v->team != NEUTRAL);
+
+			if ( b->draw_friend && bv->special[(SpecialType) TACLINK].status == SP_on)
+			    b->draw_tactical = TRUE;
+			else {
+			    for (veh2 = 0; (veh2 < MAX_VEHICLES) && !b->draw_tactical; veh2++) {
+				tv = &actual_vehicles[veh2];
+				b->draw_tactical = (tstflag(tv->status, VS_is_alive) &&
+					  (v->have_IFF_key[tv->number] || (tv->team == v->team && v->team != NEUTRAL)) &&
+					  tv != v &&
+					  tv->special[(SpecialType) TACLINK].status == SP_on &&
+					  tv->special[(SpecialType) NEW_RADAR].status == SP_on &&
+					  ((newRadar *)(tv->special[(SpecialType) NEW_RADAR].record))->blip[veh].draw_radar);
+			    }
+			}
+			if (b->draw_tactical) {
 		    /*
 		     * clear the draw_radar flag if we have tactical data on it and it's moved
 		     * from the radar position (ie, we can have more up-to-date tac info than
 		     * our radar is displaying)
 		     *
 		     * code depends on updates all happening before any displays, as this modifies
-		     * a blip that is as of yet undrawn
+		     * a blip that is as of yet undrawn, and isn't well tested.
 		     *
 		     * note that we have already updated friend even if it is a radar blip
 		     *
@@ -532,86 +667,143 @@ unsigned int action;
 		     * be moved out of the tests cause if it's the same it won't matter anyway!
 		     * 
 		     */
-			if (b->draw_radar) {
-			    if (b->draw_grid.x != bv->loc->grid_x || b->draw_grid.y != bv->loc->grid_y) {
-				b->draw_radar = FALSE;
+			    if (b->draw_radar) {
+				if (b->draw_grid.x != bv->loc->grid_x || b->draw_grid.y != bv->loc->grid_y) {
+				    b->draw_radar = FALSE;
+				    b->draw_loc.x = grid2map(bv->loc->grid_x) + shft + MAP_BOX_SIZE / 4;
+				    b->draw_loc.y = grid2map(bv->loc->grid_y) + shft + MAP_BOX_SIZE / 4;
+				    b->draw_grid.x = bv->loc->grid_x;
+				    b->draw_grid.y = bv->loc->grid_y;
+				} else {
+				    ;
+				}
+			    } else {
 				b->draw_loc.x = grid2map(bv->loc->grid_x) + shft + MAP_BOX_SIZE / 4;
 				b->draw_loc.y = grid2map(bv->loc->grid_y) + shft + MAP_BOX_SIZE / 4;
 				b->draw_grid.x = bv->loc->grid_x;
 				b->draw_grid.y = bv->loc->grid_y;
-			    } else {
-				; /* cut me some slack, I'm thinking about it! */
 			    }
-			} else {
-			    b->draw_loc.x = grid2map(bv->loc->grid_x) + shft + MAP_BOX_SIZE / 4;
-			    b->draw_loc.y = grid2map(bv->loc->grid_y) + shft + MAP_BOX_SIZE / 4;
-			    b->draw_grid.x = bv->loc->grid_x;
-			    b->draw_grid.y = bv->loc->grid_y;
 			}
-		    }
-		} 
-		r->need_redisplay = TRUE;
+		    } 
+		    r->need_redisplay = TRUE;
+		}
 		if (traceaction) if (v->number == 0) printf("-- passed");
 	    }
 	    if (traceaction) if (v->number == 0) printf("\n");
 	    break;
+
+	/*
+	 * Draw/undraw anything that is already on the screen
+	 *
+	 * if this is an erase, zap those objects too.
+	 */
+	 
 	case SP_draw:
-  	    if (traceaction) if (v->number == 0) printf(" st: %i draw\n", frame);
-	    for (veh = 0; veh < MAX_VEHICLES; veh++) {
-		b = &r->blip[veh];
-		bv = &actual_vehicles[veh];
-		if (b->drawn_tactical)
-		    if (b->drawn_friend)
-			    nr_draw_number(bv, b->drawn_loc);
-		    else
-			draw_square(MAP_WIN, b->drawn_loc.x, b->drawn_loc.y, BLIP_SIZE, DRAW_XOR, CUR_COLOR);
-	    }
-	    break;
 	case SP_erase:
-  	    if (traceaction) if (v->number == 0) printf(" st: %i erase\n", frame);
-	    for (veh = 0; veh < MAX_VEHICLES; veh++) {
-		b = &r->blip[veh];
-		bv = &actual_vehicles[veh];
-		if (b->drawn_tactical)
-		    if (b->drawn_friend)
-			nr_draw_number(bv, b->drawn_loc);
-		    else {
-			draw_square(MAP_WIN, b->drawn_loc.x, b->drawn_loc.y, BLIP_SIZE, DRAW_XOR, CUR_COLOR);
-			r->map[b->drawn_grid.x][b->drawn_grid.y] = NULL;
-		    }
-		    b->drawn_tactical = FALSE;
-	    }
-	    break;
-	case SP_activate:
-  	    if (traceaction) if (v->number == 0) printf(" st: %i activate\n", frame);
-	    r->need_redisplay = TRUE;
-	    r->tac_frame_updated = frame - TAC_UPDATE_INTERVAL;
-	    for (veh = 0; veh < MAX_VEHICLES; veh++) {
-		b = &r->blip[veh];
-		b->drawn_tactical = FALSE;
-		b->draw_tactical = FALSE;
-		if (v->special[(SpecialType) NEW_RADAR].status != SP_on) {
-		    b->draw_radar = FALSE;
-		    b->drawn_radar = FALSE;
+  	    if (traceaction) if (v->number == 0) printf(" st: %i draw/erase\n", frame);
+	    if (v->special[(SpecialType) NEW_RADAR].status != SP_nonexistent) {
+		for (veh = 0; veh < MAX_VEHICLES; veh++) {
+		    b = &r->blip[veh];
+		    bv = &actual_vehicles[veh];
+		    if (b->drawn_tactical)
+			if (b->drawn_friend)
+			    nr_draw_number(bv, &b->drawn_loc);
+			else {
+			    draw_square(MAP_WIN, b->drawn_loc.x, b->drawn_loc.y, BLIP_SIZE, DRAW_XOR, CUR_COLOR);
+			    if (action = SP_erase) r->map[b->drawn_grid.x][b->drawn_grid.y] = NULL;
+			}
+			if (action = SP_erase) b->drawn_tactical = FALSE;
 		}
 	    }
-	    if (v->special[(SpecialType) NEW_RADAR].status != SP_on)
-		for (x = 0; x < GRID_WIDTH; x++)
-		    for (y = 0; y < GRID_WIDTH; y++)
-			r->map[x][y] = NULL;
-	    else if (v->special[(SpecialType) NEW_RADAR].status == SP_on)
-		for (x = 0; x < GRID_WIDTH; x++)
-		    for (y = 0; y < GRID_WIDTH; y++)
-                        if ( r->map[x][y] && !(r->map[x][y])->drawn_radar)
-			    r->map[x][y] = NULL;
-	    break;
-	case SP_deactivate:
-  	    if (traceaction) if (v->number == 0) printf(" st: %i deactivate\n", frame);
-	    for (veh = 0; veh < MAX_VEHICLES; veh++) {
-		b = &r->blip[veh];
-		b->draw_tactical = FALSE;
+	    if (v->special[(SpecialType) RDF].status != SP_nonexistent) {
+	       /*
+		* Erase all the drawn tactical traces
+		*/
+		for (vi = 0; vi < MAX_VEHICLES; vi++) {
+		    if (vi == v->number)
+			continue;
+		    for (i = 0; i < MAX_VEHICLES; i++) {
+			tr = &rdf->trace[vi][i];
+			if (tr->is_drawn) {
+			    draw_line(MAP_WIN, grid2map(tr->drawn.start_x) + MAP_OFF,
+				       grid2map(tr->drawn.start_y) + MAP_OFF,
+                                       grid2map(tr->drawn.end_x) + MAP_OFF,
+                                       grid2map(tr->drawn.end_y) + MAP_OFF,
+                                       DRAW_XOR, YELLOW);
+			    if (action == SP_erase)
+				tr->is_drawn = FALSE;
+			}
+		    }
+		}
 	    }
 	    break;
+
+	case SP_activate:
+  	    if (traceaction) if (v->number == 0) printf(" st: %i activate\n", frame);
+
+	    if (v->special[(SpecialType) RDF].status != SP_nonexistent) {
+		for (vi = 0; vi < MAX_VEHICLES; vi++) {
+		    if (vi == v->number)
+			continue;
+		    for (i = 0; i < MAX_VEHICLES * 2; i++) {
+			rdf->trace[vi][i].is_drawn = FALSE;
+			rdf->trace[vi][i].to_draw = FALSE;
+		    }
+		}
+	    }
+
+	    t->frame_updated = frame - TAC_UPDATE_INTERVAL;
+
+	    /*
+	     * clear out the tactical state flags
+	     *
+	     * and if my base special isn't running, init his too.
+	     */
+	     
+	     if (v->special[(SpecialType) NEW_RADAR].status != SP_nonexistent) {
+		r->need_redisplay = TRUE;
+		for (veh = 0; veh < MAX_VEHICLES; veh++) {
+		    b = &r->blip[veh];
+		    b->drawn_tactical = FALSE;
+		    b->draw_tactical = FALSE;
+		    if (v->special[(SpecialType) NEW_RADAR].status != SP_on) {
+			b->draw_radar = FALSE;
+			b->drawn_radar = FALSE;
+		    }
+		}
+		/*
+		 * if my base special isn't running, initialize the
+		 * usage map so I can use it.
+		 *
+		 * if it is already running, just initialize my bits.
+		 *
+		 * I expect him to do the same for me!
+		 */
+		if (v->special[(SpecialType) NEW_RADAR].status != SP_on)
+		    for (x = 0; x < GRID_WIDTH; x++)
+			for (y = 0; y < GRID_WIDTH; y++)
+			    r->map[x][y] = NULL;
+		else if (v->special[(SpecialType) NEW_RADAR].status == SP_on)
+		    for (x = 0; x < GRID_WIDTH; x++)
+			for (y = 0; y < GRID_WIDTH; y++)
+			    if ( r->map[x][y] && !(r->map[x][y])->drawn_radar)
+				r->map[x][y] = NULL;
+	    }
+
+	    return SP_on;
+
+	    break;
+
+	case SP_deactivate:
+  	    if (traceaction) if (v->number == 0) printf(" st: %i deactivate\n", frame);
+		if (v->special[(SpecialType) NEW_RADAR].status != SP_nonexistent) {
+		    for (veh = 0; veh < MAX_VEHICLES; veh++) {
+			b = &r->blip[veh];
+			b->draw_tactical = FALSE;
+		}
+	    }
+	    break;
+
 	default:
 	    break;
     }
@@ -642,7 +834,7 @@ newRadar *r;
 	  || ((b->draw_tactical != b->drawn_tactical) && !b->draw_radar) ) 
 	    if (b->drawn_radar) {
 		if (b->drawn_friend)
-		    nr_draw_number(bv, b->drawn_loc);
+		    nr_draw_number(bv, &b->drawn_loc);
 		else {
 		    draw_filled_square(MAP_WIN, b->drawn_loc.x, b->drawn_loc.y, BLIP_SIZE, DRAW_XOR, CUR_COLOR);
 		    r->map[b->drawn_grid.x][b->drawn_grid.y] = NULL;
@@ -650,7 +842,7 @@ newRadar *r;
 		b->drawn_radar = FALSE;
 	    } else if (b->drawn_tactical) {
 		if (b->drawn_friend)
-		    nr_draw_number(bv, b->drawn_loc);
+		    nr_draw_number(bv, &b->drawn_loc);
 		else {
 		    draw_square(MAP_WIN, b->drawn_loc.x, b->drawn_loc.y, BLIP_SIZE, DRAW_XOR, CUR_COLOR);
 		    r->map[b->drawn_grid.x][b->drawn_grid.y] = NULL;
@@ -663,14 +855,29 @@ newRadar *r;
  *    draws everything supposed to be drawn that's not drawn
  */
 
+/*
+ *    first, draw all of the radar blips
+ *
+ *    draw any blip to be drawn_radar and 
+ *    not drawn already (blips with new data had
+ *           been erased above, and drawn is clear now)
+ */
+
     for (veh = 0; veh < MAX_VEHICLES; veh++) {
 	b = &r->blip[veh];
 	bv = &actual_vehicles[veh];
 	if (b->draw_radar && !b->drawn_radar) {
 	    if (b->draw_friend) {
-		nr_draw_number(bv, b->draw_loc);
+		nr_draw_number(bv, &b->draw_loc);
 		b->drawn_radar = TRUE;
 	    } else {
+		/*
+		 * Check to see if another blip is using this space
+		 *   if not, grab it.
+		 *   if a tactical blip is using it, GRAB IT ANYWAY! HA HA HA!
+		 *      undraw it for him and clear his drawn flag
+		 *   otherwise, don't draw it as it's in use.
+		 */
 		if (r->map[b->draw_grid.x][b->draw_grid.y] == NULL) {
 		    draw_filled_square(MAP_WIN, b->draw_loc.x, b->draw_loc.y, BLIP_SIZE, DRAW_XOR, CUR_COLOR);
 		    r->map[b->draw_grid.x][b->draw_grid.y] = b;
@@ -694,14 +901,31 @@ newRadar *r;
     }
 
 
+/*
+ *    next, draw all of the tactical blips that
+ *    weren't drawn as radar blips
+ *
+ *    Only draw a blip if 
+ *    1) it's marked for drawing tactical
+ *    2) it's not already draw tactical
+ *       (note, that this is cleared above if new data
+ *        was put into the blip)
+ *    3) it's drawn as a radar blip (from above)
+ *    4) it's not GOING TO BE drawn as a radar blip
+ */
+
+
     for (veh = 0; veh < MAX_VEHICLES; veh++) {
 	b = &r->blip[veh];
 	bv = &actual_vehicles[veh];
 	if (b->draw_tactical && !b->drawn_tactical && !b->drawn_radar && !b->draw_radar) {
 	    if (b->draw_friend) {
-		    nr_draw_number(bv, b->draw_loc);
+		    nr_draw_number(bv, &b->draw_loc);
 		    b->drawn_tactical = TRUE;
 	    } else {
+		/*
+		 * if nobodies using this square, grab it
+		 */
 		if (r->map[b->draw_grid.x][b->draw_grid.y] == NULL) {
 		    draw_square(MAP_WIN, b->draw_loc.x, b->draw_loc.y, BLIP_SIZE, DRAW_XOR, CUR_COLOR);
 		    r->map[b->draw_grid.x][b->draw_grid.y] = b;
@@ -716,10 +940,7 @@ newRadar *r;
 	}
     }
 
-
+    /* We've just redisplayed, set a flag to that effect */
+    r->need_redisplay = FALSE;
 }
-
-
-
-#endif /* !NO_NEW_RADAR */
 

@@ -7,10 +7,20 @@
 */
 
 /*
-$Author: aahz $
-$Id: file.c,v 2.24 1992/02/06 09:00:37 aahz Exp $
+$Author: lidl $
+$Id: file.c,v 2.27 1992/06/07 02:45:08 lidl Exp $
 
 $Log: file.c,v $
+ * Revision 2.27  1992/06/07  02:45:08  lidl
+ * Post Adam Bryant patches and a manual merge of the rejects (ugh!)
+ *
+ * Revision 2.26  1992/04/09  04:16:46  lidl
+ * hmmm, old copy seems to be damaged.  Only changes should have been
+ * to use tanklimits.h and not limits.h
+ *
+ * Revision 2.25  1992/03/31  04:04:16  lidl
+ * pre-aaron patches, post 1.3d release (ie mailing list patches)
+ *
  * Revision 2.24  1992/02/06  09:00:37  aahz
  * added save Program info in the save_settings file.
  *
@@ -97,7 +107,7 @@ $Log: file.c,v $
  * 
 */
 
-#include "limits.h"
+#include "tanklimits.h"
 #include "malloc.h"
 #include <assert.h>
 #include "xtank.h"
@@ -113,7 +123,7 @@ $Log: file.c,v $
 #include <sys/param.h>
 #include <sys/dir.h>
 #endif
-#ifdef SVR4
+#if defined(SVR4) || defined(SYSV)
 #include <dirent.h>
 #endif
 
@@ -871,6 +881,16 @@ int save_settings(pcFileName)
 	fprintf(outfile, "Nametags: %d\n", settings.si.no_nametags);
 	fprintf(outfile, "No Radar: %d\n", settings.si.no_radar);
 	fprintf(outfile, "Team Score: %d\n", settings.si.team_score);
+	fprintf(outfile, "Player Teleport: %d\n", settings.si.player_teleport);
+	fprintf(outfile, "Disc Teleport: %d\n", settings.si.disc_teleport);
+	fprintf(outfile, "Teleport From Team: %d\n", settings.si.teleport_from_team);
+	fprintf(outfile, "Teleport From Neutral: %d\n", settings.si.teleport_from_neutral);
+	fprintf(outfile, "Teleport To Team: %d\n", settings.si.teleport_to_team);
+	fprintf(outfile, "Teleport To Neutral: %d\n", settings.si.teleport_to_neutral);
+	fprintf(outfile, "Teleport Any To Any: %d\n", settings.si.teleport_any_to_any);
+	fprintf(outfile, "War Goals Only: %d\n", settings.si.war_goals_only);
+	fprintf(outfile, "Relative Disc: %d\n", settings.si.relative_disc);
+	fprintf(outfile, "Ultimate Own Goal: %d\n", settings.si.ultimate_own_goal);
 
 	/* other settings */
 	fprintf(outfile, "Winning Score: %d\n", settings.si.winning_score);
@@ -878,6 +898,9 @@ int save_settings(pcFileName)
 	fprintf(outfile, "Scroll Speed: %f\n", settings.si.scroll_speed);
 	fprintf(outfile, "Box slowdown: %f\n", settings.si.box_slowdown);
 	fprintf(outfile, "Disc Friction: %f\n", settings.si.disc_friction);
+	fprintf(outfile, "Disc Speed: %f\n", settings.si.disc_speed);
+	fprintf(outfile, "Disc Damage: %f\n", settings.si.disc_damage);
+	fprintf(outfile, "Disc Heat: %f\n", settings.si.disc_heat);
 	fprintf(outfile, "Owner Slowdown: %f\n", settings.si.owner_slowdown);
 	fprintf(outfile, "Slip Friction: %f\n", settings.si.slip_friction);
 	fprintf(outfile, "Normal Friction: %f\n", settings.si.normal_friction);

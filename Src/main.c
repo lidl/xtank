@@ -7,10 +7,19 @@
 */
 
 /*
-$Author: aahz $
-$Id: main.c,v 2.8 1992/02/06 10:09:59 aahz Exp $
+$Author: senft $
+$Id: main.c,v 2.11 1992/04/21 05:11:58 senft Exp $
 
 $Log: main.c,v $
+ * Revision 2.11  1992/04/21  05:11:58  senft
+ * Added support for no o and no delay options.
+ *
+ * Revision 2.10  1992/04/01  00:22:34  lidl
+ * a minor fix to the -V flag, now prints compiled in directory, too
+ *
+ * Revision 2.9  1992/03/30  04:25:06  senft
+ * added version command line argument.  updated help list.
+ *
  * Revision 2.8  1992/02/06  10:09:59  aahz
  * fixed -F option.  fixed -s option mostly.
  *
@@ -100,6 +109,11 @@ Vehicle *dead_vehicles[MAX_VEHICLES];	/* pointers into actual_vehicles[], the
 struct CLFkr command_options; /* options for how xtank starts and exits */
 
 
+extern char *version1;
+extern char *version2;
+extern char *version3;
+
+
 void debugger_break()
 {
     ;				/* this is a good place to but a breakpoint */
@@ -180,16 +194,43 @@ int main(argc, argv)
 						puts("    -i    == -I -X -P -D");
 						puts("    -x    == -X -P");
 						puts("    -h    == -H\n");
-						puts("    -F <filename>   => use settings file *");
+						puts("    -F <filename>   => use settings file");
 						puts("    -X              => exit (auto)");
 						puts("    -P              => print scores");
 						puts("    -D              => no delay *");
-						puts("    -I              => no io(not specifiable) *");
+						puts("    -I              => no i/o(not specifiable) *");
 						puts("    -H              => this help screen");
-						puts("    -S              => auto-start *");
+						puts("    -S              => auto-start");
 						puts("    -Z              => Zephyr Broadcast List *\n");
+						puts("    -V              => Version Information\n");
 						puts(" * Note implemented yet.\n");
 #endif
+						return (0);
+						break;
+
+                    case 'I':
+						command_options.NoIO        = TRUE;
+						break;
+
+                    case 'i':
+						command_options.NoIO        = TRUE;
+						command_options.AutoExit    = TRUE;
+						command_options.PrintScores = TRUE;
+						command_options.NoDelay     = TRUE;
+						break;
+
+                    case 'D':
+						command_options.NoDelay     = TRUE;
+						break;
+
+                    case 'V':
+						puts(version1);
+						puts(version2);
+						puts(version3);
+						puts("\nCompiled with the following options:");
+						puts(ALLDEFINES);
+						printf("\nCompiled in XTANK_DIR: ");
+						puts(XTANK_DIR);
 						return (0);
 						break;
 
@@ -308,6 +349,8 @@ struct CLFkr *ConfigRunning;
 	ConfigRunning->UseSetting   = FALSE;
 	ConfigRunning->PrintScores  = FALSE;
 	ConfigRunning->Settings     = NULL;
+	ConfigRunning->NoDelay      = FALSE;
+	ConfigRunning->NoIO         = FALSE;
 
 	return (0);
 }

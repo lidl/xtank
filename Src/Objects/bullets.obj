@@ -2,11 +2,11 @@
 **  This is the object file for all bullets.
 */
 
-#ifdef NO_NEW_RADAR
-#define all_bullets_views 19
-#else /* NO_NEW_RADAR */
-#define all_bullets_views 20
-#endif /* NO_NEW_RADAR */
+#ifdef NO_GAME_BALANCE
+#define all_bullets_views 22
+#else
+#define all_bullets_views 21
+#endif
 
 #define OURSTUFF
 
@@ -33,10 +33,12 @@ static Picture all_bullets_pic[all_bullets_views] = {
       { 7, 7, 3, 3 },
       { 9, 9, 4, 4 },
       { 7, 7, 3, 3 },
-#ifndef NO_NEW_RADAR
       { 7, 7, 3, 3 },
-#endif /* !NO_NEW_RADAR */
-      { 15, 15, 7, 7 }
+#ifdef NO_GAME_BALANCE
+      { 16, 16, 8, 8 },  /* nuke */
+#endif
+      { 7, 7, 3, 3 },    /* harm */
+      { 15, 15, 7, 7 }   /* disc */
 };
 
 static Object all_bullets_obj = {
@@ -103,10 +105,15 @@ static unsigned char slick_bits[] = {
    0x38, 0x00, 0x44, 0x00, 0x84, 0x00, 0x02, 0x01, 0x01, 0x01, 0x81, 0x00,
    0x86, 0x00, 0x98, 0x00, 0x60, 0x00};
 
-#ifndef NO_NEW_RADAR
 static unsigned char harm_bits[] = {
    0x49, 0x2a, 0x14, 0x63, 0x14, 0x2a, 0x49};
-#endif /* !NO_NEW_RADAR */
+
+#ifdef NO_GAME_BALANCE
+static unsigned char tacnuke_bits[] = {
+    0xc0, 0x07, 0xf0, 0x1f, 0xe8, 0x2f, 0xc4, 0x47, 0x84, 0x43, 0x82, 0x83,
+    0x02, 0x81, 0x02, 0x80, 0xe2, 0x9e, 0xfe, 0xfc, 0x7e, 0x78, 0x3c, 0x78,
+    0x38, 0x30, 0x10, 0x18, 0xe0, 0x07, 0x00, 0x00};
+#endif
 
 static unsigned char disc_bits[] = { 
     0xe0, 0x03, 0xf8, 0x0f, 0x0c, 0x18, 0xe6, 0x33, 
@@ -134,8 +141,10 @@ static unsigned char *all_bullets_bitmap[all_bullets_views] = {
 	seeker_bits,
 	slick_bits,
 	seeker_bits,
-#ifndef NO_NEW_RADAR
+	seeker_bits,
+#ifdef NO_GAME_BALANCE
+	tacnuke_bits,
+#endif
 	harm_bits,
-#endif /* !NO_NEW_RADAR */
 	disc_bits
 };

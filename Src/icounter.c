@@ -9,9 +9,19 @@
 
 /*
 $Author: lidl $
-$Id: icounter.c,v 2.8 1991/12/27 01:40:08 lidl Exp $
+$Id: icounter.c,v 2.11 1992/08/31 01:51:30 lidl Exp $
 
 $Log: icounter.c,v $
+ * Revision 2.11  1992/08/31  01:51:30  lidl
+ * changed to use tanktypes.h, instead of types.h
+ *
+ * Revision 2.10  1992/04/21  05:11:58  senft
+ * Added support for no o and no delay options.
+ *
+ * Revision 2.9  1992/04/09  04:10:33  lidl
+ * re-arranged to use #ifdef in a nicer manner, so that more code is
+ * shared, and fewer sections are duplicated
+ *
  * Revision 2.8  1991/12/27  01:40:08  lidl
  * added appropriate SVR4 defines
  *
@@ -48,7 +58,8 @@ $Log: icounter.c,v $
 #include "sysdep.h"
 #include "icounter.h"
 #include "common.h"
-#include "types.h"
+#include "tanktypes.h"
+#include "clfkr.h"
 
 #ifdef UNIX
 #include <stdio.h>
@@ -58,61 +69,29 @@ $Log: icounter.c,v $
 
 #define INC_TIME 10000
 
+int elapsed_time;
+
+/*
+** Virtual timer alarm handler.  Updates how much time has passed
+** by incrementing elapsed_time by INC_TIME.
+*/
+
 #if defined(MOTOROLA) && defined(m68k)
-static unsigned int start_val = INC_TIME / 1000;
-static unsigned int stop_val = 0;
-
-int elapsed_time;
-
-/*
-** Virtual timer alarm handler.  Updates how much time has passed
-** by incrementing elapsed_time by INC_TIME.
-*/
-increment_time()
-{
-	elapsed_time += INC_TIME;
-}
-
-setup_counter()
-{
-	if((int) sigset(SIGALRM, increment_time) == -1)
-		rorre("Could not set up interval timer signal handler.");
-}
-
-/*
-** Start up interval timer to call increment_time every INC_TIME ms.
-*/
-start_counter()
-{
-	(void) alarm(start_val);
-}
-
-/*
-** Stop the interval timer.
-*/
-stop_counter()
-{
-	(void) alarm(stop_val);
-}
-
-#else /* !defined(MOTOROLA) !! !definded(m68k) (ie everything else) */
-
-static struct itimerval start_val = {{0, INC_TIME}, {0, INC_TIME}};
-static struct itimerval stop_val = {{0, 0}, {0, 0}};
-
-int elapsed_time;
-
-/*
-** Virtual timer alarm handler.  Updates how much time has passed
-** by incrementing elapsed_time by INC_TIME.
-*/
+int increment_time()
+#else
 void increment_time()
+#endif
 {
 	elapsed_time += INC_TIME;
 #ifdef mmax
 	sigset(SIGVTALRM, increment_time);
 #endif
 }
+
+#if defined(MOTOROLA) && defined(m68k)
+#undef SIGVTALRM
+#define SIGVTALRM SIGALRM
+#endif
 
 setup_counter()
 {
@@ -124,12 +103,28 @@ setup_counter()
 		rorre("Could not set up interval timer signal handler.");
 }
 
+#if defined(MOTOROLA) && defined(m68k)
+
+static unsigned int start_val = INC_TIME / 1000;
+static unsigned int stop_val = 0;
+
+#else /* !defined(MOTOROLA) !! !definded(m68k) (ie everything else) */
+
+static struct itimerval start_val = {{0, INC_TIME}, {0, INC_TIME}};
+static struct itimerval stop_val = {{0, 0}, {0, 0}};
+
+#endif /* !defined(MOTOROLA) !! !definded(m68k) (ie everything else) */
+
 /*
 ** Start up interval timer to call increment_time every INC_TIME ms.
 */
 start_counter()
 {
+#if defined(MOTOROLA) && defined(m68k)
+	(void) alarm(start_val);
+#else
 	(void) setitimer(ITIMER_VIRTUAL, &start_val, (struct itimerval *) NULL);
+#endif
 }
 
 /*
@@ -137,10 +132,12 @@ start_counter()
 */
 stop_counter()
 {
+#if defined(MOTOROLA) && defined(m68k)
+	(void) alarm(stop_val);
+#else
 	(void) setitimer(ITIMER_VIRTUAL, &stop_val, (struct itimerval *) NULL);
+#endif
 }
-#endif /* !defined(MOTOROLA) !! !definded(m68k) (ie everything else) */
-
 
 /* Has enough real time passed since the last frame? */
 static Boolean real_timer_expired = TRUE;
@@ -167,25 +164,31 @@ wait_for_real_counter()
 
 #else
 
+
+extern struct CLFkr command_options; /* options for how xtank starts / exits */
+
 start_real_counter(time)
 int time;
 {
 	struct itimerval real_timer;
 
-    /* Set up a real-time interval timer that expires every time useconds.
-       Each time it expires, the variable real_timer_expired will be set to
-	   true. */
-	timerclear(&real_timer.it_interval);
-	timerclear(&real_timer.it_value);
-	real_timer.it_interval.tv_usec = real_timer.it_value.tv_usec = time;
-    (void) setitimer(ITIMER_REAL, &real_timer, (struct itimerval *)NULL);
+    if (!command_options.NoDelay)
+	{
+        /* Set up a real-time interval timer that expires every time useconds.
+           Each time it expires, the variable real_timer_expired will be set to
+	       true. */
+	    timerclear(&real_timer.it_interval);
+	    timerclear(&real_timer.it_value);
+	    real_timer.it_interval.tv_usec = real_timer.it_value.tv_usec = time;
+        (void) setitimer(ITIMER_REAL, &real_timer, (struct itimerval *)NULL);
 
-	/* Call the sigalrm_handler function every time the handler expires */
+	    /* Call the sigalrm_handler function every time the handler expires */
 #if defined(MOTOROLA) && defined(m88k) || defined(SVR4)
-	sigset(SIGALRM, sigalrm_handler);
+	    sigset(SIGALRM, sigalrm_handler);
 #else
-	signal(SIGALRM, sigalrm_handler);
+	    signal(SIGALRM, sigalrm_handler);
 #endif
+    }
 }
 
 wait_for_real_counter()
@@ -194,8 +197,11 @@ wait_for_real_counter()
        timer expires.  Until then, pause() is called, which gives up process
        control until an interval timer expires. This way we don't waste CPU
        time. */
-	while (!real_timer_expired)
-		pause();
+    if (!command_options.NoDelay)
+	{
+	    while (!real_timer_expired)
+		    pause();
+    }
 	real_timer_expired = FALSE;
 }
 #endif /* MOTOROLA && m68k */

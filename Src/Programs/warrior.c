@@ -7,9 +7,16 @@
 
 /*
 $Author: lidl $
-$Id: warrior.c,v 2.4 1991/12/15 20:22:49 lidl Exp $
+$Id: warrior.c,v 2.6 1992/08/19 05:19:46 lidl Exp $
 
 $Log: warrior.c,v $
+ * Revision 2.6  1992/08/19  05:19:46  lidl
+ * changed to use SQRT instead of sqrt
+ *
+ * Revision 2.5  1992/04/18  15:41:04  lidl
+ * fixed a mod by zero bug
+ * patch by Bob Manson <manson@magnus.acs.ohio-state.edu>
+ *
  * Revision 2.4  1991/12/15  20:22:49  lidl
  * changed all "float" occurances to "FLOAT"
  *
@@ -330,7 +337,11 @@ Everything *all;
     total = chances[(int)NORTH] + chances[(int)SOUTH] +
         chances[(int)WEST] + chances[(int)EAST];
     dir = NORTH;
-	choice = rand() % total;
+	if (total > 0) {
+		choice = rand() % total;
+	} else {
+		choice=0;
+	}
     while (choice >= chances[(int)dir])
         choice -= chances[(int)(dir++)];
 	return (dir);
@@ -406,7 +417,7 @@ Everything *all;
             else if (chances[(int)NORTH])
                 chances[(int)NORTH] += 50;
 
-	    dist = (int) sqrt((double) (dx * dx + dy * dy));
+	    dist = (int) SQRT((double) (dx * dx + dy * dy));
 	    if (dist > BOX_WIDTH)
 		all->desired_speed = 5.0;
 	    else if (dist > BOX_WIDTH / 2)
@@ -929,7 +940,7 @@ Everything *all;
 
 	vtx = all->vehicle[target].xspeed;
 	vty = all->vehicle[target].yspeed;
-	vt = (int) sqrt((double) (vtx * vtx + vty * vty));
+	vt = (int) SQRT((double) (vtx * vtx + vty * vty));
 	a = vt * vt - AMMO_SPEED * AMMO_SPEED;
 	dx = all->future_v[target].x - all->me.x;
 	dy = all->future_v[target].y - all->me.y;
@@ -940,7 +951,7 @@ Everything *all;
 	if ((temp < 0) || (a == 0))
 		return;
 
-	temp = (int) (sqrt((double) temp));
+	temp = (int) (SQRT((double) temp));
 	t = ((-b - temp) / a) >> 1;
 	dx += t * vtx;
 	dy += t * vty;

@@ -8,9 +8,12 @@
 
 /*
 $Author: lidl $
-$Id: maze.c,v 2.5 1991/12/10 03:41:44 lidl Exp $
+$Id: maze.c,v 2.6 1992/05/19 22:57:19 lidl Exp $
 
 $Log: maze.c,v $
+ * Revision 2.6  1992/05/19  22:57:19  lidl
+ * post Chris Moore patches, and sqrt to SQRT changes
+ *
  * Revision 2.5  1991/12/10  03:41:44  lidl
  * changed float to FLOAT, for portability reasons
  *
@@ -150,6 +153,11 @@ Mdesc *d;
 				b->flags = flags & MAZE_FLAGS;
                 b->type = (flags & TYPE_EXISTS) ? (LandmarkType) *(dptr++) :
 		                                  NORMAL;
+
+		b->teleport_code = (flags & TYPE_EXISTS &&
+				    b->type == TELEPORT) ? (Byte) *(dptr++) :
+							   NORMAL;
+
 				b->team = (flags & TEAM_EXISTS) ? *(dptr++) : 0;
 			}
 		}
@@ -163,7 +171,7 @@ Mdesc *d;
 Game type;
 char *name, *designer, *desc;
 {
-	Byte temp[GRID_WIDTH * GRID_HEIGHT * 3];
+	Byte temp[GRID_WIDTH * GRID_HEIGHT * 4];
 	Box *b;
 	Byte flags, *dptr;
 	int num_empties, num_bytes;
@@ -216,7 +224,11 @@ char *name, *designer, *desc;
 				}
 				*(dptr++) = flags;
 				if (flags & TYPE_EXISTS)
-                    *(dptr++) = (Byte) b->type;
+				  {
+				    *(dptr++) = (Byte) b->type;
+				    if (b -> type == TELEPORT)
+				      *(dptr++) = b->teleport_code;
+				  }
 				if (flags & TEAM_EXISTS)
 					*(dptr++) = b->team;
 			}

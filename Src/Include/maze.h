@@ -4,7 +4,7 @@
 #define _MAZE_H_
 
 #include "game.h"
-#include "types.h"
+#include "tanktypes.h"
 
 typedef struct {
     Game  type;

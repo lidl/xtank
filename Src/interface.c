@@ -8,9 +8,39 @@
 
 /*
 $Author: stripes $
-$Id: interface.c,v 2.33 1992/02/13 05:05:35 stripes Exp $
+$Id: interface.c,v 2.42 1992/08/30 21:08:01 stripes Exp $
 
 $Log: interface.c,v $
+ * Revision 2.42  1992/08/30  21:08:01  stripes
+ * Kludged around a bug (terminal[nt]->vdesc bug)
+ *
+ * Revision 2.41  1992/08/18  05:40:31  lidl
+ * fixed a botched patch that I applied by hand
+ *
+ * Revision 2.40  1992/06/07  02:45:08  lidl
+ * Post Adam Bryant patches and a manual merge of the rejects (ugh!)
+ *
+ * Revision 2.39  1992/05/19  22:57:19  lidl
+ * post Chris Moore patches, and sqrt to SQRT changes
+ *
+ * Revision 2.38  1992/04/18  15:34:43  lidl
+ * fixed a dumb mistake on my part
+ *
+ * Revision 2.37  1992/04/17  04:10:11  lidl
+ * kludgy fix to the wandering setup console.  Not a real fix, but makes
+ * it works.
+ *
+ * Revision 2.36  1992/04/09  17:59:05  lidl
+ * repaired a damaged RCS file, updated menus so that release notes
+ * is last, and the "Votes" section is now "Newsgroups"
+ *
+ * Revision 2.35  1992/04/09  04:13:58  lidl
+ * changed to use tanklimits.h instead of limits.h, also added some casts
+ * so that compilers will not whine about code
+ *
+ * Revision 2.34  1992/03/31  04:04:16  lidl
+ * pre-aaron patches, post 1.3d release (ie mailing list patches)
+ *
  * Revision 2.33  1992/02/13  05:05:35  stripes
  * Made a callable load progame function.  Made the old function do
  * user I/O & call new function.
@@ -75,7 +105,6 @@ $Log: interface.c,v $
  *
  * Revision 2.15  1991/12/02  05:41:38  stripes
  * Fixed 2 players w/ same name in combatants grid bug (I think)
- * 
  *
  * Revision 2.14  1991/11/27  06:49:18  stripes
  * added team score stuff to the flags menu
@@ -135,7 +164,7 @@ $Log: interface.c,v $
  * 
 */
 
-#include "limits.h"
+#include "tanklimits.h"
 #include "malloc.h"
 #include "xtank.h"
 #include "screen.h"
@@ -145,6 +174,7 @@ $Log: interface.c,v $
 #include "interface.h"
 #include "terminal.h"
 #include "setup.h"
+
 #ifdef UNIX
 #include <sys/param.h>
 #include <sys/dir.h>
@@ -176,7 +206,7 @@ extern char *version3;
 
 extern struct CLFkr command_options;
 
-static whichlevel[MAX_MENUS] = {0,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,3};
+static whichlevel[MAX_MENUS] = {0,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,3};
 
 /* For convienence */
 static char *done_entries[] = {"Done"};
@@ -185,27 +215,39 @@ char **vehicles_entries = NULL,
     **mazes_entries = NULL,
     **setups_entries = NULL;
 
+int number_of_machines;
+
+char
+    **machine_names,
+    **machine_entries;
+
 static char
     *main_entries[] = {"Play", "Settings", "Combatants", "View", "Load",
-		       "Design", "Add players", "Help", "Quit"},
+		       "Design", "Add players", "Text entry", "Help", "Quit"},
     *play_entries[] = {"Standard", "Players", "Robots", "Customized"},
     *settings_entries[] = {"Vehicle", "Maze", "Game", "Flags", "Winning score",
 			   "Difficulty", "Outpost strength", "Scroll speed",
-			   "Box slowdown", "Disc friction", "Owner slowdown",
+			   "Box slowdown", "Disc friction", "Throwing speed",
+			   "Disc damage", "Disc heat", "Owner slowdown",
 			   "Shocker Walls", "Save settings", "Load Settings"},
     *view_entries[] = {"Maze", "Vehicle", "Program", "Setup", "Player"},
     *load_entries[] = {"Maze", "Vehicle", "Program", "Setup"},
     *design_entries[] = {"Maze", "Vehicle"},
     *help_entries[] = {"General", "Pictures", "Multi-player", "Games",
 		       "Vehicles", "Mazes", "Setups", "Credits", "Motd",
-               "Release", "Votes"},
+               "Newsgroups", "Release Notes"},
     *grid_entries[] = {"Player", "Program", "Vehicle", "Team"},
     *num_entries[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"},
     *flags_entries[] = {"Point bullets", "Ricochet", "Rel. shooting",
 			"No wear", "Restart", "Commentator", "Full map",
-			"Pay to Play", "Robots don't Win",
+			"Pay to Play", "Relative Disc", "War:Goals Only",
+			"Ultimate:Own Goal", "Robots don't Win",
 			"Scale Armor to Max", "No name tags",
-			"Team Scoring","Disable RADAR"
+			"Team Scoring", "Disable RADAR",
+			"Players can Teleport", "Discs can Teleport",
+			"'port from team", "'port from neutral",
+			"'port to team", "'port to neutral",
+			"'port from any to any"
 			},
     *programs_entries[MAX_PDESCS],
     *players_entries[MAX_TERMINALS];
@@ -285,25 +327,49 @@ init_flags_hil()
 		menu_set_hil(&menu_sys, FLAGS_MENU, 6);
     if (settings.si.pay_to_play)
 		menu_set_hil(&menu_sys, FLAGS_MENU, 7);
-    if (settings.robots_dont_win)
+    if (settings.si.relative_disc)
 		menu_set_hil(&menu_sys, FLAGS_MENU, 8);
-    if (settings.max_armor_scale)
+    if (settings.si.war_goals_only)
 		menu_set_hil(&menu_sys, FLAGS_MENU, 9);
-    if (settings.si.no_nametags)
+    if (settings.si.ultimate_own_goal)
 		menu_set_hil(&menu_sys, FLAGS_MENU, 10);
-    if (settings.si.team_score)
+    if (settings.robots_dont_win)
 		menu_set_hil(&menu_sys, FLAGS_MENU, 11);
-	if (settings.si.no_radar)
+    if (settings.max_armor_scale)
 		menu_set_hil(&menu_sys, FLAGS_MENU, 12);
+    if (settings.si.no_nametags)
+		menu_set_hil(&menu_sys, FLAGS_MENU, 13);
+    if (settings.si.team_score)
+		menu_set_hil(&menu_sys, FLAGS_MENU, 14);
+    if (settings.si.no_radar)
+		menu_set_hil(&menu_sys, FLAGS_MENU, 15);
+    if (settings.si.player_teleport)
+	menu_set_hil(&menu_sys, FLAGS_MENU, 16);
+    if (settings.si.disc_teleport)
+	menu_set_hil(&menu_sys, FLAGS_MENU, 17);
+    if (settings.si.teleport_from_team)
+	menu_set_hil(&menu_sys, FLAGS_MENU, 18);
+    if (settings.si.teleport_from_neutral)
+	menu_set_hil(&menu_sys, FLAGS_MENU, 19);
+    if (settings.si.teleport_to_team)
+	menu_set_hil(&menu_sys, FLAGS_MENU, 20);
+    if (settings.si.teleport_to_neutral)
+	menu_set_hil(&menu_sys, FLAGS_MENU, 21);
+    if (settings.si.teleport_any_to_any)
+	menu_set_hil(&menu_sys, FLAGS_MENU, 22);
 
 }
 
 init_interface()
 {
+    init_players();
     menu_sys_window(&menu_sys, ANIM_WIN);
 
-    menu_norm_make(&menu_sys, MAIN_MENU, "XTANK", 9, 0,
+    menu_norm_make(&menu_sys, MAIN_MENU, "XTANK", 10, 0,
 		   LEV0_X, LEV0_Y, main_entries, L_FONT);
+    menu_flag_make(&menu_sys, MACHINE_MENU, "Machines",
+		   number_of_machines, 0,
+		   LEV1_X, LEV0_Y, machine_entries, M_FONT);
     menu_norm_make(&menu_sys, PLAY_MENU, "Play", 4, 0,
 		   LEV1_X, LEV0_Y, play_entries, M_FONT);
     menu_norm_make(&menu_sys, SETTINGS_MENU, "Settings", 
@@ -431,13 +497,16 @@ int sub_interface_main(choice)
 			menu_display(&menu_sys, DESIGN_MENU);
 			break;
 		case 6:
+			menu_display(&menu_sys, MACHINE_MENU);
+			break;
+		case 7:
 			add_players();
 			menu_unhighlight(&menu_sys, MAIN_MENU);
 			break;
-		case 7:
+		case 8:
 			menu_display(&menu_sys, HELP_MENU);
 			break;
-		case 8:
+		case 9:
 			retval = 1;
 			break;
 	}
@@ -540,10 +609,10 @@ void sub_interface_help(choice)
 			display_file(ANIM_WIN, "Help/motd");
 			break;
 		case 9:
-			display_file(ANIM_WIN, "Help/release-notes");
+			display_file(ANIM_WIN, "Help/xtank.FAQ");
 			break;
 		case 10:
-			display_file(ANIM_WIN, "Help/vote");
+			display_file(ANIM_WIN, "Help/release-notes");
 			break;
 	}
 	menu_unhighlight(&menu_sys, HELP_MENU);
@@ -602,6 +671,12 @@ void sub_interface_play(choice)
 	menu_unhighlight(&menu_sys, PLAY_MENU);
 }
 
+void sub_interface_machine(choice)
+	int choice;
+{
+  add_given_player(choice);
+}
+
 void sub_interface_settings(choice)
 	int choice;
 {
@@ -654,20 +729,30 @@ void sub_interface_settings(choice)
 			do_num(SET_DISC_FRIC, TRUE);
 			break;
 		case 10:
-			do_num(SET_DISC_SLOW, TRUE);
+			do_num(SET_DISC_SPEED, TRUE);
 			break;
 		case 11:
-			do_num(SET_SHOCKERWALL, TRUE);
+			do_num(SET_DISC_DAMAGE, TRUE);
 			break;
 		case 12:
+			do_num(SET_DISC_HEAT, TRUE);
+			break;
+		case 13:
+			do_num(SET_DISC_SLOW, TRUE);
+			break;
+		case 14:
+			do_num(SET_SHOCKERWALL, TRUE);
+			break;
+		case 15:
     		clear_window(ANIM_WIN);
     		iprint("Enter the settings filename.", 0, 8);
 			input_filename(ANIM_WIN, acPrevFileName, acFileName,
 						   10, INT_FONT, 256);
 			save_settings(acFileName);
+			set_terminal(0);
 			expose_win(ANIM_WIN, TRUE);
 			break;
-		case 13:
+		case 16:
     		clear_window(ANIM_WIN);
     		iprint("Enter the settings filename.", 0, 8);
 			input_filename(ANIM_WIN, acPrevFileName, acFileName,
@@ -715,19 +800,49 @@ void sub_interface_flags(choice)
 			}
 			break;
 		case 8:
-			settings.robots_dont_win ^= TRUE;
+			settings.si.relative_disc ^= TRUE;
 			break;
 		case 9:
-			settings.max_armor_scale ^= TRUE;
+			settings.si.war_goals_only ^= TRUE;
 			break;
 		case 10:
-			settings.si.no_nametags ^= TRUE;
+			settings.si.ultimate_own_goal ^= TRUE;
 			break;
 		case 11:
-			settings.si.team_score ^= TRUE;
+			settings.robots_dont_win ^= TRUE;
 			break;
 		case 12:
+			settings.max_armor_scale ^= TRUE;
+			break;
+		case 13:
+			settings.si.no_nametags ^= TRUE;
+			break;
+		case 14:
+			settings.si.team_score ^= TRUE;
+			break;
+		case 15:
 			settings.si.no_radar ^= TRUE;
+			break;
+		case 16:
+			settings.si.player_teleport ^= TRUE;
+			break;
+		case 17:
+			settings.si.disc_teleport ^= TRUE;
+			break;
+		case 18:
+			settings.si.teleport_from_team ^= TRUE;
+			break;
+		case 19:
+			settings.si.teleport_from_neutral ^= TRUE;
+			break;
+		case 20:
+			settings.si.teleport_to_team ^= TRUE;
+			break;
+		case 21:
+			settings.si.teleport_to_neutral ^= TRUE;
+			break;
+		case 22:
+			settings.si.teleport_any_to_any ^= TRUE;
 			break;
 	}
 }
@@ -744,6 +859,16 @@ main_interface()
 
     set_terminal(0);
     init_interface();
+
+    /* Jimmy - set default maze to first in load list */
+    settings.mdesc = &mdesc[0];
+
+    /* Jimmy - set corresponding game type */
+    settings.si.game = settings.mdesc->type;
+
+    /* Jimmy - enter all players in combatants grid */
+    for (itemp = 0; itemp < num_terminals; itemp++)
+      fix_combantants(itemp);
 
 #ifdef X11
     button_up(ANIM_WIN, TRUE);
@@ -871,6 +996,10 @@ main_interface()
 		    do_view(SETUPS_MENU, choice);
 		    break;
 
+		  case MACHINE_MENU:
+		    sub_interface_machine(choice);
+		    break;
+
 		  case PLAY_MENU:
 		    sub_interface_play(choice);
 			if (command_options.AutoExit)
@@ -970,36 +1099,31 @@ static int handle_comb_button(evp, mv)
 	}
 	gridsel = choice;	/* select in any case */
 
-	mv = -1;		/* so we don't change gridsel again */
+	mv = -1;                /* so we don't change gridsel again */
 	break;
     }
 
-    if (!just_scrolled)
-    {
-	switch (mv)
-	{
-	  case 0:		/* left button moves up a row */
-	    if (--gridsel < 0)
-		gridsel = MAX_VEHICLES - 1;
-	    break;
-	  case 2:		/* right button moves down a row */
-	    if (++gridsel >= MAX_VEHICLES)
-		gridsel = 0;
-	    break;
-	}
+	if (!just_scrolled) {
+		switch (mv) {
+			case 0:               /* left button moves up a row */
+				if (--gridsel < 0)
+					gridsel = MAX_VEHICLES - 1;
+				break;
+			case 2:               /* right button moves down a row */
+				if (++gridsel >= MAX_VEHICLES)
+				gridsel = 0;
+				break;
+		}
 
-	for (gi = 0; gi < MAX_GRIDS; ++gi)
-	{
-	    menu_erase(&menu_sys, grid_id[gi]);
-	    if (old_gridsel != gridsel)
-		menu_display(&menu_sys, grid_id[gi]);
-	    menu_disphil(&menu_sys, grid_id[gi], gridsel);
+		for (gi = 0; gi < MAX_GRIDS; ++gi) {
+			menu_erase(&menu_sys, grid_id[gi]);
+			if (old_gridsel != gridsel)
+				menu_display(&menu_sys, grid_id[gi]);
+			menu_disphil(&menu_sys, grid_id[gi], gridsel);
+		}
 	}
-    }
-
-    return 0;
+	return 0;
 }
-
 
 /*
 ** Sets up menus to form a grid of combatants.  User picks spot on
@@ -1008,15 +1132,15 @@ static int handle_comb_button(evp, mv)
 */
 do_comb()
 {
-    int should_quit = 0;
-    int i, numev, mv;
-    Event ev;
+	int should_quit = 0;
+	int i, numev, mv;
+	Event ev;
 
-    /* initial hightlight */
-    for (i = 0; i < MAX_GRIDS; ++i)
-    {
-	menu_set_hil(&menu_sys, grid_id[i], gridsel);
-    }
+	/* initial hightlight */
+	for (i = 0; i < MAX_GRIDS; ++i)
+	{
+		menu_set_hil(&menu_sys, grid_id[i], gridsel);
+	}
 
     /* Expose the window to display the combatant menus */
     menu_sys_erase(&menu_sys);
@@ -1024,7 +1148,7 @@ do_comb()
 
     do
     {
-	if (win_exposed(ANIM_WIN))
+		if (win_exposed(ANIM_WIN))
 	{
 	    clear_window(ANIM_WIN);
 	    for (i = 0; i < MAX_GRIDS; i++)
@@ -1204,8 +1328,10 @@ display_settings()
         display_game_num("Maze:  Density %d", setting_num(SET_DENSITY),
 			 line++);
     display_game_num("Difficulty:       %d", settings.difficulty, line++);
-    display_game_num("Winning score:    %d", settings.si.winning_score,
-		     line++);
+    if (settings.si.game != ULTIMATE_GAME && settings.si.game != CAPTURE_GAME){
+	display_game_num("Winning score:    %d", settings.si.winning_score,
+			 line++);
+    }
     display_game_num("Outpost strength: %d", settings.si.outpost_strength,
 		     line++);
     display_game_num("Scroll speed:     %.0f", settings.si.scroll_speed,
@@ -1218,6 +1344,12 @@ display_settings()
     if (settings.si.game == ULTIMATE_GAME || settings.si.game == CAPTURE_GAME)
     {
         display_game_num("Disc friction:    %d", setting_num(SET_DISC_FRIC),
+			 line++);
+        display_game_num("Throwing speed:   %d", setting_num(SET_DISC_SPEED),
+			 line++);
+        display_game_num("Disc damage:      %d", setting_num(SET_DISC_DAMAGE),
+			 line++);
+        display_game_num("Disc heat:        %d", setting_num(SET_DISC_HEAT),
 			 line++);
         display_game_num("Owner slowdown:   %d", setting_num(SET_DISC_SLOW),
 			 line++);
@@ -1256,6 +1388,15 @@ int setting, num;
 		case SET_DISC_SLOW:
 			settings.si.owner_slowdown = 1.0 - (float) num / 10;
 			break;
+		case SET_DISC_DAMAGE:
+			settings.si.disc_damage = (float) num / 10;
+			break;
+		case SET_DISC_HEAT:
+			settings.si.disc_heat = 1.0 - (float) num / 10;
+			break;
+		case SET_DISC_SPEED:
+			settings.si.disc_speed = (float) num / 10;
+			break;
 	}
 }
 
@@ -1281,8 +1422,14 @@ int setting;
 			return (int) ((1.0 - settings.si.disc_friction) * 200 + .5);
 		case SET_DISC_SLOW:
 			return (int) ((1.0 - settings.si.owner_slowdown) * 10 + .5);
+		case SET_DISC_DAMAGE:
+			return (int) (settings.si.disc_damage * 10 + .5);
+		case SET_DISC_HEAT:
+			return (int) ((1.0 - settings.si.disc_heat) * 10 + .5);
 		case SET_SHOCKERWALL:
 			return settings.si.shocker_walls;
+		case SET_DISC_SPEED:
+			return (int) (settings.si.disc_speed * 10 + .5);
 	}
 	return 0;
 }
@@ -1422,7 +1569,7 @@ Prog_desc *p;
 		if (p->abilities & 1 << i)
 		{
 			ptr = ability_desc[i];
-			if (strlen(temp) + strlen(ptr) > width - 7)
+			if ((int)(strlen(temp) + strlen(ptr)) > (int)(width - 7))
 			{
 				/* Print a row of text and start on a new one */
 				iprint(temp, 5, row);
@@ -1529,6 +1676,8 @@ add_players()
 					players_entries[num_terminals - 1] = term->player_name;
 					set_terminal(0);
 					strcpy(result, "Terminal initialized");
+					/* Jimmy - add new player to combatants grid */
+					fix_combantants(num_terminals - 1);
 				}
 
 #ifdef UNIX
@@ -1542,6 +1691,68 @@ add_players()
 		}
 		menu_resize(&menu_sys, PLAYERS_MENU, num_terminals);
 	}
+}
+
+add_given_player(choice)
+int choice;
+{
+  char *name = machine_names[choice];
+
+#ifdef UNIX
+	extern char *network_error_str[];
+
+#endif
+	extern char video_error_str[];
+	extern int num_terminals;
+	char result[256], *tmp;
+	int num, ret, i;
+
+	if (num_terminals == MAX_TERMINALS)
+	{
+		iprint("There is no room for more players.", ASK_X, ASK_Y + 15);
+		iprint("Hit any key or button to continue", ASK_X, ASK_Y + 1 + 15);
+		wait_input();
+		clear_ask();
+	}
+	else
+	{
+#ifdef UNIX
+			tmp = name;
+			if (ret = check_internet(1, &tmp))
+				strcpy(result, network_error_str[ret]);
+			else
+			{
+#endif
+
+				(void) strcpy(result, "Initializing ");
+				(void) strcat(result, name);
+				iprint(result, ASK_X, ASK_Y + 1 + 15);
+				flush_output();
+
+				if (make_terminal(name))
+					strcpy(result, video_error_str);
+				else
+				{
+					set_terminal(num_terminals - 1);
+					get_player_info();
+					players_entries[num_terminals - 1] = term->player_name;
+					set_terminal(0);
+					menu_set_hil(&menu_sys, MACHINE_MENU, choice);
+					strcpy(result, "Terminal initialized");
+					/* Jimmy - add new player to combatants grid */
+					fix_combantants(num_terminals - 1);
+				}
+
+#ifdef UNIX
+			}
+#endif
+
+			iprint(result, ASK_X, ASK_Y + 2 + 15);
+			iprint("Hit any key or button to continue", ASK_X, ASK_Y + 3 + 15);
+			wait_input();
+			clear_text_rc(ANIM_WIN,ASK_X,ASK_Y + 15,50,4,INT_FONT);
+		}
+		menu_resize(&menu_sys, PLAYERS_MENU, num_terminals);
 }
 
 /*
@@ -1630,7 +1841,7 @@ get_player_info()
         if (command_options.AutoStart && duplicate)
 		{
 			puts("Duplicate names specified but not allowed!");
-			exit;
+			exit(1);
 		}
     }
     while (duplicate);
@@ -1651,6 +1862,7 @@ get_player_info()
     {				/* GHS 9/12/90 - kludge */
 	menu_resize(&menu_sys, VEHICLES_MENU, num_vdescs); /* GHS 9/12/90 - kludge */
     }				/* GHS 9/12/90 - kludge */
+    term->mouse_speed = vid->kludge.mouse_speed;
 }
 
 input_filename(iWindow, pcPrevFileName, pcFileName, iLineNum, iFont, iMaxLen)
@@ -1741,14 +1953,14 @@ load_prog_desc(filename, batch)
 	assert(ptr);
 
     /* Prepend the path to the programs directory if necessary */
-    if (!rindex(filename, '/'))
+    if (rindex((char *)filename, '/') == NULL)
     {
 		(void) strcpy(temp, pathname);
 		(void) strcat(temp, "/");
 		(void) strcat(temp, programsdir);
 		(void) strcat(temp, "/");
-		(void) strcat(temp, filename);
-		(void) strcpy(filename, temp);
+		(void) strcat(temp, (char *)filename);
+		(void) strcpy((char *)filename, temp);
     }
 
 	if (!batch) {
@@ -2294,4 +2506,37 @@ Boolean gleams;
 	    }
 	}
     }
+}
+
+/* Jimmy */
+fix_combantants(nt)
+int nt;
+{
+  /* put player name in grid */
+  grid_ent[PLAYERS_MENU - PLAYERS_MENU][nt] =
+    players_entries[nt];
+  
+  grid_val[PLAYERS_MENU - PLAYERS_MENU][nt] =
+    nt;
+  
+  if (terminal[nt]->vdesc > 1000) {
+	  fprintf(stderr, "%s's terminal seems to have an invalid vdesc %d\n",
+		terminal[nt]->player_name, terminal[nt]->vdesc);
+	  terminal[nt]->vdesc = 0;
+  }
+
+  /* put player's choice of vehicle in grid */
+  grid_ent[VEHICLES_MENU - PLAYERS_MENU][nt] =
+	vehicles_entries[terminal[nt] -> vdesc];
+  
+  grid_val[VEHICLES_MENU - PLAYERS_MENU][nt] =
+	terminal[nt] -> vdesc;
+  
+  /* put player's team in grid - not very sophisticated, but it's better */
+  /* than nothing... */
+  grid_ent[TEAMS_MENU - PLAYERS_MENU][nt] =
+    teams_entries[(nt) % 2 + 1];
+  
+  grid_val[TEAMS_MENU - PLAYERS_MENU][nt] =
+    (nt) % 2 + 1;
 }

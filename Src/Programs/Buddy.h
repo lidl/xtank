@@ -30,9 +30,12 @@
 
 /*
 $Author: lidl $
-$Id: Buddy.h,v 2.4 1991/09/19 05:26:04 lidl Exp $
+$Id: Buddy.h,v 2.5 1992/09/06 23:45:12 lidl Exp $
 
 $Log: Buddy.h,v $
+ * Revision 2.5  1992/09/06  23:45:12  lidl
+ * made to compile with gcc -ansi (blah) on a vax running ultrix 4.2
+ *
  * Revision 2.4  1991/09/19  05:26:04  lidl
  * fixed a small __STDC__/__GNUC__ difference in opinions
  *
@@ -55,9 +58,9 @@ $Log: Buddy.h,v $
 
 #ifdef __GNUC__
 # ifdef __STDC__
-# define Inline inline
+#  define Inline __inline
 # else
-# define Inline __inline
+#  define Inline inline
 # endif
 #else
 #define Inline

@@ -8,9 +8,15 @@
 
 /*
 $Author: lidl $
-$Id: lowlib.c,v 2.14 1992/01/29 08:37:01 lidl Exp $
+$Id: lowlib.c,v 2.16 1992/06/07 02:45:08 lidl Exp $
 
 $Log: lowlib.c,v $
+ * Revision 2.16  1992/06/07  02:45:08  lidl
+ * Post Adam Bryant patches and a manual merge of the rejects (ugh!)
+ *
+ * Revision 2.15  1992/03/31  21:45:50  lidl
+ * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
+ *
  * Revision 2.14  1992/01/29  08:37:01  lidl
  * post aaron patches, seems to mostly work now
  *
@@ -617,9 +623,7 @@ WeaponStatus fire_weapon(num)
 
 	/* Figure out what angle to shoot the bullet towards */
 
-#ifndef NO_NEW_RADAR
 	if (w->type != HARM) {
-#endif /* !NO_NEW_RADAR */
 
 	switch (w->mount) {
 	    case MOUNT_TURRET1:
@@ -661,12 +665,10 @@ WeaponStatus fire_weapon(num)
 		angle = cv->vector.heading + PI / 2;
 	}
 
-#ifndef NO_NEW_RADAR
 	/* HARM's are mounted on the side, yet they face forward. */
 	} else {
 	    angle = cv->vector.heading;
 	}
-#endif /* !NO_NEW_RADAR */
 
 	if (w->type == SLICK) {
 	    /* Make 3 oil slick bullets in a fan */
@@ -674,14 +676,13 @@ WeaponStatus fire_weapon(num)
 		make_bullet(cv, &bloc, w->type, angle - PI / 12 + i * PI / 12);
 
 	    if (settings.commentator)
-		comment(COS_SLICK_DROPPED, 0, (Vehicle *) NULL, (Vehicle *) NULL);
+		comment(COS_SLICK_DROPPED, 0, (Vehicle *) NULL,
+			(Vehicle *) NULL, (Bullet *) NULL);
 	} else {
 	    /* Create the bullet with slight random fanning (1.8 degrees) */
-#ifndef NO_NEW_RADAR
 	    if (w->type == HARM)
 		make_smart_bullet(cv, &bloc, w->type, angle, &cv->target);
 	    else
-#endif /* !NO_NEW_RADAR */
 	    make_bullet(cv, &bloc, w->type, angle + PI / 100 * (50 - rnd(101)) / 50);
 	}
     }
@@ -721,7 +722,11 @@ int get_weapon(num, winfo)
     winfo->mount = w->mount;
     winfo->damage = ws->damage;
     winfo->heat = ws->heat;
+#ifdef BOGO_RANGE
     winfo->range = ws->range;
+#else /* BOGO_RANGE */
+    winfo->range = ws->frames * ws->ammo_speed;
+#endif
     winfo->reload = ws->reload_time;
     winfo->max_ammo = ws->max_ammo;
     winfo->ammo_speed = ws->ammo_speed;
@@ -963,44 +968,6 @@ void get_outpost_loc(x, y, frame_num, xret, yret)
     *yret = cp->y + y * BOX_HEIGHT;
 }
 
-#ifdef NO_NEW_RADAR
-
-/*
-** Puts information about all radar blips into the blip_info array.
-** Returns BAD_VALUE if vehicle has no radar.
-*/
-int get_blips(num_blip_infos, blip_info)
-    int *num_blip_infos;
-    Blip_info blip_info[];	/* Must have size >= MAX_BLIPS */
-{
-    Special *s;
-    Radar *r;
-    int i;
-
-    check_time();
-
-    /* Make sure the vehicle has radar */
-    s = &cv->special[(int) RADAR];
-    if (s->status == SP_nonexistent) {
-	*num_blip_infos = 0;
-	return BAD_VALUE;
-    }
-
-    r = (Radar *) s->record;
-    *num_blip_infos = r->num_blips;
-
-    /* Copy location information of each blip into the blip_info array */
-    i = 0;
-    while (i < r->num_blips) {
-	blip_info[i].x = map2grid(r->blip[i].x - MAP_BOX_SIZE / 4);
-	blip_info[i].y = map2grid(r->blip[i].y - MAP_BOX_SIZE / 4);
-	i++;
-    }
-    return 0;
-}
-
-#else /* NO_NEW_RADAR */
-
 int get_blips(num_blip_infos, blip_info)
     int *num_blip_infos;
     Blip_info blip_info[];
@@ -1054,7 +1021,6 @@ int get_blips(num_blip_infos, blip_info)
 
 }
 
-#endif /* NO_NEW_RADAR */
 
 /*
 ** Puts information about all visible vehicles (excluding your own)
@@ -1089,6 +1055,9 @@ void get_vehicles(num_vehicle_infos, vehicle_info)
 	dx = v->loc->x - cv->loc->x;
 	dy = v->loc->y - cv->loc->y;
 	if (dx > -ANIM_WIN_WIDTH / 2 && dx < ANIM_WIN_WIDTH / 2 &&
+#ifndef NO_CAMO
+            !v->camod &&
+#endif /* !NO_CAMO */
 		dy > -ANIM_WIN_HEIGHT / 2 && dy < ANIM_WIN_HEIGHT / 2) {
 
 	    /* add a vehicle to the list */
@@ -1508,6 +1477,38 @@ Boolean has_special(st)
 }
 
 /*
+ * Get the state of a special 
+ *                          -ane
+ */
+
+SpecialStatus query_special(st)
+    SpecialType st;
+{
+    check_time();
+
+    return cv->special[(int) st].status;
+}
+
+/*
+ * Tries to change the state of a special,
+ * returns the state.                -ane
+ */
+
+SpecialStatus switch_special(st, action)
+    SpecialType st;
+    unsigned int action;
+{
+    check_time();
+
+    if (st == SP_activate || st == SP_deactivate || st == SP_on || st == SP_off)
+	do_special(cv, st, action);
+
+    return cv->special[(int) st].status;
+}
+
+
+
+/*
 ** Returns the animation frame number
 */
 int frame_number()
@@ -1558,13 +1559,83 @@ void set_cleanup_func(funcp, argp)
     cv->current_prog->cleanup_arg = argp;
 }
 
-#ifndef NO_NEW_RADAR
-int aim_smart_weapon(coord)
-    lCoord coord;
+int aim_smart_weapon(x, y)
+    int x, y;
 {
-    cv->target = coord;
+    cv->target.x = x;
+    cv->target.y = y;
 
 }
 
-#endif /* !NO_NEW_RADAR */
+#ifdef RDFTEST
+
+/*
+ * incomplete, don't use     -ane
+ */
+
+#define SGN(a)  (((a)<0) ? -1 : 0)
+
+void rdf_map(map)
+Box map[][GRID_HEIGHT];
+{
+    int i,j;
+    Trace *t;
+    Special *ms = &cv->special[(int) MAPPER];
+    Special *rs = &cv->special[(int) RDF];
+
+    Mapper *m = (Mapper *) ms->record;
+    Rdf *r= (Rdf *) rs->record;
+
+    int d, x, y, ax, ay, sx, sy, dx, dy;
+    int flags;
+    int x1, y1, x2, y2;
+
+    check_time();
+
+    if (ms->status != SP_nonexistent && rs->status != SP_nonexistent) {
+
+	for (j = 0; j < MAX_VEHICLES; j++) {
+	    for (i = 0; i < MAX_VEHICLES; i++) {
+
+		t = &r->trace[j][i];
+
+		dx = x2-x1;  ax = ABS(dx) << 1;  sx = SGN(dx);
+		dy = y2-y1;  ay = ABS(dy) << 1;  sy = SGN(dy);
+
+		x = x1;
+		y = y1;
+		if (ax>ay) {
+		    d = ay - (ax >> 1);
+		    for (;;) {
+			if (x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT)
+			    map[x][y].flags  |= flags;
+			if (x == x2) return;
+			if (d >= 0) {
+			    y += sy;
+			    d -= ax;
+			}
+			x += sx;
+			d += ay;
+		    }
+		} else {
+		    d = ax -( ay >> 1);
+		    for (;;) {
+			if (x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT)
+			    map[x][y].flags  |= flags;
+			if (y == y2) return;
+			if (d >= 0) {
+			    x += sx;
+			    d -= ay;
+			}
+			y += sy;
+			d += ax;
+		    }
+		}
+	    }
+	}
+    }
+    return;
+}
+
+#endif
 

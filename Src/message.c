@@ -8,9 +8,16 @@
 
 /*
 $Author: lidl $
-$Id: message.c,v 2.7 1992/01/29 08:35:19 lidl Exp $
+$Id: message.c,v 2.9 1992/04/09 04:15:28 lidl Exp $
 
 $Log: message.c,v $
+ * Revision 2.9  1992/04/09  04:15:28  lidl
+ * changed to use system limits file to figure out INT_MAX, also
+ * avoids a warning from ANSI compilers
+ *
+ * Revision 2.8  1992/03/31  21:45:50  lidl
+ * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
+ *
  * Revision 2.7  1992/01/29  08:35:19  lidl
  * post-aaron patches, seems to mostly work now
  *
@@ -51,6 +58,7 @@ $Log: message.c,v $
 #include "terminal.h"
 #include "globals.h"
 #include "assert.h"
+#include <limits.h>
 
 #define DLEN	80
 
@@ -111,9 +119,7 @@ static char *op_str[MAX_OPCODES] = {
 	"I don't understand...",	/* 19 */
 	"I am ",				/* 20 */
 	"Enemy",				/* 21 */
-#ifndef NO_NEW_RADAR
 	"IFF key ",				/* 22 */
-#endif /* NO_NEW_RADAR */
 	"INCOMING!!!   ...",	/* 23 */
 };
 
@@ -123,9 +129,7 @@ static char *opcode_entries[MAX_OPCODES] = {
 	"Where is", "Here are", "What's in", "Grid has",
 	"Do ya'", "Will you", "Affirmative",
 	"Negative", "Clueless", "I am", "Enemy at",
-#ifdef NO_NEW_RADAR
 	"IFF",
-#endif /* NO_NEW_RADAR */
 	"INCOMING!"};
 
 /* Data types for each opcode */
@@ -135,9 +139,7 @@ static Byte data_type[MAX_OPCODES] = {
 	DATA_LANDMK, DATA_LOCS, DATA_MISC, DATA_MISC,
 	DATA_MISC, DATA_MISC, DATA_MISC,
 	DATA_MISC, DATA_MISC, DATA_MISC, DATA_VINFO,
-#ifdef NO_NEW_RADAR
 	DATA_MISC,
-#endif
 	DATA_VINFO
 };
 
@@ -149,9 +151,7 @@ static Byte data_init[MAX_OPCODES] = {
 	FALSE, FALSE, FALSE, FALSE,
 	FALSE, FALSE, FALSE,
 	FALSE, FALSE, FALSE, FALSE,
-#ifndef NO_NEW_RADAR
 	FALSE,
-#endif
 	FALSE };
 
 Menu_int msg_sys[MAX_TERMINALS];
@@ -405,7 +405,6 @@ Event *event;
     if (term->observer)
 	return GAME_RUNNING;
 
-#ifndef NO_NEW_RADAR
 /*
  * Ok, so it's not exactly the most elegant structure. Tries to copy
  * the format of the code in input.c
@@ -413,10 +412,13 @@ Event *event;
 
         if (v == (Vehicle *) NULL)
             return GAME_RUNNING;
+
         set_current_vehicle(v);
 
+#ifdef KEYPAD_DETECT
 
-    if ( (event->type == EVENT_KEY) && (event->key >= '1') && (event->key <= '6') ){
+    if ( (event->type == EVENT_KEY) 
+	 && (event->key >= '1') && (event->key <= '6') ) {
 
 
 	v->target.y = (map2grid(event->y) * BOX_WIDTH) + (BOX_WIDTH/2);
@@ -430,7 +432,6 @@ Event *event;
                     case '5':
                     case '6':
 
-#ifdef KEYPAD_DETECT
                         if (event->keypad) {
                             int weapon, status;
 
@@ -443,13 +444,11 @@ Event *event;
                                 turn_off_weapon(weapon);
                             }
                         } else {
-#endif
+
 	                  return GAME_RUNNING;
 
 
-#ifdef KEYPAD_DETECT
                         }
-#endif
 			break;
 
 
@@ -459,27 +458,24 @@ Event *event;
                         break;
 	}
 
-    } else if (event->type == EVENT_LBUTTON) {
+    } else
+
+#endif /* KEYPAD_DETECT */
+
+    if (event->type == EVENT_LBUTTON) {
         int i;
+    
 
 	v->target.y = (map2grid(event->y) * BOX_WIDTH) + (BOX_WIDTH/2);
 	v->target.x = (map2grid(event->x) * BOX_HEIGHT) + (BOX_HEIGHT/2);
-			  for (i = 0; i < v->num_weapons; i++) { 
-				int status, fire_status;
-				if (v->weapon[i].type == HARM)
-                            if ((status = weapon_on(i)) == TRUE) {
-                                fire_status = fire_weapon(i);
-                            } else if (status == FALSE) {
-                                turn_on_weapon(i);
-                                fire_status = fire_weapon(i);
-                                turn_off_weapon(i);
-                            }
-				if (fire_status == FIRED) i = v->num_weapons;
-  				}
-	                  return GAME_RUNNING;
+
+	for (i = 0; i < v->num_weapons; i++)
+	    if (v->weapon[i].type == HARM) 
+		fire_weapon(i);
+	
+	return GAME_RUNNING;
 
     } else {
-#endif
 
     if (event->type == EVENT_KEY && event->key == '\r')
 	send_message(v);
@@ -495,9 +491,7 @@ Event *event;
 	display_sending();
     }
     return GAME_RUNNING;
-#ifndef NO_NEW_RADAR
 }
-#endif /* !NO_NEW_RADAR */
 
 }
 
@@ -518,7 +512,7 @@ Event *event;
     {
         /* Find the vehicle on screen with shortest distance to that location
 	 */
-	min_dist = (1 << 31) - 1;
+	min_dist = INT_MAX;
 	for (i = 0; i < num_veh_alive; i++)
 	{
 	    x = live_vehicles[i]->loc->screen_x[term->num];
@@ -712,7 +706,6 @@ Message *m;
 	   message onto the list, and increment the next message index. * All
 	   indexing is done modulo MAX_MESSAGES. */
 
-#ifndef NO_NEW_RADAR
 /*
  * If this is a IFF key...
  *    has recp offered IFF key exchange to sender?
@@ -726,7 +719,6 @@ Message *m;
 		} else {
 			actual_vehicles[m->sender].offered_IFF_key[v->number] = TRUE;
 		}
-#endif /* NO_NEW_RADAR */
 
 #ifdef TRACE_MESSAGE
 	printf("before incr new_messages = %d\n", v->new_messages);

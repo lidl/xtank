@@ -1,27 +1,23 @@
 Send comments to xtank@eng.umd.edu                              13 Feb 1992
 
 The latest Xtank beta release is available via anonymous FTP on the
-host ftp.eng.umd.edu, in the directory /pub/xtank,
+host ftp.eng.umd.edu, in the directory /pub/xtank.
 
-Be sure to read Help/Votes -- please vote as you see fit!!!
-Also check out Help/Release Notes for better documentation.
+Be sure to read the builtin Release Notes.  Also, you should
+probably check out the FAQ answers that have been included.
+
+Please *NOTE* -- this is an alpha quality release, as opposed
+to the last several beta-quality releases.  As such, we know
+there are bugs, and so forth, but feel that it is important
+to get this code out to people for them to play with it.
 
 PIX.COM Hacks (partial list):
-    Save/Load Setting         - Josh & Gordon
-    New Vehicle Body          - Kurt Lidl
-    Batch Mode                - Matt Senft
-    New Lowlib Calls          - All
-    New Vehicle Save/Load     - All
-    New Weapons               - All
+    New Console Driver        - Josh Osborne
+    SVR4 threading            - Kurt Lidl
 
 Contibuted Hacks (partial list):
-    New Radar Code            - Aaron Eastlund
-    HARMS                     - Aaron Eastlund
-    Tac-Link                  - Aaron Eastlund
-    Bullet/Armor Fixes        - Adam Bryant (Area code -- 617)
-    Teleport Mode             - Chris Moore
-
-New Robots:
-    Tagman                    - Matt Senft
-    Gnat                      - William Katz
-    Bootlegger                - Sean Barrett
+    New Tank Bodies           - Olaf Becker
+    Teleport Fixes            - Chris Moore
+    Tank Designer Changes     - Bill Woodall
+    Misc Other Fixes          - Aaron Eastlund
+    Other small fixes         - Many, many others

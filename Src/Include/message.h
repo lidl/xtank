@@ -8,9 +8,15 @@
 
 /*
 $Author: lidl $
-$Id: message.h,v 2.5 1992/01/29 08:39:11 lidl Exp $
+$Id: message.h,v 2.7 1992/08/31 01:50:45 lidl Exp $
 
 $Log: message.h,v $
+ * Revision 2.7  1992/08/31  01:50:45  lidl
+ * changed to use tanktypes.h, instead of types.h
+ *
+ * Revision 2.6  1992/03/31  21:49:23  lidl
+ * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
+ *
  * Revision 2.5  1992/01/29  08:39:11  lidl
  * post aaron patches, seems to mostly work now
  *
@@ -38,7 +44,7 @@ $Log: message.h,v $
 #define _MESSAGE_H_
 
 
-#include "types.h"
+#include "tanktypes.h"
 
 
 #define MAX_DATA_LEN    31	/* number of bytes that can fit in a message */
@@ -79,9 +85,7 @@ typedef enum {
 	OP_CLUELESS,			/* You sent me something I don't understand */
 	OP_I_AM,				/* "auto-bio" */
 	OP_ENEMY_AT,			/* un-auth'ed bio */
-#ifndef NO_NEW_RADAR
     OP_IFF,					/* IFF key */
-#endif /* !NO_NEW_RADAR */
 	OP_INCOMING,			/* FC's advice about long lived weapon */
     real_MAX_OPCODES
 } Opcode;

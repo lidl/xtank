@@ -7,10 +7,20 @@
 */
 
 /*
-$Author: aahz $
-$Id: program.c,v 2.22 1992/02/13 05:05:12 aahz Exp $
+$Author: lidl $
+$Id: program.c,v 2.25 1992/09/06 21:15:02 lidl Exp $
 
 $Log: program.c,v $
+ * Revision 2.25  1992/09/06  21:15:02  lidl
+ * removed console initization stuff that the new console driver doesn't
+ * use
+ *
+ * Revision 2.24  1992/05/15  03:59:04  lidl
+ * removed warning messages from the SVR4 threading code
+ *
+ * Revision 2.23  1992/03/31  21:45:50  lidl
+ * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
+ *
  * Revision 2.22  1992/02/13  05:05:12  aahz
  * changed gnat5 to gnat
  *
@@ -221,16 +231,30 @@ Vehicle *v;
     int i, j;
     Mapper *m = (Mapper *) v->special[(int) MAPPER].record;
 
+/*
+
+#ifndef NO_FORCE
+
+Here is a code fragment for forcing specials in and out.
+
+    for (i = 0; i < MAX_SPECIALS; i++) {
+	if (force_out[i]) {
+	    v->special[i].status = SP_nonexistent;
+	}
+	if (force_in[i]) {
+	    v->special[i].status = SP_off;
+	}
+    }
+
+#endif
+
+*/
+
     if (settings.si.no_radar) {
         v->special[(int) RADAR].status = SP_nonexistent;
         v->special[(int) NEW_RADAR].status = SP_nonexistent;
     }
 
-    if (v->special[CONSOLE].status != SP_nonexistent) {
-	/* initialize console */
-	for (j = 0; j < MAX_ENTRIES; j++)
-	    ((Console *) (v->special[CONSOLE].record))->_entry[j].color = WHITE;
-    }
     /* Copy maze into mapper if full_map is on */
     if (v->special[(int) MAPPER].status != SP_nonexistent &&
 	    settings.si.full_map) {
@@ -266,7 +290,6 @@ Vehicle *v;
     }
 }
 
-#ifndef NO_NEW_RADAR
 
 /*
  * This is an unused stub, but I plan to use it in the
@@ -283,7 +306,6 @@ Vehicle *v;
     }
 }
 
-#endif /* !NO_NEW_RADAR */
 
 /*
 ** Initializes all programs for the specified vehicle.
@@ -391,9 +413,6 @@ check_time()
 	/* If the program has been running too long, stop it */
 	get_clock(&current_time);
 	if (compare_clocks(&current_time, &end_time) == -1)
-#ifdef SVR4
-            printf("check_time: Switching back to the scheduler thread.\n");
-#endif
 	    thread_switch(scheduler_thread);
     }
 }
@@ -412,9 +431,6 @@ stop_program()
 	if (compare_clocks(&current_time, &temp) == 1) {
 	    write_clock(&current_time, PROGRAM_ALLOT);
 	}
-#ifdef SVR4
-	printf("stop_program: Switching back to the scheduler thread.\n");
-#endif
 	thread_switch(scheduler_thread);	/* Stop the program */
     } else {
 	printf("stop_program(): no program??\n");

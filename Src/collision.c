@@ -7,10 +7,19 @@
 */
 
 /*
-$Author: stripes $
-$Id: collision.c,v 2.9 1992/02/10 05:24:16 stripes Exp $
+$Author: lidl $
+$Id: collision.c,v 2.12 1992/06/07 02:45:08 lidl Exp $
 
 $Log: collision.c,v $
+ * Revision 2.12  1992/06/07  02:45:08  lidl
+ * Post Adam Bryant patches and a manual merge of the rejects (ugh!)
+ *
+ * Revision 2.11  1992/03/31  21:45:50  lidl
+ * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
+ *
+ * Revision 2.10  1992/03/31  04:04:16  lidl
+ * pre-aaron patches, post 1.3d release (ie mailing list patches)
+ *
  * Revision 2.9  1992/02/10  05:24:16  stripes
  * Made the correct collision code faster.
  *
@@ -70,6 +79,12 @@ Vehicle *v;
 	int min_x, min_y, max_x, max_y, dx, dy, grid_x, grid_y, vx, vy, hx, hy;
 	int check_vert, check_hor, crash_vert, crash_hor;
     WallSide hdir, vdir;
+
+	if (v->just_ported)
+	  {
+	    v->just_ported = FALSE;
+	    return;
+	  }
 
 	loc = v->loc;
 	oloc = v->old_loc;
@@ -218,7 +233,6 @@ coll_bullets_maze()
 	ogx = old_loc->grid_x;
 	ogy = old_loc->grid_y;
 
-#ifndef NO_NEW_RADAR
 
 	/*
 	 * some things fly overhead, and don't hit walls (most of the time)
@@ -231,6 +245,20 @@ coll_bullets_maze()
 	 *   perform normal bullet/wall checks
 	 */
 
+	/*
+	 * modifing my own code again...
+	 * 
+	 * I think in general it would be safer to destroy ANYTHING
+	 * that makes it off the grid.
+	 *
+	 * bullet get zapped next update cycle when update_bull 
+	 * notices that it's ran out of life..
+         *
+	 * define DESTROY_ONLY_FLYING for original behavior    -ane
+	 */
+
+#ifdef DESTROY_ONLY_FLYING
+
 	if ((int) b->loc->z > 4) {
 	    if ( (gx > MAZE_HEIGHT + 1) | (gy > MAZE_WIDTH + 1) | (gx < 2) | (gy < 2)) {
 		if (b->life == weapon_stat[(int)b->type].frames - 1)
@@ -240,7 +268,16 @@ coll_bullets_maze()
 	    }
 	} else {
 
-#endif /* !NO_NEW_RADAR */
+#else /* DESTROY_ONLY_FLYING */
+
+	    if ( (gx > MAZE_HEIGHT + 1) | (gy > MAZE_WIDTH + 1) | (gx < 2) | (gy < 2)) {
+		if (b->life == weapon_stat[(int)b->type].frames - 1)
+		    b->life = -2;           /* undisplayed bullet */
+		else
+		    b->life = -1;
+	    } else if ((int) b->loc->z <= 4) {
+
+#endif /* DESTROY_ONLY_FLYING */
 
 	/* A bullet with no owner can not hit an outpost in the first 5 frames
 	   of its life.  This prevents outposts from shooting themselves. There
@@ -429,9 +466,7 @@ coll_bullets_maze()
 		}
 	    }
 	}
-#ifndef NO_NEW_RADAR
 	}
-#endif /* !NO_NEW_RADAR */
     }
 }
 
@@ -458,7 +493,6 @@ coll_bullets_vehicles()
 	    continue;
 	bloc = b->loc;
 
-#ifndef NO_NEW_RADAR
 
 	/*
  	 * only worry about bullets down here
@@ -466,7 +500,6 @@ coll_bullets_vehicles()
 
 	if ((int) bloc->z > 4) continue;
 
-#endif /* NO_NEW_RADAR */
 
 	/* first see if there are any vehicles around */
 
@@ -684,9 +717,10 @@ coll_vehicles_vehicles()
 	    if (dy < -max_dy || dy > max_dy)
 		continue;
 
-	    /* * Vehicles are pretty close to each other, so let's say they
-	       hit. * Shift vehicles so their rectangles touch, instead of
-	       overlapping. */
+	    /* Vehicles are pretty close to each other, so let's say they
+	     * hit. Shift vehicles so their rectangles touch, instead of
+	     * overlapping.
+	     */
 	    shiftx = ((dx > 0) ? (max_dx - dx + 3) : (-max_dx - dx - 3)) >> 1;
 	    shifty = ((dy > 0) ? (max_dy - dy + 3) : (-max_dy - dy - 3)) >> 1;
             if (ABS(shiftx) < ABS(shifty))
@@ -694,9 +728,7 @@ coll_vehicles_vehicles()
 	    else
 		shiftx = 0;
 
-	    adjust_loc(v1loc, -shiftx, -shifty);
-	    adjust_loc(v2loc, shiftx, shifty);
-	    vehicle_hit_vehicle(v1, v2);
+	    vehicle_hit_vehicle(v1, v2, max_dx, max_dy, shiftx, shifty);
 	}
     }
 }

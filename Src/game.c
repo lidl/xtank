@@ -7,17 +7,38 @@
 */
 
 /*
-$Author: senft $
-$Id: game.c,v 2.11 1992/02/10 04:12:43 senft Exp $
+$Author: lidl $
+$Id: game.c,v 2.17 1992/09/07 18:46:53 lidl Exp $
 
 $Log: game.c,v $
+ * Revision 2.17  1992/09/07  18:46:53  lidl
+ * fixed some typos in the comments, made it so team scoring will not
+ * let the neutral "team" win -- side effect -- I don't think
+ * neutral players can win either...
+ *
+ * Revision 2.16  1992/09/07  00:29:51  lidl
+ * end-of-game score back to the old way of doing things
+ *
+ * Revision 2.15  1992/06/07  02:45:08  lidl
+ * Post Adam Bryant patches and a manual merge of the rejects (ugh!)
+ *
+ * Revision 2.14  1992/05/19  22:57:19  lidl
+ * post Chris Moore patches, and sqrt to SQRT changes
+ *
+ * Revision 2.13  1992/04/23  15:37:04  lidl
+ * minor nit from Chris Moore <moore@src.bae.co.uk>
+ * You didn't get points for collecting the disc in capture.  Fixed.
+ *
+ * Revision 2.12  1992/03/31  04:04:16  lidl
+ * pre-aaron patches, post 1.3d release (ie mailing list patches)
+ *
  * Revision 2.11  1992/02/10  04:12:43  senft
  * For 'sakes josh bitched about the spacing in the dump scores stuff.
  * Geez for people who want you to write your own stuff they sure have
  * some rucking opinion.
  *
  * Revision 2.10  1992/02/06  04:54:09  senft
- * updated score output code to print to a file for termainal < 0.
+ * updated score output code to print to a file for terminal < 0.
  * added code to not wait for a key if AutoExit is set.
  *
  * Revision 2.9  1992/02/02  05:41:43  senft
@@ -26,18 +47,18 @@ $Log: game.c,v $
  * display now that code was moved to the calling function.
  *
  * Revision 2.8  1992/01/30  05:01:31  senft
- * Made the game result screen(scores et al) refresh when it is exposed.
+ * Made the game result screen (scores et al) refresh when it is exposed.
  * Very useful for running simulations while windows are overlapping,
  * allowing you to come back and see the final scores. An added benefit
  * is that the display to a terminal is now a seperate function.  We
  * can pass a display function later so that these can be dumped to a
- * file(regression testing...)
+ * file (regression testing...)
  *
  * Revision 2.7  1991/11/27  06:20:59  senft
  * added team scoring (aahz)
  *
  * Revision 2.6  1991/09/15  23:35:15  lidl
- * helpsx if we pass the correct number of arguments to sprintf
+ * helps if we pass the correct number of arguments to sprintf
  * we didn't before :-(
  *
  * Revision 2.5  1991/08/22  03:23:21  aahz
@@ -67,6 +88,7 @@ $Log: game.c,v $
 #include "malloc.h"
 #include <ctype.h>
 #include "xtank.h"
+#include "bullet.h"
 #include "graphics.h"
 #include "gr.h"
 #include "vehicle.h"
@@ -158,6 +180,7 @@ int combat_rules(init)
                 }
 
 			    TeamScores[v->team] += v->owner->score;
+
 			    if (HighestPlayer[v->team] == -1)
 			    {
 				    HighestPlayer[v->team] = i;
@@ -174,7 +197,8 @@ int combat_rules(init)
 
 		    for (i = 0; i < MAX_TEAMS; i++)
 		    {
-			    if (TeamScores[i] >= settings.si.winning_score)
+				/* skip neutral vehicles */
+			    if (i != NEUTRAL && TeamScores[i] >= settings.si.winning_score)
 			    {
 				    winning_vehicle = & actual_vehicles[HighestPlayer[i]];
                     winning_team = i;
@@ -238,6 +262,9 @@ Boolean init;
                 b = &real_map[x][y];
 		if (!(b->flags & INSIDE_MAZE))
 		    continue;
+		if ((settings.si.war_goals_only) &&
+		    (b->type != GOAL))
+		    continue;
 
                 /* Count # boxes in play and # owned by each team */
                 num_boxes++;
@@ -273,12 +300,17 @@ Boolean init;
 	    y = v->loc->grid_y;
 	    b = &real_map[x][y];
 
+	    /* skip non-goal boxes */
+	    if ((settings.si.war_goals_only) &&
+		(b->type != GOAL))
+		continue;
+
 	    /* skip vehicles that already own this box */
 	    if (b->team == v->team)
 		continue;
 
             /* Decrement time and check for takeover */
-            if (--time[x][y][v->team] != (Byte) -1) 
+            if (--time[x][y][v->team] > (Byte) -1) 
 		continue;	/* no takeover yet */
 
 	    old_team = b->team;
@@ -367,7 +399,7 @@ int x, y;
 
 
 /*
-** One disc in game, disc owned in enemy goal wins.
+** One disc in game, disc owned in own (or opponents') goal wins.
 */
 ultimate_rules(init)
 Boolean init;
@@ -375,11 +407,34 @@ Boolean init;
     Vehicle *v;
     Box *b;
     int i;
+    static int starter;
+    Coord *start;
+    int num_starts, random;
+    Loc loc;
 
     if (init)
     {
-	/* Start up 1 disc on a random vehicle */
-	make_bullet((Vehicle *) NULL, live_vehicles[rnd(num_veh_alive)]->loc,
+      start = maze.start[NEUTRAL];
+      num_starts = maze.num_starts[NEUTRAL];
+
+      if (num_starts != 0)
+	{
+	  random = rnd(num_starts);
+	  /* Start up 1 disc in a random neutral start point */
+	  loc.grid_x = start[random].x;
+	  loc.grid_y = start[random].y;
+
+	  loc.box_x = BOX_WIDTH / 2;
+	  loc.box_y = BOX_HEIGHT / 2;
+
+	  loc.x = loc.grid_x * BOX_WIDTH + loc.box_x;
+	  loc.y = loc.grid_y * BOX_HEIGHT + loc.box_y;
+
+	  make_bullet((Vehicle *) NULL, &loc, DISC, 0.0);
+	}
+      else
+	/* Start up 1 disc on the starter's vehicle */
+	make_bullet((Vehicle *) NULL, live_vehicles[starter++ % num_veh_alive]->loc,
 		    DISC, 0.0);
     }
     else
@@ -391,13 +446,15 @@ Boolean init;
 	    if (v->num_discs > 0)
 	    {
 		b = &real_map[v->loc->grid_x][v->loc->grid_y];
-		if (b->type == GOAL && b->team != v->team)
+		if (b->type == GOAL &&
+		    ((b->team == v->team) == settings.si.ultimate_own_goal))
 		{
 		    winning_vehicle = v;
 		    winning_team = v->team;
 		    v->owner->score++;
 		    if (settings.commentator)
-			comment(COS_GOAL_SCORED, 0, v, (Vehicle *) NULL);
+			comment(COS_GOAL_SCORED, 0, v, (Vehicle *) NULL,
+				(Bullet *) NULL);
 		    return GAME_RESET;
 		}
 	    }
@@ -421,7 +478,7 @@ Boolean init;
     {
 	/* Start up 1 disc in the first starting box for each team */
 	total_discs = 0;
-	for (i = 1; i < num_teams; i++)
+	for (i = 1; i <= num_teams; i++)
 	    for (j = 0; j < num_veh_alive; j++)
 		if (live_vehicles[j]->team == i)
 		{
@@ -444,6 +501,7 @@ Boolean init;
 		{
 		    winning_vehicle = v;
 		    winning_team = v->team;
+		    v->owner->score++;
 		    return GAME_RESET;
 		}
 	    }
@@ -504,8 +562,11 @@ unsigned int status;
     }
 
     set_terminal(0);
-    /* mprint("'q' to end game, 's' to start", 20, 40); */
-    mprint("'q' to end game", 20, 40);
+    if (settings.si.game == ULTIMATE_GAME ||
+	settings.si.game == CAPTURE_GAME) 
+      mprint("'q' to end game, 's' to start", 20, 40);
+    else
+      mprint("'q' to end game", 20, 40);
 
 	if (command_options.AutoExit)
 	{
@@ -527,6 +588,22 @@ unsigned int status;
 					(aeEvents[0].key == 'Q' || aeEvents[0].key == 'q'))
 				{
 					reply = 'Q';
+					break;
+				}
+				if (aeEvents[0].type == EVENT_KEY &&
+					(settings.si.game == CAPTURE_GAME ||
+					 settings.si.game == ULTIMATE_GAME) &&
+					(aeEvents[0].key == 'S' || aeEvents[0].key == 's'))
+				{
+					reply = 'S';
+					break;
+				}
+				if (aeEvents[0].type == EVENT_KEY &&
+					(settings.si.game == CAPTURE_GAME ||
+					 settings.si.game == ULTIMATE_GAME) &&
+					(aeEvents[0].key == 'S' || aeEvents[0].key == 's'))
+				{
+					reply = 'S';
 					break;
 				}
 			}
@@ -629,9 +706,7 @@ int n;
 		(*plain_out)("", 0, 0);
 		(*plain_out)("", 0, 0);
 	}
-    /* sprintf(fmt, "     %%%ds%%c: %%7d points   %%3d kills   %%3d deaths",
-            MAX_STRING);        		*/
-	sprintf(fmt, "%%11s%%c: %%-11s  %%7d points   %%3d kills   %%3d deaths");
+	sprintf(fmt,"%%11s%%c: %%-11s  %%7d points   %%3d kills   %%3d deaths");
 
 	clear_window(ANIM_WIN);
 
@@ -681,8 +756,8 @@ int n;
 			        ((settings.si.pay_to_play &&
 			          !tstflag(v->status, VS_is_alive))
 			         ? '*' : ' '),
-			        v->name,v->owner->score, v->owner->kills,
-			        v->owner->deaths); 
+			        v->name, v->owner->score, v->owner->kills,
+				v->owner->deaths); 
 		        (*plain_out)(s, 5, m++);
 		        k += v->owner->score;
 		    }

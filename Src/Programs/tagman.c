@@ -14,12 +14,25 @@
 #define HAS_TURRET4
 
 #include "xtanklib.h" 
+#include "special.h"
+#include "xtank.h"
 #include "string.h"
 #include "math.h"
 #include "stdio.h"
 #include "varargs.h"
 
 #include "assert.h"
+
+#ifndef DOUBLE
+#define DOUBLE double
+#endif
+
+#ifdef FLOAT
+#undef FLOAT
+#define FLOAT double
+#else
+#define FLOAT double
+#endif
 
 #ifdef SECOND_COPY
 #define PROGRAM_NAME  "Tagman2"
@@ -227,7 +240,9 @@ typedef enum
 	GOTO,
 	SEEK,
 	REPAIRING,
-	RAMMING
+	RAMMING,
+	RESTART,
+	max_statuses
 } 
 Status_code;
 
@@ -244,6 +259,22 @@ typedef struct
 } 
 TurretInfo;
 
+
+#define SLOWER_THEN_MAX 3.0
+
+struct g_struct
+{
+	int D_lastshotat, D_shootcounter;
+	int ANYONE_HERE;
+	float sav_WANTED_SPEED;
+	float WANTED_SPEED;
+	float acc_freedom;
+	float crange;
+	float inv_speed;
+	int num_weap;
+	int max_weap_range;
+	int weap_range[6];
+};
 
 typedef struct 
 {
@@ -303,11 +334,14 @@ typedef struct
 	Boolean       bTargetIsVehicle; /* whether the target is a vehicle   */
 	Boolean       bLayMines;
     Boolean       bHaveNewRadar;
+    Boolean       bHaveRadar;
 	Boolean       bHaveTacLink;
     Vehicle_info  target;	    /* who I'm going to attack */
 	Frame         fTargetTime;
     Vehicle_info  prevTarget;
 	Frame         fprevTime;
+	struct g_struct gstruct;
+	Boolean       bAssumeHover;
 } 
 Environment;
 
@@ -353,17 +387,17 @@ static Location *DeltaLoc PROTO((Location *locp, int delta_x, int delta_y));
 static int MyClearPath PROTO((Location *lStart, Location *locp));
 static int InitializeVariables PROTO((Environment **ppEnvironment));
 static int unseen_box PROTO((Environment *pEnv, Coor coX, Coor coY));
-static float frand PROTO((double maxr));
+static FLOAT frand PROTO((FLOAT maxr));
 static void TurnOffAllWeapons PROTO((void));
 static void TurnOnAllWeapons PROTO((void));
-static int NeedFuel PROTO((double fraction));
-static int NeedArmor PROTO((double fraction));
-static int NeedAmmo PROTO((double fraction));
+static int NeedFuel PROTO((DOUBLE fraction));
+static int NeedArmor PROTO((DOUBLE fraction));
+static int NeedAmmo PROTO((DOUBLE fraction));
 static int AtBoxCenter PROTO((Vehicle_info *selfp));
 static int GotoBoxCenter PROTO((Environment *pEnv));
 static int HandleOutpost PROTO((Environment *pEnv));
 static int HandleLocalLandMark PROTO((Environment *pEnv));
-static int VectorsCross PROTO((Coor x1, Coor y1, double xs1, double ys1, Coor x2, Coor y2, double xs2, double ys2));
+static int VectorsCross PROTO((Coor x1, Coor y1, DOUBLE xs1, DOUBLE ys1, Coor x2, Coor y2, DOUBLE xs2, DOUBLE ys2));
 static void ProcessMessages PROTO((Environment *pEnv, int iMaxProcess));
 static int CanGo PROTO((Vehicle_info *pstMyVehicle, Coor xOff, Coor yOff));
 static self_clear_path PROTO((Location *start, int delta_x, int delta_y));
@@ -384,11 +418,18 @@ static void Frantic PROTO((Environment *pEnv));
 static void BarfBarf();
 static void VehicleInfo2Message PROTO((Vehicle_info *pstVehicle, Byte *pbBuffer));
 static void Message2VehicleInfo PROTO((Byte *pbBuffer, Vehicle_info *pstVehicle));
-static float GetDodgeSpeed PROTO((Environment *pEnv, float fDefault));
+static FLOAT GetDodgeSpeed PROTO((Environment *pEnv, FLOAT fDefault));
 static void SendEnemyAt PROTO((Environment *pEnv, Vehicle_info *pstVehicle, Boolean bSpace));
 static int OutOfAmmo PROTO((Boolean bCountDroppedWeapons));
 static int MyVehicleIsClosest PROTO((Environment *pEnv));
 static int FindEnemy PROTO((Environment *pEnv));
+static void DioInit PROTO((Environment *pEnv));
+#if 0
+static int Diophantine_abs_ang PROTO((struct g_struct *gstruct, FLOAT a, FLOAT b));
+static int Diophantine_gonna_hit PROTO((struct g_struct *gstruct, Location *loc, FLOAT ang, FLOAT spe));
+#endif 0
+static int Diophantine_watch_out_t PROTO((Environment *pEnv, struct g_struct *gstruct));
+static int Diophantine_watch_out_a PROTO((Environment *pEnv, struct g_struct *gstruct));
 
 #undef PROTO
 
@@ -454,7 +495,7 @@ int bShootAlways;
 	Speed  yvTarget = pEnv->target.yspeed;
 	Coor   xTurret;
 	Coor   yTurret;
-    float  fNumFired[MAX_TURRETS];
+	float  fNumFired[MAX_TURRETS];
 	Angle  aBestAngle;
 	float fDistance = HYPOT(xUs - xTarget, yUs - yTarget);
 
@@ -485,10 +526,47 @@ int bShootAlways;
 
     pEnv->aTurn = fixed_angle(ATAN2(yTarget - yUs, xTarget - xUs));
 
+
     iTurret = pEnv->stMyVehicle.num_turrets;
 	while (iTurret > 0)
 	{
 		iTurret--;
+#ifdef LEAD_FIRE
+    if (!(pEnv->iFriendliesInTheArea -  pEnv->iStills) && 
+		(xvTarget || yvTarget) && 
+		pEnv->target.id == pEnv->prevTarget.id &&
+		pEnv->fTargetTime < pEnv->fprevTime + 3 && !iTurret)
+    {
+        int iLead = MaxBodySide[pEnv->target.body] / 2;
+		int xvOld = pEnv->prevTarget.xspeed;
+		int yvOld = pEnv->prevTarget.yspeed;
+        Angle aHeading;
+
+		if (xvTarget * xvTarget + yvTarget * yvTarget < 
+			xvOld    * xvOld    + yvOld    * yvOld)
+		{
+			iLead = -iLead;
+		}
+			
+
+        if (yvTarget && xvTarget)
+        {
+            aHeading = ATAN2(yvTarget, xvTarget);
+
+            xTarget += iLead * COS(aHeading);
+            yTarget += iLead * SIN(aHeading);
+        }
+        else
+		if (xvTarget)
+        {
+            xTarget += iLead * SIGN(xvTarget);
+        }
+		else
+        {
+            yTarget += iLead * SIGN(yvTarget);
+        }
+    }
+#endif
 
 		if (!pEnv->Turret[iTurret].iNumWeapons)
 		{
@@ -644,7 +722,7 @@ int bShootAlways;
 
     if (pEnv->iStatus == RAMMING)
 	{
-		int iMaxCount  = 0;
+		int iMaxCount  = 4;
 		int iSignX     = SIGN(xUs - xTarget);
 		int iSignY     = SIGN(yUs - yTarget);
 		int xNewUs     = xUs + xvUs;
@@ -698,6 +776,7 @@ int bShootAlways;
 		}
 		else
 		{
+	pEnv->iTurnDir   = (armor(LEFT) > armor(RIGHT)) ? 1 : -1;
 		    pEnv->fClosePercent = 0.30;
 		}
 	}
@@ -754,10 +833,12 @@ int bShootAlways;
 #endif
 			)
 		{
+	pEnv->iTurnDir   = (armor(LEFT) > armor(RIGHT)) ? 1 : -1;
 		    pEnv->fClosePercent = 0.05;
 		}
 		else
 		{
+	pEnv->iTurnDir   = (armor(LEFT) > armor(RIGHT)) ? 1 : -1;
 		    pEnv->fClosePercent = 0.37;
 		}
 	}
@@ -828,6 +909,10 @@ Angle *pBestAngle;
 	         yImpact   += yvTarget - yvUs) 
 
 	{
+        if (iCtr == iAmmoLifetime - 1)
+        { 
+            iErrorMargin = MIN(iErrorMargin, MaxBodySide[pEnv->target.body]);
+        }
 #ifdef PREDICT_ACCELERATION
 		if (pEnv->target.id == pEnv->prevTarget.id &&
 			pEnv->fTargetTime < pEnv->fprevTime + 16 &&
@@ -858,7 +943,7 @@ Angle *pBestAngle;
 		{
 			double trigCos, trigSin;
 
-#ifndef NO_SINCOS
+#ifdef HAS_SINCOS
 			sincos(aNewAngle, &trigSin, &trigCos);
 #else
 			trigSin = SIN(aNewAngle);
@@ -1012,26 +1097,29 @@ Environment *pEnv;
 	}
 }
 
+
+
 static void TagmanMain()
 {
-    Environment *pEnv = NULL;
+	Environment *pEnv = NULL;
 	int bInitialized;
 
-    bInitialized = InitializeVariables(&pEnv);
+	bInitialized = InitializeVariables(&pEnv);
 
-    if (bInitialized)
+	if (bInitialized)
 	{
-        while (TRUE) 
-        {
-		    MainLoop(pEnv);
-        }
+		DioInit(pEnv);
+		while (TRUE) 
+		{
+			MainLoop(pEnv);
+		}
 	}
 	else
 	{
-        while (TRUE) 
-        {
-		    done();
-        }
+		while (TRUE) 
+		{
+			done();
+		}
 	}
 }
 
@@ -1049,9 +1137,36 @@ Environment *pEnv;
 			    Acquire(pEnv, CLOSEST);
 				if (pEnv->bHaveTarget)
 				{
-			        HuntAndKill(pEnv);
-			        Move(pEnv);
-				    ProcessMessages(pEnv, 4);
+#define DIO_DODGE
+#ifdef DIO_DODGE
+#ifndef AZO
+                    if (1)
+#else
+                    if (get_money() < get_vehicle_cost())
+#endif
+                    {
+			            Fight(pEnv, FALSE);
+		                Diophantine_watch_out_t(pEnv, &pEnv->gstruct);
+		                done();
+                
+		                Diophantine_watch_out_a(pEnv, &pEnv->gstruct);
+                        GetBasics(pEnv);
+		                Acquire(pEnv, CLOSEST);
+		                if (pEnv->bHaveTarget)
+		                {
+			                Fight(pEnv, FALSE);
+		                }	
+		                pEnv->gstruct.WANTED_SPEED = 
+							pEnv->gstruct.sav_WANTED_SPEED;
+				        ProcessMessages(pEnv, 4);
+                    }
+					else
+#endif
+                    {
+			            HuntAndKill(pEnv);
+			            Move(pEnv);
+				        ProcessMessages(pEnv, 4);
+                    }
 				}
 
                 if (heat() > 90)
@@ -1304,8 +1419,8 @@ Environment *pEnv;
     int   aiArmor[6];
 	int   iArmorSide;
     Angle aToTarget = fixed_angle(
-		ATAN2(pEnv->target.loc.y - pEnv->stMyVehicle.loc.y,
-              pEnv->target.loc.x - pEnv->stMyVehicle.loc.x));
+		    ATAN2(pEnv->target.loc.y - pEnv->stMyVehicle.loc.y,
+            pEnv->target.loc.x - pEnv->stMyVehicle.loc.x));
 	   
 	if (pEnv->bHaveTarget)
 	{
@@ -1323,27 +1438,28 @@ Environment *pEnv;
 
 		if (iNumBullets)
 		{
+			Bullet_info *pBullet = biBullets;
             int iProtection = protection();
+			int OurX = pEnv->stMyVehicle.loc.x;
+			int OurY = pEnv->stMyVehicle.loc.y;
 
-			for (iCtr = 0; iCtr < iNumBullets; iCtr++)
+			for (iCtr = 0; iCtr < iNumBullets; pBullet++, iCtr++)
 			{
-				Bullet_info *pBullet = &biBullets[iCtr];
-				int iDamage = MAX(aiDamage[pBullet->type] - iProtection, 0);
+				int iDamage = aiDamage[pBullet->type] - iProtection;
 
 				if ((pBullet->type == MINE || pBullet->type == SLICK)
-					|| !iDamage)
+					|| iDamage < 1)
 				{
 					continue;
 				}
 
 				if (IsApproaching(pBullet->loc.x, pBullet->loc.y, 
 								  pBullet->xspeed, pBullet->yspeed, 
-								  pEnv->stMyVehicle.loc.x, 
-								  pEnv->stMyVehicle.loc.y))
+								  OurX, OurY))
 				{
                     aToTarget = fixed_angle(
-		                ATAN2(pBullet->loc.y - pEnv->stMyVehicle.loc.y,
-                        pBullet->loc.x - pEnv->stMyVehicle.loc.x));
+		                ATAN2(pBullet->loc.y - OurY,
+                        pBullet->loc.x - OurX));
 					break;
 				}
 			}
@@ -1612,17 +1728,19 @@ Environment *pEnv;
 		}
 
         if (bChooseRandom)
-		if (get_blips(&iNumBlips, BlipInfo) != BAD_VALUE)
 		{
+		    MyGetBlips(pEnv, &iNumBlips, BlipInfo);
 			if (iNumBlips)
 			{
 				int iRandomIndex = frand((float)iNumBlips);
-
+    
 	            pEnv->iDestX = BlipInfo[iRandomIndex].x;
 	            pEnv->iDestY = BlipInfo[iRandomIndex].y;
 
-				bChooseRandom = (pEnv->iDestX == pEnv->stMyVehicle.loc.grid_x &&
-				                 pEnv->iDestY == pEnv->stMyVehicle.loc.grid_y);
+				bChooseRandom = (pEnv->iDestX == 
+								 pEnv->stMyVehicle.loc.grid_x &&
+				                 pEnv->iDestY == 
+								 pEnv->stMyVehicle.loc.grid_y);
 		    }
 		}
 
@@ -1701,7 +1819,7 @@ Search_mode what;
     Vehicle_info  prevTarget;
 	Frame         fprevTime;
 
-    memcpy(pEnv->prevTarget, pEnv->target, sizeof(Vehicle_info));
+    memcpy(&pEnv->prevTarget, &pEnv->target, sizeof(Vehicle_info));
 	pEnv->fprevTime            = pEnv->fTargetTime;
 	pEnv->fTargetTime          = pEnv->frCurrent;
 
@@ -1796,12 +1914,9 @@ Search_mode what;
 					int iNumStill = pEnv->iStills;
 					int iSide = MaxBodySide[pEnv->stVehicles[iCtr].body];
 
-					pEnv->aiStills[iNumStill][0] = 
-					    pEnv->stVehicles[iCtr].loc.x;
-					pEnv->aiStills[iNumStill][1] = 
-						pEnv->stVehicles[iCtr].loc.y;
-					pEnv->aiStills[iNumStill][2] = 
-						iSide * iSide / 4 + 1;
+					pEnv->aiStills[iNumStill][0] = pEnv->stVehicles[iCtr].loc.x;
+					pEnv->aiStills[iNumStill][1] = pEnv->stVehicles[iCtr].loc.y;
+					pEnv->aiStills[iNumStill][2] = iSide * iSide / 4 + 1;
 					pEnv->iStills++;
 				}
 #endif
@@ -2162,6 +2277,7 @@ Environment **ppEnvironment;
     pEnv->iWasCalled           = FALSE;
 	pEnv->iFriendliesInTheArea = FALSE;
     pEnv->bHaveNewRadar        = FALSE;
+    pEnv->bHaveRadar           = FALSE;
 	pEnv->bHaveTacLink         = FALSE;
     pEnv->iStatus              = WANDER;
 	pEnv->aTurn                = pEnv->stMyVehicle.heading;
@@ -2177,7 +2293,9 @@ Environment **ppEnvironment;
 
 
     pEnv->bHaveNewRadar        = has_special(NEW_RADAR);
+    pEnv->bHaveRadar           = has_special(RADAR);
 	pEnv->bHaveTacLink         = has_special(TACLINK);
+	pEnv->bAssumeHover         = (tread_acc() == 0.50);
 	/* turn these on someday */
 
     get_settings(&pEnv->stGameSettings);
@@ -2330,8 +2448,8 @@ Coor coY;
 
 
 /* return a random float in the range [0, max) */
-static float frand(maxr)
-float maxr;						/* maximum value */
+static FLOAT frand(maxr)
+FLOAT maxr;						/* maximum value */
 {
 	extern long random();
 
@@ -2364,14 +2482,14 @@ static void TurnOnAllWeapons()
 
 
 static int NeedFuel(fraction)
-double fraction;				/* I need it if below this */
+DOUBLE fraction;				/* I need it if below this */
 {
 	return (fuel() < max_fuel() * fraction);
 }
 
 
 static int NeedArmor(fraction)
-double fraction;				/* I need it if below this */
+DOUBLE fraction;				/* I need it if below this */
 {
 	Side side;
 
@@ -2387,7 +2505,7 @@ double fraction;				/* I need it if below this */
 
 
 static int NeedAmmo(fraction)
-double fraction;				/* I need it if below this */
+DOUBLE fraction;				/* I need it if below this */
 {
 	int weapon;
 	Weapon_info winfo;
@@ -2682,9 +2800,9 @@ Environment *pEnv;
 
 static int VectorsCross(x1, y1, xs1, ys1, x2, y2, xs2, ys2)
 Coor   x1,  y1;					/* start of first vector */
-double xs1, ys1;					/* speeds of first vector */
+DOUBLE xs1, ys1;					/* speeds of first vector */
 Coor   x2,  y2;					/* start of second vector */
-double xs2, ys2;					/* speeds of second vector */
+DOUBLE xs2, ys2;					/* speeds of second vector */
 {
 	double tx, ty;				/* times until "collision" in x and y */
 
@@ -3202,14 +3320,23 @@ int  through_unseen; /* true if the search should proceed */
 	Coord          *cp;	/* data on box we're currently looking at */
 	register int    x, y;
 	int             startx, starty;
+	WallType        map_val;
+	int             bOutOfAmmo = OutOfAmmo(FALSE);
 
 	/* mark all boxes as unsearched */
-	for (x = 0; x < GRID_WIDTH; ++x)
-	{
-		for (y = 0; y < GRID_HEIGHT; ++y)
-		{
-			pEnv->boxnotes[x][y].navdir = Nodir;
-		}
+    {
+        BoxNotes *pbox; 
+	    for (x = 0; x < GRID_WIDTH; ++x)
+	    {
+			pbox = &pEnv->boxnotes[x][0];
+
+		    for (y = 0; y < GRID_HEIGHT; ++y)
+		    {
+			    /* pEnv->boxnotes[x][y].navdir = Nodir; */
+			    pbox->navdir = Nodir;
+				pbox++;
+		    }
+	    }
 	}
 
 	/* current location is start of search */
@@ -3276,32 +3403,37 @@ int  through_unseen; /* true if the search should proceed */
 		 * put all accessible unexplored adjacent boxes into queue
 		 * (navdir is used to indicate where the search came _from_)
 		 */
+
+        map_val = map_wall_north(x, y);
 		if (y > 0 && pEnv->boxnotes[x][y - 1].navdir == Nodir &&
-		    map_wall_north(x, y) != MAP_WALL)
+		    map_val != MAP_WALL && (map_val != MAP_DEST || !bOutOfAmmo))
 		{
 			pEnv->boxnotes[x][y - 1].navdir = South;
 			queue[head].x = x;
 			queue[head].y = y - 1;
 			++head;
 		}
+        map_val = map_wall_south(x, y);
 		if (y < GRID_HEIGHT - 1 && pEnv->boxnotes[x][y + 1].navdir == Nodir &&
-		    map_wall_south(x, y) != MAP_WALL)
+		    map_val != MAP_WALL && (map_val != MAP_DEST || !bOutOfAmmo))
 		{
 			pEnv->boxnotes[x][y + 1].navdir = North;
 			queue[head].x = x;
 			queue[head].y = y + 1;
 			++head;
 		}
+        map_val = map_wall_west(x, y);
 		if (x > 0 && pEnv->boxnotes[x - 1][y].navdir == Nodir &&
-		    map_wall_west(x, y) != MAP_WALL)
+		    map_val != MAP_WALL && (map_val != MAP_DEST || !bOutOfAmmo))
 		{
 			pEnv->boxnotes[x - 1][y].navdir = East;
 			queue[head].x = x - 1;
 			queue[head].y = y;
 			++head;
 		}
+        map_val = map_wall_east(x, y);
 		if (x < GRID_WIDTH - 1 && pEnv->boxnotes[x + 1][y].navdir == Nodir &&
-		    map_wall_east(x, y) != MAP_WALL)
+		    map_val != MAP_WALL && (map_val != MAP_DEST || !bOutOfAmmo))
 		{
 			pEnv->boxnotes[x + 1][y].navdir = West;
 			queue[head].x = x + 1;
@@ -3570,25 +3702,34 @@ Environment *pEnv;
 	{	
 		/* destructible wall in our path? */
 		/* target is middle of wall       */
-		np = &pEnv->boxnotes[pEnv->dest_wall.x][pEnv->dest_wall.y];
-		pEnv->target.loc.box_x  = dir2exit[np->navdir].x;
-		pEnv->target.loc.box_y  = dir2exit[np->navdir].y;
-		pEnv->target.loc.grid_x = pEnv->dest_wall.x;
-		pEnv->target.loc.grid_y = pEnv->dest_wall.y;
-		pEnv->target.loc.x      = pEnv->target.loc.box_x + 
-							      BOX_WIDTH * pEnv->target.loc.grid_x;
-		pEnv->target.loc.y      = pEnv->target.loc.box_y + 
-							      BOX_HEIGHT * pEnv->target.loc.grid_y;
-        pEnv->target.xspeed     = 0;
-        pEnv->target.yspeed     = 0;
-		pEnv->bTargetIsVehicle = FALSE;
-		/*****************************************************************/
-		/* NEED_WORK                                                     */
-		/* We're going to have problems when we use features of a target */
-		/* other than speed and position(size?, et al)                   */
-		/*****************************************************************/
-		Fight(pEnv, TRUE);
-		pEnv->frHoldAim         = pEnv->frCurrent;
+		if (!OutOfAmmo(FALSE))
+		{
+		    np = &pEnv->boxnotes[pEnv->dest_wall.x][pEnv->dest_wall.y];
+		    pEnv->target.loc.box_x  = dir2exit[np->navdir].x;
+		    pEnv->target.loc.box_y  = dir2exit[np->navdir].y;
+		    pEnv->target.loc.grid_x = pEnv->dest_wall.x;
+		    pEnv->target.loc.grid_y = pEnv->dest_wall.y;
+		    pEnv->target.loc.x      = pEnv->target.loc.box_x + 
+							          BOX_WIDTH * pEnv->target.loc.grid_x;
+		    pEnv->target.loc.y      = pEnv->target.loc.box_y + 
+							          BOX_HEIGHT * pEnv->target.loc.grid_y;
+            pEnv->target.xspeed     = 0;
+            pEnv->target.yspeed     = 0;
+		    pEnv->bTargetIsVehicle = FALSE;
+		    /*****************************************************************/
+		    /* NEED_WORK                                                     */
+		    /* We're going to have problems when we use features of a target */
+		    /* other than speed and position(size?, et al)                   */
+		    /*****************************************************************/
+		    Fight(pEnv, TRUE);
+		    pEnv->frHoldAim         = pEnv->frCurrent;
+		}
+		else
+		{
+			/* check to see if we have mines and turn appropreately and */
+			/* dump them on the wall, for now restart                   */
+			pEnv->iStatus = RESTART;
+		}
 	}
 }
 
@@ -3607,7 +3748,7 @@ Environment *pEnv;
 		int iNumBlips;
 		Blip_info BlipInfo[MAX_BLIPS];
 		
-		if (get_blips(&iNumBlips, BlipInfo) != BAD_VALUE)
+		MyGetBlips(pEnv, &iNumBlips, BlipInfo);
 		{
 			if (iNumBlips)
 			{
@@ -3731,11 +3872,11 @@ Vehicle_info *pstVehicle;
 
 
 
-static float GetDodgeSpeed(pEnv, fDefault)
+static FLOAT GetDodgeSpeed(pEnv, fDefault)
 Environment *pEnv;
-float fDefault;
+FLOAT fDefault;
 {
-    int         iNumBullets;
+	int         iNumBullets;
 	int         iCtr;
 	int         iCtr2;
 	int         iCtr3;
@@ -3744,27 +3885,26 @@ float fDefault;
 	int         iErrorMargin;
 	int         iProtection;
 	int         iFinalDamage = 9999;
-    int         xUs[NUM_SPEEDS];
-    int         yUs[NUM_SPEEDS];
+	int         xUs[NUM_SPEEDS];
+	int         yUs[NUM_SPEEDS];
 	int         xvUsNew[NUM_SPEEDS];
 	int         yvUsNew[NUM_SPEEDS];
-	Boolean     bAssumeHover;
-    float       fSpeed = fDefault;
+	float       fSpeed = fDefault;
 	float       fSpeeds[NUM_SPEEDS];
 	Bullet_info biBullets[MAX_BULLETS];
 
 	get_bullets(&iNumBullets, biBullets);
 
-    if (iNumBullets)
+	if (iNumBullets)
 	{
 		int   xvUs = pEnv->stMyVehicle.xspeed;
 		int   yvUs = pEnv->stMyVehicle.yspeed;
 		float fCurSpeed = HYPOT(xvUs, yvUs);
+		Boolean bAssumeHover = pEnv->bAssumeHover;
 
-		bAssumeHover    = (tread_acc() == 0.50);
 		iErrorMargin    = pEnv->stMyVehicle.body * 8;
 		iErrorMargin    *= iErrorMargin;
-        iProtection     = protection();
+		iProtection     = protection();
 
 		for (iCtr2 = 0; iCtr2 < NUM_SPEEDS; iCtr2++)
 		{
@@ -3801,7 +3941,7 @@ float fDefault;
 			fSpeeds[iCtr2] = 9.0 * fSpeeds[iCtr2] / max_speed();
 		}
 
-        for (iCtr = 0; iCtr < iNumBullets; iCtr++)
+		for (iCtr = 0; iCtr < iNumBullets; iCtr++)
 		{
 			int dx;
 			int dy;
@@ -3838,7 +3978,7 @@ float fDefault;
 			}
 		}
 
-        iCtr2 = NUM_SPEEDS;
+		iCtr2 = NUM_SPEEDS;
 
 		while (iCtr2--)
 		{
@@ -3926,7 +4066,7 @@ Environment *pEnv;
 	Boolean bFoundOne = FALSE;
 	Blip_info blip_info[MAX_BLIPS];
                         
-    get_blips(&iNumBlips, blip_info);
+    MyGetBlips(pEnv, &iNumBlips, blip_info);
 	while (iNumBlips--)
 	{
 		bGoThere = FALSE;
@@ -3967,5 +4107,441 @@ Environment *pEnv;
 	{
 		StartGoto(pEnv);
 	}
+}
+
+int MyGetBlips(pEnv, piNumBlips, abiBlips)
+Environment *pEnv;
+int *piNumBlips;
+Blip_info *abiBlips;
+{
+    int iTry = 0;
+
+    *piNumBlips = 0;
+
+    if (pEnv->bHaveNewRadar)
+	{
+        if (switch_special(NEW_RADAR, SP_activate) == SP_activate)
+	    {
+		    iTry = 1;
+	    }
+	}
+
+    if (pEnv->bHaveRadar)
+	{
+        if (switch_special(RADAR, SP_activate) == SP_activate)
+	    {
+	    	iTry = 1;
+	    }
+	}
+
+	if (iTry)
+	{
+        if (get_blips(piNumBlips, abiBlips) == BAD_VALUE)
+	    {
+			*piNumBlips = 0;
+	    }
+
+        if (pEnv->bHaveNewRadar)
+	    {
+            switch_special(NEW_RADAR, SP_deactivate);
+		}
+        if (pEnv->bHaveRadar)
+	    {
+            switch_special(RADAR, SP_deactivate);
+		}
+	}
+
+	return (*piNumBlips);
+}
+
+
+
+static void DioInit(pEnv)
+Environment *pEnv;
+{
+	Weapon_info winfo[6];
+	int i;
+
+	memset((char *) &pEnv->gstruct, 0, sizeof(struct g_struct));
+	pEnv->gstruct.ANYONE_HERE = 1;
+	pEnv->gstruct.sav_WANTED_SPEED = pEnv->gstruct.WANTED_SPEED = max_speed();
+	pEnv->gstruct.acc_freedom = 2.0;
+	pEnv->gstruct.crange = 9999.0;
+	pEnv->gstruct.D_shootcounter = 0;
+	pEnv->gstruct.inv_speed = 0.0;
+
+	set_abs_drive(9.0);
+
+	/* initialize globals */
+	pEnv->gstruct.num_weap = num_weapons();
+
+	/* Compute stuff about weapons */
+	pEnv->gstruct.max_weap_range = 0;
+	for (i = 0; i < pEnv->gstruct.num_weap; i++)
+	{
+		get_weapon(i, winfo + i);
+		pEnv->gstruct.inv_speed += winfo[i].ammo_speed;
+		pEnv->gstruct.weap_range[i] = winfo[i].range;
+		if (pEnv->gstruct.weap_range[i] > pEnv->gstruct.max_weap_range)
+			pEnv->gstruct.max_weap_range = pEnv->gstruct.weap_range[i];
+	}
+	pEnv->gstruct.inv_speed = pEnv->gstruct.num_weap / pEnv->gstruct.inv_speed;
+}
+
+
+static int Diophantine_watch_out_t(pEnv, gstruct)
+Environment *pEnv;
+struct g_struct *gstruct;
+{
+	static float angles[11] = {0.0, 0.4, -0.4, 0.8, -0.8, -1.5, 1.5, 2.3, -2.3, PI};
+	float spe, ang;
+	Location my_loc;
+	float xs[5], ys[5], angl[5];
+	int dam[5];
+	Bullet_info bullet[MAX_BULLETS];
+	Bullet_info *b;
+	int num_bullets, count;
+	int ax, ay, t, dx, dy, dis, s, ldam, ws, num;
+	int iMostDamage = 0;
+	float sx, sy, sumsq, diff;
+
+
+	get_location(&my_loc);
+	spe = speed();
+	ang = heading();
+	num = 1;
+	count = -1;
+
+	while (count < 11 && num < 4)
+	{
+		count++;
+
+		if (!Diophantine_gonna_hit(gstruct, &my_loc, ang + angles[count], spe))
+		{
+			angl[num] = ang + angles[count];
+			dam[num] = 3 * Diophantine_abs_ang(gstruct, angl[count], ang);
+			num++;
+		}
+	}
+
+	gstruct->acc_freedom = 2 - (count > 4) - (count > 6);
+	count += (count > 7) + (count > 10);
+	assert(count >= 0);
+	gstruct->WANTED_SPEED = (gstruct->sav_WANTED_SPEED + SLOWER_THEN_MAX) - count;
+
+	/* set_abs_speed(gstruct->WANTED_SPEED); */
+	set_abs_drive(gstruct->WANTED_SPEED);
+
+	for (count = 1; count < num + 1; count++)
+	{
+		xs[count] = gstruct->WANTED_SPEED * cos(angl[count]);
+		ys[count] = gstruct->WANTED_SPEED * sin(angl[count]);
+		dam[count] += random() % 3;
+	}
+
+	ax = my_loc.grid_x * BOX_WIDTH + my_loc.box_x;
+	ay = my_loc.grid_y * BOX_HEIGHT + my_loc.box_y;
+
+	get_bullets(&num_bullets, bullet);
+	if (num_bullets > 0)
+	{
+        int iProtection = protection();
+		Boolean bAssumeHover = pEnv->bAssumeHover;
+		int iDamage;
+
+		b = bullet;
+		for (t = 0; t < num_bullets; b++, t++)
+		{
+			aiDamage[b->type] - iProtection;
+			if (((b->type == MINE || b->type == SLICK)
+				&& bAssumeHover) || iDamage < 1)
+			{
+				continue;
+			}
+
+			dx = b->loc.grid_x * BOX_WIDTH + b->loc.box_x - ax;
+			dy = b->loc.grid_y * BOX_HEIGHT + b->loc.box_y - ay;
+			dis = dx * dx + dy * dy;
+			if (dis > 500 && dis < 40000)
+				for (s = 1; s < num + 1; s++)
+				{
+					sx = b->xspeed - xs[s];
+					sy = b->yspeed - ys[s];
+					sumsq = sx * sx + sy * sy;
+					if (dy * sy + dx * sx < 0.0 && sumsq)
+					{
+						diff = dx * sy - dy * sx;
+						if (diff * diff < sumsq * 400)
+							dam[s] += aiDamage[b->type];
+					}
+				}
+		}
+	}
+
+	ldam = 999;
+	/* printf("dam: %d %d %d %d %d\n ",dam[1],dam[2],dam[3]); */
+
+	for (s = 1; s < num + 1; s++)
+	{
+		if (dam[s] < ldam)
+		{
+			ws = s;
+			ldam = dam[s];
+		}
+		if (dam[s] > iMostDamage)
+		{
+			iMostDamage = dam[s];
+		}
+	}
+
+	if (iMostDamage)
+	{
+	    turn_vehicle(angl[ws]);
+	}
+	else
+	{
+		Location lDestination;
+
+		turn_vehicle(pEnv->aTurn);
+		memcpy(&lDestination, &pEnv->stMyVehicle.loc, sizeof(Location));
+        DeltaLoc(&lDestination, 
+					BOX_WIDTH * SIGN(COS(pEnv->aTurn)), 
+					BOX_HEIGHT * SIGN(SIN(pEnv->aTurn)));
+        if (!MyClearPath(&pEnv->stMyVehicle.loc, &lDestination))
+		{
+			pEnv->iTurnDir = -pEnv->iTurnDir;
+		}
+	}
+}
+
+
+/*ARGSUSED*/
+static int Diophantine_gonna_hit(gstruct, loc, ang, spe)
+struct g_struct *gstruct;
+Location *loc;
+FLOAT ang, spe;
+{
+	float xs, ys, xt, yt;
+	int xi, yi, xd, yd;
+	int ret;
+
+#define RETURN(a)  {ret = (a); goto end;}
+
+	spe += 3.0;
+	if (spe < 3.0)
+		spe -= 6.0;
+	if (spe == 0 && !(random() % 50))
+		RETURN(TRUE);
+	spe *= 1.5;
+	xs = spe * cos(ang ? ang : 0.1);
+	ys = spe * sin(ang ? ang : 0.1);
+
+
+	xt = 99999.0;
+	if (xs < 0.0)
+		xt = (10 - loc->box_x) / xs;
+	if (xs > 0.0)
+		xt = (BOX_WIDTH - 10 - loc->box_x) / xs;
+
+	yt = 99999.0;
+	if (ys < 0.0)
+		yt = (10 - loc->box_y) / ys;
+	if (ys > 0.0)
+		yt = (BOX_HEIGHT - 10 - loc->box_y) / ys;
+
+
+	/* if (xt>12.0 && yt >12.0) RETURN(0); */
+
+	xi = loc->box_x + yt * xs;
+	yi = loc->box_y + xt * ys;
+
+	if (xs < 0.0)
+		xd = -1;
+	else
+		xd = 0;
+	if (ys < 0.0)
+		yd = -1;
+	else
+		yd = 0;
+
+	if (xt < 12.0)
+	{
+		if (yi < BOX_HEIGHT + 20 && yi > -20)
+			if (wall(EAST, loc->grid_x + xd, loc->grid_y))
+				RETURN(1);
+		if (yi > BOX_HEIGHT - 20 && yi < 2 * BOX_HEIGHT + 20)
+		{
+			if (wall(EAST, loc->grid_x + xd, loc->grid_y + 1))
+				RETURN(1);
+			if (yi < BOX_HEIGHT + 20)
+				if (wall(SOUTH, loc->grid_x + xd, loc->grid_y) ||
+						wall(SOUTH, loc->grid_x + xd + 1, loc->grid_y))
+					RETURN(1);
+		}
+		if (yi < 20 && yi > -BOX_HEIGHT - 20)
+		{
+			if (wall(EAST, loc->grid_x + xd, loc->grid_y - 1))
+				RETURN(1);
+			if (yi > -20)
+				if (wall(NORTH, loc->grid_x + xd, loc->grid_y) ||
+						wall(NORTH, loc->grid_x + xd + 1, loc->grid_y))
+					RETURN(1);
+		}
+	}
+	if (yt < 12.0)
+	{
+		if (xi < BOX_WIDTH + 20 && xi > -20)
+			if (wall(SOUTH, loc->grid_x, loc->grid_y + yd))
+				RETURN(1);
+		if (xi > BOX_WIDTH - 20 && xi < 2 * BOX_WIDTH + 20)
+		{
+			if (wall(SOUTH, loc->grid_x + 1, loc->grid_y + yd))
+				RETURN(1);
+			if (xi < BOX_WIDTH + 20)
+				if (wall(EAST, loc->grid_x, loc->grid_y + yd) ||
+						wall(EAST, loc->grid_x, loc->grid_y + yd + 1))
+					RETURN(1);
+		}
+		if (xi < 20 && xi > -BOX_WIDTH - 20)
+		{
+			if (wall(SOUTH, loc->grid_x - 1, loc->grid_y + yd))
+				RETURN(1);
+			if (xi > -20)
+				if (wall(WEST, loc->grid_x, loc->grid_y + yd) ||
+						wall(WEST, loc->grid_x, loc->grid_y + yd + 1))
+					RETURN(1);
+		}
+	}
+	ret = 0;
+end:
+	return ret;
+}
+
+
+
+
+static int Diophantine_watch_out_a(pEnv, gstruct)
+Environment *pEnv;
+struct g_struct *gstruct;
+{
+	float spe, ang;
+	Location my_loc;
+	float xs[4], ys[4];
+	int dam[4];
+	Bullet_info bullet[MAX_BULLETS];
+	Bullet_info *b;
+	int num_bullets;
+	int ax, ay, t, dx, dy, dis, s, ldam, ws;
+	float sx, sy, want, ca, sa, sumsq, diff;
+
+	want = gstruct->WANTED_SPEED;
+
+	if (gstruct->acc_freedom == 0)
+		goto end;
+
+	spe = speed();
+	ang = heading();
+	get_location(&my_loc);
+
+
+	dam[1] = ((want - spe) * 0.5);
+	dam[2] = 0;
+	dam[3] = ((spe - want) * 0.5);
+
+	get_bullets(&num_bullets, bullet);
+
+	if (num_bullets > 0)
+	{
+        int iProtection = protection();
+		Boolean bAssumeHover = pEnv->bAssumeHover;
+		int iDamage;
+
+		ca = cos(ang);
+		sa = sin(ang);
+
+		want = gstruct->WANTED_SPEED;
+
+		xs[3] = (spe + gstruct->acc_freedom) * ca;
+		ys[3] = (spe + gstruct->acc_freedom) * sa;
+
+		xs[2] = spe * ca;
+		ys[2] = spe * sa;
+
+		xs[1] = (spe - gstruct->acc_freedom) * ca;
+		ys[1] = (spe - gstruct->acc_freedom) * sa;
+
+
+		ax = my_loc.grid_x * BOX_WIDTH + my_loc.box_x;
+		ay = my_loc.grid_y * BOX_HEIGHT + my_loc.box_y;
+
+		b = bullet;
+		for (t = 0; t < num_bullets; b++, t++)
+		{
+			iDamage = aiDamage[b->type] - iProtection;
+
+			if (((b->type == MINE || b->type == SLICK)
+				&& bAssumeHover) || iDamage < 1)
+			{
+				continue;
+			}
+
+			dx = b->loc.grid_x * BOX_WIDTH  + b->loc.box_x - ax;
+			dy = b->loc.grid_y * BOX_HEIGHT + b->loc.box_y - ay;
+			dis = dx * dx + dy * dy;
+			if (dis > 500 && dis < 100000)
+				for (s = 1; s < 4; s++)
+				{
+					sx = b->xspeed - xs[s];
+					sy = b->yspeed - ys[s];
+					sumsq = sx * sx + sy * sy;
+					if (dy * sy + dx * sx < 0.0 && sumsq)
+					{
+						diff = dx * sy - dy * sx;
+						if (diff * diff < sumsq * 400)
+							dam[s] += iDamage;
+					}
+				}
+		}
+	}
+
+	ldam = 999;
+    ws = 2;
+
+	for (s = 1; s < 4; s++)
+	{
+		if (dam[s] < ldam)
+		{
+			ws = s;
+			ldam = dam[s];
+		}
+	}
+	set_abs_drive(spe + (ws - 2) * gstruct->acc_freedom);
+
+end:
+    return (0);
+}
+
+
+
+
+
+/*ARGSUSED*/
+static int Diophantine_abs_ang(gstruct, a, b)
+struct g_struct *gstruct;
+FLOAT a, b;
+{
+	float t;
+
+	a -= floor(a / (2 * PI)) * (2 * PI);
+	b -= floor(b / (2 * PI)) * (2 * PI);
+
+	t = a - b;
+	if (t < 0.0)
+		t = -t;
+    else
+	if (t > PI)
+		t = 2 * PI - t;
+
+	return (t);
 }
 

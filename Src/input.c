@@ -8,9 +8,18 @@
 
 /*
 $Author: lidl $
-$Id: input.c,v 2.14 1992/01/29 08:37:01 lidl Exp $
+$Id: input.c,v 2.17 1992/06/07 02:45:08 lidl Exp $
 
 $Log: input.c,v $
+ * Revision 2.17  1992/06/07  02:45:08  lidl
+ * Post Adam Bryant patches and a manual merge of the rejects (ugh!)
+ *
+ * Revision 2.16  1992/03/31  21:45:50  lidl
+ * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
+ *
+ * Revision 2.15  1992/03/31  04:04:16  lidl
+ * pre-aaron patches, post 1.3d release (ie mailing list patches)
+ *
  * Revision 2.14  1992/01/29  08:37:01  lidl
  * post aaron patches, seems to mostly work now
  *
@@ -194,10 +203,21 @@ Event *event;
 	    case EVENT_MBUTTON:
 		aim_all_turrets(dx, dy);
 		set_message_data(v, event);
+		if (v -> mouse_speed)
+		  set_rel_drive(v -> mouse_speed *
+				(float) (50 * (dx * dx + dy * dy) * 9 /
+					 (ANIM_WIN_WIDTH * ANIM_WIN_WIDTH +
+					  ANIM_WIN_HEIGHT * ANIM_WIN_HEIGHT)));
 		break;
 	    case EVENT_RBUTTON:
 		turn_vehicle_human(ATAN2(dy, dx));
 		set_message_data(v, event);
+		if (v -> mouse_speed) {
+			set_rel_drive((float) v -> mouse_speed *
+				(50 * (dx * dx + dy * dy) * 9 /
+					 (ANIM_WIN_WIDTH * ANIM_WIN_WIDTH +
+					  ANIM_WIN_HEIGHT * ANIM_WIN_HEIGHT)));
+		}
 		break;
 	    case EVENT_KEY:
 		switch (event->key) {
@@ -241,7 +261,10 @@ Event *event;
 			break;
 
 		    case '-':
-			set_rel_drive(-9.0);
+			if (v -> mouse_speed)
+			  v -> mouse_speed = -v -> mouse_speed;
+			else
+			  set_rel_drive(-9.0);
 			break;
 		    case 'x':
 			set_abs_drive(v->vector.drive - 1);
@@ -302,21 +325,28 @@ Event *event;
 		    case 'r':
 			release_discs(v, DISC_FAST_SPEED, TRUE);
 			break;
-
+#ifndef NO_CAMO
+		    case 'I': /* for Invisible */
+			do_special(v, CAMO, SP_toggle);
+			break;
+#endif /* NO_CAMO */
+#ifndef NO_HUD
+		    case 'H': /* for HUD */
+			do_special(v, HUD, SP_toggle);
+			break;
+#endif /* !NO_HUD */
 		    case 'C':
 			do_special(v, CONSOLE, SP_toggle);
 			break;
 		    case 'M':
 			do_special(v, MAPPER, SP_toggle);
 			break;
-#ifndef NO_NEW_RADAR
 		    case 'N':
 			do_special(v, NEW_RADAR, SP_toggle);
 			break;
 		    case 'T':
 			do_special(v, TACLINK, SP_toggle);
 			break;
-#endif /* NO_NEW_RADAR */
 		    case 'R':
 			do_special(v, RADAR, SP_toggle);
 			break;

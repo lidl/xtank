@@ -8,9 +8,21 @@
 
 /*
 $Author: lidl $
-$Id: thread.c,v 2.17 1992/01/27 06:21:40 lidl Exp $
+$Id: thread.c,v 2.20 1992/09/06 21:16:46 lidl Exp $
 
 $Log: thread.c,v $
+ * Revision 2.20  1992/09/06  21:16:46  lidl
+ * changed to hopefully do the right thing between HP9000 series
+ * cisc machines, depending on the OS being run
+ *
+ * Revision 2.19  1992/05/18  20:16:27  lidl
+ * removed all the i860/SVR4 debug info -- we know that it works, at least
+ * on OKIX v1.2.1 -- pity that the machines will never see the market(!)
+ *
+ * Revision 2.18  1992/04/18  15:36:11  lidl
+ * partial crap in here for i860 lonjmp() hack, still doesn't work
+ * how frusterating!
+ *
  * Revision 2.17  1992/01/27  06:21:40  lidl
  * supposedly working SVR4 threading code
  *
@@ -82,6 +94,10 @@ $Log: thread.c,v $
 #include <assert.h>
 #include <errno.h>
 
+#ifdef SVR4
+#include <stdio.h>
+#endif
+
 /* The current thread that is executing */
 Thread *curthd;
 
@@ -129,14 +145,26 @@ Thread *(*func) ();
 	thd->stackoverflow = 0;
 
 	/* Copy current signal state and setjmp to the thread */
+#ifdef SVR4
+	sigprocmask(NULL, NULL, thd->sigstate);
+#else
 	thd->sigstate = sigsetmask(~0);
+#endif
 	if (setjmp(thd->state))
 	{
+#ifdef SVR4
+		sigprocmask(SIG_SETMASK, curthd->sigstate, NULL);
+#else
 		sigsetmask(curthd->sigstate);
+#endif
 		for (;;)
 			curthd->oldthd = thread_switch((*curthd->func) (curthd->oldthd));
 	}
+#ifdef SVR4
+	sigprocmask(SIG_SETMASK, thd->sigstate, NULL);
+#else
 	sigsetmask(thd->sigstate);
+#endif
 
 	/* Modify current state's stack pointer in jmp_buf state */
 	bufend = (unsigned int) buf + bufsize - 1 - sizeof(thd->state);
@@ -149,15 +177,6 @@ Thread *(*func) ();
 	   (increasing address values) or downwards, to determine whether the
 	   stack pointer should start at the beginning or end of the empty space
 	   after the thread structure. */
-
-#if defined(i860) && defined(SVR4)
-	(thd->state).uc_mcontext.gregs[SP] = ((unsigned) (bufend)) & ~3;
-	(thd->state).uc_stack.ss_sp = (char *)(((unsigned) (bufend)) & ~3);
-	(thd->state).uc_stack.ss_size = bufsize;
-#if 0
-	(thd->state).uc_stack.ss_flags = 0;
-#endif
-#endif
 
 #if (defined(_IBMR2))
 	bufend = (bufend - 7) & ~7;
@@ -209,8 +228,13 @@ Thread *(*func) ();
 #endif
 #endif
 
-#ifdef hp9000s300
+#if defined(hp9000s300) && defined(__hpux)
 	thd->state[12] = ((unsigned) bufend) & ~3;
+#endif
+#if defined(hp9000) && defined(hp300)
+	/* HP Bobcat running 4.3BSD */
+	/* Stack grows downwards, SP in state[2]. align to 32-bit boundary */
+	thd->state[2] = ((unsigned) (bufend)) & ~3;
 #endif
 
 #ifdef apollo
@@ -223,9 +247,10 @@ Thread *(*func) ();
 	thd->state[2] = ((unsigned) (bufend)) & ~3;
 #endif
 
-#ifdef hp300
-	/* Stack grows downwards, SP in state[2]. align to 32-bit boundary */
-	thd->state[2] = ((unsigned) (bufend)) & ~3;
+#ifdef __386BSD__
+	/* Stack grows downwards, SP in state[0]. align to 32-bit boundary */
+	/* this doesn't work quite right, yet */
+	thd->state[0] = bufend & ~3;
 #endif
 
 #if defined(sequent) && defined(i386)
@@ -256,14 +281,23 @@ Thread *(*func) ();
 Thread *thread_switch(newthd)
 Thread *newthd;
 {
+#ifdef SVR4
+	unsigned long sigstate[4];
+#endif
+
 	/* Check for stack overflow */
-	if (newthd->stackoverflow)
+	if (newthd->stackoverflow) {
 		return 0;
+	}
 
 	/* If not switching to current thread, longjmp to new thread */
 	if (newthd != curthd)
 	{
+#ifdef SVR4
+		sigprocmask(NULL, NULL, &sigstate);
+#else
 		int sigstate = sigsetmask(~0);
+#endif
 
 		if (!setjmp(curthd->state))
 		{
@@ -276,7 +310,11 @@ Thread *newthd;
 #endif
 		}
 		newthd = curthd->oldthd;
+#ifdef SVR4
+		sigprocmask(NULL, sigstate, NULL);
+#else
 		sigsetmask(sigstate);
+#endif
 	}
 	/* Return the previous current thread */
 	return newthd;
@@ -353,8 +391,6 @@ Thread *thread_setup()
 		printf("Error returned from getcontext(): %d\n", errno);
 		assert(0);
 	}
-	printf("scheduler_thread is %x\n", curthd);
-	printf("scheduler_thread->uc_link is %x\n", curthd->uc_link);
 	return (Thread *)curthd;
 }
 
@@ -376,9 +412,6 @@ Thread *(*func)();
 {
 	stack_t st;
 
-	printf("Entering thread_init() function\n");
-	printf("buf = %x, bufsize = %d, func = %x\n", buf, bufsize, func);
-	
 	/* malloc a stack space for the context */
 	if ((st.ss_sp = (char *) malloc(bufsize)) == (char *)0) {
 		return (ucontext_t *)NULL;
@@ -404,7 +437,6 @@ Thread *newthd;
 	ucontext_t *last_thread;
 
 	if (newthd != curthd) {
-		printf("Switching threads from %x to %x\n", curthd, newthd);
 		last_thread = curthd;
 		curthd = newthd;
 		swapcontext(last_thread, newthd); /* switch threads */

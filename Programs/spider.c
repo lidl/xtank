@@ -8,7 +8,7 @@
 #include <xtanklib.h>
 #include <math.h>
 
-static void main();		/* forward reference */
+void spider_main();		/* forward reference */
 
 Prog_desc spider_prog = {
     "spider",
@@ -17,7 +17,7 @@ Prog_desc spider_prog = {
     "Robert Potter (after Terry Donahue)",
     PLAYS_COMBAT | DOES_SHOOT,
     2,
-    main
+    spider_main
 };
 
 /* all my global data */
@@ -62,7 +62,7 @@ static void cleanup(allp)
     free((char *)allp);
 }
 
-static void main()
+static void spider_main()
 {
     All *allp;
 

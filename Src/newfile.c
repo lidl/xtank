@@ -8,7 +8,7 @@
 
 #include <string.h>
 #include <ctype.h>
-#include "limits.h"
+#include "tanklimits.h"
 #include "malloc.h"
 #include <assert.h>
 #include "xtank.h"
@@ -22,7 +22,9 @@
 
 #ifdef UNIX
 #include <sys/param.h>
+#ifndef __hpux
 #include <sys/dir.h>
+#endif
 #endif
 
 #if defined(SYSV) || defined(SVR4)
@@ -45,7 +47,7 @@ new_load_vdesc(d, name)
 Vdesc *d;
 char *name;
 {
-	extern char pathname[], vehiclesdir[];
+    extern char pathname[], vehiclesdir[];
     extern int num_vehicle_objs;
     extern Object *vehicle_obj[];
     FILE *file;
@@ -203,6 +205,7 @@ void init_Wnames()
 int SaveVehicleFormat1(d)
 Vdesc *d;
 {
+    extern char pathname[], vehiclesdir[];
     FILE *file;
     char filename[MAXPATHLEN];
     int i;

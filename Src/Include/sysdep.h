@@ -8,9 +8,12 @@
 
 /*
 $Author: lidl $
-$Id: sysdep.h,v 2.11 1991/12/27 02:31:55 lidl Exp $
+$Id: sysdep.h,v 2.12 1992/04/18 15:37:11 lidl Exp $
 
 $Log: sysdep.h,v $
+ * Revision 2.12  1992/04/18  15:37:11  lidl
+ * sequent hack
+ *
  * Revision 2.11  1991/12/27  02:31:55  lidl
  * fixed up for SVR4 machines
  *
@@ -78,8 +81,8 @@ static double temp_drem;
 #endif
 
 
-#if 0
- /* If you have no drem or fmod try this... */
+/* If you have no drem or fmod try this... */
+#if defined(sequent)
 #define drem(a,b) (((double)(a))-(int)((((double)(a))/((double)(b)))+((double) 0.5))*(b))
 #endif
 

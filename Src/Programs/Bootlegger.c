@@ -3,8 +3,11 @@
 */
 
 /*
- * $Id: Bootlegger.c,v 1.3 1992/01/27 06:27:01 lidl Exp $
+ * $Id: Bootlegger.c,v 1.4 1992/02/24 03:40:27 lidl Exp $
  * $Log: Bootlegger.c,v $
+ * Revision 1.4  1992/02/24  03:40:27  lidl
+ * fixed to do the right thing with the HAS_SINCOS compile flag
+ *
  * Revision 1.3  1992/01/27  06:27:01  lidl
  * fixed to work with pgcc on the i860
  *
@@ -104,10 +107,6 @@ Note:
 #define trace puts
 #else
 #define trace
-#endif
-
-#ifdef SVR4
-#define DUMB_C
 #endif
 
 /*
@@ -459,11 +458,11 @@ trace("predict");
 				stop = tm;
 		}
 			
-#ifdef DUMB_C
+#ifdef HAS_SINCOS
+		sincos(rot, &sn, &cs);
+#else
 		cs = COS(rot);
 		sn = SIN(rot);
-#else
-		sincos(rot, &sn, &cs);
 #endif
 		vx *= ispeed;
 		vy *= ispeed;

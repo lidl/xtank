@@ -10,10 +10,16 @@
 */
 
 /*
-$Author: rpotter $
-$Id: drone.c,v 2.3 1991/02/10 13:50:24 rpotter Exp $
+$Author: lidl $
+$Id: drone.c,v 2.5 1992/08/19 05:18:46 lidl Exp $
 
 $Log: drone.c,v $
+ * Revision 2.5  1992/08/19  05:18:46  lidl
+ * changed to use FLOAT, instead of float
+ *
+ * Revision 2.4  1992/08/19  05:15:02  lidl
+ * changed sqrt to SQRT
+ *
  * Revision 2.3  1991/02/10  13:50:24  rpotter
  * bug fixes, display tweaks, non-restart fixes, header reorg.
  *
@@ -165,16 +171,16 @@ Vehicle_info *t;
 int ammo_speed;
 {
 	int dx, dy;
-	float lead_factor;
+	FLOAT lead_factor;
 
 	dx = t->loc.x - myloc->x;
 	dy = t->loc.y - myloc->y;
 
 	/* Lead the target approximately, shoot fanning */
-	lead_factor = 2 * sqrt((double) (dx * dx + dy * dy)) /
-		(float) ammo_speed;
-	dx += (int) (t->xspeed * lead_factor * (float) rnd(20) / 19.0);
-	dy += (int) (t->yspeed * lead_factor * (float) rnd(20) / 19.0);
+	lead_factor = 2 * SQRT((double) (dx * dx + dy * dy)) /
+		(FLOAT) ammo_speed;
+	dx += (int) (t->xspeed * lead_factor * (FLOAT) rnd(20) / 19.0);
+	dy += (int) (t->yspeed * lead_factor * (FLOAT) rnd(20) / 19.0);
 
 	/* Point all the turrets towards where he is going to be */
 	aim_all_turrets(dx, dy);
@@ -194,7 +200,7 @@ int targ_x, targ_y;
     static box_y[4] = {0, BOX_HEIGHT / 2, BOX_HEIGHT, BOX_HEIGHT / 2};
     int grid_x, grid_y;
     int i, choices, dir, pick;
-    float spd, ang;
+    FLOAT spd, ang;
     int dx, dy;
     int odds[4];
 
@@ -247,7 +253,7 @@ int targ_x, targ_y;
 	turn_vehicle(ang);
 
 	/* Move at a random speed from 2 to 6 */
-	spd = (float) (2 + rnd(5));
+	spd = (FLOAT) (2 + rnd(5));
     }
 
     set_rel_drive(spd);

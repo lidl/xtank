@@ -7,10 +7,19 @@
 */
 
 /*
-$Author: stripes $
-$Id: box.c,v 2.5 1992/01/06 07:52:49 stripes Exp $
+$Author: lidl $
+$Id: box.c,v 2.8 1992/05/19 22:57:19 lidl Exp $
 
 $Log: box.c,v $
+ * Revision 2.8  1992/05/19  22:57:19  lidl
+ * post Chris Moore patches, and sqrt to SQRT changes
+ *
+ * Revision 2.7  1992/03/31  21:45:50  lidl
+ * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
+ *
+ * Revision 2.6  1992/03/31  04:04:16  lidl
+ * pre-aaron patches, post 1.3d release (ie mailing list patches)
+ *
  * Revision 2.5  1992/01/06  07:52:49  stripes
  * Changes for teleport
  *
@@ -34,6 +43,7 @@ $Log: box.c,v $
  * 
 */
 
+#include "common.h"
 #include "malloc.h"
 #include "xtank.h"
 #include "vstructs.h"
@@ -41,6 +51,11 @@ $Log: box.c,v $
 #include "vehicle.h"
 #include "outpost.h"
 #include "globals.h"
+#include "terminal.h"
+#include "bullet.h"
+#include "disc.h"
+#include "graphics.h"	/* for DRAW_XOR and WHITE */
+#include "gr.h"		/* for MAP_WIN */
 
 extern Boolean intersect_wall();
 
@@ -221,7 +236,47 @@ Box *b;
 				{
                     ws = &weapon_stat[(int)v->vdesc->weapon[i]];
 					if (v->owner->money >= ws->ammo_cost && w->ammo < ws->max_ammo)
+
+#ifndef NO_TIMED_REFILL
+
+/*
+ * If the refill_time is 0, filled the weapon up to capacity
+ * instantly
+ *
+ * 1 is the "normal" rate, ie 1 bullet per frame
+ *
+ * n requires n frames per bullet
+ */
+
+					if (weapon_stat[(int) w->type].refill_time == 0) {
+						int needed;
+						int afford;
+						int get;
+
+						needed = ws->max_ammo - w->ammo;
+
+						if (ws->ammo_cost) {
+						    afford = v->owner->money / ws->ammo_cost;
+						    get = MIN(needed, afford);
+                                                } else {
+						    get = needed;
+                                                }
+
+						if (get) {
+						    w->status &= ~WS_no_ammo;
+						    v->owner->money -= (ws->ammo_cost * get);
+						    w->ammo += get;
+						}
+                                        } else 
+					    if (w->refill_counter != 1)
+						--w->refill_counter;
+                                            else
+#endif /* NO_TIMED_REFILL */
 					{
+#ifndef NO_TIMED_REFILL
+						w->refill_counter = weapon_stat[(int) w->type].refill_time;
+#endif /* NO_TIMED_REFILL */
+
 						w->ammo++;
 						w->status &= ~WS_no_ammo;
 						v->owner->money -= ws->ammo_cost;
@@ -254,72 +309,137 @@ Box *b;
 			break;
 		case TELEPORT:
 			{
-			  int xd, yd, x, y, xmax = -1, ymax, found = 0;
+			  extern Terminal *term;
+			  extern Bset *bset;
+			  Bullet *bullet;
+			  int xd, yd, x, y, xmax = -1, ymax, xdmax, ydmax, found = 0, i;
 			  Box *dest;
 			  float ftemp, fmax;
 
 			  /* if this teleport isn't neutral, or on our side, ignore it */
 			  if (v-> teleport == TRUE &&
-			      (b->team == v->team || b->team == NEUTRAL))
+			      ((b->team == v->team && settings.si.teleport_from_team) ||
+			       (b->team == NEUTRAL && settings.si.teleport_from_neutral) ||
+			       (settings.si.teleport_any_to_any)))
 			    {
 			      /* else search the maze for a different teleport */
 			      for (x = 0; x < GRID_WIDTH; x++) 
 				for (y = 0; y < GRID_HEIGHT; y++)
 				  {
-				    if (x == v->loc->grid_x &&
-					y == v->loc->grid_y)
+				    if (x == v->loc->grid_x && y == v->loc->grid_y)
 				      continue;
 				    
 				    dest = &real_map[x][y];
 				    if (dest->type == TELEPORT &&
-					(dest->team == v->team ||
-					 dest->team == NEUTRAL))
+					dest->teleport_code == b->teleport_code &&
+					((dest->team == v->team && settings.si.teleport_to_team) ||
+					 (dest->team == NEUTRAL && settings.si.teleport_to_neutral) ||
+					 (dest->team == b->team && settings.si.teleport_any_to_any)))
 				      {
 					xd = x - v->loc->grid_x;
 					yd = y - v->loc->grid_y;
 					
-					/* calculate how close to our current direction of */
-					/* travel this offset is */
-					ftemp = (v->vector.xspeed * xd +
-						 v->vector.yspeed * yd) /
-						   sqrt((double)(xd * xd + yd * yd));
-					
-					/* keep a note of the closest one */
-					if (xmax == -1 ||
-					    ftemp > fmax)
+					if (xmax != -1 &&
+					    xdmax * yd == xd * ydmax)
 					  {
-					    fmax = ftemp;
-					    xmax = x;
-					    ymax = y;
+					    /* found one on same line as best */
+					    if ((ydmax == 0 && xd * xdmax > 0) ||
+						yd * ydmax > 0)
+					      {
+						/* it's in the same direction as the best */
+						if ((ydmax == 0 && ABS(xd) < ABS(xdmax)) ||
+						    ABS(yd) < ABS(ydmax))
+						  {
+						    /* it's nearer than the best - use it */
+						    xmax = x;
+						    ymax = y;
+						    xdmax = xd;
+						    ydmax = yd;
+						  }
+						/* else */
+						  /* it's furthur away than the best */
+					      }
+					    else if (fmax < 0)
+					      {
+						/* it's in the opposite direction - good */
+						fmax = -fmax;
+						xmax = x;
+						ymax = y;
+						xdmax = xd;
+						ydmax = yd;
+					      }
+					    /* else */
+					      /* it's in the wrong direction */
+					  }
+					else
+					  {
+					    /* this is a new direction - calculate how close to our 
+					     * current direction of travel this offset is */
+					    ftemp = (v->vector.xspeed * xd +
+						     v->vector.yspeed * yd) /
+						       SQRT((double)(xd * xd + yd * yd));
+					
+					    /* keep a note of the closest one */
+					    if (xmax == -1 ||
+						ftemp > fmax)
+					      {
+						fmax = ftemp;
+						xmax = x;
+						ymax = y;
+						xdmax = xd;
+						ydmax = yd;
+					      }
 					  }
 				      }
 				  }
 			      
 			      /* if we found a suitable place to jump to */
-			      if (xmax != -1)
-				/* calculate an offset to take us there ensuring that we */
-				/* land just past the teleport, so that we don't */
-				/* immediately re-enter it */
-				if (ABS(v->vector.xspeed) > ABS(v->vector.yspeed))
-				  adjust_loc(v->loc,
-					     (int)(BOX_WIDTH / 2 - v->loc->box_x +
+			      if (xmax != -1) 
+				{
+				  /* calculate an offset to take us there ensuring that we */
+				  /* land just past the teleport, so that we don't */
+				  /* immediately re-enter it */
+				  if (ABS(v->vector.xspeed) > ABS(v->vector.yspeed))
+				    {
+				      xd = (int)(BOX_WIDTH / 2 - v->old_loc->box_x +
 						   (v->vector.xspeed < 0 ? -1 : 1) *
-						   LANDMARK_WIDTH / 2 +
-						   (xmax - v->loc->grid_x) * BOX_WIDTH),
-					     (int)(BOX_HEIGHT / 2 - v->loc->box_y +
+						   (LANDMARK_WIDTH + 4) / 2 +
+						   (xmax - v->old_loc->grid_x) * BOX_WIDTH);
+				      yd = (int)(BOX_HEIGHT / 2 - v->old_loc->box_y +
 						   v->vector.yspeed / ABS(v->vector.xspeed) *
 						   LANDMARK_HEIGHT / 2 +
-						   (ymax - v->loc->grid_y) * BOX_HEIGHT));
-				else
-				  adjust_loc(v->loc,
-					     (int)(BOX_WIDTH / 2 - v->loc->box_x +
+						   (ymax - v->old_loc->grid_y) * BOX_HEIGHT);
+				    }
+				  else
+				    {
+				      xd = (int)(BOX_WIDTH / 2 - v->old_loc->box_x +
 						   v->vector.xspeed / ABS(v->vector.yspeed) *
 						   LANDMARK_WIDTH / 2 +
-						   (xmax - v->loc->grid_x) * BOX_WIDTH),
-					     (int)(BOX_HEIGHT / 2 - v->loc->box_y +
+						   (xmax - v->old_loc->grid_x) * BOX_WIDTH);
+				      yd = (int)(BOX_HEIGHT / 2 - v->old_loc->box_y +
 						   (v->vector.yspeed < 0 ? -1 : 1) *
-						   LANDMARK_HEIGHT / 2 +
-						   (ymax - v->loc->grid_y) * BOX_HEIGHT));
+						   (LANDMARK_HEIGHT + 4) / 2 +
+						   (ymax - v->old_loc->grid_y) * BOX_HEIGHT);
+				    }
+
+				  if (settings.si.player_teleport)
+				    {
+				      adjust_loc(v->old_loc, xd, yd);
+				      v->just_ported = TRUE;
+				    }
+
+				  if (settings.si.disc_teleport && v->num_discs > 0)
+				      for (i = 0; i < bset->number; i++)
+					{
+					  bullet = bset->list[i];
+
+					  if (bullet->type == DISC && bullet->owner == v)
+					    adjust_loc(bullet->loc, xd, yd);
+
+					  if (!settings.si.player_teleport)
+					    release_discs(v, DISC_FAST_SPEED, TRUE);
+					}
+				}
 			    }
 			  break;
 			}
@@ -358,7 +478,7 @@ int grid_x, grid_y;
 	/* Compute angle to the vehicle with random fan lead */
 	dx = v->loc->x - oloc.x;
 	dy = v->loc->y - oloc.y;
-	lead = rnd((int) b->strength) * sqrt(dx * dx + dy * dy) / 300;
+	lead = rnd((int) b->strength) * SQRT(dx * dx + dy * dy) / 300;
 	dx += v->vector.xspeed * lead;
 	dy += v->vector.yspeed * lead;
     ang = ATAN2(dy, dx);
@@ -466,32 +586,32 @@ FLOAT *xadj, *yadj;
 			*yadj = -ss;
 			break;
 		case SCROLL_NE:
-			*xadj = ss;
-			*yadj = -ss;
+			*xadj = ss / SQRT_2;
+			*yadj = -ss / SQRT_2;
 			break;
 		case SCROLL_E:
 			*xadj = ss;
 			*yadj = 0.0;
 			break;
 		case SCROLL_SE:
-			*xadj = ss;
-			*yadj = ss;
+			*xadj = ss / SQRT_2;
+			*yadj = ss / SQRT_2;
 			break;
 		case SCROLL_S:
 			*xadj = 0.0;
 			*yadj = ss;
 			break;
 		case SCROLL_SW:
-			*xadj = -ss;
-			*yadj = ss;
+			*xadj = -ss / SQRT_2;
+			*yadj = ss / SQRT_2;
 			break;
 		case SCROLL_W:
 			*xadj = -ss;
 			*yadj = 0.0;
 			break;
 		case SCROLL_NW:
-			*xadj = -ss;
-			*yadj = -ss;
+			*xadj = -ss / SQRT_2;
+			*yadj = -ss / SQRT_2;
 			break;
 	}
 }

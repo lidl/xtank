@@ -1,190 +1,37 @@
-                                                            February 6, 1992
+                                                            September 6, 1992
 
-              Release Notes for the Xtank UMDENG 1.3d Release
+              Release Notes for the Xtank UMDENG 1.3e Release
 
 New features:
 
-   * teleport mode (off by default)
-     off for robot programs
-     on for human players
-     no mazes that are distributed with teleport squares
-     still pretty buggy
-     suggested usage -- only if you plan to submit bug fixes for it :-)
+   * entirely new console driver
 
-   * support for four turret'ed vehicles
-     game play values probably need to be tweaked
-     sample body design -- panzy
-        - bitmaps for panzy still need some work
-        - they can sustain a high fire rate with weapons that generate
-          massive amounts of heat
-        - it is almost impossible to dodge when using a panzy body
+   * support for SVR4 style threading
+     It was working on the SVR4 machines we had before we had to
+     give them back to the vendor.  We'd like to hear about any
+     success stories that people have with this code.
 
-   * new lowlib calls for robot programmers
-     get_blips()           -- not new, but update for the new radar system
-     get_bumper_type()     -- get bumper type
-     get_engine_type()     -- get engine type
-     get_handling()        -- get handling value
-     get_suspension_type() -- get type of suspension
-     set_teleport()        -- turn on/off teleport mode
-     get_tread_type()      -- get tread type
-     get_vehicle_cost()    -- find out what the tank model costs
-     turn_rate()           -- lets the program ask for the current safe turn
-                              angle (bases on the speed, treads, terrain, etc).
-                              This allows robots to decide when to make 
-                              un-safe turns, or when to turn slower, 
-                              so as to not slip.
+   * partial cleanup of THREAD_MP code
+     (It's only a little cleaner.  Most likely it will get majorly
+     whacked in the next release.)
 
-   * new structure information available to robots
-     A vehicle's bounding box it included in the Vehicle_info structure.
-     This allows a robot to better guess at how close it needs to target
-     its shots at any enemy vehicle.  Note: This is the bounding box at
-     the vehicle's current angle!
+   * no more support for the old .v vehicle file formats
+     We told you it was going away, *poof*, now it's gone.
+     Convert any vehicles you can't live without, and mail
+     the .V files to xtank-request@eng.umd.edu for possible
+     inclusion in the next release.
 
-     The "newBlip" and "newRadar" structures have all sorts of cool info
-     from the new radar system -- you probably want to look at these, if
-     you code robot programs.  Especially, if you have a TacLink in your
-     vehicle!
+     Actaully, it does support them.  We can guarentee that it will
+     not support them in the next release.
 
-   * new message types available
-     OP_WHERE_IS     -- where is landmark foo
-     OP_HERE_ARE     -- foo is at one or more places
-     OP_WHATS_IN     -- what is in this location?
-     OP_GRID_CONTAIN -- landmark/wall info, one or more places
-     OP_DO_YOU_HAVE  -- some feature
-     OP_WILL_YOU     -- escort/guard/etc
-     OP_AFFIRMATIVE  -- verbose yes
-     OP_NEGATIVE     -- less verbose no
-     OP_CLUELESS     -- I don't grok that
-     OP_I_AM         -- autobiography
-     OP_ENEMY_AT     -- the Kitty Kelly syndrome
-     OP_IFF          -- IFF key (for new radar system)
-     OP_INCOMING     -- warning for incoming missles
-
-     Not all the messages are fully decoded for humans, only robots can
-     extract the full content of these messages.  Hopefully, in a future
-     release, the message system will be more fully integrated (maybe
-     via a new special), so that location information can be used to
-     automatically update the console maps.  People cannot really access
-     the new message formats very effectivly.
-
-   * entirely new radar system!
-     Updated the radar system from 1960's technology to that of the 1990's.
-     Basically what Aaron EastLund sent us, with a bug fix and new feature
-     or two.  Unfortunately, you *CANNOT* compile the program without the
-     new radar system, so deal with it.  (This is not Aaron's fault, but
-     mine (with a little nudging from Gordon)).
-
-   * more statically linked robot programs
-     - tagman -- new release
-       Lots of optimizations, lots of cool features.  A bevy of new
-       vehicles designs to run it in.  (Run it and die, you little maggot)
-     - gnat -- new release
-       More cool optimizations and strategies.
-     - bootlegger
-       A first cut at a robot that can do some cool targeting!
-
-   * kill bonus algorithm change
-     You now get twice as much money for killing opponents.
-
-   * new friendly fire algorithm
-     It used to be that you weren't penalized for killing other players
-     on your team.  Now you are.  The amount of score loss is calculated
-     as such -- figure the number of points you would have gotten if
-     the player was on a different team, multiply by .70, and subtract
-     that from your score.
-
-   * entirely new vehicle save/load format (all ascii)
-     First, the load tries to open vehicle.V.  If it exists, it
-     uses the new load function.  If it doesn't exist, the program
-     tries vehicle.v.  If that exists, the old load code is tried.
-     Otherwise it fails.
-
-     The save code will make ONLY the new format vehicle files (.V).
-
-   * TICKSZ is effectively one; it really does not exist anymore.
-
-   * new skidding code is installed
-
-   * new key functions
-     The +/- keys now move you forward one vehicle when in watch mode,
-     so a watcher can now watch all vehicles, instead of only vehicles
-     number zero through nine.
-
-   * possible SVR4 support for a gerenic threading option
-     Our SVR4 boxes have broken support for this, so we can't test it.
-     If you have a box running SVR4, we'd really like to get some
-     feedback on this code.
-
-   * several new macros for various things
-     FLOAT should be used instead of "float"
-     STRUCT_ASSIGN can be used to copy structures, as the nice way of
-     doing structure assign's doesn't work on all compilers.
-
-   * batch mode (see below)
-
-       * lots more command line arguments for Xtank
-         (* - Not implemented yet.)
-        -s    == -S -F
-        -i    == -I -X -P -D
-        -x    == -X -P
-        -h    == -H
-
-        -F <filename>   => use settings file
-        -X              => exit (auto)
-        -P              => print scores
-        -H              => this help screen
-        -S              => auto-start
-        -D              => no delay *
-        -I              => no i/o (not user setable) *
-        -Z              => Zephyr Broadcast List *
-
-   * save & load game settings
-     automatically sets up combatant grid and settings information.
-
-   * When loading from a saved settings file, any dynamically loaded
-     programs will be re-loaded.  Obviously, this will fail if the
-     dynamically loaded .{c|o} file is not loadable at runtime, along
-     the same path it was when the settings file was generated.
-
-   * refinements to the Imakefile file structure
-
-   * partial support for NeXT machines
-
-   * compile-time code size and stack space allocation
-
-   * lots more tank designs :-)
-
-   * unguided missles
-     These have longer range than heat seekers, are cheaper than heat
-     seekers, contain more shots than heat seekers, and travel a little
-     faster than heat seekers.  They generate more heat than heat seekers,
-     but have faster reload times.  They look just like heat seekers,
-     except they don't curve around to nail you. :-)
-
-   * pocket rockets
-     These have about half the range of unguided missles, are cheaper
-     than unguided missles, contain the same number of shots as the
-     unguided missles, and travel the same speed.  They have the same
-     amount of heat, and the same reload time.  Basically, a shorter
-     range, cheaper form of the unguided missle.
-
-   * HARMs -- part of the new radar system
-     Anti-Radiation (read Radar) missles -- they home in on your radar
-     signature, and can boost themselves over the walls.
-
-   * bullets should now only affect the correct side when they hit a
-     vehicle body.
-
-   * Xtank sucks almost no CPU cycles during non-game play
-
-   * the purple wall line bug has been fixed
+   * two new submitted vehicle bodies.
+     They can accelerate really fast, but have space and weight
+     limitations that don't let them unbalance the game.
 
 Known Problems:
    * no updates to the programmer docs (UTSL)
    * bugs exist -- feel free to send patchs
-   * no real prototypes, except for lowlib calls
+   * still no real prototypes, except for lowlib calls
 
                             -Josh
-                            -Gordon
                             -Kurt
-                            -Matt

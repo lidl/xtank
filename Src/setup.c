@@ -7,10 +7,19 @@
 */
 
 /*
-$Author: aahz $
-$Id: setup.c,v 2.8 1992/01/30 07:43:15 aahz Exp $
+$Author: lidl $
+$Id: setup.c,v 2.11 1992/06/07 02:45:08 lidl Exp $
 
 $Log: setup.c,v $
+ * Revision 2.11  1992/06/07  02:45:08  lidl
+ * Post Adam Bryant patches and a manual merge of the rejects (ugh!)
+ *
+ * Revision 2.10  1992/05/19  22:57:19  lidl
+ * post Chris Moore patches, and sqrt to SQRT changes
+ *
+ * Revision 2.9  1992/03/31  04:04:16  lidl
+ * pre-aaron patches, post 1.3d release (ie mailing list patches)
+ *
  * Revision 2.8  1992/01/30  07:43:15  aahz
  * added init_box_names to avoid a seg fault later.
  *
@@ -55,6 +64,7 @@ $Log: setup.c,v $
 #include "thread.h"
 #include "globals.h"
 #include "assert.h"
+#include "bullet.h"
 
 extern Map real_map;
 extern Boolean game_paused;
@@ -211,10 +221,12 @@ init_combatants()
 	if (c->num_players) {
 	    (void) strncpy(c->name, terminal[c->player[0]]->player_name,
 			   MAX_STRING - 1);
+	    c->mouse_speed = terminal[c->player[0]]->mouse_speed;
 	} else {
 	    assert(c->num_programs > 0);
 	    (void) strncpy(c->name, prog_desc[c->program[0]]->name,
 			   MAX_STRING - 1);
+	    c->mouse_speed = FALSE;
 	}
 
 	max_cost = MAX(max_cost, vdesc[c->vdesc].cost);
@@ -223,6 +235,11 @@ init_combatants()
 	    ++num_teams;
 	}
 	c->number = i;
+
+	c->keep_score += c -> score;
+	c->keep_kills += c -> kills;
+	c->keep_deaths += c -> deaths;
+
 	c->score = 0;
 	c->kills = 0;
 	c->deaths = 0;
@@ -316,6 +333,7 @@ int play_game()
 setup_game(newgame)
 Boolean newgame;
 {
+    extern void disc_init_history();
     int i;
 
     frame = 0;
@@ -349,13 +367,14 @@ Boolean newgame;
     /* Initialize status windows (based on vehicle information) */
     init_status();
 
-    /* Initialize game rules */
+    /* Initialize game rules and disc history */
+    disc_init_history();
     game_rules(TRUE);
 
     /* Initialize the commentator */
     if (settings.commentator)
 	comment(COS_INIT_MOUTH, (int) newgame, (Vehicle *) NULL,
-		(Vehicle *) NULL);
+		(Vehicle *) NULL, (Bullet *) NULL);
 
     game_paused = FALSE;
 
@@ -425,7 +444,7 @@ Vehicle *v;
     int num_starts;
     Coord *start;
     int grid_x, grid_y;
-    int tries, num;
+    int tries, num, random;
 
     /* Check if the desired box is in the maze, and unoccupied.  If not,
        start picking random boxes until we find one that is.  Once we find a
@@ -438,13 +457,14 @@ Vehicle *v;
     start = maze.start[v->team];
     tries = 0;
     num = 0;
+    random = rnd(num_starts);
     for (;;)
     {
 	/* Take the next start location, or a random one if there are none */
 	if (num < num_starts)
 	{
-	    grid_x = start[num].x;
-	    grid_y = start[num].y;
+	    grid_x = start[(num + random) % num_starts].x;
+	    grid_y = start[(num + random) % num_starts].y;
 	    num++;
 	}
 	else

@@ -114,7 +114,7 @@ Allinfo *p;
    if (a != 0) {
       t = b*b - (a*c << 2);
       if (t >= 0) {
-         t = (int) (sqrt((double) t));
+         t = (int) (SQRT((double) t));
          t = ((-b - t) / a) >> 1;
       } else return;
    } else if (b < 0) t = -c / b;

@@ -10,10 +10,14 @@
 */
 
 /*
-$Author: rpotter $
-$Id: eliza.c,v 2.3 1991/02/10 13:50:25 rpotter Exp $
+$Author: lidl $
+$Id: eliza.c,v 2.4 1992/04/18 15:40:18 lidl Exp $
 
 $Log: eliza.c,v $
+ * Revision 2.4  1992/04/18  15:40:18  lidl
+ * fixed a mod by zero bug
+ * patch submitted by Bob Manson <manson@magnus.acs.ohio-state.edu>
+ *
  * Revision 2.3  1991/02/10  13:50:25  rpotter
  * bug fixes, display tweaks, non-restart fixes, header reorg.
  *
@@ -100,16 +104,23 @@ static char *response[MAX_OPCODES][17] = {
 static void main()
 {
     Message m;
+    int temp;
 
     for (;;)
     {
 	while (messages())
 	{
 	    receive_msg(&m);
-            if (m.sender != SENDER_COM && (int)m.opcode < MAX_OPCODES)
-		send_msg(m.sender, OP_TEXT,
-			 (Byte *)response[(int)m.opcode]
-			            [random() % max_responses[(int)m.opcode]]);
+		if (m.sender != SENDER_COM && (int)m.opcode < MAX_OPCODES) {
+			temp = max_responses[(int)m.opcode];
+			if (temp > 0) {
+				temp = random() % temp;
+			} else {
+				temp = 0;
+			}
+			send_msg(m.sender, OP_TEXT,
+				(Byte *)response[(int)m.opcode][temp]);
+		}
 	}
 	done();
     }

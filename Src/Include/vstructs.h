@@ -7,10 +7,13 @@
 */
 
 /*
-$Author: aahz $
-$Id: vstructs.h,v 2.6 1992/02/04 07:27:25 aahz Exp $
+$Author: lidl $
+$Id: vstructs.h,v 2.7 1992/03/31 21:49:23 lidl Exp $
 
 $Log: vstructs.h,v $
+ * Revision 2.7  1992/03/31  21:49:23  lidl
+ * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
+ *
  * Revision 2.6  1992/02/04  07:27:25  aahz
  * added the size of arrays to the extern statements so sizeof()
  * doesn't get a zero.
@@ -44,9 +47,7 @@ $Log: vstructs.h,v $
 #define OVER_WEIGHT      (1<<0)
 #define OVER_SPACE       (1<<1)
 #define BAD_MOUNT        (1<<2)
-#ifndef NO_NEW_RADAR
 #define MIS_MOUNT        (1<<3)
-#endif /* !NO_NEW_RADAR */
 
 typedef struct
 {
@@ -71,6 +72,9 @@ typedef struct
     int   heat;
     int   ammo_cost;
     int   cost;
+#ifndef NO_TIMED_REFILL
+    int   refill_time;
+#endif /* !NO_TIMED_REFILL */
 } Weapon_stat;
 
 typedef struct

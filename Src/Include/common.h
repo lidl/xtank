@@ -8,9 +8,21 @@
 
 /*
 $Author: lidl $
-$Id: common.h,v 2.7 1991/10/07 03:16:12 lidl Exp $
+$Id: common.h,v 2.11 1992/06/07 02:52:54 lidl Exp $
 
 $Log: common.h,v $
+ * Revision 2.11  1992/06/07  02:52:54  lidl
+ * Post Adam Bryant patches and a manual merge of the rejects (ugh!)
+ *
+ * Revision 2.10  1992/05/19  22:56:08  lidl
+ * post chris moore patches
+ *
+ * Revision 2.9  1992/04/18  15:36:55  lidl
+ * minor sequent #ifdef hack
+ *
+ * Revision 2.8  1992/03/31  21:49:23  lidl
+ * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
+ *
  * Revision 2.7  1991/10/07  03:16:12  lidl
  * fixed a botch in sgi support on mips platforms (hopefully)
  *
@@ -54,8 +66,11 @@ $Log: common.h,v $
 #define PI 3.14159265358979323846  /* Not PI, but an incredible simulation */
 #endif
 
-#define BAD_VALUE       (-1)
+#ifndef SQRT_2
+#define SQRT_2 1.4142136	/* close enough for goverment work */
+#endif
 
+#define BAD_VALUE       (-1)
 
 /* Useful macros */
 
@@ -88,16 +103,22 @@ $Log: common.h,v $
 
 
 /* avoid some lint warnings */
-#if (!defined(hpux) && !defined(sgi))
-# if (!defined(_IBMR2))
-#  ifndef i860
-#   ifndef mips
+#ifndef __GNUC__
+# if (!defined(hpux) && !defined(sgi))
+#  if (!defined(_IBMR2))
+#   if (!defined(i860) && !defined(sequent))
+#    if !defined(mips)
 extern char *sprintf(), *memset(), *memcpy();
-#   else
+#    else
 extern char *sprintf();
+#    endif
+#   endif
+#   if defined(i860)
+extern char *strcpy();
+#   else
+extern char *malloc(), *calloc(), *realloc(), *strcpy();
 #   endif
 #  endif
-extern char *malloc(), *calloc(), *realloc(), *strcpy();
 # endif
 extern long random();
 extern void exit();

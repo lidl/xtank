@@ -8,9 +8,22 @@
 
 /*
 $Author: lidl $
-$Id: thread.h,v 2.11 1992/01/29 08:41:54 lidl Exp $
+$Id: thread.h,v 2.15 1992/09/07 18:50:50 lidl Exp $
 
 $Log: thread.h,v $
+ * Revision 2.15  1992/09/07  18:50:50  lidl
+ * started support for 386bsd systems
+ *
+ * Revision 2.14  1992/08/19  05:00:16  lidl
+ * fixed for HPs?? (I hope)
+ *
+ * Revision 2.13  1992/04/18  15:37:42  lidl
+ * defining the thread structure for i860's also
+ *
+ * Revision 2.12  1992/04/09  05:10:58  lidl
+ * re-structured to allow for easier modification.  Lets hope I didn't
+ * screw things too badly
+ *
  * Revision 2.11  1992/01/29  08:41:54  lidl
  * changed comments only
  *
@@ -54,13 +67,17 @@ $Log: thread.h,v $
 */
 
 #ifdef THREAD_MP
+
+/* The original idea for the so-called "THREAD_MP" style of supporting */
+/* was developed by Michael Benjamin Parker.  For conditions of use, */
+/* please refer to the Doc/thread.cpy file. */
+
 /****************************************************************************/
 /* thread.h - THREAD CLUSTER (INTERFACE)				    */
 /* Created:  10/31/87		Release:  0.7		Version:  06/27/88  */
 /****************************************************************************/
 /* (c) Copyright 1987 by Michael Benjamin Parker      (USA SS# 557-49-4130) */
-/* All Rights Reserved unless specified in the following include files:     */
-/* #include "thread.cpy"                                                    */
+/* All Rights Reserved unless specified in the thread.cpy file              */
 /* DO NOT REMOVE OR ALTER THIS NOTICE AND ITS PROVISIONS.                   */
 /****************************************************************************/
 
@@ -76,36 +93,8 @@ $Log: thread.h,v $
 
 #include <signal.h>
 
-#if !defined(vax) && !defined(apollo)
-#ifndef i860
-# include <setjmp.h>
-#else
-# include <sys/ucontext.h>
-#endif
-
-#if defined(mips) || defined(mmax) || defined(MOTOROLA) || defined(i860)
-typedef struct _Thd
-{
-#ifndef i860
-	jmp_buf	state;		/* Current state of thread */
-#else
-	struct ucontext state;	/* Current state of thread */
-#endif
-	int	sigstate;	/* Signal mask when at thread creation */
-	struct	_Thd *oldthd;	/* Thread which executed prior to this one */
-	struct	_Thd *(*func) ();	/* Main function for thread */
-	int	stackoverflow;	/* Stack overflow boolean */
-	/* Stack for thread lies here */
-}	Thread;
-#endif
-
-#if defined(hp9000s800)
-#define setjmp _setjmp
-#define longjmp _longjmp
-#endif
-
-#else /* !defined(vax) && !defined(apollo) */
-#ifdef apollo
+#if defined(vax) || defined(apollo)
+# if defined(apollo)
 #  ifndef SETJMP_H
 #    define SETJMP_H
 #    ifndef _JBLEN
@@ -115,14 +104,15 @@ typedef struct _Thd
 #    define setjmp(jmp) apsetjmp(jmp)
 #    define longjmp(jmp,ret) aplongjmp(jmp,ret)
 #  endif /* SETJMP_H */
-#else /* apollo */
-/* Replacement setjmp and longjmp functions for vax */
+# else /* We must be a vax */
 typedef int jmp_buf[17];
-int   vax_setjmp(), vax_longjmp();
 
-#define setjmp(jmp)       vax_setjmp(jmp)
-#define longjmp(jmp,ret)  vax_longjmp(jmp,ret)
-#endif /* apollo */
+/* We need replacement setjmp and longjmp functions for vax */
+   int   vax_setjmp(), vax_longjmp();
+#  define setjmp(jmp)       vax_setjmp(jmp)
+#  define longjmp(jmp,ret)  vax_longjmp(jmp,ret)
+
+# endif /* end of vax stuff */
 
 typedef struct _Thd
 {
@@ -133,7 +123,29 @@ typedef struct _Thd
     int   stackoverflow;	/* Stack overflow boolean */
     /* Stack for thread lies here */
 }     Thread;
-#endif /* vax */
+#else /* vax and apollo shared code*/
+
+/* This is the non-vax and non-apollo code */
+
+# include <setjmp.h>
+
+# if defined(hp9000s800)
+#  define setjmp _setjmp
+#  define longjmp _longjmp
+# endif
+
+# if defined(mips) || defined(mmax) || defined(MOTOROLA) || defined(__hp9000s800) || defined(__386BSD__)
+typedef struct _Thd
+{
+	jmp_buf	state;		/* Current state of thread */
+	int	sigstate;	/* Signal mask when at thread creation */
+	struct	_Thd *oldthd;	/* Thread which executed prior to this one */
+	struct	_Thd *(*func) ();	/* Main function for thread */
+	int	stackoverflow;	/* Stack overflow boolean */
+	/* Stack for thread lies here */
+}	Thread;
+# endif
+#endif 
 #endif /* THREAD_MP */
 
 #ifdef THREAD_SUNLWP

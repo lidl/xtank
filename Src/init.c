@@ -7,10 +7,16 @@
 */
 
 /*
-$Author: aahz $
-$Id: init.c,v 2.12 1992/01/30 03:43:20 aahz Exp $
+$Author: lidl $
+$Id: init.c,v 2.14 1992/06/07 02:45:08 lidl Exp $
 
 $Log: init.c,v $
+ * Revision 2.14  1992/06/07  02:45:08  lidl
+ * Post Adam Bryant patches and a manual merge of the rejects (ugh!)
+ *
+ * Revision 2.13  1992/03/31  04:04:16  lidl
+ * pre-aaron patches, post 1.3d release (ie mailing list patches)
+ *
  * Revision 2.12  1992/01/30  03:43:20  aahz
  * removed ifdefs around no radar
  *
@@ -92,8 +98,18 @@ init_settings()
 	    FALSE,		/* Boolean full_map */
 	    FALSE,		/* Boolean pay_to_play GHS */
 	    FALSE,		/* Boolean no_nametags */
-		TRUE,       /* Boolean team_score GHS */
+	    TRUE,		/* Boolean team_score GHS */
 	    FALSE,		/* Boolean no_radar */
+	    TRUE,		/* Boolean player_teleport */
+	    TRUE,		/* Boolean disc_teleport */
+	    TRUE,		/* Boolean teleport_from_team */
+	    FALSE,		/* Boolean teleport_from_neutral */
+	    TRUE,		/* Boolean teleport_to_team */
+	    TRUE,		/* Boolean teleport_to_neutral */
+	    FALSE,		/* Boolean teleport_any_to_any */
+	    TRUE,		/* Boolean war_goals_only */
+	    FALSE,		/* Boolean relative_disc */
+	    TRUE,		/* Boolean ultimate_own_goal */
 
 	    10000,		/* int winning_score GHS */
 	    20,			/* int takeover_time */
@@ -103,6 +119,9 @@ init_settings()
 	    0.5,		/* FLOAT slip_friction */
 	    1.0,		/* FLOAT normal_friction */
 	    0.99,		/* FLOAT disc_friction */
+	    0.4,		/* FLOAT disc_speed */
+	    0.0,		/* FLOAT disc_damage */
+	    1.0,		/* FLOAT disc_heat */
 	    0.5,		/* FLOAT box_slowdown */
 	    0.3,		/* FLOAT owner_slowdown */
 	},

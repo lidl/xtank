@@ -1,8 +1,11 @@
 /*
 $Author: lidl $
-$Id: roadrunner.c,v 1.6 1991/12/15 20:56:27 lidl Exp $
+$Id: roadrunner.c,v 1.7 1992/08/19 05:19:46 lidl Exp $
 
 $Log: roadrunner.c,v $
+ * Revision 1.7  1992/08/19  05:19:46  lidl
+ * changed to use SQRT instead of sqrt
+ *
  * Revision 1.6  1991/12/15  20:56:27  lidl
  * changed all "float" occurances to "FLOAT"
  *
@@ -168,8 +171,8 @@ int x, y, go_x, go_y;
 	return 2;
     if (dx != 0) {
 	A = (FLOAT) dy / dx;
-	Bs = (FLOAT) (y - A * x - 50 * sqrt(1 + A * A));
-	Ba = (FLOAT) (y - A * x + 50 * sqrt(1 + A * A));
+	Bs = (FLOAT) (y - A * x - 50 * SQRT(1 + A * A));
+	Ba = (FLOAT) (y - A * x + 50 * SQRT(1 + A * A));
 	depth = 0;
 	if (dx < 0)
 	    for (gx = gridx(x); gx > gridx(go_x); gx--) {

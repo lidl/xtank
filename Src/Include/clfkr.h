@@ -19,6 +19,8 @@ struct CLFkr
 						 /* on the command line?                         */
     char   *Settings;    /* filename where settings should be loaded     */
 						 /* from.                                        */
+    Boolean NoDelay;     /* Tells whether all pauses should be bypassed  */
+    Boolean NoIO;        /* Tells if all screen i/o should be skipped    */
 }; 
 
 #endif ndef _CLFKR_H_

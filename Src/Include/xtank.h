@@ -8,9 +8,18 @@
 
 /*
 $Author: lidl $
-$Id: xtank.h,v 2.7 1992/01/29 08:39:11 lidl Exp $
+$Id: xtank.h,v 2.10 1992/08/31 01:50:45 lidl Exp $
 
 $Log: xtank.h,v $
+ * Revision 2.10  1992/08/31  01:50:45  lidl
+ * changed to use tanktypes.h, instead of types.h
+ *
+ * Revision 2.9  1992/08/18  05:42:39  lidl
+ * added tac nuke patches
+ *
+ * Revision 2.8  1992/03/31  21:49:23  lidl
+ * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
+ *
  * Revision 2.7  1992/01/29  08:39:11  lidl
  * post aaron patches, seems to mostly work now
  *
@@ -82,7 +91,7 @@ $Log: xtank.h,v $
 #define ANY_VEHICLE	0x0fffff00
 
 /* General max values */
-#define MAX_WEAPON_STATS 19
+#define MAX_WEAPON_STATS 20
 #define MAX_GAME_SPEED   30
 
 /* Description max values */
@@ -111,20 +120,6 @@ $Log: xtank.h,v $
 #define DESC_BAD_FORMAT 3
 #define DESC_NO_ROOM    4
 
-#ifdef NO_NEW_RADAR
-
-#define SP_update	0
-#define SP_activate	1
-#define SP_deactivate	2
-#define SP_toggle	3
-#define SP_draw		4
-#define SP_erase	5
-#define SP_redisplay	6
-#define SP_break	7
-#define SP_repair	8
-
-#else /* NO_NEW_RADAR */
-
 /*
  * eithier this or use different symbols for do_special, 
  * ie not SP_xxx
@@ -141,7 +136,6 @@ $Log: xtank.h,v $
 #define SP_break	(7+MAX_SPEC_STATS)
 #define SP_repair	(8+MAX_SPEC_STATS)
 
-#endif /* NO_NEW_RADAR */
 /* Vehicle, weapon, and program status masks */
 #define VS_functioning		(1<<0)
 #define VS_is_alive		(1<<1)
@@ -173,6 +167,9 @@ $Log: xtank.h,v $
 #define EXP_DAM4      6
 #define EXP_EXHAUST   7
 #define EXP_ELECTRIC  8
+#ifdef TAC_NUKES
+#define EXP_NUKE      9
+#endif
 
 /* Types of descriptions */
 #define VDESC 0
@@ -186,4 +183,4 @@ $Log: xtank.h,v $
 #define SIDE_MOUNT_Z     (-BOX_WIDTH/8)
 
 
-#endif ndef _XTANK_H_
+#endif /* _XTANK_H_ */

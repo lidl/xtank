@@ -2,9 +2,12 @@
 
 /*
 $Author: lidl $
-$Id: terminal.h,v 2.4 1991/12/10 01:21:04 lidl Exp $
+$Id: terminal.h,v 2.5 1992/03/31 04:05:52 lidl Exp $
 
 $Log: terminal.h,v $
+ * Revision 2.5  1992/03/31  04:05:52  lidl
+ * pre-aaron patches, post 1.3d release (ie mailing list patches)
+ *
  * Revision 2.4  1991/12/10  01:21:04  lidl
  * change all occurances of "float" to "FLOAT"
  *
@@ -40,18 +43,20 @@ typedef struct {
     int   vdesc;
     Vehicle *vehicle;		/* can be NULL */
     int   status;
-    Intloc loc;			/* coordinates of ulc of screen in maze */
+    Intloc loc;				/* coordinates of ulc of screen in maze */
     Intloc old_loc;
-    char *video;		/* video info specific to machine */
+    char *video;			/* video info specific to machine */
     /* Rest is for 3d mode */
-    FLOAT heading;		/* direction of view */
+    FLOAT heading;			/* direction of view */
     FLOAT view_angle;		/* the angle of view width */
-    FLOAT aspect;		/* the aspect ratio of the view */
+    FLOAT aspect;			/* the aspect ratio of the view */
     int   view_dist;		/* the range of sight in pixels */
     int   num_lines;		/* number of lines drawn */
     Line  line[MAX_LINES];	/* lines drawn on the screen */
     Boolean observer;		/* True if this terminal is not controlling a
 				   vehicle */
+    int mouse_speed;		/* True if this terminal sets vehicle speed */
+							/* by mouse clicks */
 } Terminal;
 
 

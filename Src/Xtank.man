@@ -1,0 +1,195 @@
+.TH XTANK 6 "20 March 1992" "Xtank 1.3d" 
+.SH NAME
+xtank - a game of tank combat
+.SH SYNOPSIS
+.B xtank
+.B [-h]
+.SH DESCRIPTION
+.I xtank
+is a multi-player vehicle combat game played in mazes of various
+sizes and types.  You control a vehicle (usually a tank) equipped with
+the latest in armor and weaponry.  Your objective depends on the game
+you play.
+.LP
+The
+.I xtank 
+script invokes the appropriate binary for a given system.
+.SH OPTIONS
+.I xtank
+has the following options:
+.TP
+.B -h
+provides a brief summary of the known options, which are in too great
+a state of flux to include here.
+.SH X DEFAULTS
+.PP
+.TP 8
+.B escherWidth (\fPclass\fB Width)
+Specifies the width of the bogus escher menus.  Zero is strongly recomended.
+.TP 8
+.B beep (\fPclass\fB Beep)
+Specifies the value of the beep flags.  Use 0 or 1.
+.TP 8
+.B drawName (\fPclass\fB Drawname)
+Specifies the value of the display name tags flag.
+.TP 8
+.B keypad (\fPclass\fB Keypad)
+Specifies the value of the use keypad flag.
+.TP 8
+.B background (\fPclass\fB BackGround)
+Specifies the background color.
+.TP 8
+.B foreground (\fPclass\fB ForeGround)
+Specifies the foregroud color.
+.TP 8
+.B color.red (\fPclass\fB Color.Team)
+.TP 8
+.B color.orange (\fPclass\fB Color.Team)
+.TP 8
+.B color.yellow (\fPclass\fB Color.Team)
+.TP 8
+.B color.green (\fPclass\fB Color.Team)
+.TP 8
+.B color.blue (\fPclass\fB Color.Team)
+.TP 8
+.B color.violet (\fPclass\fB Color.Team)
+.TP 8
+.B color.neutral (\fPclass\fB Color.Team)
+Specifies the color of the coresponding team.
+.TP 8
+.B color.cursor (\fPclass\fB Color.Cursor)
+Specifies the color to be used for the cursor, the "tink", commentator, radar, etc...
+.TP 8
+.B playerName (\fPclass\fB PlayerName)
+Specifies the player's name.
+.TP 8
+.B tankName (\fPclass\fB TankName)
+Specifies the vehicle design to use.
+.SH ENVIRONMENT
+.TP 15
+.B DISPLAY
+to get the default host and display number.
+.TP
+.B XTANK_DIR
+If set,
+its value overrides
+.B $XTANK_DIR
+as the default xtank directory.
+.TP
+.B XTANK_VEHICLES
+If set,
+its value overrides
+.B $XTANK_DIR/Vehicles
+as the default xtank vehicle directory.
+.TP
+.B XTANK_MAZES
+If set,
+its value overrides
+.B $XTANK_DIR/Mazes
+as the default xtank maze directory.
+.TP
+.B XTANK_PROGRAMS
+If set,
+its value overrides
+.B $XTANK_DIR/Programs
+as the default xtank robot program directory.
+.TP
+.B XTANK_VEHICLES
+If set,
+its value overrides
+.B $XTANK_DIR/Vehicles
+as the default xtank vehicle directory.
+.TP
+.B FONT_DIR
+If set,
+its value overrides
+.B $XTANK_DIR/Fonts
+as the default font search path.
+.TP
+.B XTANK_HEADERS
+If set,
+its value overrides
+.B ./Src/Include
+as the default header search path.
+.SH FILES
+.PD 0
+.TP 30
+.B $XTANK_VEHICLES/*
+xtank vehicle definition. 
+.TP
+.B $XTANK_PROGRAMS/*
+xtank robot programs. 
+.TP
+.B $XTANK_MAZES/*
+xtank mazes. 
+.PD
+.SH SEE ALSO
+.BR xtrek(6)
+.SH BUGS
+.LP
+No, of course not.  
+.SH COPYRIGHT
+Copyright 1988, Terry Donahue.
+.SH AUTHORS
+Terry Donahue wrote the original Xtank.
+.br
+Contributing authors...
+.br
+Tony Ambardar
+.br
+Laura Baldwin
+.br
+Sean Barrett
+.br
+Lachlan Brown
+.br
+Adam Bryant
+.br
+Doug Church
+.br
+Aaron N. Eastlund
+.br
+Eric Esterling
+.br
+Rob Fullmer
+.br
+greg%lurker.uucp@ICS.UCI.EDU
+.br
+Eon Harry
+.br
+Hans Jeppesen
+.br
+William Katz
+.br
+Joe Killian
+.br
+Kurt Lidl
+.br
+Chris Moore
+.br
+Christopher North-Keys
+.br
+Josh M. Osborne
+.br
+Robert Potter
+.br
+Evan Reidell
+.br
+Dan Schmidt
+.br
+Matt Senft
+.br
+Gordon H. Smith
+.br
+John Smolin
+.br
+Bill Sommerfeld
+.br
+Erik Winfree
+.br
+Steve Worley
+.br
+Mike Zehr
+.br
+Manual page contributed by Aaron Nabil Eastlund.
+

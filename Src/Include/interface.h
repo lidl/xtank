@@ -7,10 +7,16 @@
 */
 
 /*
-$Author: rpotter $
-$Id: interface.h,v 2.3 1991/02/10 13:50:54 rpotter Exp $
+$Author: lidl $
+$Id: interface.h,v 2.5 1992/06/07 02:52:54 lidl Exp $
 
 $Log: interface.h,v $
+ * Revision 2.5  1992/06/07  02:52:54  lidl
+ * Post Adam Bryant patches and a manual merge of the rejects (ugh!)
+ *
+ * Revision 2.4  1992/05/19  22:56:08  lidl
+ * post chris moore patches
+ *
  * Revision 2.3  1991/02/10  13:50:54  rpotter
  * bug fixes, display tweaks, non-restart fixes, header reorg.
  *
@@ -95,7 +101,8 @@ $Log: interface.h,v $
 
 #define MAIN_MENU	0
 
-#define PLAY_MENU	(MAIN_MENU+1)
+#define MACHINE_MENU	(MAIN_MENU+1)
+#define PLAY_MENU	(MACHINE_MENU+1)
 #define SETTINGS_MENU	(PLAY_MENU+1)
 #define COMBATANTS_MENU	(SETTINGS_MENU+1)
 #define VIEW_MENU	(COMBATANTS_MENU+1)
@@ -124,3 +131,6 @@ $Log: interface.h,v $
 #define SET_DISC_FRIC   5
 #define SET_DISC_SLOW   6
 #define SET_SHOCKERWALL 7
+#define SET_DISC_DAMAGE	8
+#define SET_DISC_HEAT	9
+#define SET_DISC_SPEED	10
