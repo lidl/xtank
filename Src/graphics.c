@@ -8,9 +8,12 @@
 
 /*
 $Author: lidl $
-$Id: graphics.c,v 2.4 1991/09/15 09:24:51 lidl Exp $
+$Id: graphics.c,v 2.5 1991/12/10 03:41:44 lidl Exp $
 
 $Log: graphics.c,v $
+ * Revision 2.5  1991/12/10  03:41:44  lidl
+ * changed float to FLOAT, for portability reasons
+ *
  * Revision 2.4  1991/09/15  09:24:51  lidl
  * removed vestiges of config.h file, now all configuration is done in
  * the Imakefile, and propogated via compile-time -D flags
@@ -32,6 +35,7 @@ $Log: graphics.c,v $
  * 
 */
 
+#include "sysdep.h"
 #include "malloc.h"
 
 #ifdef X10

@@ -8,10 +8,13 @@
 */
 
 /*
-$Author: rpotter $
-$Id: mdesign.c,v 2.3 1991/02/10 13:51:15 rpotter Exp $
+$Author: stripes $
+$Id: mdesign.c,v 2.4 1992/01/06 07:52:49 stripes Exp $
 
 $Log: mdesign.c,v $
+ * Revision 2.4  1992/01/06  07:52:49  stripes
+ * Changes for teleport
+ *
  * Revision 2.3  1991/02/10  13:51:15  rpotter
  * bug fixes, display tweaks, non-restart fixes, header reorg.
  *
@@ -63,6 +66,9 @@ Event *event;
 			break;
 		case 'p':
 			make_landmark(&bloc, PEACE);
+			break;
+		case 't':
+			make_landmark(&bloc, TELEPORT);
 			break;
 		case 'f':
 			make_landmark(&bloc, FUEL);
@@ -335,6 +341,7 @@ mdesign_show_help()
 	hprint("f      fuel", 22, 4);
 	hprint("g      goal", 22, 5);
 	hprint("p      peace", 22, 6);
+	hprint("t      teleport", 22, 7);
 
 	hprint("o    outpost", 39, 1);
 	hprint("-    slip", 39, 2);

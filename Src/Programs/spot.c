@@ -5,10 +5,13 @@
 */
 
 /*
-$Author: rpotter $
-$Id: spot.c,v 2.3 1991/02/10 13:51:41 rpotter Exp $
+$Author: lidl $
+$Id: spot.c,v 2.4 1991/12/15 20:22:49 lidl Exp $
 
 $Log: spot.c,v $
+ * Revision 2.4  1991/12/15  20:22:49  lidl
+ * changed all "float" occurances to "FLOAT"
+ *
  * Revision 2.3  1991/02/10  13:51:41  rpotter
  * bug fixes, display tweaks, non-restart fixes, header reorg.
  *
@@ -26,6 +29,7 @@ $Log: spot.c,v $
  * 
 */
 
+#include "sysdep.h"
 #include "xtanklib.h"
 #include <math.h>
 
@@ -57,7 +61,7 @@ static void main()
 {
 	extern int num_veh_alive;
     int dist = 9999;
-    float ang = 0.0;
+    FLOAT ang = 0.0;
 
 	while (1)
 	{
@@ -79,7 +83,7 @@ static void main()
 spot_get_unstuck()
 {
 	int framenum = frame_number();
-	float curangle = heading();
+	FLOAT curangle = heading();
 
 	/* First backup away from the obstacle */
 	set_rel_drive(-3.0);
@@ -100,7 +104,7 @@ spot_get_unstuck()
 */
 spot_attack_closest(dist, ang)
 int *dist;
-float *ang;
+FLOAT *ang;
 {
     int veh_cnt;		/* the number of vehicles I can see */
     Vehicle_info vehicle[MAX_VEHICLES];	/* the array of vehicles I can see */
@@ -153,7 +157,7 @@ float *ang;
 }
 
 spot_spin(ang)
-float ang;
+FLOAT ang;
 {
 	Armor_on arm;
 	int highest;

@@ -8,9 +8,12 @@
 
 /*
 $Author: lidl $
-$Id: common.h,v 2.6 1991/09/19 05:29:07 lidl Exp $
+$Id: common.h,v 2.7 1991/10/07 03:16:12 lidl Exp $
 
 $Log: common.h,v $
+ * Revision 2.7  1991/10/07  03:16:12  lidl
+ * fixed a botch in sgi support on mips platforms (hopefully)
+ *
  * Revision 2.6  1991/09/19  05:29:07  lidl
  * mips header problem cleaned up
  *
@@ -85,17 +88,17 @@ $Log: common.h,v $
 
 
 /* avoid some lint warnings */
-#ifndef hpux
-#if (!defined(_IBMR2))
-#ifndef i860
-# ifndef mips
+#if (!defined(hpux) && !defined(sgi))
+# if (!defined(_IBMR2))
+#  ifndef i860
+#   ifndef mips
 extern char *sprintf(), *memset(), *memcpy();
-# else
+#   else
 extern char *sprintf();
-# endif
-#endif
+#   endif
+#  endif
 extern char *malloc(), *calloc(), *realloc(), *strcpy();
-#endif
+# endif
 extern long random();
 extern void exit();
 extern double atan2(), hypot(), sin(), cos(), sqrt(), floor(), aint();

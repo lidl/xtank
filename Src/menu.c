@@ -7,10 +7,13 @@
 */
 
 /*
-$Author: rpotter $
-$Id: menu.c,v 2.3 1991/02/10 13:51:19 rpotter Exp $
+$Author: lidl $
+$Id: menu.c,v 2.4 1991/12/10 03:41:44 lidl Exp $
 
 $Log: menu.c,v $
+ * Revision 2.4  1991/12/10  03:41:44  lidl
+ * changed float to FLOAT, for portability reasons
+ *
  * Revision 2.3  1991/02/10  13:51:19  rpotter
  * bug fixes, display tweaks, non-restart fixes, header reorg.
  *
@@ -28,6 +31,7 @@ $Log: menu.c,v $
  * 
 */
 
+#include "sysdep.h"
 #include "malloc.h"
 #include <stdio.h>
 #include "common.h"

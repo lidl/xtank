@@ -16,6 +16,10 @@ typedef struct {
     int   rot;			/* picture to show on the screen */
     int   old_rot;		/* picture to erase from the screen */
     Object *obj;		/* pointer to object for the turret */
+#ifdef TEST_TURRETS
+    Coord end;			/* show end of turret in x,y relative to mount point */
+    Coord old_end;		/* erase end of turret in x,y relative to mount point */
+#endif /* TEST_TURRETS */
 } Turret;
 
 typedef struct {
@@ -49,14 +53,14 @@ typedef struct {
     int   treads;
     int   bumpers;
     /* the following values are derived from the above */
-    float max_speed;		/* speed limit imposed by body drag and engine
+    FLOAT max_speed;		/* speed limit imposed by body drag and engine
 				   power */
-    float engine_acc;		/* acceleration limit imposed by weight and
+    FLOAT engine_acc;		/* acceleration limit imposed by weight and
 				   engine power (only affects speeding up) */
-    float tread_acc;		/* acceleration limit imposed by the tread
+    FLOAT tread_acc;		/* acceleration limit imposed by the tread
 				   friction (ground friction is NOT taken into
 				   account here) */
-    float acc;			/* the minimum of the above two (here for
+    FLOAT acc;			/* the minimum of the above two (here for
 				   compatibility, not very useful) */
     int   handling;
     int   weight;		/* total */

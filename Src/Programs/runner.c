@@ -1,8 +1,11 @@
 /*
 $Author: lidl $
-$Id: runner.c,v 1.5 1991/09/29 15:40:22 lidl Exp $
+$Id: runner.c,v 1.6 1991/12/15 20:22:49 lidl Exp $
 
 $Log: runner.c,v $
+ * Revision 1.6  1991/12/15  20:22:49  lidl
+ * changed all "float" occurances to "FLOAT"
+ *
  * Revision 1.5  1991/09/29  15:40:22  lidl
  * changed all occurances of atan2 to ATAN2, so it uses the correct macro
  *
@@ -19,6 +22,7 @@ $Log: runner.c,v $
 /*      can use a fast-tank, but the tank needs good handling.        */
 /**********************************************************************/
 
+#include "sysdep.h"
 #include "xtanklib.h"
 #include <math.h>
 #include <stdio.h>
@@ -62,7 +66,7 @@ WallSide dir;
 }
 
 static int fire(angle, me)
-float angle;
+FLOAT angle;
 Location me;
 {
     turn_all_turrets(angle);
@@ -85,7 +89,7 @@ void runner_main()
     int x, y, px, py, ox, oy, nx, ny, h, length, found, side, state;
     WallSide dir;
     Location me;
-    float angle;
+    FLOAT angle;
 
     done();
     for (x = 0; x < 30; x++)

@@ -7,10 +7,14 @@
 */
 
 /*
-$Author: lidl $
-$Id: animate.c,v 2.4 1991/09/19 05:27:57 lidl Exp $
+$Author: stripes $
+$Id: animate.c,v 2.5 1991/10/07 02:13:43 stripes Exp $
 
 $Log: animate.c,v $
+ * Revision 2.5  1991/10/07  02:13:43  stripes
+ * Fixed rpotter bug, no longer core's when you quit a game, but leaves
+ * tank in game (removes player Ok, and leaves robots with PLAY_* running).
+ *
  * Revision 2.4  1991/09/19  05:27:57  lidl
  * added LOCK_GAME_CONTROLS defines
  *
@@ -140,9 +144,23 @@ animate()
 
 	    /* %%% I don't think this is complete enough -RDP */
 
-	    kill_vehicle(terminal[i]->vehicle, (Vehicle *) NULL);
+		if (--terminal[i]->vehicle->owner->num_players <= 0) {
+			int j;
+			int flags = 0;
+			int need = PLAYS_COMBAT | PLAYS_WAR | PLAYS_ULTIMATE |
+				PLAYS_CAPTURE | PLAYS_RACE;
+
+			for(j = 0; j < terminal[i]->vehicle->num_programs; j++) {
+				flags |= terminal[i]->vehicle->program[j].desc->abilities;
+				if (need & flags) break;
+			}
+
+			if (!(need & flags)) {
+				kill_vehicle(terminal[i]->vehicle, (Vehicle *) NULL);
+			}
+		}
 	    terminal[i]->vehicle->owner->num_players--;
-	    remove_player(i);
+	    remove_player(i);		/* Really compacts the terminal[]... */
 	    i--;		/* new terminal has been moved in */
 	}
     }

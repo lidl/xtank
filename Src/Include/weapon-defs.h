@@ -36,6 +36,15 @@ QQ(FLAME,  "Flame Thrower",     3, 200, 300, 1, 12, 700, 500, 17, 1,  2,  4000)
 QQ(MINE,   "Mine Layer",        6,  50,  50, 2, 10,1000,1000, 70, 2, 10,  8000)
 QQ(SEEKER, "Heat Seeker",       8,1250,  15,15, 25,1000,1800, 51, 9, 50, 20000)
 QQ(SLICK,  "Oil Slick",         0,  50,  50, 5, 10, 300, 500, 70, 0, 10,  2000)
+QQ(PROCKET,"Pocket Rocket",     8,1015,  30, 8, 35, 900,1650, 30,12, 23, 17000)
+QQ(UMISSLE,"Unguided Missle",   8,1995,  30, 8, 35,1000,1800, 57,12, 25, 18000)
+#ifndef NO_NEW_RADAR
+/* Note that weapons you don't want chosen by an outpost must be after SEEKER */
+QQ(HARM,   "Anti-Radiation",    8,1995,  15,15, 25,1000,1800, 80, 0,150, 30000)
+/* If it is to show up in the vdesign menus, it must be before Disc Shooter */
+#endif /* !NO_NEW_RADAR */
+
 #define BIG ((int) ((unsigned)(~0) >> 1))
 QQ(DISC,   "Disc Shooter",      0, BIG,   1,BIG, 0,   0,   0,BIG, 0,  0,     0)
 #undef BIG
+

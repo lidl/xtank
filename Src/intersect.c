@@ -8,10 +8,13 @@
 */
 
 /*
-$Author: rpotter $
-$Id: intersect.c,v 2.3 1991/02/10 13:50:55 rpotter Exp $
+$Author: lidl $
+$Id: intersect.c,v 2.4 1991/12/10 03:41:44 lidl Exp $
 
 $Log: intersect.c,v $
+ * Revision 2.4  1991/12/10  03:41:44  lidl
+ * changed float to FLOAT, for portability reasons
+ *
  * Revision 2.3  1991/02/10  13:50:55  rpotter
  * bug fixes, display tweaks, non-restart fixes, header reorg.
  *
@@ -283,7 +286,7 @@ int x1, y1, x2, y2;
     seg->dy = y2 - y1;
 
     if (seg->dx != 0)
-	seg->slope = (float) seg->dy / (float) seg->dx;
+	seg->slope = (FLOAT) seg->dy / (FLOAT) seg->dx;
     else
     {
 	if (seg->dy > 0)
@@ -308,7 +311,7 @@ int x1, y1, x2, y2;
 */
 point_in_vehicle(v, x, y)
 Vehicle *v;
-float x, y;
+FLOAT x, y;
 {
 	Boolean flag;
 	Segment *s, *smax;

@@ -7,19 +7,33 @@ Gordon H. Smith    (aahz@eng.umd.edu)
 Josh M. Osborne    (stripes@eng.umd.edu)
         For this release, and quite possibly the next few, code maintainers.
 
+Kurt Lidl          (lidl@pix.com)
+        Struggling Artist and patch-meister.
+
 Robert Potter      (rpotter@grip.cis.upenn.edu)
         General hacking, tweaking and frobbing.  Cool robot designs!
-
-Kurt Lidl          (lidl@eng.umd.edu)
-        Struggling Artist and patch-meister.
 
 Aaron Eastlund     (aarone@sail.labs.tek.com)
         X11 code optimizations. (Point, Line batching)
         Redraw optimization. (Stingy Redraw code)
         No names mode.
+        New Radar mode.  (And all that it entails.)
 
-David Hsu          (hsu@eng.umd.edu)
-        Play tester
+Matt Senft         (senft@pix.com)
+        Tagman code, many small bug fixes.
+        Batch mode.
+
+Sean Barrett       (buzzard@eng.umd.edu)
+        Bootlegger.
+
+William Katz       (wk5w@virginia.edu)
+        Gnat & Ronin code.
+
+Chris Moore        (moore@src.bae.co.uk)
+        Teleport mode.
+
+Adam Bryant        (adb@cs.bu.edu)
+        Bullet removing armor from wrong side fix.
 
 Tony Ambardar      (bird@sevior.physics.ubc.ca)
         Ported to DECstations running ultrix.
@@ -29,6 +43,9 @@ Hans Jeppesen      (lucifer@iesd.auc.dk)
 
 ???                (greg%lurker.uucp@ICS.UCI.EDU)
         Ported to RS6000 running AIX.
+
+Lachlan Brown      (lb@s2.elec.uq.oz.au)
+        Misc fixes to make things work for SGI workstations
 
 Christopher North-Keys
         Escher Menu Code.

@@ -1,8 +1,11 @@
 /*
 $Author: lidl $
-$Id: roadrunner.c,v 1.5 1991/09/29 15:40:22 lidl Exp $
+$Id: roadrunner.c,v 1.6 1991/12/15 20:56:27 lidl Exp $
 
 $Log: roadrunner.c,v $
+ * Revision 1.6  1991/12/15  20:56:27  lidl
+ * changed all "float" occurances to "FLOAT"
+ *
  * Revision 1.5  1991/09/29  15:40:22  lidl
  * changed all occurances of atan2 to ATAN2, so it uses the correct macro
  *
@@ -21,6 +24,7 @@ $Log: roadrunner.c,v $
 /*  Can use nearly every tank, but a fast tank is preferred           */
 /**********************************************************************/
 
+#include "sysdep.h"
 #include "xtanklib.h"
 #include <math.h>
 #include <stdio.h>
@@ -68,7 +72,7 @@ WallSide dir;
 }
 
 static int fire(angle, me)
-float angle;
+FLOAT angle;
 Location me;
 {
     turn_all_turrets(angle);
@@ -156,25 +160,25 @@ static int is_clear_path(x, y, go_x, go_y)
 int x, y, go_x, go_y;
 {
     int dx, dy, gx, gy, depth;
-    float A, Ba, Bs;
+    FLOAT A, Ba, Bs;
 
     dx = go_x - x;
     dy = go_y - y;
     if (gridx(x) == gridx(go_x) && gridy(y) == gridy(go_y))
 	return 2;
     if (dx != 0) {
-	A = (float) dy / dx;
-	Bs = (float) (y - A * x - 50 * sqrt(1 + A * A));
-	Ba = (float) (y - A * x + 50 * sqrt(1 + A * A));
+	A = (FLOAT) dy / dx;
+	Bs = (FLOAT) (y - A * x - 50 * sqrt(1 + A * A));
+	Ba = (FLOAT) (y - A * x + 50 * sqrt(1 + A * A));
 	depth = 0;
 	if (dx < 0)
 	    for (gx = gridx(x); gx > gridx(go_x); gx--) {
 		if (depth++ > 4)
 		    return 0;
-		gy = gridy((float) (A * gx * BOX_WIDTH + Bs));
+		gy = gridy((FLOAT) (A * gx * BOX_WIDTH + Bs));
 		if (wall(WEST, gx, gy) == MAP_WALL)
 		    return 0;
-		gy = gridy((float) (A * gx * BOX_WIDTH + Ba));
+		gy = gridy((FLOAT) (A * gx * BOX_WIDTH + Ba));
 		if (wall(WEST, gx, gy) == MAP_WALL)
 		    return 0;
 	    }
@@ -182,10 +186,10 @@ int x, y, go_x, go_y;
 	    for (gx = gridx(x); gx < gridx(go_x); gx++) {
 		if (depth++ > 4)
 		    return 0;
-		gy = gridy((float) (A * BOX_WIDTH * (gx + 1) + Bs));
+		gy = gridy((FLOAT) (A * BOX_WIDTH * (gx + 1) + Bs));
 		if (wall(EAST, gx, gy) == MAP_WALL)
 		    return 0;
-		gy = gridy((float) (A * BOX_WIDTH * (gx + 1) + Ba));
+		gy = gridy((FLOAT) (A * BOX_WIDTH * (gx + 1) + Ba));
 		if (wall(EAST, gx, gy) == MAP_WALL)
 		    return 0;
 	    }
@@ -206,10 +210,10 @@ int x, y, go_x, go_y;
 	    for (gy = gridy(y); gy < gridy(go_y); gy++) {
 		if (depth++ > 4)
 		    return 0;
-		gx = gridx((float) (((gy + 1) * BOX_HEIGHT - Ba) / A));
+		gx = gridx((FLOAT) (((gy + 1) * BOX_HEIGHT - Ba) / A));
 		if (wall(SOUTH, gx, gy) == MAP_WALL)
 		    return 0;
-		gx = gridx((float) (((gy + 1) * BOX_HEIGHT - Bs) / A));
+		gx = gridx((FLOAT) (((gy + 1) * BOX_HEIGHT - Bs) / A));
 		if (wall(SOUTH, gx, gy) == MAP_WALL)
 		    return 0;
 	    }
@@ -234,7 +238,7 @@ void roadrunner_main()
     int x, y, go_x, go_y, px, py, length, state, stop, frame, i;
     WallSide dir;
     Location me;
-    float angle;
+    FLOAT angle;
     char sendthis[80];
 
     get_settings(&settings);

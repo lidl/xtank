@@ -1,10 +1,13 @@
 /* bullet.h - things pertaining to bullets and explosions */
 
 /*
-$Author: rpotter $
-$Id: bullet.h,v 2.3 1991/02/10 13:50:11 rpotter Exp $
+$Author: lidl $
+$Id: bullet.h,v 2.4 1992/01/29 08:39:11 lidl Exp $
 
 $Log: bullet.h,v $
+ * Revision 2.4  1992/01/29  08:39:11  lidl
+ * post aaron patches, seems to mostly work now
+ *
  * Revision 2.3  1991/02/10  13:50:11  rpotter
  * bug fixes, display tweaks, non-restart fixes, header reorg.
  *
@@ -27,7 +30,7 @@ $Log: bullet.h,v $
 
 #include "object.h"
 #include "vehicle.h"
-
+#include "types.h"
 
 typedef struct {
     Vehicle *owner;		/* pointer to vehicle that shot bullet */
@@ -40,7 +43,11 @@ typedef struct {
     float yspeed;		/* speed of travel in y direction */
     WeaponType type;
     int   life;			/* number of frames left before bullet dies */
-    Boolean hurt_owner:1;	/* whether bullet can hurt owner or not */
+    Boolean hurt_owner;	/* whether bullet can hurt owner or not */
+#ifndef NO_NEW_RADAR
+    lCoord target;		/* last target update for a smart weapon */
+    int state;                  /* what a smart bullet is up to */
+#endif /* !NO_NEW_RADAR */
 } Bullet;
 
 typedef struct {

@@ -7,10 +7,22 @@
 */
 
 /*
-$Author: rpotter $
-$Id: message.c,v 2.3 1991/02/10 13:51:22 rpotter Exp $
+$Author: lidl $
+$Id: message.c,v 2.7 1992/01/29 08:35:19 lidl Exp $
 
 $Log: message.c,v $
+ * Revision 2.7  1992/01/29  08:35:19  lidl
+ * post-aaron patches, seems to mostly work now
+ *
+ * Revision 2.6  1992/01/26  04:58:41  stripes
+ * most of the new message types (KJL)
+ *
+ * Revision 2.5  1992/01/06  07:07:02  stripes
+ * Firse step in adding new messages.
+ *
+ * Revision 2.4  1991/11/22  03:36:47  aahz
+ * fixed the print_num macro so numbers don't get munged!
+ *
  * Revision 2.3  1991/02/10  13:51:22  rpotter
  * bug fixes, display tweaks, non-restart fixes, header reorg.
  *
@@ -40,6 +52,8 @@ $Log: message.c,v $
 #include "globals.h"
 #include "assert.h"
 
+#define DLEN	80
+
 
 extern Terminal *term;
 
@@ -59,6 +73,9 @@ extern Terminal *term;
 #define DATA_LOC	0
 #define DATA_COMB	1
 #define DATA_MISC	2
+#define DATA_VINFO	3
+#define DATA_LANDMK	4
+#define DATA_LOCS	5
 
 /* Row of game window that the sending message is displayed */
 #define SENDING_ROW 17
@@ -72,30 +89,70 @@ extern Terminal *term;
 
 
 static char *op_str[MAX_OPCODES] = {
-	"I'm at ",
-	"Go to ",
-	"Follow combatant ",
-	"Help me at ",
-	"Attack combatant ",
-	"I'm open at ",
-	"I'm throwing to ",
-	"I caught at ",
-	"Acknowledged",
-	"",
-""};
+	"I'm at ",				/* 0 */
+	"Go to ",				/* 1 */
+	"Follow combatant ",	/* 2 */
+	"Help me at ",			/* 3 */
+	"Attack combatant ",	/* 4 */
+	"I'm open at ",			/* 5 */
+	"I'm throwing to ",		/* 6 */
+	"I caught at ",			/* 7 */
+	"Acknowledged",			/* 8 */
+	"",						/* 9 Text */
+	"",						/* 10 Death */
+	"Where is ",			/* 11 */
+	"Here are ",			/* 12 */
+	"What's in...",			/* 13 */
+	"Grid Contains...",		/* 14 */
+	"Do you have...",		/* 15 */
+	"Will you...",			/* 16 */
+	"Affirmative...",		/* 17 */
+	"Negative...",			/* 18 */
+	"I don't understand...",	/* 19 */
+	"I am ",				/* 20 */
+	"Enemy",				/* 21 */
+#ifndef NO_NEW_RADAR
+	"IFF key ",				/* 22 */
+#endif /* NO_NEW_RADAR */
+	"INCOMING!!!   ...",	/* 23 */
+};
 
 static char *opcode_entries[MAX_OPCODES] = {
 	"Location", "Goto", "Follow", "Help", "Attack",
-"Open", "Throw", "Caught", "Ack", "Text", "Death"};
+	"Open", "Throw", "Caught", "Ack", "Text", "Death",
+	"Where is", "Here are", "What's in", "Grid has",
+	"Do ya'", "Will you", "Affirmative",
+	"Negative", "Clueless", "I am", "Enemy at",
+#ifdef NO_NEW_RADAR
+	"IFF",
+#endif /* NO_NEW_RADAR */
+	"INCOMING!"};
 
 /* Data types for each opcode */
 static Byte data_type[MAX_OPCODES] = {
-	DATA_LOC, DATA_LOC, DATA_COMB, DATA_LOC, DATA_COMB, DATA_LOC,
-DATA_LOC, DATA_LOC, DATA_MISC, DATA_MISC, DATA_MISC};
+	DATA_LOC, DATA_LOC, DATA_COMB, DATA_LOC, DATA_COMB,
+	DATA_LOC, DATA_LOC, DATA_LOC, DATA_MISC, DATA_MISC, DATA_MISC,
+	DATA_LANDMK, DATA_LOCS, DATA_MISC, DATA_MISC,
+	DATA_MISC, DATA_MISC, DATA_MISC,
+	DATA_MISC, DATA_MISC, DATA_MISC, DATA_VINFO,
+#ifdef NO_NEW_RADAR
+	DATA_MISC,
+#endif
+	DATA_VINFO
+};
 
 /* Whether or not to initialize the data for each opcode */
 static Byte data_init[MAX_OPCODES] = {
-TRUE, FALSE, FALSE, TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE, FALSE};
+	TRUE, FALSE, FALSE, TRUE, FALSE,
+	TRUE, FALSE, TRUE, FALSE, FALSE, FALSE,
+/*?*/
+	FALSE, FALSE, FALSE, FALSE,
+	FALSE, FALSE, FALSE,
+	FALSE, FALSE, FALSE, FALSE,
+#ifndef NO_NEW_RADAR
+	FALSE,
+#endif
+	FALSE };
 
 Menu_int msg_sys[MAX_TERMINALS];
 
@@ -221,7 +278,7 @@ Event *event;
 {
     Vehicle *v = term->vehicle;
     Message *m;
-    char disp[80];
+    char disp[DLEN];
     int menu, choice, len, i, itemp;
     Boolean fast_print, fast_erase;
 
@@ -343,9 +400,86 @@ Event *event;
 {
     Vehicle *v = term->vehicle;
 
+
     /* can't mess with messages if just an observer */
     if (term->observer)
 	return GAME_RUNNING;
+
+#ifndef NO_NEW_RADAR
+/*
+ * Ok, so it's not exactly the most elegant structure. Tries to copy
+ * the format of the code in input.c
+ */
+
+        if (v == (Vehicle *) NULL)
+            return GAME_RUNNING;
+        set_current_vehicle(v);
+
+
+    if ( (event->type == EVENT_KEY) && (event->key >= '1') && (event->key <= '6') ){
+
+
+	v->target.y = (map2grid(event->y) * BOX_WIDTH) + (BOX_WIDTH/2);
+	v->target.x = (map2grid(event->x) * BOX_HEIGHT) + (BOX_HEIGHT/2);
+
+                switch (event->key) {
+                    case '1':
+                    case '2':
+                    case '3':
+                    case '4':
+                    case '5':
+                    case '6':
+
+#ifdef KEYPAD_DETECT
+                        if (event->keypad) {
+                            int weapon, status;
+
+                            weapon = event->key - '1';
+                            if ((status = weapon_on(weapon)) == TRUE) {
+                                fire_weapon(weapon);
+                            } else if (status == FALSE) {
+                                turn_on_weapon(weapon);
+                                fire_weapon(weapon);
+                                turn_off_weapon(weapon);
+                            }
+                        } else {
+#endif
+	                  return GAME_RUNNING;
+
+
+#ifdef KEYPAD_DETECT
+                        }
+#endif
+			break;
+
+
+                    default:
+                        beep_window();
+	                return GAME_RUNNING;
+                        break;
+	}
+
+    } else if (event->type == EVENT_LBUTTON) {
+        int i;
+
+	v->target.y = (map2grid(event->y) * BOX_WIDTH) + (BOX_WIDTH/2);
+	v->target.x = (map2grid(event->x) * BOX_HEIGHT) + (BOX_HEIGHT/2);
+			  for (i = 0; i < v->num_weapons; i++) { 
+				int status, fire_status;
+				if (v->weapon[i].type == HARM)
+                            if ((status = weapon_on(i)) == TRUE) {
+                                fire_status = fire_weapon(i);
+                            } else if (status == FALSE) {
+                                turn_on_weapon(i);
+                                fire_status = fire_weapon(i);
+                                turn_off_weapon(i);
+                            }
+				if (fire_status == FIRED) i = v->num_weapons;
+  				}
+	                  return GAME_RUNNING;
+
+    } else {
+#endif
 
     if (event->type == EVENT_KEY && event->key == '\r')
 	send_message(v);
@@ -361,6 +495,10 @@ Event *event;
 	display_sending();
     }
     return GAME_RUNNING;
+#ifndef NO_NEW_RADAR
+}
+#endif /* !NO_NEW_RADAR */
+
 }
 
 /*
@@ -411,7 +549,7 @@ Event *event;
 */
 display_sending()
 {
-	char disp[80];
+	char disp[DLEN];
 
 	format_message(&term->vehicle->sending, disp);
 	print_message(GAME_WIN, SENDING_ROW, disp);
@@ -460,13 +598,10 @@ Vehicle *victim, *killer;
 	m.recipient = RECIPIENT_ALL;
 	m.opcode = OP_DEATH;
 	m.data[0] = victim->number;
-	if (killer != (Vehicle *) NULL)
-	{
+	if (killer != (Vehicle *) NULL) {
 		m.data[1] = killer->owner->kills;
 		m.data[2] = killer->owner->number;
-	}
-	else
-	{
+	} else {
 		m.data[1] = 0;
 		m.data[2] = SENDER_NONE;
 	}
@@ -577,6 +712,22 @@ Message *m;
 	   message onto the list, and increment the next message index. * All
 	   indexing is done modulo MAX_MESSAGES. */
 
+#ifndef NO_NEW_RADAR
+/*
+ * If this is a IFF key...
+ *    has recp offered IFF key exchange to sender?
+ *       yes: set both vehicles as having each others keys
+ *       no:  set sender vehicle to reflect his offer to exchange.
+ */
+	if (( m->sender < MAX_VEHICLES) && ( m->opcode == OP_IFF) )
+		if (v->offered_IFF_key[m->sender]) {
+			actual_vehicles[m->sender].have_IFF_key[v->number] = TRUE;
+			v->have_IFF_key[m->sender] = TRUE;
+		} else {
+			actual_vehicles[m->sender].offered_IFF_key[v->number] = TRUE;
+		}
+#endif /* NO_NEW_RADAR */
+
 #ifdef TRACE_MESSAGE
 	printf("before incr new_messages = %d\n", v->new_messages);
 #endif
@@ -587,7 +738,7 @@ Message *m;
 	printf("after incr new_messages = %d\n\n", v->new_messages);
 #endif
 
-	v->received[v->next_message] = *m;
+	STRUCT_ASSIGN(v->received[v->next_message], *m, Message);
 
 #ifdef TRACE_MESSAGE
 	printf("before incr next_message = %d\n", v->next_message);
@@ -610,7 +761,7 @@ display_msg(status)
 unsigned int status;
 {
     Vehicle *v = term->vehicle;
-    char disp[80];
+    char disp[DLEN];
     int num;
 
     /* Check for being exposed */
@@ -672,21 +823,44 @@ unsigned int status;
 }
 
 /* Macros for adding strings and numbers to the display string */
-#define print_num(num) \
-  if((num) < 10) \
-    disp[i++] = '0' + (char) (num); \
-  else if((num) < 20) { \
-    disp[i++] = '1'; \
-    disp[i++] = '0' + (char) ((num) - 10); \
-  } \
-  else {  \
-    disp[i++] = '2'; \
-    disp[i++] = '0' + (char) ((num) - 20); \
-  }
+#define print_num(rnum) { \
+   int num = rnum; \
+\
+   if ((num) < 0) { \
+	  disp[i++] = '-'; \
+	  num = -num; \
+   } \
+   if ((num) < 10) { \
+      disp[i++] = '0' + (char) (num); \
+   } else { \
+       if ((num) < 100) { \
+          disp[i++] = (char) ((num) / 10) + '0';  \
+          disp[i++] = (char) ((num) % 10) + '0'; \
+       } else { \
+           if ((num) < 255) { \
+              disp[i++] = '0' + (char) ((num) / 100); \
+              disp[i++] = '0' + (char) ((num) / 10) % 10; \
+              disp[i++] = '0' + (char) ((num) % 10); \
+           } else { \
+              disp[i++] = '+'; \
+              disp[i++] = '+'; \
+              disp[i++] = '+'; \
+           } \
+		} \
+	}  \
+}
+
+#define print_xy(x, y) { \
+		disp[i++] = '('; \
+		print_num(x); \
+		disp[i++] = ','; \
+		print_num(y); \
+		disp[i++] = ')'; \
+	}
 
 #define print_str(str) \
   j = 0; \
-  while(str[j] != '\0') \
+  while(j < DLEN && str[j] != '\0') \
     disp[i++] = (char) str[j++];
 
 #define print_combatant(num) \
@@ -724,103 +898,130 @@ format_message(m, disp)
 Message *m;
 char *disp;
 {
-    extern char team_char[];
-    Byte *data;
-    int rec, sen, i, j;
-    Opcode op;
+	extern char team_char[];
+	Byte *data;
+	int rec, sen, i, j, ictr, jctr;
+	Opcode op;
+	static box_names_valid = FALSE;
+	extern char *box_type_name[];
 
-    i = 0;
-    /* Add sender id characters */
-    sen = m->sender;
-    if (sen == SENDER_NONE)
-    {
-	/* No sender, message doesn't exist */
-	disp[i] = '\0';
-	return 0;
-    }
-    if (sen == SENDER_COM)
-    {
-	/* Commentator sender */
-	disp[i++] = 'C';
-	disp[i++] = 'O';
-	disp[i++] = 'M';
-    }
-    else
-    {
-	/* Vehicle sender */
-	print_combatant(sen);
-    }
-
-    /* Add arrow */
-    disp[i++] = '-';
-    disp[i++] = '>';
-
-    /* Add receiver id characters */
-    rec = m->recipient;
-    if (rec == RECIPIENT_ALL)
-    {
-	/* All vehicles received message */
-	disp[i++] = 'A';
-	disp[i++] = 'L';
-	disp[i++] = 'L';
-    }
-    else if (rec >= MAX_VEHICLES)
-    {
-	/* Team received message */
-	disp[i++] = team_char[rec - MAX_VEHICLES];
-    }
-    else
-    {
-	/* Vehicle received message */
-	print_combatant(rec);
-    }
-
-    disp[i++] = ' ';
-
-    /* Add body of message, constructed from opcode and data */
-    op = m->opcode;
-    data = m->data;
-    print_str(op_str[(int)op]);
-    switch (data_type[(int)op])
-    {
-      case DATA_LOC:
-	/* Data is an (x,y) location */
-	disp[i++] = '(';
-	print_num(data[0])
-	    disp[i++] = ',';
-	print_num(data[1])
-	    disp[i++] = ')';
-	break;
-      case DATA_COMB:
-	/* Data is a combatant number */
-	print_combatant(data[0]);
-	break;
-      case DATA_MISC:
-	if (op == OP_DEATH)
-	{
-	    print_combatant(data[0]);
-	    if (data[2] == SENDER_NONE)
-	    {
-		print_str(" died");
-	    }
-	    else
-	    {
-		print_str(" was kill ");
-		print_num(data[1]);
-		print_str(" for ");
-		print_combatant(data[2]);
-	    }
+	i = 0;
+	/* Add sender id characters */
+	sen = m->sender;
+	if (sen == SENDER_NONE) {
+		/* No sender, message doesn't exist */
+		disp[i] = '\0';
+		return 0;
 	}
-	else
-	{
-	    /* Data is a string */
-	    print_str(data)
-	    }
-	break;
-    }
+	if (sen == SENDER_COM) {
+		/* Commentator sender */
+		disp[i++] = 'C';
+		disp[i++] = 'O';
+		disp[i++] = 'M';
+	} else {
+		/* Vehicle sender */
+		print_combatant(sen);
+	}
 
-    disp[i] = '\0';
-    return i;
+	/* Add arrow */
+	disp[i++] = '-';
+	disp[i++] = '>';
+
+	/* Add receiver id characters */
+	rec = m->recipient;
+	if (rec == RECIPIENT_ALL) {
+		/* All vehicles received message */
+		disp[i++] = 'A';
+		disp[i++] = 'L';
+		disp[i++] = 'L';
+	} else {
+		if (rec >= MAX_VEHICLES) {
+			/* Team received message */
+			disp[i++] = team_char[rec - MAX_VEHICLES];
+		} else {
+			/* Vehicle received message */
+			print_combatant(rec);
+		}
+	}
+
+	disp[i++] = ' ';
+
+	/* Add body of message, constructed from opcode and data */
+	op = m->opcode;
+	data = m->data;
+	print_str(op_str[(int)op]);
+	switch (data_type[(int)op]) {
+	  case DATA_VINFO:
+		disp[i++] = ' ';
+		print_combatant(data[8]);
+		print_str(" at ");
+		print_xy(data[0], data[1]);
+		print_str(" > ");
+		print_num(-128 + (int)data[6]);
+		disp[i++] = ',';
+		print_num(-128 + (int)data[7]);
+		break;
+	  case DATA_LOC:
+		print_xy(data[0], data[1]);
+		break;
+	  case DATA_COMB:
+		/* Data is a combatant number */
+		print_combatant(data[0]);
+		break;
+	  case DATA_LOCS:
+		for(ictr = 1; ictr < 28; ictr += 2) {
+			if (data[ictr] < GRID_WIDTH || data[ictr] < 0) {
+				ictr -= 2;
+				break;
+			}
+		}
+		print_num(1+ ictr / 2);
+		disp[i++] = ' ';
+		print_str(box_type_name[data[0]]);
+		disp[i++] = ' ';
+		assert(GRID_WIDTH < 100 && GRID_HEIGHT < 100);
+		jctr = 1;
+		while(i < DLEN -8 && jctr < ictr) {
+			print_xy(data[jctr], data[jctr+1]);
+			jctr += 2;
+		}
+		if (jctr < ictr && i < DLEN -4) print_str("...");
+		break;
+	  case DATA_LANDMK:
+		if (!box_names_valid) {
+			init_box_names();
+			box_names_valid = TRUE;
+		}
+
+		print_str(box_type_name[data[0]]);
+		break;
+	  case DATA_MISC:
+		if (op == OP_DEATH) {
+			print_combatant(data[0]);
+			if (data[2] == SENDER_NONE) {
+				print_str(" died");
+			} else {
+				print_str(" was kill ");
+				print_num(data[1]);
+				print_str(" for ");
+				print_combatant(data[2]);
+			}
+		} else {
+			/* Data is a string */
+			print_str(data)
+		}
+		break;
+	}
+
+	if (i >= DLEN) {
+		printf("op %d %s, type %d\n", m->opcode, op_str[m->opcode], data_type[m->opcode]);
+		printf("%d chars\n", i);
+		disp[i] = '\0';
+		printf("'%s'\n", disp);
+		assert(i < DLEN);
+	}
+	disp[i] = '\0';
+	return i;
 }
 
 /*

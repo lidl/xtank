@@ -7,10 +7,21 @@
 */
 
 /*
-$Author: lidl $
-$Id: main.c,v 2.5 1991/09/15 09:24:51 lidl Exp $
+$Author: aahz $
+$Id: main.c,v 2.8 1992/02/06 10:09:59 aahz Exp $
 
 $Log: main.c,v $
+ * Revision 2.8  1992/02/06  10:09:59  aahz
+ * fixed -F option.  fixed -s option mostly.
+ *
+ * Revision 2.7  1992/02/06  04:55:05  senft
+ * added support parameters.  added Help, AutoExit and PrintScores
+ * setting as well as initialization of global command options.
+ * ask Josh about the structure name.
+ *
+ * Revision 2.6  1991/12/15  22:36:31  aahz
+ * no change.
+ *
  * Revision 2.5  1991/09/15  09:24:51  lidl
  * removed vestiges of config.h file, now all configuration is done in
  * the Imakefile, and propogated via compile-time -D flags
@@ -38,6 +49,7 @@ $Log: main.c,v $
 #include "malloc.h"
 #include "xtank.h"
 #include "bullet.h"
+#include "clfkr.h"
 
 
 #ifdef DEBUG
@@ -85,6 +97,7 @@ Vehicle *live_vehicles[MAX_VEHICLES];	/* pointers into actual_vehicles[], the
 Vehicle *dead_vehicles[MAX_VEHICLES];	/* pointers into actual_vehicles[], the
 					   first "num_veh_dead" entries are
 					   valid */
+struct CLFkr command_options; /* options for how xtank starts and exits */
 
 
 void debugger_break()
@@ -99,6 +112,7 @@ int main(argc, argv)
 {
     extern int num_terminals;
     extern char displayname[], video_error_str[];
+	int iNumOpts = 0;
     int ret, i;
 
     bset = &actual_bset;
@@ -139,6 +153,88 @@ int main(argc, argv)
     }
 #endif				/* UNIX */
 
+	InitConfigStruct(&command_options);
+
+	if (argc > 1)
+	{
+		int ctr;
+
+		for (ctr = 1; ctr < argc; ctr++)
+		{
+			if (argv[ctr][0] == '-')
+			{
+				iNumOpts++;
+				switch (argv[ctr][1])
+				{
+					case 'h':
+					case 'H':
+#ifdef REALLY_RUDE
+						puts("Well, you really suck if it's taken");
+						puts("this long to get around to playing");
+						puts("xtank.   -ORACLE");
+#else
+						puts("\nUSAGE:");
+						printf("   %s [-option]* [screens]*\n\n", argv[0]);
+						puts("where option can be one of the following:\n");
+						puts("    -s    == -S -F");
+						puts("    -i    == -I -X -P -D");
+						puts("    -x    == -X -P");
+						puts("    -h    == -H\n");
+						puts("    -F <filename>   => use settings file *");
+						puts("    -X              => exit (auto)");
+						puts("    -P              => print scores");
+						puts("    -D              => no delay *");
+						puts("    -I              => no io(not specifiable) *");
+						puts("    -H              => this help screen");
+						puts("    -S              => auto-start *");
+						puts("    -Z              => Zephyr Broadcast List *\n");
+						puts(" * Note implemented yet.\n");
+#endif
+						return (0);
+						break;
+
+					case 'S':
+						command_options.AutoStart   = TRUE;
+						break;
+
+                    case 's':
+						command_options.AutoStart   = TRUE;
+					case 'F':
+						if (argc > ctr + 1)
+						{
+				            iNumOpts++;
+						    command_options.UseSetting = TRUE;
+							command_options.Settings   = argv[ctr + 1];
+						}
+						break;
+
+					case 'P':
+						command_options.PrintScores = TRUE;
+						break;
+
+					case 'X':
+						command_options.AutoExit    = TRUE;
+						break;
+
+					case 'x':
+						command_options.AutoExit    = TRUE;
+						command_options.PrintScores = TRUE;
+						break;
+				}
+			}
+		}
+#ifdef DEBUG_ARGUMENTS
+		puts("AutoExit is:");
+		puts((command_options.AutoExit)? "ON" : "OFF");
+		puts("PrintScores is:");
+		puts((command_options.PrintScores)? "ON" : "OFF");
+		puts("AutoStart is:");
+		puts((command_options.AutoStart)? "ON" : "OFF");
+		puts("UseSetting is:");
+		puts((command_options.UseSetting)? "ON" : "OFF");
+#endif
+	}
+
     /* Initialize various and sundry things */
     debug("Initializing various things");
     init_random();
@@ -158,11 +254,21 @@ int main(argc, argv)
 
     /* Parse command line for display names and make a terminal for each one */
     debug("Making terminals");
-    if (argc > 1)
+    if (argc - iNumOpts > 1)
     {
-	for (i = 0; i < argc - 1; i++)
-	    if (make_terminal(argv[i + 1]))
-		rorre(video_error_str);
+	    for (i = 1; i < argc; i++)
+		{
+			if (argv[i][0] == '-')
+			{
+				if (argv[i][1] == 's' || argv[i][1] == 'F')
+				{
+					i++;
+				}
+				continue;
+			}
+	        if (make_terminal(argv[i]))
+		        rorre(video_error_str);
+		}
     }
     else if (make_terminal(displayname))
 	rorre(video_error_str);
@@ -191,3 +297,18 @@ int main(argc, argv)
 
     return(0);
 }
+
+
+
+int InitConfigStruct(ConfigRunning)
+struct CLFkr *ConfigRunning;
+{
+	ConfigRunning->AutoExit     = FALSE;
+	ConfigRunning->AutoStart    = FALSE;
+	ConfigRunning->UseSetting   = FALSE;
+	ConfigRunning->PrintScores  = FALSE;
+	ConfigRunning->Settings     = NULL;
+
+	return (0);
+}
+

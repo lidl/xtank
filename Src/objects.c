@@ -8,9 +8,12 @@
 
 /*
 $Author: lidl $
-$Id: objects.c,v 2.5 1991/09/19 05:35:22 lidl Exp $
+$Id: objects.c,v 2.6 1991/12/02 07:24:37 lidl Exp $
 
 $Log: objects.c,v $
+ * Revision 2.6  1991/12/02  07:24:37  lidl
+ * added stuff for the new panzy body type
+ *
  * Revision 2.5  1991/09/19  05:35:22  lidl
  * side-effect of shorting des_landmarks.obj to des_lmarks.obj
  *
@@ -34,16 +37,11 @@ $Log: objects.c,v $
  * 
 */
 
+#include "limits.h"
 #include "malloc.h"
 #include "xtank.h"
 #include "graphics.h"
 #include "gr.h"
-
-
-#define MAX_VEHICLE_OBJS	11
-#define MAX_TURRET_OBJS		1
-#define MAX_EXP_OBJS		9			/* GHS */
-#define MAX_LANDMARK_OBJS	3
 
 #include "Objects/lightc.obj"
 #include "Objects/hexo.obj"
@@ -56,6 +54,7 @@ $Log: objects.c,v $
 #include "Objects/medusa.obj"
 #include "Objects/malice.obj"
 #include "Objects/trike.obj"
+#include "Objects/panzy.obj"
 
 #include "Objects/turret_sm.obj"
 
@@ -67,9 +66,7 @@ $Log: objects.c,v $
 #include "Objects/fiery.obj"
 #include "Objects/double.obj"
 #include "Objects/exhaust.obj"
-
-#include "Objects/electric.obj"			/* GHS */
-
+#include "Objects/electric.obj"
 #include "Objects/bullets.obj"
 
 #include "Objects/anm_lmarks.obj"
@@ -140,6 +137,7 @@ make_objects()
     vehicle_obj[num++] = make_object(&medusa_obj, medusa_bitmap);
     vehicle_obj[num++] = make_object(&malice_obj, malice_bitmap);
     vehicle_obj[num++] = make_object(&trike_obj, trike_bitmap);
+    vehicle_obj[num++] = make_object(&panzy_obj, panzy_bitmap);
     num_vehicle_objs = num;
 
 
@@ -252,6 +250,7 @@ rotate_objects()
 	rotate_object(&medusa_obj, medusa_bitmap);
 	rotate_object(&malice_obj, malice_bitmap);
 	rotate_object(&trike_obj, trike_bitmap);
+	rotate_object(&panzy_obj, panzy_bitmap);
 }
 
 /*

@@ -9,9 +9,18 @@
 
 /*
 $Author: lidl $
-$Id: icounter.c,v 2.5 1991/09/15 09:24:51 lidl Exp $
+$Id: icounter.c,v 2.8 1991/12/27 01:40:08 lidl Exp $
 
 $Log: icounter.c,v $
+ * Revision 2.8  1991/12/27  01:40:08  lidl
+ * added appropriate SVR4 defines
+ *
+ * Revision 2.7  1991/12/10  03:41:44  lidl
+ * changed float to FLOAT, for portability reasons
+ *
+ * Revision 2.6  1991/10/07  03:14:13  lidl
+ * added multimax support (hopefully)
+ *
  * Revision 2.5  1991/09/15  09:24:51  lidl
  * removed vestiges of config.h file, now all configuration is done in
  * the Imakefile, and propogated via compile-time -D flags
@@ -36,6 +45,7 @@ $Log: icounter.c,v $
  * 
 */
 
+#include "sysdep.h"
 #include "icounter.h"
 #include "common.h"
 #include "types.h"
@@ -85,7 +95,7 @@ stop_counter()
 	(void) alarm(stop_val);
 }
 
-#else /* MOTOROLA && 88k */
+#else /* !defined(MOTOROLA) !! !definded(m68k) (ie everything else) */
 
 static struct itimerval start_val = {{0, INC_TIME}, {0, INC_TIME}};
 static struct itimerval stop_val = {{0, 0}, {0, 0}};
@@ -99,11 +109,14 @@ int elapsed_time;
 void increment_time()
 {
 	elapsed_time += INC_TIME;
+#ifdef mmax
+	sigset(SIGVTALRM, increment_time);
+#endif
 }
 
 setup_counter()
 {
-#if defined(MOTOROLA) && defined(m88k)
+#if defined(MOTOROLA) && defined(m88k) || defined(SVR4)
 	if ((int) sigset(SIGVTALRM, increment_time) == -1)
 #else
 	if ((int) signal(SIGVTALRM, increment_time) == -1)
@@ -126,7 +139,7 @@ stop_counter()
 {
 	(void) setitimer(ITIMER_VIRTUAL, &stop_val, (struct itimerval *) NULL);
 }
-#endif /* MOTOROLA && m88k */
+#endif /* !defined(MOTOROLA) !! !definded(m68k) (ie everything else) */
 
 
 /* Has enough real time passed since the last frame? */
@@ -168,7 +181,7 @@ int time;
     (void) setitimer(ITIMER_REAL, &real_timer, (struct itimerval *)NULL);
 
 	/* Call the sigalrm_handler function every time the handler expires */
-#if defined(MOTOROLA) && defined(m88k)
+#if defined(MOTOROLA) && defined(m88k) || defined(SVR4)
 	sigset(SIGALRM, sigalrm_handler);
 #else
 	signal(SIGALRM, sigalrm_handler);

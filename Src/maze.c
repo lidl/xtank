@@ -7,10 +7,17 @@
 */
 
 /*
-$Author: rpotter $
-$Id: maze.c,v 2.3 1991/02/10 13:51:13 rpotter Exp $
+$Author: lidl $
+$Id: maze.c,v 2.5 1991/12/10 03:41:44 lidl Exp $
 
 $Log: maze.c,v $
+ * Revision 2.5  1991/12/10  03:41:44  lidl
+ * changed float to FLOAT, for portability reasons
+ *
+ * Revision 2.4  1991/10/24  01:10:08  lidl
+ * Thanks to rws@cs.brown.edu (Richard W. Sabourin):
+ * The bug where no landmarks showed up in random mazes has been fixed.
+ *
  * Revision 2.3  1991/02/10  13:51:13  rpotter
  * bug fixes, display tweaks, non-restart fixes, header reorg.
  *
@@ -45,8 +52,8 @@ setup_maze()
 {
     extern Maze maze;
     extern int num_terminals;
-    float base_prob;
-    float prob[SLOW + 1], sum;
+    FLOAT base_prob;
+    FLOAT prob[SLOW + 1], sum;
     int i;
 
     if (settings.mdesc != (Mdesc *) NULL)
@@ -69,6 +76,7 @@ setup_maze()
         prob[(int)FUEL] = base_prob;
         prob[(int)AMMO] = base_prob;
         prob[(int)ARMOR] = base_prob;
+        prob[(int)PEACE] = base_prob;
         prob[(int)GOAL] = (settings.si.game == COMBAT_GAME ||
 			   settings.si.game == WAR_GAME) ?
 			       0 : base_prob;
@@ -504,10 +512,10 @@ int percent;
 */
 set_box_types(num_prob, prob)
     int num_prob;
-    float prob[];
+    FLOAT prob[];
 {
-    float rnd_interval();
-    float number, pick;
+    FLOAT rnd_interval();
+    FLOAT number, pick;
     LandmarkType type;
     Box *b;
     int x, y;

@@ -14,6 +14,7 @@ typedef struct {
     void (*func) ();		/* main procedure of program */
     char *code;			/* pointer to code memory, used internally by
 				   XTank */
+	char *filename;
 } Prog_desc;
 
 typedef struct {

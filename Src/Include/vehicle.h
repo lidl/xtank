@@ -1,10 +1,22 @@
 /* vehicle.h - structure that describes a vehicle in play */
 
 /*
-$Author: rpotter $
-$Id: vehicle.h,v 2.3 1991/02/10 13:52:04 rpotter Exp $
+$Author: lidl $
+$Id: vehicle.h,v 2.7 1992/01/29 08:39:11 lidl Exp $
 
 $Log: vehicle.h,v $
+ * Revision 2.7  1992/01/29  08:39:11  lidl
+ * post aaron patches, seems to mostly work now
+ *
+ * Revision 2.6  1992/01/06  08:00:34  stripes
+ * Teleport changes
+ *
+ * Revision 2.5  1991/12/10  01:21:04  lidl
+ * change all occurances of "float" to "FLOAT"
+ *
+ * Revision 2.4  1991/12/03  20:19:47  stripes
+ * more of the new skid code changes (KJL)
+ *
  * Revision 2.3  1991/02/10  13:52:04  rpotter
  * bug fixes, display tweaks, non-restart fixes, header reorg.
  *
@@ -59,17 +71,31 @@ typedef struct {
     Loc   loc2;			/* 2nd area for location info */
     Vector vector;		/* orientation info */
     Object *obj;		/* pointer to screen object */
-    float max_fuel;		/* amount of fuel tank can hold */
-    float fuel;			/* amount of fuel currently in tank */
+    FLOAT max_fuel;		/* amount of fuel tank can hold */
+    FLOAT fuel;			/* amount of fuel currently in tank */
     int   heat;			/* internal temperature */
-    float turn_rate[MAX_SPEED + 1]; /* safe turning rate for each speed */
+    FLOAT max_turn_rate;	/* how rapidly this vehicle can rotate
+								per frame) */
     Armor armor;		/* current armor points  */
     Special special[MAX_SPECIALS];
     Boolean safety;		/* TRUE means turn rate is limited */
+    Boolean teleport;		/* FALSE means never teleport (for dumb robots) */
     int   num_discs;		/* number of discs owned by the vehicle */
     int   color;		/* color for vehicle and bullets it owns */
     int   death_timer;		/* countdown until resurrection */
     int   slide_count;
+#ifndef NO_NEW_RADAR
+    int   have_IFF_key[MAX_VEHICLES]; /* array of which IFF keys I have gotten*/
+    int   offered_IFF_key[MAX_VEHICLES]; /* array of which IFF keys I have offered*/
+    lCoord target;		/* Saved location for a smart weapon */
+/*
+ * Note that by saving target in the Vehicle struct instead of the
+ * display struct, multiple displays may experience unexpected 
+ * behavior if they are not aware this infomation is common between
+ * them. Of course that might be a feature...
+ */
+     float rcs;			/* radar cross section */
+#endif /* !NO_NEW_RADAR */
 } Vehicle;
 
 typedef struct _Combatant {
@@ -87,6 +113,5 @@ typedef struct _Combatant {
     int   deaths;
     Vehicle *vehicle;
 } Combatant;
-
 
 #endif ndef _VEHICLE_H_

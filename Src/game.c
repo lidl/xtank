@@ -7,10 +7,35 @@
 */
 
 /*
-$Author: lidl $
-$Id: game.c,v 2.6 1991/09/15 23:35:15 lidl Exp $
+$Author: senft $
+$Id: game.c,v 2.11 1992/02/10 04:12:43 senft Exp $
 
 $Log: game.c,v $
+ * Revision 2.11  1992/02/10  04:12:43  senft
+ * For 'sakes josh bitched about the spacing in the dump scores stuff.
+ * Geez for people who want you to write your own stuff they sure have
+ * some rucking opinion.
+ *
+ * Revision 2.10  1992/02/06  04:54:09  senft
+ * updated score output code to print to a file for termainal < 0.
+ * added code to not wait for a key if AutoExit is set.
+ *
+ * Revision 2.9  1992/02/02  05:41:43  senft
+ * The underlying function created for displaying to the current terminal
+ * was clearing the scores if it was the last terminal.  Since we re-
+ * display now that code was moved to the calling function.
+ *
+ * Revision 2.8  1992/01/30  05:01:31  senft
+ * Made the game result screen(scores et al) refresh when it is exposed.
+ * Very useful for running simulations while windows are overlapping,
+ * allowing you to come back and see the final scores. An added benefit
+ * is that the display to a terminal is now a seperate function.  We
+ * can pass a display function later so that these can be dumped to a
+ * file(regression testing...)
+ *
+ * Revision 2.7  1991/11/27  06:20:59  senft
+ * added team scoring (aahz)
+ *
  * Revision 2.6  1991/09/15  23:35:15  lidl
  * helpsx if we pass the correct number of arguments to sprintf
  * we didn't before :-(
@@ -47,6 +72,7 @@ $Log: game.c,v $
 #include "vehicle.h"
 #include "cosell.h"
 #include "globals.h"
+#include "clfkr.h"
 
 
 extern Maze maze;
@@ -57,6 +83,7 @@ extern int num_terminals;
 extern Settings settings;
 extern Map real_map;
 extern int frame;
+extern struct CLFkr command_options;
 
 
 TeamData teamdata[MAX_TEAMS];
@@ -102,29 +129,82 @@ Boolean init;
 ** Vehicles fight each other for score.
 ** A team wins when a vehicle on that team gets the required score.
 */
-combat_rules(init)
-Boolean init;
+int combat_rules(init)
+    Boolean init;
 {
     Vehicle *v;
-    int i;
+    int i, j;
+	int TeamScores[MAX_TEAMS];
+	int HighestPlayer[MAX_TEAMS];
+	int retcode = GAME_RUNNING;
 
-    if (init)
-	return GAME_RUNNING;
-
-    for (i = 0; i < num_veh_alive; i++) {
-	v = live_vehicles[i];
-
-	if (settings.robots_dont_win && v->owner->num_players == 0) {
-	    continue;
-	}
-	if (v->owner->score >= settings.si.winning_score)
+    if (! init)
 	{
-	    winning_vehicle = v;
-	    winning_team = v->team;
-	    return GAME_RESET;
-	}
+		if (settings.si.team_score)
+		{
+		    for (i = 0; i < MAX_TEAMS; i++)
+		    {
+			    TeamScores[i] = 0;
+			    HighestPlayer[i] = -1;
+		    }
+
+		    for (i = 0; i < num_veh; i++)
+		    {
+			    v = & actual_vehicles[i];
+
+                if (settings.robots_dont_win && v->owner->num_players == 0) 
+                {
+                    continue;
+                }
+
+			    TeamScores[v->team] += v->owner->score;
+			    if (HighestPlayer[v->team] == -1)
+			    {
+				    HighestPlayer[v->team] = i;
+			    }
+			    else
+			    {
+				    if (v->owner->score >
+					    actual_vehicles[HighestPlayer[v->team]].owner->score)
+				    {
+					    HighestPlayer[v->team] = i;
+				    }
+			    }
+		    }
+
+		    for (i = 0; i < MAX_TEAMS; i++)
+		    {
+			    if (TeamScores[i] >= settings.si.winning_score)
+			    {
+				    winning_vehicle = & actual_vehicles[HighestPlayer[i]];
+                    winning_team = i;
+                    retcode = GAME_RESET;
+			    }
+		    }
+		}
+        else
+		{
+            for (i = 0; i < num_veh_alive; i++) 
+	        {
+                v = live_vehicles[i];
+    
+                if (settings.robots_dont_win && v->owner->num_players == 0) 
+                {
+                    continue;
+                }
+
+                if (v->owner->score >= settings.si.winning_score)
+                {
+                    winning_vehicle = v;
+                    winning_team = v->team;
+                    retcode = GAME_RESET;
+				    break;
+                }
+			}
+        }
     }
-    return GAME_RUNNING;
+
+	return (retcode);
 }
 
 /*
@@ -412,24 +492,153 @@ Boolean init;
 display_game_stats(status)
 unsigned int status;
 {
-    char s[80];
-    char fmt[80];
-    int i, j, k, l, m, n, reply;
-
-    /* sprintf(fmt, "     %%%ds%%c: %%7d points   %%3d kills   %%3d deaths",
-            MAX_STRING);        		*/
-	sprintf(fmt, "%%11s%%c: %%-11s  %%7d points   %%3d kills   %%3d deaths");
+    int n, reply;
 
     for (n = 0; n < num_terminals; n++)
     {
-	set_terminal(n);
+	    set_terminal(n);
+
+        display_game_stats_to_current(status, n);
+
+	    flush_output();
+    }
+
+    set_terminal(0);
+    /* mprint("'q' to end game, 's' to start", 20, 40); */
+    mprint("'q' to end game", 20, 40);
+
+	if (command_options.AutoExit)
+	{
+		reply = 'Q';
+	}
+	else
+	{
+        int iNumEvents;
+        Event aeEvents[1];
+
+        do
+        {
+			iNumEvents = 1;
+
+            get_events(&iNumEvents, aeEvents);
+			if (iNumEvents)
+			{
+				if (aeEvents[0].type == EVENT_KEY &&
+					(aeEvents[0].key == 'Q' || aeEvents[0].key == 'q'))
+				{
+					reply = 'Q';
+					break;
+				}
+			}
+
+	        if (win_exposed(ANIM_WIN))
+	        {
+                display_game_stats_to_current(status, 0);
+                /* mprint("'q' to end game, 's' to start", 20, 40); */
+                mprint("'q' to end game", 20, 40);
+				flush_output();
+	            expose_win(ANIM_WIN, FALSE);
+	        }
+        }
+        while (TRUE);
+    }
+
+	if (command_options.PrintScores)
+	{
+        display_game_stats_to_current(status, -1);
+	}
+
+
+    if (settings.si.game != ULTIMATE_GAME)
+	{
+		int j;
+
+	    for (j = 0; j < num_veh; j++) 
+		{
+	        Vehicle *v = &actual_vehicles[j];
+
+            v->owner->score = 0;   
+		}
+	}
+
+    return ((reply == 'Q') ? GAME_QUIT : GAME_RESET);
+}
+
+
+int ScreenOut(str, x, y)
+char *str;
+int x;
+int y;
+{
+    return (mprint(str,x,y)); 
+}
+
+
+int ScreenOutColor(str, x, y, color)
+char *str;
+int x;
+int y;
+int color;
+{
+    return (mprint_color(str, x, y, color));
+}
+
+
+int StandardOut(str, x, y)
+char *str;
+int x;
+int y;
+{
+    puts(str);
+}
+
+
+int StandardOutColor(str, x, y, color)
+char *str;
+int x;
+int y;
+int color;
+{
+    puts(str);
+}
+
+int display_game_stats_to_current(status, n)
+unsigned int status;
+int n;
+{
+    int i, j, k, l, m;
+    char s[80];
+    char fmt[80];
+    int (*plain_out)();
+    int (*color_out)();
+
+	if (n >= 0)
+	{
+		plain_out = ScreenOut;
+		color_out = ScreenOutColor;
+	}
+	else
+	{
+		plain_out = StandardOut;
+		color_out = StandardOutColor;
+	}
+
+
+	if (n < 0)
+	{
+		(*plain_out)("", 0, 0);
+		(*plain_out)("", 0, 0);
+	}
+    /* sprintf(fmt, "     %%%ds%%c: %%7d points   %%3d kills   %%3d deaths",
+            MAX_STRING);        		*/
+	sprintf(fmt, "%%11s%%c: %%-11s  %%7d points   %%3d kills   %%3d deaths");
 
 	clear_window(ANIM_WIN);
 
         sprintf(s, "Game: %s     Frame: %d",
 		game_str[(int)settings.si.game],
 		frame);
-	mprint(s, 5, 2);
+	(*plain_out)(s, 5, 2);
 
 	/* If we just reset the game, say who scored what */
 	if (status == GAME_RESET)
@@ -455,52 +664,52 @@ unsigned int status;
 		sprintf(s, "Race won by %s", winning_vehicle->disp);
 		break;
 	    }
-	    mprint(s, 5, 4);
+	    (*plain_out)(s, 5, 4);
 	}
 	/* Print out the total scores for all the teams */
-	mprint("Current score:", 5, 6);
+	(*plain_out)("Current score:", 5, 6);
 	l = 8;
 	for (i = 0, k = 0; i < MAX_TEAMS; i++, k = 0)
 	{
-	    for (j = 0, m = l + 1; j < num_veh; j++) {
-		Vehicle *v = &actual_vehicles[j];
+	    for (j = 0, m = l + 1; j < num_veh; j++) 
+		{
+		    Vehicle *v = &actual_vehicles[j];
 
-		if (v->team == i) {
-		    sprintf(s, fmt,
-			    v->owner->name,
-			    ((settings.si.pay_to_play &&
-			      !tstflag(v->status, VS_is_alive))
-			     ? '*' : ' '),
-			    v->name,v->owner->score, v->owner->kills,
-			    v->owner->deaths); 
-		    mprint(s, 5, m++);
-		    k += v->owner->score;
-                    if (n == num_terminals - 1 &&
-			settings.si.game != ULTIMATE_GAME)
+		    if (v->team == i) 
 		    {
-                        v->owner->score = 0;   
+		        sprintf(s, fmt, v->owner->name,
+			        ((settings.si.pay_to_play &&
+			          !tstflag(v->status, VS_is_alive))
+			         ? '*' : ' '),
+			        v->name,v->owner->score, v->owner->kills,
+			        v->owner->deaths); 
+		        (*plain_out)(s, 5, m++);
+		        k += v->owner->score;
 		    }
-		}
 	    }
+
 	    if (m != l + 1)
 	    {
-		sprintf(s, "  %s: %d points", teams_entries[i], k);
-		mprint_color(s, 5, l, team_color[i]);
-		l = m + 1;
+		    sprintf(s, "  %s: %d points", teams_entries[i], k);
+		    (*color_out)(s, 5, l, team_color[i]);
+		    l = m + 1;
+	    }
+
+
+	    if (n < 0)
+	    {
+		    (*plain_out)("", 0, 0);
 	    }
 	}
-	flush_output();
-    }
 
-    set_terminal(0);
-    /* mprint("'q' to end game, 's' to start", 20, 40); */
-    mprint("'q' to end game", 20, 40);
-    do
-    {
-	reply = get_reply();
-	reply = islower(reply) ? toupper(reply) : reply;
-    }
-    /* while (reply != 'Q' && reply != 'S'); */
-    while (reply != 'Q');
-    return ((reply == 'Q') ? GAME_QUIT : GAME_RESET);
+	if (n < 0)
+	{
+		(*plain_out)("", 0, 0);
+	}
+
+	return (0);
 }
+
+
+
+

@@ -2,9 +2,18 @@
 
 /*
 $Author: lidl $
-$Id: limits.h,v 2.4 1991/09/15 09:24:51 lidl Exp $
+$Id: limits.h,v 2.7 1992/01/29 08:39:11 lidl Exp $
 
 $Log: limits.h,v $
+ * Revision 2.7  1992/01/29  08:39:11  lidl
+ * post aaron patches, seems to mostly work now
+ *
+ * Revision 2.6  1992/01/08  06:55:51  lidl
+ * upped MAX_ENTRIES to 47
+ *
+ * Revision 2.5  1991/12/03  20:13:34  lidl
+ * updated to handle 12 body types
+ *
  * Revision 2.4  1991/09/15  09:24:51  lidl
  * removed vestiges of config.h file, now all configuration is done in
  * the Imakefile, and propogated via compile-time -D flags
@@ -47,7 +56,11 @@ $Log: limits.h,v $
 				   one vehicle */
 #define MAX_LINES       256	/* number of lines drawn in 3d mode */
 #define MAX_SEGMENTS	6
-#define MAX_ENTRIES	45
+#ifdef NO_NEW_RADAR
+#define MAX_ENTRIES	47	/* t'port made 47... */
+#else /* NO_NEW_RADAR */
+#define MAX_ENTRIES	54	/* size of console_word array in console.c */
+#endif
 #define MAX_STRING	24
 #define MAX_VIEWS	32
 #define MAX_SPEED	25	/* fastest tanks are expected to go, though
@@ -60,10 +73,16 @@ $Log: limits.h,v $
 
 #define MAX_ENGINES     16
 #define MAX_ARMORS       7
-#define MAX_BODIES      11
+#define MAX_BODIES      12
 #define MAX_SUSPENSIONS  4
 #define MAX_BUMPERS      4
 
+#define MAX_VEHICLE_OBJS	MAX_BODIES
+#define MAX_TURRET_OBJS		1
+#define MAX_EXP_OBJS		9
+#define MAX_LANDMARK_OBJS	3
+
+#define MAXPNAME	12	/* length of a player's name */
 
 #ifdef UNIX
 #define MAX_TERMINALS	10
@@ -72,7 +91,6 @@ $Log: limits.h,v $
 #ifdef AMIGA
 #define MAX_TERMINALS	1
 #endif
-
 
 
 #endif ndef _LIMITS_H_

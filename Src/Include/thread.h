@@ -8,9 +8,21 @@
 
 /*
 $Author: lidl $
-$Id: thread.h,v 2.7 1991/09/15 09:24:51 lidl Exp $
+$Id: thread.h,v 2.11 1992/01/29 08:41:54 lidl Exp $
 
 $Log: thread.h,v $
+ * Revision 2.11  1992/01/29  08:41:54  lidl
+ * changed comments only
+ *
+ * Revision 2.10  1992/01/26  05:46:28  lidl
+ * botched attempt at i860 style longjmp hack
+ *
+ * Revision 2.9  1991/12/16  02:56:27  lidl
+ * added support for SVR4 style threading
+ *
+ * Revision 2.8  1991/10/07  03:16:12  lidl
+ * added multimax support (sys 5 universe)
+ *
  * Revision 2.7  1991/09/15  09:24:51  lidl
  * removed vestiges of config.h file, now all configuration is done in
  * the Imakefile, and propogated via compile-time -D flags
@@ -45,33 +57,40 @@ $Log: thread.h,v $
 /****************************************************************************/
 /* thread.h - THREAD CLUSTER (INTERFACE)				    */
 /* Created:  10/31/87		Release:  0.7		Version:  06/27/88  */
-/****************************************************************************
-(c) Copyright 1987 by Michael Benjamin Parker           (USA SS# 557-49-4130)
-
-All Rights Reserved unless specified in the following include files:
-#include "thread.cpy"
-
-DO NOT REMOVE OR ALTER THIS NOTICE AND ITS PROVISIONS.
-****************************************************************************/
+/****************************************************************************/
+/* (c) Copyright 1987 by Michael Benjamin Parker      (USA SS# 557-49-4130) */
+/* All Rights Reserved unless specified in the following include files:     */
+/* #include "thread.cpy"                                                    */
+/* DO NOT REMOVE OR ALTER THIS NOTICE AND ITS PROVISIONS.                   */
+/****************************************************************************/
 
 /* This threads package is known to run correctly on the following hardware:
  *      IBM RT
  *      DEC VAX
- *      Sun 3   (doesn't always work.  If not, use THREAD_SUNLWP below)
+ *      Sun 3   (does not always work.  If not, use THREAD_SUNLWP below)
  *      HP9000 Series 800
  *      Apollo
- *	Motorola 88k & 68k (??)
+ *	Motorola 88k and 68k boxes (hopefully)
+ *	Encore Multimax (Sys V Universe)
  */
 
 #include <signal.h>
 
 #if !defined(vax) && !defined(apollo)
-#include <setjmp.h>
+#ifndef i860
+# include <setjmp.h>
+#else
+# include <sys/ucontext.h>
+#endif
 
-#ifdef mips
+#if defined(mips) || defined(mmax) || defined(MOTOROLA) || defined(i860)
 typedef struct _Thd
 {
+#ifndef i860
 	jmp_buf	state;		/* Current state of thread */
+#else
+	struct ucontext state;	/* Current state of thread */
+#endif
 	int	sigstate;	/* Signal mask when at thread creation */
 	struct	_Thd *oldthd;	/* Thread which executed prior to this one */
 	struct	_Thd *(*func) ();	/* Main function for thread */
@@ -80,21 +99,9 @@ typedef struct _Thd
 }	Thread;
 #endif
 
-#ifdef hp9000s800
+#if defined(hp9000s800)
 #define setjmp _setjmp
 #define longjmp _longjmp
-#endif
-
-#ifdef MOTOROLA
-typedef struct _Thd
-{
-    jmp_buf state;	/* Current state of thread */
-    int sigstate;	/* Signal mask when at thread creation */
-    struct _Thd *oldthd;	/* Thread which executed prior to this one */
-    struct _Thd *(*func) ();	/* Main function for thread */
-    int stackoverflow;		/* Stack overflow boolean */
-    /* Stack for thread lies here */
-} Thread;
 #endif
 
 #else /* !defined(vax) && !defined(apollo) */
@@ -127,16 +134,20 @@ typedef struct _Thd
     /* Stack for thread lies here */
 }     Thread;
 #endif /* vax */
-
 #endif /* THREAD_MP */
 
 #ifdef THREAD_SUNLWP
 #include <lwp/lwp.h>
 #include <lwp/stackdep.h>
 typedef thread_t Thread;
-#endif
+#endif /* THREAD_SUNLWP */
 
-#if !defined(THREAD_MP) && !defined(THREAD_SUNLWP)
+#ifdef THREAD_SVR4
+#include <ucontext.h>
+typedef ucontext_t Thread;
+#endif /* THREAD_SVR4 */
+
+#if !defined(THREAD_MP) && !defined(THREAD_SUNLWP) && !defined(THREAD_SVR4)
 typedef char Thread;
 #endif
 

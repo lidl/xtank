@@ -7,10 +7,13 @@
 */
 
 /*
-$Author: rpotter $
-$Id: scroll.c,v 2.3 1991/02/10 13:51:35 rpotter Exp $
+$Author: lidl $
+$Id: scroll.c,v 2.4 1991/12/10 03:41:44 lidl Exp $
 
 $Log: scroll.c,v $
+ * Revision 2.4  1991/12/10  03:41:44  lidl
+ * changed float to FLOAT, for portability reasons
+ *
  * Revision 2.3  1991/02/10  13:51:35  rpotter
  * bug fixes, display tweaks, non-restart fixes, header reorg.
  *
@@ -37,7 +40,7 @@ $Log: scroll.c,v $
 draw_scrollbar(sbar)
 scrollbar *sbar;
 {
-	float fspan, fpos;
+	FLOAT fspan, fpos;
 	int pspan, ppos;
 
 	draw_rect(sbar->win, sbar->x, sbar->y, sbar->w - 1, sbar->h - 1,
@@ -75,7 +78,7 @@ scrollbar *sbar;
 int mx, my;
 unsigned int button;
 {
-	float fpos;
+	FLOAT fpos;
 	int new_pos;
 
 	if (my < sbar->y || my > sbar->y + sbar->h)

@@ -8,9 +8,12 @@
 
 /*
 $Author: lidl $
-$Id: util.c,v 2.6 1991/09/15 09:24:51 lidl Exp $
+$Id: util.c,v 2.7 1991/12/10 03:41:44 lidl Exp $
 
 $Log: util.c,v $
+ * Revision 2.7  1991/12/10  03:41:44  lidl
+ * changed float to FLOAT, for portability reasons
+ *
  * Revision 2.6  1991/09/15  09:24:51  lidl
  * removed vestiges of config.h file, now all configuration is done in
  * the Imakefile, and propogated via compile-time -D flags
@@ -91,10 +94,10 @@ int mx;
 }
 
 /*
-** Returns a random float from mn to mx.
+** Returns a random FLOAT from mn to mx.
 */
-float rnd_interval(mn, mx)
-float mn, mx;
+FLOAT rnd_interval(mn, mx)
+FLOAT mn, mx;
 {
     long r;
 

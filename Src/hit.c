@@ -7,10 +7,19 @@
 */
 
 /*
-$Author: aahz $
-$Id: hit.c,v 2.4 1991/08/22 03:30:51 aahz Exp $
+$Author: lidl $
+$Id: hit.c,v 2.7 1991/12/10 03:41:44 lidl Exp $
 
 $Log: hit.c,v $
+ * Revision 2.7  1991/12/10  03:41:44  lidl
+ * changed float to FLOAT, for portability reasons
+ *
+ * Revision 2.6  1991/12/03  19:50:35  lidl
+ * new map speedup code (lost the address & name of the person who mailed this)
+ *
+ * Revision 2.5  1991/11/08  03:21:12  stripes
+ * Minor reformating by the rpotter
+ *
  * Revision 2.4  1991/08/22  03:30:51  aahz
  * avoid warning for the i860.
  *
@@ -51,10 +60,10 @@ extern Settings settings;
 
 Side find_affected_side(v, angle)    
 Vehicle *v;                     
-float angle;                    
+FLOAT angle;                    
 {                               
     Side s;                      
-    float rel_angle;            
+    FLOAT rel_angle;            
 
     
     rel_angle = drem(v->vector.heading + PI / 4 - angle, 2 * PI);       
@@ -83,7 +92,7 @@ float angle;
 vehicle_hit_vehicle(v1, v2)
 Vehicle *v1, *v2;
 {
-    float ang, bump1, bump2, elast;
+    FLOAT ang, bump1, bump2, elast;
     int dx, dy, damage;
     int damage1, damage2;
     Side side;
@@ -183,7 +192,7 @@ Vehicle *v;
 int grid_x, grid_y;
 WallSide dir;
 {
-	float ang, bump, elast;
+	FLOAT ang, bump, elast;
 	int dx, dy, damage, damage1, damage2;
 	int has_ramplate = FALSE;
 
@@ -240,7 +249,9 @@ WallSide dir;
 	bounce_vehicle_wall(v, dx, dy, elast);
 
 	/* Damage vehicle and wall based on proper component of velocity */
-	damage = bounce_damage(dx * v->vector.xspeed, dy * v->vector.yspeed, elast);
+    damage = bounce_damage(dx * v->vector.xspeed,
+             dy * v->vector.yspeed,
+             elast);
 
     damage1 = damage * (1 - bump);      
     damage2 = damage;           
@@ -278,9 +289,35 @@ WallSide dir;
 ** Returns damage prop to kinetic energy, inversely prop to elasticity.
 */
 bounce_damage(xspeed, yspeed, elast)
-float xspeed, yspeed, elast;
+FLOAT xspeed, yspeed, elast;
 {
 	return (int) ((xspeed * xspeed + yspeed * yspeed) / (elast * 40.0));
+}
+
+/*
+** XXX
+*/
+void invalidate_maps()
+{
+    extern Combatant combatant[MAX_VEHICLES];
+    extern int num_combatants;
+    Combatant *c;
+    Vehicle *v;
+    Special *s;
+    Mapper *m;
+    int i;
+
+    for(i = 0; i < num_combatants; i++) {
+        c = &(combatant[i]);
+        if(c == (Combatant *)NULL) continue;
+        v = c->vehicle;
+        if(v == (Vehicle *)NULL) continue;
+        s = &(v->special[(int)MAPPER]);
+        if(s == (Special *)NULL || s->status == SP_nonexistent) continue;
+        m = (Mapper *)s->record;
+        if(m == (Mapper *)NULL) continue;
+        m->map_invalid = TRUE;
+    }
 }
 
 /*
@@ -295,7 +332,7 @@ Vehicle *v;
 Bullet *b;
 int dx, dy;
 {
-    float angle;
+    FLOAT angle;
     int damage, height;
 
     switch (b->type)
@@ -410,6 +447,7 @@ int grid_x, grid_y;
 			{
 				bbox->type = NORMAL;
 				explode_location(b->loc, 1, EXP_TANK);
+				invalidate_maps();
 			}
 		}
 		explode(b, damage);
@@ -429,7 +467,7 @@ bul_hit_wall(b, grid_x, grid_y, dir)
     int grid_x, grid_y;		/* coordinates of box containing wall flag */
     WallSide dir;		/* direction bullet hit wall */
 {
-    float dx, dy;
+    FLOAT dx, dy;
     int dam;
 
     /* Compute x and y distances from current location to point of contact */
@@ -502,7 +540,7 @@ bul_hit_wall(b, grid_x, grid_y, dir)
 bounce_bullet(b, dir, dx, dy)
 Bullet *b;
 WallSide dir;
-float dx, dy;
+FLOAT dx, dy;
 {
 	b->hurt_owner = TRUE;
 	switch (dir)
@@ -556,6 +594,8 @@ damage_wall(x, y, dir, damage)
 	/* note: we do _not_ clear the destructible bit; it is needed to
 	   correctly update the screen */
 	b->flags &= ~wl;
+	/* tell all the combatants to update their map */
+	invalidate_maps();
     }
 
     return damage;
@@ -575,7 +615,7 @@ damage_wall(x, y, dir, damage)
 damage_vehicle(v, damager, damage, angle, height)
 Vehicle *v, *damager;
 int damage;
-float angle;
+FLOAT angle;
 int height;
 {
     static int hits_off[7] = {0, 0, 1, 1, 2, 2, 3};
@@ -629,11 +669,11 @@ int height;
 bounce_vehicles(v1, v2, dx, dy, elast)
 Vehicle *v1, *v2;
 int dx, dy;
-float elast;
+FLOAT elast;
 {
 	Vehicle *temp;
-	float v1x, v1y, v2x, v2y;
-	float slope, mratio, c;
+	FLOAT v1x, v1y, v2x, v2y;
+	FLOAT slope, mratio, c;
 
 	/* Make v1 be on the left */
 	if (dx < 0)
@@ -652,7 +692,7 @@ float elast;
 	if (dx == 0)
 		slope = (dy > 0) ? 999.0 : -999.0;
 	else
-		slope = (float) dy / (float) dx;
+		slope = (FLOAT) dy / (FLOAT) dx;
 
 	if (v2->vdesc->weight == 0)
 		mratio = 999.0;
@@ -674,10 +714,10 @@ float elast;
 bounce_vehicle_wall(v, dx, dy, elast)
 Vehicle *v;
 int dx, dy;
-float elast;
+FLOAT elast;
 {
-	float vx, vy;
-	float slope, c;
+	FLOAT vx, vy;
+	FLOAT slope, c;
 
 	vx = v->vector.xspeed;
 	vy = v->vector.yspeed;
@@ -690,7 +730,7 @@ float elast;
 	if (dx == 0)
 		slope = (dy > 0) ? 999.0 : -999.0;
 	else
-		slope = (float) dy / (float) dx;
+		slope = (FLOAT) dy / (FLOAT) dx;
 
 	c = (vx + slope * vy) / (slope * slope + 1.0);
 	c *= 1.0 + elast;
@@ -704,7 +744,7 @@ float elast;
 */
 assign_speed(vec, xsp, ysp)
 Vector *vec;
-float xsp, ysp;
+FLOAT xsp, ysp;
 {
 	vec->xspeed = xsp;
 	vec->yspeed = ysp;

@@ -1,5 +1,15 @@
 /* explosion.c - part of XTank */
 
+/*
+ * $Id: explosion.c,v 2.4 1991/12/10 03:41:44 lidl Exp $
+ *
+ * $Log: explosion.c,v $
+ * Revision 2.4  1991/12/10  03:41:44  lidl
+ * changed float to FLOAT, for portability reasons
+ *
+*/
+
+#include "sysdep.h"
 #include "bullet.h"
 #include "graphics.h"
 #include "loc.h"

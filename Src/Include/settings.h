@@ -8,27 +8,27 @@
 
 /* game settings that are available to robot players */
 typedef struct {
-    Game game;			/* combat, war, ultimate, capture, race */
+    Game game;				/* combat, war, ultimate, capture, race */
     Boolean ricochet;		/* whether bullets bounce off walls */
     Boolean rel_shoot;		/* whether shooter's speed added to bullet's */
     Boolean no_wear;		/* whether vehicles take damage & lose fuel */
     Boolean restart;		/* whether vehicles restart after death */
     Boolean full_map;		/* whether vehicles start out with full map */
     Boolean pay_to_play;	/* whether vehicles have to "pay to play" */
-#ifdef NONAMETAGS
     Boolean no_nametags;	/* whether vehicles are anonymous */
-#endif
+    Boolean team_score;		/* whether to use team scoring */
+    Boolean no_radar;		/* turns everyone's radar off */
     int winning_score;		/* score needed to win the game */
     int takeover_time;		/* how long you have to be in a square in order
 				   to capture it (in War game) */
     int outpost_strength;	/* firepower of outposts (0-10) */
     int shocker_walls;		/* how much extra damage walls do (0-10) */
-    float scroll_speed;		/* speed of scroll boxes (0-10) */
-    float slip_friction;	/* friction in slip boxes (0-1) */
-    float normal_friction;	/* friction in all other boxes (0-1) */
-    float disc_friction;	/* friction factor applied to disc (0-1) */
-    float box_slowdown;		/* slowdown caused by slow boxes (0-1) */
-    float owner_slowdown;	/* how much to slow down disc owner (0-1) */
+    FLOAT scroll_speed;		/* speed of scroll boxes (0-10) */
+    FLOAT slip_friction;	/* friction in slip boxes (0-1) */
+    FLOAT normal_friction;	/* friction in all other boxes (0-1) */
+    FLOAT disc_friction;	/* friction factor applied to disc (0-1) */
+    FLOAT box_slowdown;		/* slowdown caused by slow boxes (0-1) */
+    FLOAT owner_slowdown;	/* how much to slow down disc owner (0-1) */
 } Settings_info;
 
 typedef struct {

@@ -8,9 +8,27 @@
 
 /*
 $Author: lidl $
-$Id: xtanklib.h,v 2.6 1991/09/29 08:16:29 lidl Exp $
+$Id: xtanklib.h,v 2.12 1992/01/29 08:39:11 lidl Exp $
 
 $Log: xtanklib.h,v $
+ * Revision 2.12  1992/01/29  08:39:11  lidl
+ * post aaron patches, seems to mostly work now
+ *
+ * Revision 2.11  1992/01/26  04:56:49  stripes
+ * added bounding box for vehicle at current angle
+ *
+ * Revision 2.10  1992/01/06  08:00:34  stripes
+ * Teleport changes
+ *
+ * Revision 2.9  1992/01/03  23:07:01  stripes
+ * Fixed IS_TURRET to handle 4 turrets.
+ *
+ * Revision 2.8  1991/12/10  01:21:04  lidl
+ * change all occurances of "float" to "FLOAT"
+ *
+ * Revision 2.7  1991/12/03  20:18:51  stripes
+ * placed comment about TICKSZ, cleaned up tabbing some
+ *
  * Revision 2.6  1991/09/29  08:16:29  lidl
  * removed inclusion of version.h
  *
@@ -37,7 +55,7 @@ $Log: xtanklib.h,v $
  * 
 */
 
-#ifndef _XTANKLIB_H_		/* prevent multiple #inclusions */
+#ifndef _XTANKLIB_H_		/* prevent multiple inclusions */
 #define _XTANKLIB_H_
 
 
@@ -64,6 +82,7 @@ typedef enum {
     GOAL,			/* goal for race and ultimate games, by team */
     OUTPOST,			/* shoots at vehicles, by team */
     PEACE,			/* protection from damage, by team */
+    TELEPORT,			/* teleport */
     SCROLL_N,			/* north scrolling */
     SCROLL_NE,			/* northeast scrolling */
     SCROLL_E,			/* east scrolling */
@@ -122,9 +141,25 @@ typedef struct {
     int frames;			/* how long bullets live */
 } Weapon_info;
 
+#ifndef NO_NEW_RADAR
+
+typedef struct {
+    int   x, y;                 /* box coordinates */
+    Boolean new;
+    Team   team;
+    int    number;
+    Boolean radar;
+    Boolean tactical;
+    Boolean friend;
+} Blip_info;
+
+#else /* !NO_NEW_RADAR */
+
 typedef struct {
     int	  x, y;			/* box coordinates */
 } Blip_info;
+
+#endif /* NO_NEW_RADAR */
 
 typedef struct {
     int grid_x, grid_y;		/* coordinates of the box */
@@ -151,43 +186,44 @@ typedef Box Map[GRID_WIDTH][GRID_HEIGHT];
 
 typedef struct {
     Location loc;		/* where it is */
-    float xspeed, yspeed;	/* components of current velocity */
+    FLOAT xspeed, yspeed;	/* components of current velocity */
     Angle heading;		/* direction body is pointing */
     ID id;			/* unique identification number */
     Team team;			/* team number */
-    int body;			/* body type */
     int num_turrets;		/* number of turrets on the body */
     Angle turret_angle[MAX_TURRETS];	/* direction each turret is pointing */
+
+    int body;			/* body type */
+	/* New for 1.3c */
+	int bwidth, bheight;	/* bounding box for vehicle at current angle */
 } Vehicle_info;
 
 typedef struct {
     Location loc;
-    float xspeed, yspeed;	/* current speed (can change for Seekers) */
+    FLOAT xspeed, yspeed;	/* current speed (can change for Seekers) */
     WeaponType type;
-    int id;			/* a unique identification number */
+    int id;					/* a unique identification number */
 } Bullet_info;
 
 typedef struct {
-    Location loc;		/* where it is */
-    float xspeed, yspeed;	/* current velocity */
-    ID owner;			/* who has it */
-    Angle angle;		/* direction from owner */
-    Spin spin;			/* direction it's orbiting owner */
+    Location loc;				/* where it is */
+    FLOAT xspeed, yspeed;		/* current velocity */
+    ID owner;					/* who has it */
+    Angle angle;				/* direction from owner */
+    Spin spin;					/* direction it's orbiting owner */
 } Disc_info;
 
-#define TICKSZ		1	/* number of frames that go by before a robot
-				   program gets control again (unless they ues
-				   too much time, of course) */
+/* Robots now get CPU each frame, unless they use too many cycles... */
+#define TICKSZ		1			/* Changing this won't change tick size! */
 
 #define FUEL_CONSUME	0.001	/* how fast fuel gets used */
 
 #define TURRET_WEIGHT	500
 
-#define MAX_ACCEL	2.5	/* the amount a vehicle can accelerate under
-				   perfect conditions */
+#define MAX_ACCEL		2.5		/* the amount a vehicle can accelerate under
+				  				 perfect conditions */
 
-#define NO_OWNER        255	/* Owner of disc if it is not orbiting anyone
-				   */
+#define NO_OWNER        255		/* Owner of disc if it is not orbiting anyone */
 
 /* How large a landmark is */
 #define LANDMARK_WIDTH 50
@@ -206,17 +242,17 @@ typedef struct {
 
 /* Program ability flags */
 #define PLAYS_COMBAT		(1<<0)
-#define PLAYS_WAR		(1<<1)
+#define PLAYS_WAR			(1<<1)
 #define PLAYS_ULTIMATE		(1<<2)
 #define PLAYS_CAPTURE		(1<<3)
-#define PLAYS_RACE		(1<<4)
-#define DOES_SHOOT		(1<<5)
+#define PLAYS_RACE			(1<<4)
+#define DOES_SHOOT			(1<<5)
 #define DOES_EXPLORE		(1<<6)
-#define DOES_DODGE		(1<<7)
+#define DOES_DODGE			(1<<7)
 #define DOES_REPLENISH		(1<<8)
-#define USES_TEAMS		(1<<9)
-#define USES_MINES		(1<<10)
-#define USES_SLICKS		(1<<11)
+#define USES_TEAMS			(1<<9)
+#define USES_MINES			(1<<10)
+#define USES_SLICKS			(1<<11)
 #define USES_SIDE_MOUNTS	(1<<12)
 #define USES_MESSAGES    	(1<<13)
 #define MAX_PROG_ABILITIES      14
@@ -256,9 +292,28 @@ typedef struct {
 #define ASIN(X)	asin((double)(X))
 #define COS(X)	cos((double)(X))
 #define IS_TURRET(mount)	((int)(mount) >= (int)MOUNT_TURRET1 && \
-				 (int)(mount) <= (int)MOUNT_TURRET3)
+				 (int)(mount) <= (int)MOUNT_TURRET4)
+
+#ifndef NO_NEW_RADAR
+/*
+* Well, IS_TURRET is here, isn't it?
+*/
+ 
+#define IS_SIDE(mount)  ((int)(mount) == (int)MOUNT_LEFT || \
+                                  (int)(mount) == (int)MOUNT_RIGHT)
+ 
+/*
+* This was a simple way to grandfather all of the old usage of
+* make_bullet in without changing their argument lists.
+*/
+ 
+#define make_bullet(v,loc,type,angle) make_smart_bullet(v,loc,type,angle,NULL)
+
+#define BOOST_PHASE 5 /* How many frames it moves ballisticly forward */
+
+#endif /* !NO_NEW_RADAR */
 
 #include "lowlib.h"
 
 
-#endif ndef _XTANKLIB_H_
+#endif /* _XTANKLIB_H_ */

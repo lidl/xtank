@@ -7,10 +7,38 @@
 */
 
 /*
-$Author: lidl $
-$Id: unix.c,v 2.7 1991/09/24 14:10:57 lidl Exp $
+$Author: senft $
+$Id: unix.c,v 2.15 1992/02/07 05:46:33 senft Exp $
 
 $Log: unix.c,v $
+ * Revision 2.15  1992/02/07  05:46:33  senft
+ * added code to skip -s 's parameter.
+ *
+ * Revision 2.14  1992/02/06  04:56:38  senft
+ * added if to skip terminals that start with '-' since we now take
+ * command line options.
+ *
+ * Revision 2.13  1991/12/27  01:43:07  lidl
+ * change STACK_SIZE to CODE_SIZE, as it is really the code size for
+ * dynamically loaded programs that is getting determined, one
+ * (CODE_SIZE) per dynamically loaded program.  It's really not the
+ * stack size at *all*...
+ *
+ * Revision 2.12  1991/12/20  21:11:59  lidl
+ * made the SVR4 behaviour the same as the SYSV behaviour
+ *
+ * Revision 2.11  1991/12/15  20:26:48  lidl
+ * added another i860 goober
+ *
+ * Revision 2.10  1991/12/02  10:29:52  lidl
+ * changed to use compile time define of stack size, via -DSTACK_SIZE=0xNNNNN
+ *
+ * Revision 2.9  1991/10/07  03:33:21  lidl
+ * more work on the mips dynaload code, not working yet
+ *
+ * Revision 2.8  1991/10/07  03:15:05  lidl
+ * fixed up a botch in mips support on sgi machines
+ *
  * Revision 2.7  1991/09/24  14:10:57  lidl
  * ran through indent, fixed to have all the proper defines passed to the
  * dynamically loaded program compile line
@@ -45,7 +73,7 @@ $Log: unix.c,v $
 #include "malloc.h"
 #include <stdio.h>
 
-#ifdef SYSV
+#if defined(SYSV) || defined(SVR4)
 #include <string.h>
 #else
 #include <strings.h>
@@ -55,12 +83,11 @@ $Log: unix.c,v $
 #include <sys/types.h>
 #include <sys/file.h>
 
-#ifndef SYSV
+#if !defined(SYSV) && !defined(SVR4)
 extern char *index(), *rindex();
-
 #endif
-extern off_t lseek();
 
+extern off_t lseek();
 
 #ifndef UNIX
 #undef DYNALOAD
@@ -129,6 +156,14 @@ char **client;
 
     /* Make sure all clients are on same subnet as the server */
     for (i = 0; i < num_clients; i++) {
+	if (client[i][0] == '-')
+	{
+		if (client[i][1] == 's' || client[i][1] == 'F')
+		{
+			i++;
+		}
+		continue;
+	}
 	newlen = strlen(client[i]);
 
 	/* Strip off the :x.y from each display name */
@@ -179,7 +214,7 @@ char **client;
 #ifdef DYNALOAD
 /* Dynamic loading includes */
 
-#ifdef mips
+#ifdef mips /* really for the decstation, but seems to work for sgi, too */
 #include <sys/exec.h>
 #include <nlist.h>
 #else
@@ -187,10 +222,6 @@ char **client;
 #endif
 
 #include <sys/param.h>
-
-#ifdef mips
-struct nlist nl[3];
-#endif
 
 /*
 ** Compiles and/or dynamically loads the module with the given name.
@@ -221,6 +252,10 @@ char *output_name, *error_name;
     extern char headersdir[];
     char *func, *func1, command[1024], address[20], symbol_name[256], *p;
 
+#ifdef mips
+struct nlist nl[3];
+#endif
+
 #ifndef mips
     register struct nlist *nlst, *nlp, *nlstend;
     struct nlist *namelist();
@@ -233,10 +268,17 @@ char *output_name, *error_name;
 #endif
 
     int fd;
+#ifdef sgi
+    struct {
+	struct filehdr ex_f;
+	struct aouthdr ex_o;
+    } hdr;
+#else
     struct exec hdr;
+#endif
 
     /* Come up with some space for the module on a page boundary */
-    func = (char *) malloc(0x10000);
+    func = (char *) malloc(CODE_SIZE);
     func1 = (char *) ((((int) func) + 2047) & ~0x7ff);
     sprintf(address, "%x", func1);
 
@@ -256,14 +298,6 @@ char *output_name, *error_name;
     switch (*(p + 1)) {
 	case 'c':
 	    /* Do the compile */
-#ifdef DEBUG
-	    printf("before compile command\n");
-	    printf("executable_name: %s\n", executable_name);
-	    printf("address: %s\n", address);
-	    printf("output_name: %s\n", output_name);
-	    printf("module_name: %s\n", module_name);
-	    printf("error_name: %s\n", error_name);
-#endif
 	    sprintf(command,
 #ifdef mips
             "cd %s/%s; /bin/cc %s -c -G 0 -O -I%s -o %s.o %s.c > %s 2>&1",
@@ -284,14 +318,6 @@ char *output_name, *error_name;
             /* Note the lack of a break; here */
 	case 'o':
 	    /* Do the link */
-#ifdef DEBUG
-	    printf("before link command\n");
-	    printf("executable_name: %s\n", executable_name);
-	    printf("address: %s\n", address);
-	    printf("output_name: %s\n", output_name);
-	    printf("module_name: %s\n", module_name);
-	    printf("error_name: %s\n", error_name);
-#endif
 	    sprintf(command,
 		    "/bin/ld -x -N -A %s -T %s -o %s %s.o -lm -lc > %s 2>&1",
 		    executable_name, address, output_name, module_name,
@@ -332,21 +358,19 @@ char *output_name, *error_name;
     }
 
 #ifdef DEBUG
-
-#ifndef mips
+# ifndef mips
     printf("Magic number: %o\n", hdr.a_magic);
     printf("Text          %d\n", hdr.a_text);
     printf("Data          %d\n", hdr.a_data);
     printf("BSS           %d\n", hdr.a_bss);
     printf("Offset: %d\n", N_TXTOFF(hdr));
-#else
+# else
     printf("Magic number: %o\n", hdr.ex_o.magic);
     printf("Text          %d\n", hdr.ex_o.tsize);
     printf("Data          %d\n", hdr.ex_o.dsize);
     printf("BSS           %d\n", hdr.ex_o.bsize);
     printf("Offset: %d\n", N_TXTOFF(hdr.ex_f, hdr.ex_o));
-#endif
-
+# endif
 #endif
 
 #ifndef mips
@@ -358,17 +382,15 @@ char *output_name, *error_name;
 #endif
 
 #ifdef DEBUG
-
-#ifndef mips
+# ifndef mips
     for (p = func1, c = hdr.a_text + hdr.a_data; c; --c, ++p)
 	printf("%x %x\n", p, *p);
     printf("Found it at location %x\n", func1);
-#else
+# else
     for (p = func1, c = hdr.ex_o.tsize + hdr.ex_o.dsize; c; --c, ++p)
 	printf("%x %x\n", p, *p);
     printf("Found it at location %x\n", func1);
-#endif
-
+# endif
 #endif
 
     /* Come up with the entry symbol for the Prog_desc structure */
@@ -476,7 +498,7 @@ char *output_name, *error_name;
 	sym = module_name;
 
     /* Come up with some space for the module on a page boundary */
-    func = (char *) malloc(0x10000);
+    func = (char *) malloc(CODE_SIZE);
     func1 = (char *) ((((int) func) + (NBPG - 1)) & ~(NBPG - 1));
     sprintf(address, "%x", func1);
 

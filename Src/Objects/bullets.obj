@@ -2,7 +2,11 @@
 **  This is the object file for all bullets.
 */
 
-#define all_bullets_views 18
+#ifdef NO_NEW_RADAR
+#define all_bullets_views 19
+#else /* NO_NEW_RADAR */
+#define all_bullets_views 20
+#endif /* NO_NEW_RADAR */
 
 #define OURSTUFF
 
@@ -28,6 +32,10 @@ static Picture all_bullets_pic[all_bullets_views] = {
 #endif
       { 7, 7, 3, 3 },
       { 9, 9, 4, 4 },
+      { 7, 7, 3, 3 },
+#ifndef NO_NEW_RADAR
+      { 7, 7, 3, 3 },
+#endif /* !NO_NEW_RADAR */
       { 15, 15, 7, 7 }
 };
 
@@ -95,11 +103,17 @@ static unsigned char slick_bits[] = {
    0x38, 0x00, 0x44, 0x00, 0x84, 0x00, 0x02, 0x01, 0x01, 0x01, 0x81, 0x00,
    0x86, 0x00, 0x98, 0x00, 0x60, 0x00};
 
+#ifndef NO_NEW_RADAR
+static unsigned char harm_bits[] = {
+   0x49, 0x2a, 0x14, 0x63, 0x14, 0x2a, 0x49};
+#endif /* !NO_NEW_RADAR */
+
 static unsigned char disc_bits[] = { 
     0xe0, 0x03, 0xf8, 0x0f, 0x0c, 0x18, 0xe6, 0x33, 
     0xe2, 0x27, 0x2b, 0x6c, 0x0b, 0x68, 0x8b, 0x68, 
     0x0b, 0x68, 0x1b, 0x6a, 0xf2, 0x23, 0xe6, 0x33, 
     0x0c, 0x18, 0xf8, 0x0f, 0xe0, 0x03};
+
 
 static unsigned char *all_bullets_bitmap[all_bullets_views] = {
 	lmg_bits,
@@ -119,5 +133,9 @@ static unsigned char *all_bullets_bitmap[all_bullets_views] = {
 	ml_bits,
 	seeker_bits,
 	slick_bits,
+	seeker_bits,
+#ifndef NO_NEW_RADAR
+	harm_bits,
+#endif /* !NO_NEW_RADAR */
 	disc_bits
 };

@@ -7,10 +7,13 @@
 */
 
 /*
-$Author: rpotter $
-$Id: map.h,v 2.3 1991/02/10 13:51:10 rpotter Exp $
+$Author: lidl $
+$Id: map.h,v 2.4 1992/01/29 08:39:11 lidl Exp $
 
 $Log: map.h,v $
+ * Revision 2.4  1992/01/29  08:39:11  lidl
+ * post aaron patches, seems to mostly work now
+ *
  * Revision 2.3  1991/02/10  13:51:10  rpotter
  * bug fixes, display tweaks, non-restart fixes, header reorg.
  *
@@ -41,3 +44,9 @@ $Log: map.h,v $
 
 #define grid_equal(loc1,loc2) \
   ((loc1)->grid_x == (loc2)->grid_x && (loc1)->grid_y == (loc2)->grid_y)
+
+#ifndef NO_NEW_RADAR
+
+#define xy2map(val) ((val) * MAP_BOX_SIZE + MAP_BORDER)
+
+#endif /* !NO_NEW_RADAR */

@@ -10,10 +10,13 @@
 */
 
 /*
-$Author: rpotter $
-$Id: status.c,v 2.3 1991/02/10 13:51:42 rpotter Exp $
+$Author: lidl $
+$Id: status.c,v 2.4 1991/12/10 03:41:44 lidl Exp $
 
 $Log: status.c,v $
+ * Revision 2.4  1991/12/10  03:41:44  lidl
+ * changed float to FLOAT, for portability reasons
+ *
  * Revision 2.3  1991/02/10  13:51:42  rpotter
  * bug fixes, display tweaks, non-restart fixes, header reorg.
  *
@@ -61,8 +64,8 @@ typedef struct
 int num_stati;
 Vstatus vstati[MAX_VEHICLES];	/* indexed by vehicle number */
 int maxarmor, maxammo;
-float maxfuel;
-float armor_scale, fuel_scale, ammo_scale;
+FLOAT maxfuel;
+FLOAT armor_scale, fuel_scale, ammo_scale;
 
 /*
 ** This function should be called once at the beginning of each battle.
@@ -95,9 +98,9 @@ init_status()
     num_stati = num_veh;
 
     /* From the maxima, compute scaling factors for each bar graph */
-    armor_scale = (float) BAR_WIDTH / maxarmor;
-    fuel_scale = (float) BAR_WIDTH / maxfuel;
-    ammo_scale = (float) BAR_WIDTH / maxammo;
+    armor_scale = (FLOAT) BAR_WIDTH / maxarmor;
+    fuel_scale = (FLOAT) BAR_WIDTH / maxfuel;
+    ammo_scale = (FLOAT) BAR_WIDTH / maxammo;
 }
 
 /*
@@ -255,7 +258,7 @@ int color;
 {
 	int dispold, dispnew;
 	int diff;
-	float scale;
+	FLOAT scale;
 	char oldbuf[2], newbuf[2];
 	int xoffset, yoffset;
 

@@ -4,7 +4,7 @@ Fixed-Point	Fixed Point arithmetic library, not currently used.
 Include		Various header files that everything needs.
 Objects		Files describing all pictures in the game.
 Old		Things that no are used, but might still be of interest.
-Robots		The compiled in robot programs.
+Programs	The compiled in robot programs.
 
 Files of interest:
 
@@ -23,6 +23,7 @@ HP9000 series 800
 RS6000
 DECstation 3100/5000
 Various flavors of Motorola SYSV boxes (68K and 88K) ??
+Silicon Graphics Workstations
 
 To compile for one of the machines above, edit the Imakefile and do this:
 

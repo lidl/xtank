@@ -1,10 +1,13 @@
 /* terminal.h - things describing a user's terminal */
 
 /*
-$Author: rpotter $
-$Id: terminal.h,v 2.3 1991/02/10 13:51:47 rpotter Exp $
+$Author: lidl $
+$Id: terminal.h,v 2.4 1991/12/10 01:21:04 lidl Exp $
 
 $Log: terminal.h,v $
+ * Revision 2.4  1991/12/10  01:21:04  lidl
+ * change all occurances of "float" to "FLOAT"
+ *
  * Revision 2.3  1991/02/10  13:51:47  rpotter
  * bug fixes, display tweaks, non-restart fixes, header reorg.
  *
@@ -41,9 +44,9 @@ typedef struct {
     Intloc old_loc;
     char *video;		/* video info specific to machine */
     /* Rest is for 3d mode */
-    float heading;		/* direction of view */
-    float view_angle;		/* the angle of view width */
-    float aspect;		/* the aspect ratio of the view */
+    FLOAT heading;		/* direction of view */
+    FLOAT view_angle;		/* the angle of view width */
+    FLOAT aspect;		/* the aspect ratio of the view */
     int   view_dist;		/* the range of sight in pixels */
     int   num_lines;		/* number of lines drawn */
     Line  line[MAX_LINES];	/* lines drawn on the screen */

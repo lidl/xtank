@@ -1,8 +1,11 @@
 /*
 $Author: lidl $
-$Id: kamikaze.c,v 2.5 1991/09/19 05:26:54 lidl Exp $
+$Id: kamikaze.c,v 2.6 1991/12/15 20:22:49 lidl Exp $
 
 $Log: kamikaze.c,v $
+ * Revision 2.6  1991/12/15  20:22:49  lidl
+ * changed all "float" occurances to "FLOAT"
+ *
  * Revision 2.5  1991/09/19  05:26:54  lidl
  * cleaned up a few compile-time errors, removed declaration of fixed_angle()
  *
@@ -50,6 +53,7 @@ $Log: kamikaze.c,v $
 \***********************************************/
 
 #include <stdio.h>
+#include "sysdep.h"
 #include "xtanklib.h"
 #include <math.h>
 
@@ -175,7 +179,7 @@ int delta_x, delta_y;			/* proposed move */
 static will_hit_wall(vip)
 Vehicle_info *vip;				/* self */
 {
-	float tus;					/* time-until-stop under full braking at the
+	FLOAT tus;					/* time-until-stop under full braking at the
 								   current speed (ignoring scroll squares) */
 
 	tus = speed() / BRAKING_ACC;
@@ -190,11 +194,11 @@ Vehicle_info *vip;				/* self */
 
 #ifdef DONTNEED
 static int nowall(angle)
-float angle;
+FLOAT angle;
 {
 	Location loc;
 	int section;
-	float speed_vehicle;
+	FLOAT speed_vehicle;
 
 	speed_vehicle = speed();
 	printf("speed = %f\n", speed_vehicle);
@@ -313,10 +317,10 @@ All *allp;
 }
 
 
-/* return a random float in the range [0, max) */
+/* return a random FLOAT in the range [0, max) */
 
-static float frand(maxr)
-float maxr;						/* maximum value */
+static FLOAT frand(maxr)
+FLOAT maxr;						/* maximum value */
 {
 	extern long random();
 
@@ -541,11 +545,11 @@ All *allp;
 
 static vectors_cross(x1, y1, xs1, ys1, x2, y2, xs2, ys2)
 int x1, y1;						/* start of first vector */
-float xs1, ys1;					/* speeds of first vector */
+FLOAT xs1, ys1;					/* speeds of first vector */
 int x2, y2;						/* start of second vector */
-float xs2, ys2;					/* speeds of second vector */
+FLOAT xs2, ys2;					/* speeds of second vector */
 {
-	float tx, ty;				/* times until "collision" in x and y */
+	FLOAT tx, ty;				/* times until "collision" in x and y */
 
 	if (!xs1 && !ys1 && !xs2 && !ys2)
 		return FALSE;

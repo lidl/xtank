@@ -7,10 +7,45 @@
 */
 
 /*
-$Author: stripes $
-$Id: console.c,v 2.4 1991/03/25 00:40:13 stripes Exp $
+$Author: aahz $
+$Id: console.c,v 2.14 1992/02/13 04:54:26 aahz Exp $
 
 $Log: console.c,v $
+ * Revision 2.14  1992/02/13  04:54:26  aahz
+ * moved safety and teleport before the specials in the processing
+ * cases.  The macros depend on order!  This must have been written
+ * by a below average thinker.
+ *
+ * Revision 2.13  1992/02/10  05:17:50  senft
+ * We re-ordered some of the items which were displayed in the console.
+ * The true specials should always(currently) be consecutive and in the
+ * same order as in special-defs.h, otherwise there are indexing errors.
+ * Moved teleport and safety before the specials(true).
+ *
+ * Revision 2.12  1992/02/10  04:47:56  lidl
+ * checked in so Matt can dick with it
+ *
+ * Revision 2.11  1992/01/29  08:37:01  lidl
+ * post aaron patches, seems to mostly work now
+ *
+ * Revision 2.10  1992/01/29  06:17:27  stripes
+ * The still buggy thing is the missing "dummy" entries for specials...
+ *
+ * Revision 2.9  1992/01/29  03:18:52  lidl
+ * added Aaron's patches, but something is still buggy
+ *
+ * Revision 2.8  1992/01/10  00:18:25  aahz
+ * fixed bugs with teleport on/off
+ *
+ * Revision 2.7  1992/01/06  07:52:49  stripes
+ * Changes for teleport
+ *
+ * Revision 2.6  1991/12/02  09:38:13  stripes
+ * Moved the spacing around in the strings for the console.
+ * Also fixed for loop limit to be based on sizeof()s so that
+ * the loop will not have to be updated again if strings are
+ * added(also was hard coded to wrong number.)[Really senft]
+ *
  * Revision 2.4  1991/03/25  00:40:13  stripes
  * RS6K patches
  *
@@ -92,27 +127,29 @@ extern Settings settings;
       e[num].color = colorar[val]))
 
 static Word console_init[] = {
-	{0, 0, 40, "    Armor      Player:                  "},
-	{0, 1, 40, "                Score:         Kills:   "},
-	{0, 2, 40, "                Money:                  "},
-	{0, 3, 40, "                                        "},
-	{0, 4, 40, "              Vehicle:                  "},
-	{0, 5, 40, "                Speed:     x:    y:     "},
-	{0, 6, 40, "                                        "},
-	{0, 7, 40, "                 Fuel:                  "},
-	{0, 8, 40, "                                        "},
-	{0, 9, 40, "                 Heat:                  "},
+	{0, 0, 40,  "    Armor    Player:                    "},
+	{0, 1, 40,  "             Score:            Kills:   "},
+	{0, 2, 40,  "             Money:           Deaths:   "},
+	{0, 3, 40,  "                                        "},
+	{0, 4, 40,  "              Vehicle:                  "},
+	{0, 5, 40,  "                Speed:     x:    y:     "},
+	{0, 6, 40,  "                                        "},
+	{0, 7, 40,  "                 Fuel:                  "},
+	{0, 8, 40,  "                                        "},
+	{0, 9, 40,  "                 Heat:                  "},
 	{0, 10, 40, "                                        "},
 	{0, 11, 40, "              Console:       Radar:     "},
 	{0, 12, 40, "               Mapper:      Safety:     "},
-	{0, 13, 40, "               Repair:                  "},
-	{0, 14, 40, "# Weapon              Mt  Ammo  Status  "},
-	{0, 15, 40, "1                                       "},
-	{0, 16, 40, "2                                       "},
-	{0, 17, 40, "3                                       "},
-	{0, 18, 40, "4                                       "},
-	{0, 19, 40, "5                                       "},
-	{0, 20, 40, "6                                       "}
+	{0, 13, 40, "             Teleport:      Repair:     "},
+	{0, 14, 40, "               NewRad:     TacLink:     "},
+	{0, 15, 40, "                                        "},
+	{0, 16, 40, "# Weapon              Mt  Ammo  Status  "},
+	{0, 17, 40, "1                                       "},
+	{0, 18, 40, "2                                       "},
+	{0, 19, 40, "3                                       "},
+	{0, 20, 40, "4                                       "},
+	{0, 21, 40, "5                                       "},
+	{0, 22, 40, "6                                       "}
 };
 
 /* Names for console entries */
@@ -135,30 +172,47 @@ static Word console_init[] = {
 #define CONSOLE_top_armor	14
 #define CONSOLE_bottom_armor	15
 
-#define CONSOLE_console		16
-#define CONSOLE_mapper		17
-#define CONSOLE_radar		18
-#define CONSOLE_repair          19		/* GHS */
-#define CONSOLE_safety          20		/* GHS incr by one */
+#define CONSOLE_safety      16
+#define CONSOLE_teleport	17
 
-#define CONSOLE_weapon		21	/* GHS incr by one */
-#define CONSOLE_mount		22	/* GHS incr by one */
-#define CONSOLE_ammo		23	/* GHS incr by one */
-#define CONSOLE_weapon_status	24		/* GHS incr by one */
+/********************************************************************/
+/* do not place anything between the console and the last entry for */
+/* specials these must be consective and in the same order as in    */
+/* special-defs.h.  We've agreed, the next hack starts with:        */
+/*     rm console.c                                                 */
+/********************************************************************/
+#define CONSOLE_console		18
+#define CONSOLE_mapper		19
+#define CONSOLE_radar		20
+#define CONSOLE_repair      21
+#define CONSOLE_ram		    22	/* These four are dummy entries     */
+#define CONSOLE_deep		23	/* They are required, sorta...      */
+#define CONSOLE_stealth		24	/* If you want to add things to the */
+#define CONSOLE_nav		    25	/* end of special-defs.h that is... */
+#define CONSOLE_newradar	26
+#define CONSOLE_taclink		27
+/* end of specials (things that are bought for a vehicle and listed */
+/* in special-defs.h                                                */
+
+#define CONSOLE_deaths		28
+#define CONSOLE_weapon		29
+#define CONSOLE_mount		30
+#define CONSOLE_ammo		31
+#define CONSOLE_weapon_status	32	/* GHS incr by one */
 
 /* Number of entries for each weapon */
 #define NUM_WEAPON_ENTRIES	4
 
 static Word console_word[] = {
-	{23, 0, 19},				/* Player */
-	{23, 1, 7},					/* Score */
-	{38, 1, 2},					/* Kills */
-	{23, 2, 10},				/* Money */
+	{21, 0, 19},				/* Player */
+	{20, 1, 7},				/* Score */
+	{37, 1, 2},				/* Kills */
+	{20, 2, 10},				/* Money */
 
 	{23, 4, 19},				/* Vehicle */
-	{23, 5, 2},					/* Speed */
-	{30, 5, 2},					/* Coord_x */
-	{36, 5, 2},					/* Coord_y */
+	{23, 5, 2},				/* Speed */
+	{30, 5, 2},				/* Coord_x */
+	{36, 5, 2},				/* Coord_y */
 
 #if defined(_IBMR2) || defined(apollo)
 	{143, 90, 0},				/* Fuel */
@@ -174,41 +228,51 @@ static Word console_word[] = {
 	{35, 55, 0},				/* Top Armor */
 	{35, 74, 0},				/* Bottom Armor */
 
+	{36, 12, 3},				/* Safety */
+	{23, 13, 3},				/* Teleport */
 	{23, 11, 3},				/* Console */
 	{23, 12, 3},				/* Mapper */
 	{36, 11, 3},				/* Radar */
-	{23, 13, 3},				/* Repair */
-	{36, 12, 3},				/* Safety */
+	{36, 13, 3},				/* Repair */
 
-	{2, 15, 18},				/* Weapon 1 */
-	{22, 15, 2},				/* Mount */
-	{26, 15, 3},				/* Ammo */
-	{32, 15, 8},				/* Status */
+	{0, 0, 0},				/* Ram dummy entry */
+	{0, 0, 0},				/* Deep dummy entry */
+	{0, 0, 0},				/* Stealth dummy entry */
+	{0, 0, 0},				/* Nav dummy entry */
 
-	{2, 16, 18},				/* Weapon 2 */
-	{22, 16, 2},				/* Mount */
-	{26, 16, 3},				/* Ammo */
-	{32, 16, 8},				/* Status */
+	{23, 14, 3},				/* New Radar */
+	{36, 14, 3},				/* TacLink */
+	{37,  2, 3},				/* Deaths */
 
-	{2, 17, 18},				/* Weapon 3 */
+	{2, 17, 18},				/* Weapon 1 */
 	{22, 17, 2},				/* Mount */
 	{26, 17, 3},				/* Ammo */
 	{32, 17, 8},				/* Status */
 
-	{2, 18, 18},				/* Weapon 4 */
+	{2, 18, 18},				/* Weapon 2 */
 	{22, 18, 2},				/* Mount */
 	{26, 18, 3},				/* Ammo */
 	{32, 18, 8},				/* Status */
 
-	{2, 19, 18},				/* Weapon 5 */
+	{2, 19, 18},				/* Weapon 3 */
 	{22, 19, 2},				/* Mount */
 	{26, 19, 3},				/* Ammo */
 	{32, 19, 8},				/* Status */
 
-	{2, 20, 18},				/* Weapon 6 */
+	{2, 20, 18},				/* Weapon 4 */
 	{22, 20, 2},				/* Mount */
 	{26, 20, 3},				/* Ammo */
-	{32, 20, 8}					/* Status */
+	{32, 20, 8},				/* Status */
+
+	{2, 21, 18},				/* Weapon 5 */
+	{22, 21, 2},				/* Mount */
+	{26, 21, 3},				/* Ammo */
+	{32, 21, 8},				/* Status */
+
+	{2, 22, 18},				/* Weapon 6 */
+	{22, 22, 2},				/* Mount */
+	{26, 22, 3},				/* Ammo */
+	{32, 22, 8}				/* Status */
 };
 
 static int console_sp_color[] = {GREY, GREY, WHITE, RED};
@@ -222,7 +286,7 @@ RED, RED, RED, RED};
 static char *console_w_status[] = {"broken", "broken", "off", "on",
 "no ammo", "no ammo", "no ammo", "no ammo"};
 
-static char *console_mount[] = {"T1", "T2", "T3", "F", "B", "L", "R"};
+static char *console_mount[] = {"T1", "T2", "T3", "T4", "F", "B", "L", "R"};
 
 /*ARGSUSED*/
 special_dummy(v, record, action)
@@ -259,6 +323,7 @@ unsigned int action;
 			update_int_entry(CONSOLE_score, v->owner->score);
 			update_int_entry(CONSOLE_kills, v->owner->kills);
 			update_int_entry(CONSOLE_money, v->owner->money);
+			update_int_entry(CONSOLE_deaths, v->owner->deaths);
 
 			/* Update vehicle values */
 			update_int_entry(CONSOLE_speed, (int) v->vector.speed);
@@ -271,19 +336,26 @@ unsigned int action;
 			for (i = 0; i < MAX_SIDES; i++)
 				update_bar_entry(CONSOLE_front_armor + i, v->armor.side[i]);
 
-			/* Update special values */
-			for (i = 0; i < MAX_SPECIALS; i++)
-			{
-                if (i == (int)CONSOLE || i == (int)RADAR ||
-		    i == (int)MAPPER || i == (int)REPAIR)
-					update_status_entry(CONSOLE_console + i,
-                                        v->special[(int)CONSOLE + i].status,
-										console_sp_status, console_sp_color);
-			}
-
 			/* Update safety value */
 			update_status_entry(CONSOLE_safety, v->safety,
 								console_sf_status, console_sf_color);
+
+			/* Update teleport value */
+			update_status_entry(CONSOLE_teleport, v->teleport,
+								console_sf_status, console_sf_color);
+
+			/* Update special values */
+			for (i = 0; i < MAX_SPECIALS; i++) {
+				if (i == (int)CONSOLE || i == (int)RADAR ||
+					i == (int)NEW_RADAR || i == (int)TACLINK ||
+					i == (int)MAPPER || i == (int)REPAIR) {
+					update_status_entry(CONSOLE_console + i,
+						v->special[(int)CONSOLE + i].status,
+						console_sp_status, console_sp_color);
+				} else {
+					++num; /* skip updating for this special */
+				}
+			}
 
 			/* Update weapon values */
 			num = CONSOLE_ammo;
@@ -368,7 +440,7 @@ unsigned int action;
 			break;
 		case SP_draw:
 			/* Draw the text template */
-			for (i = 0; i < 21; i++)
+			for (i = 0; i < sizeof(console_init)/sizeof(Word); i++)
 			{
 				word = &console_init[i];
 				draw_text_rc(CONS_WIN, word->x, word->y, word->str,
@@ -379,6 +451,10 @@ unsigned int action;
 			for (num = 0; num < MAX_ENTRIES; num++)
 			{
 				word = &console_word[num];
+/*
+* skips placeholder entries
+*/
+				if (word->x == 0 && word->y == 0) continue;
 				switch (num)
 				{
 					case CONSOLE_front_armor:
@@ -463,16 +539,24 @@ unsigned int action;
 			for (i = 0; i < MAX_SIDES; i++)
 				make_bar_entry(v->armor.side[i]);
 
-			/* Make the specials entries */
-			for (i = 0; i < MAX_SPECIALS; i++)
-			{
-                if (i == (int)CONSOLE || i == (int)RADAR ||
-		    i == (int)MAPPER || i == (int)REPAIR)
-                    make_str_entry(console_sp_status[v->special[(int)CONSOLE + i].status]);
-			}
-
 			/* Make the safety entry */
 			make_str_entry(console_sf_status[v->safety]);
+
+			/* Make the teleport entry */
+			make_str_entry(console_sf_status[v->teleport]);
+
+			/* Make the specials entries */
+			for (i = 0; i < MAX_SPECIALS; i++) {
+				if (i == (int)CONSOLE || i == (int)RADAR ||
+					i == (int)NEW_RADAR || i == (int)TACLINK ||
+					i == (int)MAPPER || i == (int)REPAIR) {
+					make_str_entry(console_sp_status[v->special[(int)CONSOLE + i].status]);
+					} else {
+						num++;
+					}
+			}
+
+			make_int_entry(v->owner->deaths);
 
 			/* Make the weapon entries */
 			for (i = 0; i < v->num_weapons; i++)
@@ -484,6 +568,9 @@ unsigned int action;
 				make_int_entry(w->ammo);
 				make_str_entry(console_w_status[w->status]);
 			}
+
+			assert(MAX_ENTRIES >= num-1);
+
 			break;
 		case SP_deactivate:
 			break;

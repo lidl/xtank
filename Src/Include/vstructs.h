@@ -7,10 +7,20 @@
 */
 
 /*
-$Author: rpotter $
-$Id: vstructs.h,v 2.3 1991/02/10 13:52:07 rpotter Exp $
+$Author: aahz $
+$Id: vstructs.h,v 2.6 1992/02/04 07:27:25 aahz Exp $
 
 $Log: vstructs.h,v $
+ * Revision 2.6  1992/02/04  07:27:25  aahz
+ * added the size of arrays to the extern statements so sizeof()
+ * doesn't get a zero.
+ *
+ * Revision 2.5  1992/01/29  08:39:11  lidl
+ * post aaron patches, seems to mostly work now
+ *
+ * Revision 2.4  1991/12/10  01:21:04  lidl
+ * change all occurances of "float" to "FLOAT"
+ *
  * Revision 2.3  1991/02/10  13:52:07  rpotter
  * bug fixes, display tweaks, non-restart fixes, header reorg.
  *
@@ -34,6 +44,9 @@ $Log: vstructs.h,v $
 #define OVER_WEIGHT      (1<<0)
 #define OVER_SPACE       (1<<1)
 #define BAD_MOUNT        (1<<2)
+#ifndef NO_NEW_RADAR
+#define MIS_MOUNT        (1<<3)
+#endif /* !NO_NEW_RADAR */
 
 typedef struct
 {
@@ -78,7 +91,7 @@ typedef struct
     int   weight;
     int   weight_limit;
     int   space;
-    float drag;
+    FLOAT drag;
     int   handling_base;
     int   turrets;
     int   cost;
@@ -94,14 +107,14 @@ typedef struct
 typedef struct
 {
     char *type;
-    float friction;
+    FLOAT friction;
     int   cost;
 } Tread_stat;
 
 typedef struct
 {
     char *type;
-    float elasticity;
+    FLOAT elasticity;
     int   cost;
 } Bumper_stat;
 
@@ -121,11 +134,11 @@ typedef struct
 
 
 extern Heat_sink_stat heat_sink_stat;
-extern Weapon_stat weapon_stat[];
-extern Armor_stat armor_stat[];
-extern Engine_stat engine_stat[];
-extern Body_stat body_stat[];
-extern Suspension_stat suspension_stat[];
-extern Tread_stat tread_stat[];
-extern Bumper_stat bumper_stat[];
-extern Special_stat special_stat[];
+extern Weapon_stat weapon_stat[VMAX_WEAPONS];
+extern Armor_stat armor_stat[MAX_ARMORS];
+extern Engine_stat engine_stat[MAX_ENGINES];
+extern Body_stat body_stat[MAX_BODIES];
+extern Suspension_stat suspension_stat[MAX_SUSPENSIONS];
+extern Tread_stat tread_stat[MAX_TREADS];
+extern Bumper_stat bumper_stat[MAX_BUMPERS];
+extern Special_stat special_stat[MAX_SPECIALS];

@@ -1,5 +1,23 @@
-/* vehicle.c - part of XTank */
+/*
+**
+** vehicle.c - part of XTank
+**
+*/
 
+/* $Id: vehicle.c,v 2.9 1992/02/08 08:28:23 aahz Exp $ */
+/*
+   $Log: vehicle.c,v $
+ * Revision 2.9  1992/02/08  08:28:23  aahz
+ * the point penalty is now .7 times the points an opponent would get.
+ *
+ * Revision 2.8  1992/02/08  08:01:26  aahz
+ * made killing people on your own team (neutral team excluded) cost the
+ * points that on opponent would have received.
+ *
+ * Revision 2.7  1992/01/29  08:37:01  lidl
+ * post aaron patches, seems to mostly work now
+ *
+*/
 #include "xtank.h"
 #include "xtanklib.h"
 #include "vehicle.h"
@@ -15,6 +33,7 @@ extern int team_color_bright[];
 extern char team_char[];
 extern Map real_map;
 extern Settings settings;
+extern int frame;
 
 
 /* create turrets for the given vehicle */
@@ -43,7 +62,7 @@ void make_turrets(v)
 	    }
 	}
 	/* Make the turret turn rate inversely proportional to its weight */
-	t->turn_rate = 600.0 / (float) turret_weight;
+	t->turn_rate = 600.0 / (FLOAT) turret_weight;
 
 	t->obj = turret_obj[0];
     }
@@ -57,12 +76,20 @@ void make_specials(v, which)
     Flag which;
 {
     extern int special_console(), special_mapper(), special_radar(),
+#ifndef NO_NEW_RADAR
+	special_new_radar(), special_taclink(),
+#endif /* !NO_NEW_RADAR */
         special_dummy(), special_repair();
     Special *s;
     int i;
 
     for (i = 0; i < MAX_SPECIALS; i++) {
 	s = &v->special[i];
+
+#ifndef NO_NEW_RADAR
+        s->record = NULL; /* So we can tell if it is initialized */
+        s->shared = FALSE; /* not sharing space */
+#endif /* !NO_NEW_RADAR */
 
 	/* make sure vehicle should have this special */
 	if (! tstflag(which, (1 << i))) {
@@ -83,6 +110,20 @@ void make_specials(v, which)
 		s->proc = special_radar;
 		s->record = calloc((unsigned) 1, sizeof(Radar));
 		break;
+#ifndef NO_NEW_RADAR
+	    case NEW_RADAR:
+		s->proc = special_new_radar;
+		s->record = calloc((unsigned) 1, sizeof(newRadar));
+		break;
+	    case TACLINK:
+		s->proc = special_taclink;
+                if ( (v->special[(int) NEW_RADAR]).record == NULL)
+		   s->record = calloc((unsigned) 1, sizeof(newRadar));
+                else
+                   s->record = (v->special[(int) NEW_RADAR]).record;
+                   s->shared = TRUE;
+		break;
+#endif /* !NO_NEW_RADAR */
 	    case REPAIR:
 		s->proc = special_repair;
 		s->record = calloc((unsigned) 1, 1);
@@ -109,6 +150,9 @@ void unmake_specials(v)
 	if (s->status == SP_nonexistent)
 	    continue;
 
+#ifndef NO_NEW_RADAR
+        if (!s->shared)
+#endif /* !NO_NEW_RADAR */
 	free((char *) s->record);
     }
 }
@@ -121,9 +165,6 @@ Vehicle *make_vehicle(d, c)
     Combatant *c;		/* who's going to use it */
 {
     extern Object *vehicle_obj[];
-    static int turn_divider[MAX_SPEED] = {8,8,8,8,10,12,16,20,24,28,34,40,46,
-					  52,60,68,78,88,100,114,130,146,162,
-					  180,200};
     Vehicle *v;
     Weapon *w;
     int i;
@@ -147,7 +188,7 @@ Vehicle *make_vehicle(d, c)
 
     v->obj = vehicle_obj[d->body];
     v->num_turrets = v->obj->num_turrets;
-    v->max_fuel = (float) engine_stat[d->engine].fuel_limit;
+    v->max_fuel = (FLOAT) engine_stat[d->engine].fuel_limit;
 
     v->num_weapons = d->num_weapons;
 
@@ -165,13 +206,14 @@ Vehicle *make_vehicle(d, c)
 	v->special[i].status = (d->specials & (1 << i)) ? SP_off :
 		SP_nonexistent;
 
-    /* Turn rate for each speed */
-    for (i = 0; i < MAX_SPEED; i++)
-	v->turn_rate[i] = (float) d->handling / (float) turn_divider[i];
+    v->max_turn_rate = d->handling / 8.0;
 
     /* Vehicle not restricted to making safe turns */
     v->safety = FALSE;
 
+    /* Vehicles controlled soley by robots don't want to teleport by default */
+    v->teleport = (c->num_players == 0) ? FALSE : TRUE;
+    
     return v;
 }
 
@@ -220,6 +262,37 @@ int activate_vehicle(v)
     v->heat = 0;
     v->num_discs = 0;
 
+#ifndef NO_NEW_RADAR
+/*
+ * Start with an approximation of the radar surface 
+ *  v->rcs = (float) pow((double) v->vdesc->weight, 2.0/3.0) * 3.0;
+ *
+ * too complex, and gives unesthetic answers... how bout...
+ */
+
+    v->rcs = (float) cbrt((double) v->vdesc->weight);
+/*
+ *   printf("rcs: %f weight: %d\n", v->rcs, v->vdesc->weight);
+ */
+
+
+/*
+ * Clear all IFF flags
+ *
+ * Hack alert! Danger Will Robinson, Danger!
+ *
+ * Ok, ok, so the dead vehicle gets to keep his IFF keys.  Uh, 
+ * that because, uh, the driver actually carries them on his
+ * pocket holo-card that he uses as an ignition key. Yeah,
+ * that's it, yeah, his holo-card.
+ */
+
+    if (frame == 0)
+	for (i = 0; i < MAX_VEHICLES; i++)
+	   v->have_IFF_key[i] = v->offered_IFF_key[i] = FALSE;
+
+#endif /* NO_NEW_RADAR */
+
     for (i = 0; i < v->num_weapons; i++) {
 	w = &v->weapon[i];
 	w->status = (WS_on | WS_func);
@@ -258,6 +331,15 @@ void inactivate_vehicle(victim)
 {
     int i;
 
+#ifndef NO_NEW_RADAR
+/*
+ * Sortof a pending project...
+ */
+
+    if (tstflag(victim->status, VS_is_alive))
+       zap_specials(victim);
+#endif /* !NO_NEW_RADAR */
+
     clrflag(victim->status, VS_is_alive);
 
     /* kill the threads  */
@@ -275,6 +357,7 @@ void inactivate_vehicle(victim)
 	}
     }
 
+
     /* Let the terminals know that they have no vehicle to track */
     for (i = 0; i < victim->owner->num_players; i++) {
 	terminal[victim->owner->player[i]]->vehicle = (Vehicle *) NULL;
@@ -289,7 +372,7 @@ void inactivate_vehicle(victim)
 void explode_vehicle(victim)
     Vehicle *victim;
 {
-    extern float rnd_interval();
+    extern FLOAT rnd_interval();
     Loc *loc = victim->loc;
     Vdesc *vdesc = victim->vdesc;
     int engine = vdesc->engine;
@@ -393,7 +476,8 @@ kill_vehicle(victim, killer)
     Vehicle *victim;
     Vehicle *killer;		/* can be NULL */
 {
-    extern float rnd_interval();
+	int points;
+    extern FLOAT rnd_interval();
 
     if (!tstflag(victim->status, VS_is_alive)) {
 	/* If vehicle isn't alive, don't kill it again.  I guess this happens
@@ -408,12 +492,28 @@ kill_vehicle(victim, killer)
 
     victim->owner->deaths++;
 
-    if (killer && !SAME_TEAM(killer, victim)) {
-	int points = 1000.0 * victim->vdesc->cost / killer->vdesc->cost;
+	if (killer)
+	{
+		points = 1000.0 * victim->vdesc->cost / killer->vdesc->cost;
+    	if (!SAME_TEAM(killer, victim)) 
+		{
+			if (settings.si.game != ULTIMATE_GAME &&
+	    		settings.si.game != CAPTURE_GAME)
+			{
+	  			killer->owner->score += points;
+			}
 
-	killer->owner->score += points;
-	killer->owner->money += points * 8;
-	killer->owner->kills++;
+			killer->owner->money += points * 16;        /* Was 8 */
+			killer->owner->kills++;
+    	}
+		else
+		{
+			if (settings.si.game != ULTIMATE_GAME &&
+	    		settings.si.game != CAPTURE_GAME)
+			{
+	  			killer->owner->score -= (int) (0.7 * (float)points);
+			}
+		}
     }
     /* Send out a message about the victim's death */
     send_death_message(victim, killer);

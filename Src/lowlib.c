@@ -7,10 +7,41 @@
 */
 
 /*
-$Author: stripes $
-$Id: lowlib.c,v 2.4 1991/03/24 22:33:36 stripes Exp $
+$Author: lidl $
+$Id: lowlib.c,v 2.14 1992/01/29 08:37:01 lidl Exp $
 
 $Log: lowlib.c,v $
+ * Revision 2.14  1992/01/29  08:37:01  lidl
+ * post aaron patches, seems to mostly work now
+ *
+ * Revision 2.13  1992/01/26  05:00:12  stripes
+ * delete this revision (KJL)
+ *
+ * Revision 2.12  1992/01/06  07:52:49  stripes
+ * Changes for teleport
+ *
+ * Revision 2.11  1992/01/03  05:50:59  aahz
+ * added new functions to give robots information about their tank.
+ *
+ * Revision 2.10  1991/12/10  03:41:44  lidl
+ * changed float to FLOAT, for portability reasons
+ *
+ * Revision 2.9  1991/12/02  10:44:37  lidl
+ * buzzard@eng.umd.edu (Sean Barrett)
+ * fixed some bad error checking when you give bogus input to this function
+ *
+ * Revision 2.8  1991/12/02  10:30:48  lidl
+ * changed to handle a forth turret on tanks
+ *
+ * Revision 2.7  1991/11/22  06:01:12  stripes
+ * Changed hover's skid & safety
+ *
+ * Revision 2.6  1991/11/08  05:26:22  stripes
+ * New skid code (c.o rpotter), with a speed-up (stripes).
+ *
+ * Revision 2.5  1991/10/06  22:07:48  lidl
+ * small bug fix submitted by William T. Katz (wk5w@virginia.edu)
+ *
  * Revision 2.4  1991/03/24  22:33:36  stripes
  * Fixed bug in get_outpost_loc.
  *
@@ -54,7 +85,7 @@ extern int frame;
 
 #define legal_weapon(num) (num >= 0 && num < cv->num_weapons)
 #define legal_turret(num) ((int)num>=(int)TURRET1 && (int)num<cv->num_turrets)
-#define legal_armor(num) ((int)num >= (int)FRONT && (int)num < (int)BOTTOM)
+#define legal_armor(num) ((int)num >= (int)FRONT && (int)num <= (int)BOTTOM)
 #define fix_angle(angle) angle -= (2*PI) * floor(angle/(2*PI))
 
 /* Pointer to current vehicle */
@@ -101,7 +132,7 @@ void get_location(loc)
 
 /* returns the vehicle's maximum speed, in pixels per frame */
 
-float max_speed()
+FLOAT max_speed()
 {
     check_time();
     return (cv->vdesc->max_speed);
@@ -110,7 +141,7 @@ float max_speed()
 
 /* returns the vehicle's current speed, in pixels per frame */
 
-float speed()
+FLOAT speed()
 {
     check_time();
     return (cv->vector.speed);
@@ -133,7 +164,7 @@ Angle heading()
 /* return the maximum possible acceleration of the vehicle, taking engine power
    and ground friction into account */
 
-float acc()
+FLOAT acc()
 {
     check_time();
     return cv->vdesc->acc;	/* assumes ground friction is 1.0 */
@@ -143,7 +174,7 @@ float acc()
 /* returns the acceleration limit imposed by the engine power.  This only
    affects speeding up. */
 
-float engine_acc()
+FLOAT engine_acc()
 {
     check_time();
     return cv->vdesc->engine_acc;
@@ -154,7 +185,7 @@ float engine_acc()
    multiplied by settings.si.normal_friction or settings.si.slip_friction
    before use).  This affects both speeding up and slowing down. */
 
-float tread_acc()
+FLOAT tread_acc()
 {
     check_time();
     return cv->vdesc->tread_acc;
@@ -182,7 +213,7 @@ void vehicle_size(width, height)
 void turn_vehicle(desired_heading)
     Angle desired_heading;
 {
-    float diff;
+    FLOAT diff;
     Vector *vector;
 
     vector = &cv->vector;
@@ -230,24 +261,45 @@ void turn_vehicle_human(desired_heading)
    is moving at the given speed */
 
 Angle turn_rate(abs_speed)
-    float abs_speed;
+    FLOAT abs_speed;
 {
-    int spd;
+    Angle turning_rate;
+    FLOAT ground_friction;
+    FLOAT traction;       /* the limit to acceleration imposed by ground
+                 and tread friction */
 
     check_time();
 
-    /* Make sure the abs_speed is within the appropriate values */
-    spd = (int) abs_speed;
-    if (ABS(spd) > MAX_SPEED)
-	spd = MAX_SPEED;
-    return cv->turn_rate[spd];
+	if (cv->safety == TRUE) return cv->max_turn_rate;
+
+    /* determine the ground friction here */
+    if (cv->vdesc->treads == HOVER_TREAD) {
+		ground_friction = settings.si.normal_friction;
+    } else {
+		/* on slip square? */
+		ground_friction =
+		  real_map[cv->loc->grid_x][cv->loc->grid_y].type == SLIP ?
+		  settings.si.slip_friction :
+		  settings.si.normal_friction;
+    }
+    /* determine the traction between treads and ground */
+    traction = ground_friction * cv->vdesc->tread_acc;
+
+    if (traction < abs_speed) {
+		turning_rate = asin(traction / abs_speed);
+		if (turning_rate > cv->max_turn_rate) turning_rate = cv->max_turn_rate;
+    } else {
+		turning_rate = cv->max_turn_rate;
+    }
+
+    return turning_rate;
 }
 
 
 /* sets the vehicle's desired speed */
 
 void set_abs_drive(abs_speed)
-    float abs_speed;
+    FLOAT abs_speed;
 {
     cv->vector.drive = (ABS(abs_speed) > cv->vdesc->max_speed ?
 			cv->vdesc->max_speed * SIGN(abs_speed) :
@@ -259,7 +311,7 @@ void set_abs_drive(abs_speed)
 /* sets the vehicle's desired speed relative to the maximum */
 
 void set_rel_drive(rel_drive)
-    float rel_drive;		/* in the range -9 to 9 */
+    FLOAT rel_drive;		/* in the range -9 to 9 */
 {
     /* Make sure the drive is within the allowable range */
     if (rel_drive > 9.0)
@@ -278,10 +330,24 @@ void set_rel_drive(rel_drive)
 void set_safety(status)
     int status;
 {
-    if (status)
+    if (cv->vdesc->treads != HOVER_TREAD && status)
 	cv->safety = TRUE;
     else
 	cv->safety = FALSE;
+
+    check_time();
+}
+
+/* sets the teleport flag.  If true, vehicles passing through teleports
+   which are either neutral, or on the vehicle's team will be teleported */
+
+void set_teleport(status)
+    int status;
+{
+    if (status)
+	cv->teleport = TRUE;
+    else
+	cv->teleport = FALSE;
 
     check_time();
 }
@@ -331,13 +397,13 @@ int num_turrets()
 Angle turret_angle(num)
     TurretNum num;
 {
-    float angle;
+    FLOAT angle;
 
     check_time();
 
     /* Make sure the specified turret exists */
     if (!legal_turret(num))
-	return ((float) BAD_VALUE);
+	return ((FLOAT) BAD_VALUE);
 
     angle = cv->turret[(int) num].angle;
     fix_angle(angle);
@@ -355,7 +421,7 @@ Angle turret_turn_rate(num)
 
     /* Make sure the specified turret exists */
     if (!legal_turret(num))
-	return ((float) BAD_VALUE);
+	return ((FLOAT) BAD_VALUE);
 
     return (cv->turret[(int) num].turn_rate);
 }
@@ -367,7 +433,7 @@ void turn_turret(num, angle)
     TurretNum num;
     Angle angle;
 {
-    float diff;
+    FLOAT diff;
     Turret *t;
 
     if (legal_turret(num)) {
@@ -410,7 +476,7 @@ Angle aim_turret(num, dx, dy)
     TurretNum num;
     int dx, dy;
 {
-    float ang;
+    FLOAT ang;
     Coord *tcoord;
     Picinfo *picinfo;
 
@@ -513,7 +579,7 @@ WeaponStatus fire_weapon(num)
     Weapon *w;
     Weapon_stat *ws;
     Turret *t;
-    float angle;
+    FLOAT angle;
     Loc bloc;
     Coord *tcoord;
     WeaponStatus retval;
@@ -550,10 +616,16 @@ WeaponStatus fire_weapon(num)
 	bloc = *cv->loc;
 
 	/* Figure out what angle to shoot the bullet towards */
+
+#ifndef NO_NEW_RADAR
+	if (w->type != HARM) {
+#endif /* !NO_NEW_RADAR */
+
 	switch (w->mount) {
 	    case MOUNT_TURRET1:
 	    case MOUNT_TURRET2:
 	    case MOUNT_TURRET3:
+	    case MOUNT_TURRET4:
 		/* Make the angle equal to where the turret will be this frame
 		   */
 		t = &cv->turret[(int) w->mount];
@@ -589,6 +661,13 @@ WeaponStatus fire_weapon(num)
 		angle = cv->vector.heading + PI / 2;
 	}
 
+#ifndef NO_NEW_RADAR
+	/* HARM's are mounted on the side, yet they face forward. */
+	} else {
+	    angle = cv->vector.heading;
+	}
+#endif /* !NO_NEW_RADAR */
+
 	if (w->type == SLICK) {
 	    /* Make 3 oil slick bullets in a fan */
 	    for (i = 0; i < 3; i++)
@@ -598,6 +677,11 @@ WeaponStatus fire_weapon(num)
 		comment(COS_SLICK_DROPPED, 0, (Vehicle *) NULL, (Vehicle *) NULL);
 	} else {
 	    /* Create the bullet with slight random fanning (1.8 degrees) */
+#ifndef NO_NEW_RADAR
+	    if (w->type == HARM)
+		make_smart_bullet(cv, &bloc, w->type, angle, &cv->target);
+	    else
+#endif /* !NO_NEW_RADAR */
 	    make_bullet(cv, &bloc, w->type, angle + PI / 100 * (50 - rnd(101)) / 50);
 	}
     }
@@ -664,6 +748,46 @@ int weapon_ammo(num)
     if (!legal_weapon(num))
 	return BAD_VALUE;
     return (cv->weapon[num].ammo);
+}
+
+
+/************************************/
+/* Information about one's own tank */
+/************************************/
+int get_tread_type()
+{
+    check_time();
+	return (cv->vdesc->treads);
+}
+
+int get_bumper_type()
+{
+    check_time();
+	return (cv->vdesc->bumpers);
+}
+
+int get_vehicle_cost()
+{
+    check_time();
+	return (cv->vdesc->cost);
+}
+
+int get_engine_type()
+{
+    check_time();
+	return (cv->vdesc->engine);
+}
+
+int get_handling()
+{
+    check_time();
+	return (cv->vdesc->handling);
+}
+
+int get_suspension_type()
+{
+    check_time();
+	return (cv->vdesc->suspension);
 }
 
 
@@ -828,8 +952,8 @@ void get_outpost_loc(x, y, frame_num, xret, yret)
     /* make sure the vehicle has a mapper, that the indicated box is on the
        map, and that it is an outpost */
     if (s->status == SP_nonexistent ||
-	    (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) &&
-	    m->map[x][y].type == OUTPOST) {
+	    (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) ||
+	    m->map[x][y].type != OUTPOST) {
 	*xret = *yret = 0;
 	return;
     }
@@ -839,6 +963,7 @@ void get_outpost_loc(x, y, frame_num, xret, yret)
     *yret = cp->y + y * BOX_HEIGHT;
 }
 
+#ifdef NO_NEW_RADAR
 
 /*
 ** Puts information about all radar blips into the blip_info array.
@@ -874,6 +999,63 @@ int get_blips(num_blip_infos, blip_info)
     return 0;
 }
 
+#else /* NO_NEW_RADAR */
+
+int get_blips(num_blip_infos, blip_info)
+    int *num_blip_infos;
+    Blip_info blip_info[];
+{
+    Special *s, *ns;
+    Radar *r;
+    newRadar *nr;
+    int veh, i;
+    newBlip *b;
+    Vehicle *bv;
+
+
+    check_time();
+
+    *num_blip_infos = 0;
+
+    s = &cv->special[(int) RADAR];
+    r = (Radar *) s->record;
+
+    ns = &cv->special[(int) NEW_RADAR];
+    nr = (newRadar *) ns->record;
+
+    if (cv->special[(int) RADAR].status == SP_on) {
+	for (i = 0; i < r->num_blips; i++) {
+	    blip_info[i].x = map2grid(r->blip[i].x - MAP_BOX_SIZE / 4);
+	    blip_info[i].y = map2grid(r->blip[i].y - MAP_BOX_SIZE / 4);
+	}
+	*num_blip_infos = r->num_blips;
+	return 0;
+    } else if (cv->special[(int) NEW_RADAR].status == SP_on
+            || cv->special[(int) TACLINK].status == SP_on) {
+	for (veh = 0; veh < MAX_VEHICLES; veh++) {
+	    b = &nr->blip[veh];
+	    bv = &actual_vehicles[veh];
+	    if (b->draw_tactical || b->draw_radar) {
+		blip_info[*num_blip_infos].tactical = b->draw_tactical;
+		blip_info[*num_blip_infos].radar = b->draw_radar;
+		blip_info[*num_blip_infos].friend = b->draw_friend;
+		if (b->draw_friend) {
+		    blip_info[*num_blip_infos].team = bv->team;
+		    blip_info[*num_blip_infos].number = bv->number;
+		}
+		blip_info[*num_blip_infos].x = bv->loc->grid_x;
+		blip_info[*num_blip_infos].y = bv->loc->grid_y;
+		++*num_blip_infos;
+	    }
+	}
+	return 0;
+    } else 
+	return BAD_VALUE;
+
+}
+
+#endif /* NO_NEW_RADAR */
+
 /*
 ** Puts information about all visible vehicles (excluding your own)
 ** into the vehicle_info array.
@@ -884,6 +1066,7 @@ void get_vehicles(num_vehicle_infos, vehicle_info)
 {
     Vehicle *v;
     Vehicle_info *v_info;
+    Picture *pic;
     int dx, dy;
     int i;
     int tur;
@@ -935,6 +1118,10 @@ void get_vehicles(num_vehicle_infos, vehicle_info)
 	    for (tur = v->num_turrets - 1; tur >= 0; --tur) {
 		v_info->turret_angle[tur] = v->turret[tur].angle;
 	    }
+
+		pic = v->obj->pic + v->vector.rot;
+		v_info->bwidth = pic->width;
+		v_info->bheight = pic->height;
 	}
     }
 }
@@ -946,6 +1133,7 @@ void get_self(v_info)
     Vehicle_info *v_info;
 {
     int tur;
+    Picture *pic;
 
     check_time();
 
@@ -969,6 +1157,10 @@ void get_self(v_info)
     for (tur = cv->num_turrets - 1; tur >= 0; --tur) {
 	v_info->turret_angle[tur] = cv->turret[tur].angle;
     }
+
+	pic = cv->obj->pic + cv->vector.rot;
+	v_info->bwidth = pic->width;
+	v_info->bheight = pic->height;
 }
 
 /*
@@ -1120,7 +1312,7 @@ int get_ammo_cost(wn)
 **
 */
 void throw_discs(dspeed, delay)
-    float dspeed;
+    FLOAT dspeed;
     Boolean delay;
 {
     if (dspeed < 0.0)
@@ -1271,7 +1463,7 @@ Boolean receive_msg(m)
 /*
 ** Returns the current amount of fuel in the vehicle
 */
-float fuel()
+FLOAT fuel()
 {
     check_time();
     return (cv->fuel);
@@ -1280,7 +1472,7 @@ float fuel()
 /*
 ** Returns the maximum amount of fuel the vehicle can hold
 */
-float max_fuel()
+FLOAT max_fuel()
 {
     check_time();
     return (cv->max_fuel);
@@ -1365,3 +1557,14 @@ void set_cleanup_func(funcp, argp)
     cv->current_prog->cleanup = funcp;
     cv->current_prog->cleanup_arg = argp;
 }
+
+#ifndef NO_NEW_RADAR
+int aim_smart_weapon(coord)
+    lCoord coord;
+{
+    cv->target = coord;
+
+}
+
+#endif /* !NO_NEW_RADAR */
+

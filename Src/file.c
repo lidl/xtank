@@ -7,10 +7,63 @@
 */
 
 /*
-$Author: lidl $
-$Id: file.c,v 2.7 1991/09/24 14:08:56 lidl Exp $
+$Author: aahz $
+$Id: file.c,v 2.24 1992/02/06 09:00:37 aahz Exp $
 
 $Log: file.c,v $
+ * Revision 2.24  1992/02/06  09:00:37  aahz
+ * added save Program info in the save_settings file.
+ *
+ * Revision 2.23  1992/02/04  08:25:08  lidl
+ * removed ifdef of new vehicle ending letter code
+ *
+ * Revision 2.22  1992/02/04  07:25:33  aahz
+ * init retcode to desc_loaded rather than a hard-coded 0
+ *
+ * Revision 2.21  1992/02/03  07:31:09  lidl
+ * the new load code now can be linked, but core-dumps when it attempts
+ * to load a new (.V) file.  Checking in so that others can play with the code
+ *
+ * Revision 2.20  1992/01/30  03:41:21  aahz
+ * removed ifdefs around no radar
+ *
+ * Revision 2.19  1992/01/29  08:37:01  lidl
+ * post aaron patches, seems to mostly work now
+ *
+ * Revision 2.18  1992/01/21  03:44:24  aahz
+ * reorganized load_vdesc to make loading of multiple formats
+ * easier.
+ *
+ * Revision 2.17  1992/01/21  02:36:03  stripes
+ * Added call to save vechiles in new format.
+ *
+ * Revision 2.16  1992/01/02  02:53:12  aahz
+ * added a filename parameter to save_settings
+ *
+ * Revision 2.15  1991/12/20  21:11:24  lidl
+ * made char *games_entries[]; an extern, so as to mollify ANSI C compilers
+ *
+ * Revision 2.14  1991/12/19  05:38:24  stripes
+ * changed delimter from space to tab (Kurt as Josh)
+ *
+ * Revision 2.13  1991/12/15  20:27:36  lidl
+ * a small SVR4 compatibility hack
+ *
+ * Revision 2.12  1991/12/02  10:31:45  lidl
+ * changed to handle a forth turret on tanks
+ *
+ * Revision 2.11  1991/12/02  06:38:23  lidl
+ * changed to use limits.h, and got rid of the foolish things
+ *
+ * Revision 2.10  1991/11/27  06:26:13  aahz
+ * added team score to save setup.
+ *
+ * Revision 2.9  1991/11/15  04:11:53  stripes
+ * Stuff in save_settings, I think it is done.
+ *
+ * Revision 2.8  1991/10/07  06:15:33  stripes
+ * Added a save_settings(), it saves to /tmp/something-or-other
+ *
  * Revision 2.7  1991/09/24  14:08:56  lidl
  * changes to reflect moving the .h files in xtank/Src/Include
  *
@@ -44,6 +97,7 @@ $Log: file.c,v $
  * 
 */
 
+#include "limits.h"
 #include "malloc.h"
 #include <assert.h>
 #include "xtank.h"
@@ -52,18 +106,15 @@ $Log: file.c,v $
 #include "gr.h"
 #include "vdesc.h"
 #include "setup.h"
+#include "vehicle.h"
+#include "terminal.h"
+#include "globals.h"
 #ifdef UNIX
 #include <sys/param.h>
 #include <sys/dir.h>
 #endif
-
-
-#ifndef MAXPATHLEN
-#define MAXPATHLEN 1024
-#endif
-
-#ifndef MAXNAMLEN
-#define MAXNAMLEN 256
+#ifdef SVR4
+#include <dirent.h>
 #endif
 
 char pathname[MAXPATHLEN];
@@ -74,6 +125,12 @@ char username[MAX_STRING], displayname[256];
 #ifdef NEED_AUX_FONT
 char fontdir[MAXNAMLEN];
 #endif
+
+extern char *games_entries[];
+extern Settings settings;
+
+extern int num_prog_descs;
+extern Prog_desc *prog_desc[];
 
 extern char **vehicles_entries, **mazes_entries, **setups_entries;
 
@@ -170,33 +227,43 @@ int *num;
     /* if the vehicle could not be found, we will be leaving room for an
        extra Vdesc.  This should probably be cleaned up later. */
 
-    if (vdesc == NULL)
-    {
-	vdesc = (Vdesc *) malloc(sizeof(Vdesc));
-	vehicles_entries = (char **) malloc(sizeof(char *));
-    }
-    else
-    {
-        vdesc = (Vdesc *) realloc((char *)vdesc,
-				  (unsigned) (num_vdescs + 1) * sizeof(Vdesc));
-        vehicles_entries = (char **) realloc((char *)vehicles_entries,
-					     (unsigned) (num_vdescs+1) *
-					                sizeof(char *));
-    }
-
-    assert(vdesc != NULL);
-    assert(vehicles_entries != NULL);
-
     /* If name present, load into that slot, else load into next empty slot */
     for (i = 0; i < num_vdescs; i++)
-	if (!strcmp(name, vdesc[i].name))
-	    break;
+	{
+		if (!strcmp(name, vdesc[i].name))
+		{
+	    	break;
+		}
+	}
+
+	if (i == num_vdescs)
+	{
+    	if (vdesc == NULL)
+    	{
+			vdesc = (Vdesc *) malloc(sizeof(Vdesc));
+			vehicles_entries = (char **) malloc(sizeof(char *));
+    	}
+    	else
+    	{
+        	vdesc = (Vdesc *) realloc((char *)vdesc,
+				  	(unsigned) (num_vdescs + 1) * sizeof(Vdesc));
+        	vehicles_entries = (char **) realloc((char *)vehicles_entries,
+					     	(unsigned) (num_vdescs+1) *
+					                	sizeof(char *));
+    	}
+
+    	assert(vdesc != NULL);
+    	assert(vehicles_entries != NULL);
+	}
+
     d = &vdesc[i];
     retval = load_vdesc(d, name);
 
     /* Increment the number if a vdesc was loaded in the last slot */
     if (retval == DESC_LOADED && i == num_vdescs)
-	num_vdescs++;
+	{
+		num_vdescs++;
+	}
     *num = i;
     reset_dynamic_entries();
     return retval;
@@ -204,6 +271,119 @@ int *num;
 
 #define check_range(val,mx) \
   if((int)(val) < 0 || (int)(val) >= (int)(mx)) return DESC_BAD_FORMAT;
+
+int ReadVehicleFormat0(file, d)
+	FILE *file;
+	Vdesc *d;
+{
+	int i;
+    int num_tur;
+	int iRetCode = DESC_LOADED;
+    WeaponType weapon;
+    MountLocation mount;
+
+	/* Initialize max side to 0 */
+	d->armor.max_side = 0;
+
+    /* Load the values into the vdesc structure, checking their validity */
+    (void) fscanf(file, "%s", d->name);
+    (void) fscanf(file, "%s", d->designer);
+
+    (void) fscanf(file, "%d", &d->body);
+    check_range(d->body, num_vehicle_objs);
+    num_tur = vehicle_obj[d->body]->num_turrets;
+
+	if (num_tur == 4)
+	{
+		iRetCode = DESC_BAD_FORMAT;
+	}
+	else
+	{
+    	(void) fscanf(file, "%d", &d->engine);
+    	check_range(d->engine, MAX_ENGINES);
+
+    	(void) fscanf(file, "%d", &d->num_weapons);
+    	check_range(d->num_weapons, MAX_WEAPONS + 1);
+
+    	for (i = 0; i < d->num_weapons; i++)
+    	{
+			(void) fscanf(file, "%d %d", &weapon, &mount);
+        	check_range((int)weapon, MAX_WEAPON_STATS);
+
+			if (mount >= MOUNT_TURRET4)
+			{
+				++mount;
+			}
+
+			switch (mount)
+			{
+	  			case MOUNT_TURRET1:
+	    			if (num_tur < 1)
+					{
+						iRetCode = DESC_BAD_FORMAT;
+					}
+	    			break;
+	  			case MOUNT_TURRET2:
+	    			if (num_tur < 2)
+					{
+						iRetCode = DESC_BAD_FORMAT;
+					}
+	    			break;
+	  			case MOUNT_TURRET3:
+	    			if (num_tur < 3)
+					{
+						iRetCode = DESC_BAD_FORMAT;
+					}
+	    			break;
+	  			case MOUNT_FRONT:
+				case MOUNT_BACK:
+				case MOUNT_LEFT:
+				case MOUNT_RIGHT:
+	    			break;
+	  			default:
+	    			iRetCode = DESC_BAD_FORMAT;
+					break;
+			}
+
+			if (iRetCode)
+			{
+				break;
+			}
+
+			d->weapon[i] = weapon;
+			d->mount[i] = mount;
+    	}
+	}
+
+	if (iRetCode == 0)
+	{
+    	(void) fscanf(file, "%d", &d->armor.type);
+    	check_range(d->armor.type, MAX_ARMORS);
+
+    	for (i = 0; i < MAX_SIDES; i++)
+    	{
+			(void) fscanf(file, "%d", &d->armor.side[i]);
+			if (d->armor.max_side < d->armor.side[i])
+			{
+	    		d->armor.max_side = d->armor.side[i];
+			}
+    	}
+
+    	(void) fscanf(file, "%d", &d->specials);
+    	(void) fscanf(file, "%d", &d->heat_sinks);
+
+    	(void) fscanf(file, "%d", &d->suspension);
+    	check_range(d->suspension, MAX_SUSPENSIONS);
+
+    	(void) fscanf(file, "%d", &d->treads);
+    	check_range(d->treads, MAX_TREADS);
+
+    	(void) fscanf(file, "%d", &d->bumpers);
+    	check_range(d->bumpers, MAX_BUMPERS);
+	}
+
+	return (iRetCode);
+}
 
 /*
 ** Loads the vehicle description from the file "[vehiclesdir]/[name].v".
@@ -217,10 +397,12 @@ char *name;
     extern Object *vehicle_obj[];
     FILE *file;
     char filename[MAXPATHLEN];
-    int num_tur;
-    WeaponType weapon;
-    MountLocation mount;
     int i;
+	int iFormatType;
+	int iRetCode = DESC_LOADED;
+
+	/* initialize the vdesc struct */
+	memset(d, 0, sizeof(Vdesc));
 
     /* Open the vehicle description file */
 
@@ -236,82 +418,45 @@ char *name;
 #endif /* AMIGA */
 
     (void) strcat(filename, name);
-    (void) strcat(filename, ".v");
-    if ((file = fopen(filename, "r")) == NULL)
-	return DESC_NOT_FOUND;
+    (void) strcat(filename, ".V");
 
-    /* Initialize max side to 0 */
-    d->armor.max_side = 0;
-
-    /* Load the values into the vdesc structure, checking their validity */
-    (void) fscanf(file, "%s", d->name);
-    (void) fscanf(file, "%s", d->designer);
-
-    (void) fscanf(file, "%d", &d->body);
-    check_range(d->body, num_vehicle_objs);
-    num_tur = vehicle_obj[d->body]->num_turrets;
-
-    (void) fscanf(file, "%d", &d->engine);
-    check_range(d->engine, MAX_ENGINES);
-
-    (void) fscanf(file, "%d", &d->num_weapons);
-    check_range(d->num_weapons, MAX_WEAPONS + 1);
-
-    for (i = 0; i < d->num_weapons; i++)
-    {
-	(void) fscanf(file, "%d %d", &weapon, &mount);
-        check_range((int)weapon, MAX_WEAPON_STATS);
-
-	switch (mount) {
-	  case MOUNT_TURRET1:
-	    if (num_tur < 1) return DESC_BAD_FORMAT;
-	    break;
-	  case MOUNT_TURRET2:
-	    if (num_tur < 2) return DESC_BAD_FORMAT;
-	    break;
-	  case MOUNT_TURRET3:
-	    if (num_tur < 3) return DESC_BAD_FORMAT;
-	    break;
-	  case MOUNT_FRONT: case MOUNT_BACK: case MOUNT_LEFT: case MOUNT_RIGHT:
-	    break;
-	  default:
-	    return DESC_BAD_FORMAT;
+	if ((file = fopen(filename, "r")) == NULL) {
+		filename[strlen(filename) - 1] = 'v';
+		if ((file = fopen(filename, "r")) == NULL) {
+			iRetCode = DESC_NOT_FOUND;
+		} else {
+			iFormatType = 0;
+		}
+	} else {
+		iFormatType = 1;
 	}
 
-	d->weapon[i] = weapon;
-	d->mount[i] = mount;
-    }
+	if (iRetCode == 0) {
+		switch (iFormatType) {
+			case 0:
+				iRetCode = ReadVehicleFormat0(file, d);
+				break;
 
-    (void) fscanf(file, "%d", &d->armor.type);
-    check_range(d->armor.type, MAX_ARMORS);
+			case 1:
+				iRetCode = ReadVehicleFormat1(file, d);
+				break;
+		}
 
-    for (i = 0; i < MAX_SIDES; i++)
-    {
-	(void) fscanf(file, "%d", &d->armor.side[i]);
-	if (d->armor.max_side < d->armor.side[i])
-	    d->armor.max_side = d->armor.side[i];
-    }
+		if (iRetCode == 0) {
+    		/* Compute parameters, and see if there are any problems */
+				if (compute_vdesc(d)) {
+					iRetCode = DESC_BAD_FORMAT;
+			}
+		}
+	}
 
-    (void) fscanf(file, "%d", &d->specials);
-    (void) fscanf(file, "%d", &d->heat_sinks);
+	if (file) {
+		(void) fclose(file);
+	}
 
-    (void) fscanf(file, "%d", &d->suspension);
-    check_range(d->suspension, MAX_SUSPENSIONS);
-
-    (void) fscanf(file, "%d", &d->treads);
-    check_range(d->treads, MAX_TREADS);
-
-    (void) fscanf(file, "%d", &d->bumpers);
-    check_range(d->bumpers, MAX_BUMPERS);
-
-    /* Compute parameters, and see if there are any problems */
-    if (compute_vdesc(d))
-	return DESC_BAD_FORMAT;
-
-    (void) fclose(file);
-
-    return DESC_LOADED;
+	return (iRetCode);
 }
+
 
 /*
 ** Saves the specified vehicle description.
@@ -320,56 +465,7 @@ char *name;
 save_vdesc(d)
 Vdesc *d;
 {
-    FILE *file;
-    char filename[MAXPATHLEN];
-    int i;
-
-    /* Open the vehicle description file */
-
-#ifdef UNIX
-    (void) strcpy(filename, pathname);
-    (void) strcat(filename, "/");
-    (void) strcat(filename, vehiclesdir);
-    (void) strcat(filename, "/");
-#endif /* UNIX */
-
-#ifdef AMIGA
-    (void) strcpy(filename, "XVDIR:");
-#endif /* AMIGA */
-
-    (void) strcat(filename, d->name);
-    (void) strcat(filename, ".v");
-    if ((file = fopen(filename, "w")) == NULL)
-	return DESC_NOT_FOUND;
-
-    /* Save all the fields in the vdesc structure */
-    (void) fprintf(file, "%s\n", d->name);
-    (void) fprintf(file, "%s\n", d->designer);
-    (void) fprintf(file, "%d\n", d->body);
-    (void) fprintf(file, "%d\n", d->engine);
-    (void) fprintf(file, "%d\n", d->num_weapons);
-    for (i = 0; i < d->num_weapons; i++)
-	(void) fprintf(file, "%d %d\n", d->weapon[i], d->mount[i]);
-
-    (void) fprintf(file, "%d\n", d->armor.type);
-    for (i = 0; i < MAX_SIDES; i++)
-	(void) fprintf(file, "%d\n", d->armor.side[i]);
-
-    (void) fprintf(file, "%d\n", d->specials);
-    (void) fprintf(file, "%d\n", d->heat_sinks);
-
-    (void) fprintf(file, "%d\n", d->suspension);
-    (void) fprintf(file, "%d\n", d->treads);
-    (void) fprintf(file, "%d\n", d->bumpers);
-
-    (void) fclose(file);
-
-#ifdef UNIX
-    /* Change protections so others can read the vehicle in */
-    (void) chmod(filename, 0644);
-#endif
-
-    return DESC_SAVED;
+	return (SaveVehicleFormat1(d));
 }
 
 /*
@@ -384,36 +480,46 @@ int *num;
     Mdesc *d;
     int retval, i;
 
-    /* if the maze could not be found, we will be leaving room for an extra
-       Mdesc.  This should probably be cleaned up later. */
-    if (mdesc == NULL)
-    {
-	mdesc = (Mdesc *) malloc(2 * sizeof(Mdesc));
-	mazes_entries = (char **) malloc(2 * sizeof(char *));
-    }
-    else
-    {
-        mdesc = (Mdesc *) realloc((char *)mdesc,
-				  (unsigned) ((num_mdescs + 2) *
-					      sizeof(Mdesc)));
-        mazes_entries = (char **) realloc((char *)mazes_entries,
-					  (unsigned) ((num_mdescs + 2) *
-						      sizeof(char *)));
-    }
-
-    assert(mdesc != NULL);
-    assert(mazes_entries != NULL);
-
     /* If name present, load into that slot, else load into next empty slot */
     for (i = 0; i < num_mdescs; i++)
-	if (!strcmp(name, mdesc[i].name))
-	    break;
+	{
+		if (!strcmp(name, mdesc[i].name))
+		{
+	    	break;
+		}
+	}
+
+	if (i == num_mdescs)
+	{
+    /* if the maze could not be found, we will be leaving room for an extra
+       Mdesc.  This should probably be cleaned up later. */
+    	if (mdesc == NULL)
+    	{
+			mdesc = (Mdesc *) malloc(2 * sizeof(Mdesc));
+			mazes_entries = (char **) malloc(2 * sizeof(char *));
+    	}
+    	else
+    	{
+        	mdesc = (Mdesc *) realloc((char *)mdesc,
+				  	(unsigned) ((num_mdescs + 2) *
+					      	sizeof(Mdesc)));
+        	mazes_entries = (char **) realloc((char *)mazes_entries,
+					  	(unsigned) ((num_mdescs + 2) *
+						      	sizeof(char *)));
+    	}
+
+    	assert(mdesc != NULL);
+    	assert(mazes_entries != NULL);
+	}
+
     d = &mdesc[i];
     retval = load_mdesc(d, name);
 
     /* Increment the number if a mdesc was loaded in the last slot */
     if (retval == DESC_LOADED && i == num_mdescs)
-	num_mdescs++;
+	{
+		num_mdescs++;
+	}
     *num = i;
     reset_dynamic_entries();
     return retval;
@@ -724,116 +830,144 @@ char *filename;
     return (string);
 }
 
-#ifdef SAVEIN
-
-/* this needs work, it's obsolete */
-
-int save_settings()
+int save_settings(pcFileName)
+	char *pcFileName;
 {
     int ctri, ctrj;
+	int iProg;
     char *dispname;
+	char *ProgWritten;
     FILE *outfile, *fopen();
     Video *vidptr;
     Vehicle *vptr;
-    extern char *teams_entries[], *games_entries[];
+	Prog_desc *pdesc;
+    extern char *teams_entries[];
     extern Terminal *terminal[];
     extern int num_terminals;
 
-    outfile = fopen("xtank.settings", "w");
-    if (!outfile)
-    {
-	/* error */
-    }
-    else
-    {
+    outfile = fopen(pcFileName, "w");
+	assert(outfile);
+
+	fprintf(outfile, "xtank: 114336\n");
 	/* Settings */
 	/* Maze */
-	fprintf(outfile, "%s\n", settings.mdesc->name);
+	fprintf(outfile, "Maze: %s\n", (settings.mdesc) ? settings.mdesc->name
+		: "Random");
 
 	/* Game */
-	fprintf(outfile, "%s\n", games_entries[settings.game]);
+	fprintf(outfile, "Game: %s\n", games_entries[settings.si.game]);
 
 	/* FLAGS */
-	fprintf(outfile, "%d ", settings.point_bullets);
-	fprintf(outfile, "%d ", settings.ricochet);
-	fprintf(outfile, "%d ", settings.rel_shoot);
-	fprintf(outfile, "%d ", settings.no_wear);
-	fprintf(outfile, "%d ", settings.restart);
-	fprintf(outfile, "%d ", settings.commentator);
-	fprintf(outfile, "%d ", settings.full_map);
-	fprintf(outfile, "%d ", settings.si.pay_to_play);
-	fprintf(outfile, "%d ", settings.robots_dont_win);
-	fprintf(outfile, "%d\n", settings.max_armor_scale);
-#ifdef NONAMETAGS
-	fprintf(outfile, "%d\n", settings.si.no_nametags);
-#endif
+	fprintf(outfile, "Point Bullets: %d\n", settings.point_bullets);
+	fprintf(outfile, "Ricochet: %d\n", settings.si.ricochet);
+	fprintf(outfile, "Rel Fire: %d\n", settings.si.rel_shoot);
+	fprintf(outfile, "No Wear: %d\n", settings.si.no_wear);
+	fprintf(outfile, "Restart: %d\n", settings.si.restart);
+	fprintf(outfile, "Commentator: %d\n", settings.commentator);
+	fprintf(outfile, "Full Map: %d\n", settings.si.full_map);
+	fprintf(outfile, "Pay To Play: %d\n", settings.si.pay_to_play);
+	fprintf(outfile, "Robots Don't Win: %d\n", settings.robots_dont_win);
+	fprintf(outfile, "Max Armor Scale: %d\n", settings.max_armor_scale);
+	fprintf(outfile, "Nametags: %d\n", settings.si.no_nametags);
+	fprintf(outfile, "No Radar: %d\n", settings.si.no_radar);
+	fprintf(outfile, "Team Score: %d\n", settings.si.team_score);
 
 	/* other settings */
-	fprintf(outfile, "%d\n", settings.winning_score);
-	fprintf(outfile, "%d\n", settings.outpost_strength);
-	fprintf(outfile, "%f\n", settings.scroll_speed);
-	fprintf(outfile, "%f\n", settings.box_slowdown);
-	fprintf(outfile, "%f\n", settings.disc_friction);
-	fprintf(outfile, "%f\n", settings.owner_slowdown);
-	fprintf(outfile, "%f\n", settings.slip_friction);
-	fprintf(outfile, "%f\n", settings.normal_friction);
-	fprintf(outfile, "%d\n", settings.difficulty);
+	fprintf(outfile, "Winning Score: %d\n", settings.si.winning_score);
+	fprintf(outfile, "Outpost Strength: %d\n", settings.si.outpost_strength);
+	fprintf(outfile, "Scroll Speed: %f\n", settings.si.scroll_speed);
+	fprintf(outfile, "Box slowdown: %f\n", settings.si.box_slowdown);
+	fprintf(outfile, "Disc Friction: %f\n", settings.si.disc_friction);
+	fprintf(outfile, "Owner Slowdown: %f\n", settings.si.owner_slowdown);
+	fprintf(outfile, "Slip Friction: %f\n", settings.si.slip_friction);
+	fprintf(outfile, "Normal Friction: %f\n", settings.si.normal_friction);
+	fprintf(outfile, "Shocker Walls: %d\n", settings.si.shocker_walls);
+	fprintf(outfile, "Difficulty: %d\n", settings.difficulty);
 
-	fprintf(outfile, "%d\n", num_veh_alive);
+	customized_combatants();
+	init_combatants();
+	setup_game(False);
+
+	ProgWritten = calloc(num_prog_descs, sizeof(char));
+	assert(ProgWritten);
+
+	fprintf(outfile, "Tanks: %d\n", num_veh_alive);
 
 	/* Information per vehicle */
-	for (ctri = 0; ctri < num_veh_alive; ctri++)
-	{
-	    vptr = live_vehicles[ctri];
+	for (ctri = 0; ctri < num_veh_alive; ctri++) {
+		vptr = live_vehicles[ctri];
 
-	    dispname = "NONE";
-	    for (ctrj = 0; ctrj < num_terminals; ctrj++)
-	    {
-		if (terminal[ctrj]->vehicle == vptr)
+		/* join the players grid's programs with the prog_desc dynamic progs */
+		/* and write the result */
+		if (vptr->num_programs)
 		{
-		    vidptr = terminal[ctrj]->video;
-		    dispname = vidptr->display_name);
-	    }
-	}
+			for (ctrj = 0; ctrj < vptr->num_programs; ctrj++) 
+			{
+				for (iProg = 0; iProg < num_prog_descs; iProg++)
+				{
+					pdesc = prog_desc[iProg];
 
-	/* Vehicle # */
-	fprintf(outfile, "V#%d:  ", vptr->number);
+					/* if it is the same struct */
+					if (vptr->program[ctrj].desc == pdesc)
+					{
+						/* if the program is dynamically loaded */
+						if (pdesc->filename != (char *)0)
+						{
+							/* if I have not already written it */
+							if (ProgWritten[iProg] == False)
+							{
+								fprintf(outfile, "Program:\t%s\t%s\n",
+										pdesc->name, pdesc->filename);
 
-	/* Combatant */
-	fprintf(outfile, "%s, ", vptr->owner->name);
+								ProgWritten[iProg] = True;
+							}
+						}
+					}
+				}
+			}
+		}
 
-	/* Display */
-	fprintf(outfile, "%s, ", dispname);
+		dispname = "NONE";
+		for (ctrj = 0; ctrj < num_terminals; ctrj++) {
+			if (terminal[ctrj]->vehicle == vptr) {
+				vidptr = (Video *)terminal[ctrj]->video;
+				dispname = vidptr->display_name;
+			}
+		}
 
-	/* Vehicle */
-	fprintf(outfile, "%s, ", vptr->name);
+		/* Vehicle # */
+		fprintf(outfile, "V#%d:\t", vptr->number);
 
-	/* Team */
-	fprintf(outfile, "%s, ", teams_entries[vptr->team]);
+		/* Combatant */
+		fprintf(outfile, "%s,\t", vptr->owner->name);
 
-	/* Programs */
-	assert(vptr->num_programs == vptr->owner->num_programs);
+		/* Display */
+		fprintf(outfile, "%s,\t", dispname);
 
-	/* Num Programs */
-	fprintf(outfile, "%d, ", vptr->owner->num_programs);
+		/* Vehicle */
+		fprintf(outfile, "%s,\t", vptr->name);
 
-	if (vptr->num_programs)
-	{
-	    for (ctrj = 0; ctrj < vptr->num_programs; ctrj++)
-	    {
-		fprintf(outfile, "%s", vptr->program[ctrj]->desc->name);
-		if (ctrj != vptr->num_programs - 1)
-		    fprintf(outfile, ", ");
-	    }
-	}
-	else
-	{
-	    fprinf(outfile, "NONE");
-	}
+		/* Team */
+		fprintf(outfile, "%s,\t", teams_entries[vptr->team]);
 
-	fprintf(outfile, "\n");
-    }				/* end of for - for each vehicle */
+		/* Programs */
+		assert(vptr->num_programs == vptr->owner->num_programs);
+
+		/* Num Programs */
+		fprintf(outfile, "%d,\t", vptr->owner->num_programs);
+
+		if (vptr->num_programs)
+		{
+			for (ctrj = 0; ctrj < vptr->num_programs; ctrj++) {
+				fprintf(outfile, "%s", vptr->program[ctrj].desc->name);
+				if (ctrj != vptr->num_programs - 1) fprintf(outfile, ",\t");
+			}
+		} else {
+			fprintf(outfile, "NONE");
+		}
+
+		fprintf(outfile, "\n");
+	}				/* end of for - for each vehicle */
+
+	fclose(outfile);
 }
-}
-
-#endif

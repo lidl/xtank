@@ -7,10 +7,22 @@
 */
 
 /*
-$Author: stripes $
-$Id: setup.c,v 2.4 1991/03/25 00:42:11 stripes Exp $
+$Author: aahz $
+$Id: setup.c,v 2.8 1992/01/30 07:43:15 aahz Exp $
 
 $Log: setup.c,v $
+ * Revision 2.8  1992/01/30  07:43:15  aahz
+ * added init_box_names to avoid a seg fault later.
+ *
+ * Revision 2.7  1992/01/30  05:25:52  aahz
+ * moved the game_running flag lower (into setup.c)
+ *
+ * Revision 2.6  1991/12/15  22:36:31  aahz
+ * used a macro for structure assignment in place_vehicle
+ *
+ * Revision 2.5  1991/12/10  03:41:44  lidl
+ * changed float to FLOAT, for portability reasons
+ *
  * Revision 2.4  1991/03/25  00:42:11  stripes
  * RS6K Patches (IBM is a rock sucker)
  *
@@ -61,6 +73,8 @@ extern long random();
 
 int num_combatants;
 Combatant combatant[MAX_VEHICLES];
+
+Boolean game_running = False;
 
 
 /*
@@ -263,9 +277,13 @@ int play_game()
 	follow_mouse(ANIM_WIN, FALSE);
 #endif
 
+	game_running = True;
+
 	do {
 	    status = animate();
 	} while (status == GAME_RUNNING);
+
+	game_running = False;
 
 	status = display_game_stats(status);
 
@@ -308,6 +326,9 @@ Boolean newgame;
     /* Initialize bullets and explosions */
     init_bset();
     init_eset();
+
+	/* Initialize box names */
+	init_box_names();
 
     /* Initialize all terminals to observe vehicle 0 */
     for (i = 0; i < num_terminals; i++) {
@@ -462,13 +483,13 @@ Vehicle *v;
     v->loc->x = v->loc->grid_x * BOX_WIDTH + v->loc->box_x;
     v->loc->y = v->loc->grid_y * BOX_HEIGHT + v->loc->box_y;
 
-    *v->old_loc = *v->loc;
+	STRUCT_ASSIGN(*v->old_loc, *v->loc, Loc);
 
     vector = &v->vector;
     vector->speed = vector->xspeed = vector->yspeed = vector->drive = 0.0;
     /* orient the vehicle randomly */
     vector->angle = vector->desired_heading = vector->heading =
-	vector->old_heading = (float) rnd(100) * (2 * PI) / 100 - PI;
+	vector->old_heading = (FLOAT) rnd(100) * (2 * PI) / 100 - PI;
     views = v->obj->num_pics;
     vector->old_rot = vector->rot =
 	((int) ((vector->heading) / (2 * PI) * views + views + .5)) % views;

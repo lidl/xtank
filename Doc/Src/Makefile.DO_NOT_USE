@@ -1,0 +1,36 @@
+#
+# How to make Xtank documentation
+#
+# NOTE: This makefile was designed for use by GNU make.  I'm sure that
+#       normal make doesn't work for it.
+#
+
+latexfiles = essential.latex mdesign.latex vdesign.latex xtanklib.latex
+dvifiles = $(latexfiles:%.latex=%.dvi)
+psfiles = $(latexfiles:%.latex=%.PS)
+
+ps : $(psfiles)
+
+dvi : $(dvifiles)
+
+install : $(psfiles)
+	cp $(psfiles) ..
+
+clean:
+	rm -f $(dvifiles) $(psfiles) *.aux *.log
+
+#
+# Dependency rules
+#
+
+%.dvi: %.latex
+	latex $<
+
+%.idx: %.latex
+	latex $<
+
+%.ind: %.idx
+	index $<
+
+%.PS : %.dvi
+	dvips -nodialog -dvi $< -ps $@

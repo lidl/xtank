@@ -7,10 +7,29 @@
  */
 
 /*
-$Author: lidl $
-$Id: x11.c,v 2.10 1991/09/27 11:32:41 lidl Exp $
+$Author: aahz $
+$Id: x11.c,v 2.16 1992/02/01 21:48:43 aahz Exp $
 
 $Log: x11.c,v $
+ * Revision 2.16  1992/02/01  21:48:43  aahz
+ * part of the CPU sucking code fix
+ *
+ * Revision 2.15  1992/01/30  05:08:13  stripes
+ * Reduced idle CPU useage.
+ *
+ * Revision 2.14  1992/01/29  03:32:03  lidl
+ * applied Aaron's patches, but things are still buggy
+ *
+ * Revision 2.13  1991/12/15  22:36:31  aahz
+ * removed X sync debug.
+ *
+ * Revision 2.12  1991/12/15  20:28:02  lidl
+ * a small SVR4 compatibility hack
+ *
+ * Revision 2.11  1991/11/10  19:56:28  lidl
+ * added unsigned to the various object defines, so that picky ANSI compilers
+ * will do the right thing, and not munge them beyond comprehension
+ *
  * Revision 2.10  1991/09/27  11:32:41  lidl
  * fixing an improperly hand-applied patch to move the KEYPAD_DETECT ifdef
  * to the proper place in the file.  No wonder it didn't work!
@@ -57,8 +76,12 @@ $Log: x11.c,v $
 
 #include "malloc.h"
 #include <stdio.h>
-#ifndef SYSV
-#include <strings.h>
+#ifdef SVR4
+# include <string.h>
+#else
+# ifndef SYSV
+#  include <strings.h>
+# endif
 #endif
 #include <ctype.h>
 #include "graphics.h"
@@ -90,22 +113,29 @@ char *get_default();
 int get_num_default();
 
 #ifdef BATCH_LINES
+#ifdef BATCH_COLOR_LINES
+	XSegment lineBatch[MAX_COLORS][BATCHDEPTH];
+	int linesBatched[MAX_COLORS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	int lineBatchFunc = -20;
+	int lineBatchWin = -20;
+#else /* BATCH_COLOR_LINES */
 	XSegment lineBatch[BATCHDEPTH];
 	int linesBatched = 0;
 	int lineBatchColor = -1;        /* Must be a non-color */
-	int lineBatchFunc;
-	int lineBatchWin;
+	int lineBatchFunc = -20;
+	int lineBatchWin = -20;
+#endif /* BATCH_COLOR_LINES */
 #endif
 #ifdef BATCH_POINTS
         XPoint pointBatch[MAX_COLORS][BATCHPDEPTH];
         int pointsBatched[MAX_COLORS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         int pointBatchFunc = -20;
-        int pointBatchWin;
+        int pointBatchWin = -20;
 #endif
 
 #define icon_width 64
 #define icon_height 14
-static char icon_bits[] = {
+static unsigned char icon_bits[] = {
 	0x07, 0x98, 0xff, 0xc7, 0x03, 0x0f, 0xe7, 0x30, 0x0f, 0xbc, 0xff, 0xef,
 	0x03, 0x1f, 0xef, 0x79, 0x1b, 0x2e, 0x01, 0xe4, 0x06, 0x23, 0x6b, 0x5d,
 	0x36, 0x17, 0xde, 0x73, 0x05, 0x2b, 0x6b, 0x6f, 0xec, 0x0b, 0x58, 0xb0,
@@ -252,6 +282,9 @@ char *name;
 	/* 40 times slower, but debugable: */
 	/* XSynchronize(video->dpy, 1);    */
 	/***********************************/
+#ifdef DEBUG_SYNC
+	XSynchronize(video->dpy, 1);
+#endif
 	(void) strcpy(video->display_name, name);
 	if (video->dpy == NULL)
 	{
@@ -467,11 +500,36 @@ int font, func, color;
 {
     int len;
 
+#ifndef NO_TEXT_CLIP
+
+/*
+ * Only draws text that (some of) would end up in the window
+ */
+
+    int bottom_y, right_x, left_x;
+
+    len = strlen(str);
+    bottom_y = y + fheight[font];
+    left_x = x - fwidth[font] * len / 2;
+    right_x = x + fwidth[font] * len / 2;
+    if ( left_x < vid->win[w].width
+      && right_x >= 0
+      && y < vid->win[w].height
+      && bottom_y >= 0) 
+
+	XDrawString(vid->dpy, vid->win[w].id, vid->text_gc[font][func][color],
+		    left_x, y + fascent[font], str, len);
+
+#else /* NO_TEXT_CLIP */
+
     len = strlen(str);
     XDrawString(vid->dpy, vid->win[w].id, vid->text_gc[font][func][color],
 		x - fwidth[font] * len / 2,
 		y + fascent[font],
 		str, len);
+
+#endif /* NO_TEXT_CLIP */
+
 }
 
 int should_disp_name()
@@ -578,81 +636,91 @@ get_events(num_events, event)
     char buf[2];
     int max_events;
     int w, tf;
+	int iExposeEvent = FALSE;
     extern int frame;
+	extern Boolean game_running;
 
     max_events = *num_events;
     *num_events = 0;
-    while (*num_events < max_events && XPending(vid->dpy))
+	while ((*num_events < max_events) && (!game_running || XPending(vid->dpy)))
     {
-	XNextEvent(vid->dpy, &xevent);
-	any_xevent = &xevent.xany;
-	for (w = 0; w < vid->num_windows; w++)
-	    if (any_xevent->window == vid->win[w].id)
-	    {
-		switch ((int) xevent.type)
+		XNextEvent(vid->dpy, &xevent);
+		any_xevent = &xevent.xany;
+		for (w = 0; w < vid->num_windows; w++)
 		{
-		  case Expose:
-		    /* Set the exposed bit in the window flags if win is
-		       exposed */
-		    vid->win[w].flags |= WIN_exposed;
-		    vid->last_expose_frame = frame;
-		    break;
-		  case KeyPress:
-		    /* Figure out which key was pressed (if any) */
-		    key_xevent = &xevent.xkey;
-		    if (XLookupString(key_xevent, buf, 1, NULL, NULL) == 0)
-			break;
-		    if (!isprint(buf[0]) && buf[0] != '\r' && buf[0] != 127)
-			break;
+	    	if (any_xevent->window == vid->win[w].id)
+	    	{
+				switch ((int) xevent.type)
+				{
+		  		case Expose:
+		    		/* Set the exposed bit in the window flags if win is
+		       		exposed */
+		    		vid->win[w].flags |= WIN_exposed;
+		    		vid->last_expose_frame = frame;
+					iExposeEvent = TRUE;
+		    		break;
+		  		case KeyPress:
+		    		/* Figure out which key was pressed (if any) */
+		    		key_xevent = &xevent.xkey;
+		    		if (XLookupString(key_xevent, buf, 1, NULL, NULL) == 0)
+					break;
+		    		if (!isprint(buf[0]) && buf[0] != '\r' && buf[0] != 127)
+					break;
 
-		    /* Add a key event to the array */
-		    e = &event[(*num_events)++];
-		    e->win = w;
-		    e->type = EVENT_KEY;
-		    e->key = buf[0];
-		    e->x = key_xevent->x;
-		    e->y = key_xevent->y;
+		    		/* Add a key event to the array */
+		    		e = &event[(*num_events)++];
+		    		e->win = w;
+		    		e->type = EVENT_KEY;
+		    		e->key = buf[0];
+		    		e->x = key_xevent->x;
+		    		e->y = key_xevent->y;
 #ifdef KEYPAD_DETECT
-			/* assumes most people will have wants_keypad set */
-			e->keypad = vid->kludge.wants_keypad
-				&& IsKeypadKey(XLookupKeysym(key_xevent, 0));
+					/* assumes most people will have wants_keypad set */
+					e->keypad = vid->kludge.wants_keypad
+						&& IsKeypadKey(XLookupKeysym(key_xevent, 0));
 #endif
-		    break;
-		  case ButtonPress:
-		  case ButtonRelease:
-		    /* Add a button event to the array */
-		    e = &event[(*num_events)++];
-		    e->win = w;
+		    		break;
+		  		case ButtonPress:
+		  		case ButtonRelease:
+		    		/* Add a button event to the array */
+		    		e = &event[(*num_events)++];
+		    		e->win = w;
 
-		    button_xevent = &xevent.xbutton;
-		    tf = (xevent.type == ButtonPress);
-		    switch (button_xevent->button)
-		    {
-		      case Button1:
-			e->type = (tf ? EVENT_LBUTTON : EVENT_LBUTTONUP);
-			break;
-		      case Button2:
-			e->type = (tf ? EVENT_MBUTTON : EVENT_MBUTTONUP);
-			break;
-		      case Button3:
-			e->type = (tf ? EVENT_RBUTTON : EVENT_RBUTTONUP);
-			break;
-		    }
-		    e->x = button_xevent->x;
-		    e->y = button_xevent->y;
-		    break;
-		  case MotionNotify:
-		    /* Add a moved event to the array */
-		    e = &event[(*num_events)++];
-		    e->win = w;
+		    		button_xevent = &xevent.xbutton;
+		    		tf = (xevent.type == ButtonPress);
+		    		switch (button_xevent->button)
+		    		{
+		      		case Button1:
+					e->type = (tf ? EVENT_LBUTTON : EVENT_LBUTTONUP);
+					break;
+		      		case Button2:
+					e->type = (tf ? EVENT_MBUTTON : EVENT_MBUTTONUP);
+					break;
+		      		case Button3:
+					e->type = (tf ? EVENT_RBUTTON : EVENT_RBUTTONUP);
+					break;
+		    		}
+		    		e->x = button_xevent->x;
+		    		e->y = button_xevent->y;
+		    		break;
+		  		case MotionNotify:
+		    		/* Add a moved event to the array */
+		    		e = &event[(*num_events)++];
+		    		e->win = w;
 
-		    motion_xevent = &xevent.xmotion;
-		    e->type = EVENT_MOVED;
-		    e->x = motion_xevent->x;
-		    e->y = motion_xevent->y;
-		    break;
+		    		motion_xevent = &xevent.xmotion;
+		    		e->type = EVENT_MOVED;
+		    		e->x = motion_xevent->x;
+		    		e->y = motion_xevent->y;
+		    		break;
+				}
+	    	}
+    	}
+
+		if (iExposeEvent)
+		{
+			break;
 		}
-	    }
     }
 }
 
@@ -916,11 +984,11 @@ char *fontdir;
 #define cross_height 16
 #define cross_x_hot 7
 #define cross_y_hot 7
-static char cross_bits[] = {
+static unsigned char cross_bits[] = {
 	0x80, 0x00, 0x80, 0x00, 0x80, 0x00, 0x80, 0x00, 0xc0, 0x01, 0x80, 0x00,
 	0x10, 0x04, 0x3f, 0x7e, 0x10, 0x04, 0x80, 0x00, 0xc0, 0x01, 0x80, 0x00,
 0x80, 0x00, 0x80, 0x00, 0x80, 0x00, 0x00, 0x00};
-static char cross_mask[] = {
+static unsigned char cross_mask[] = {
 	0xc0, 0x01, 0xc0, 0x01, 0xc0, 0x01, 0xc0, 0x01, 0xe0, 0x03, 0xd0, 0x05,
 	0xbf, 0x7e, 0x7f, 0x7f, 0xbf, 0x7e, 0xd0, 0x05, 0xe0, 0x03, 0xc0, 0x01,
 0xc0, 0x01, 0xc0, 0x01, 0xc0, 0x01, 0x00, 0x00};
@@ -929,11 +997,11 @@ static char cross_mask[] = {
 #define plus_height 16
 #define plus_x_hot 8
 #define plus_y_hot 7
-static char plus_bits[] = {
+static unsigned char plus_bits[] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x03, 0x80, 0x03, 0x80, 0x03,
 	0xf0, 0x1f, 0xf0, 0x1f, 0xf0, 0x1f, 0x80, 0x03, 0x80, 0x03, 0x80, 0x03,
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-static char plus_mask[] = {
+static unsigned char plus_mask[] = {
 	0x00, 0x00, 0x00, 0x00, 0xc0, 0x07, 0xc0, 0x07, 0xc0, 0x07, 0xf8, 0x3f,
 	0xf8, 0x3f, 0xf8, 0x3f, 0xf8, 0x3f, 0xf8, 0x3f, 0xc0, 0x07, 0xc0, 0x07,
 0xc0, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
@@ -942,11 +1010,11 @@ static char plus_mask[] = {
 #define ul_height 16
 #define ul_x_hot 8
 #define ul_y_hot 7
-static char ul_bits[] = {
+static unsigned char ul_bits[] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	0x80, 0x3f, 0x80, 0x3f, 0x80, 0x3f, 0x80, 0x03, 0x80, 0x03, 0x80, 0x03,
 0x80, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-static char ul_mask[] = {
+static unsigned char ul_mask[] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xc0, 0x7f,
 	0xc0, 0x7f, 0xc0, 0x7f, 0xc0, 0x7f, 0xc0, 0x7f, 0xc0, 0x07, 0xc0, 0x07,
 0xc0, 0x07, 0xc0, 0x07, 0x00, 0x00, 0x00, 0x00};
@@ -955,11 +1023,11 @@ static char ul_mask[] = {
 #define lr_height 16
 #define lr_x_hot 8
 #define lr_y_hot 7
-static char lr_bits[] = {
+static unsigned char lr_bits[] = {
 	0x00, 0x00, 0x00, 0x00, 0x80, 0x03, 0x80, 0x03, 0x80, 0x03, 0x80, 0x03,
 	0xf8, 0x03, 0xf8, 0x03, 0xf8, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-static char lr_mask[] = {
+static unsigned char lr_mask[] = {
 	0x00, 0x00, 0xc0, 0x07, 0xc0, 0x07, 0xc0, 0x07, 0xc0, 0x07, 0xfc, 0x07,
 	0xfc, 0x07, 0xfc, 0x07, 0xfc, 0x07, 0xfc, 0x07, 0x00, 0x00, 0x00, 0x00,
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};

@@ -1,7 +1,13 @@
 Beta Test Notes.
 
 We need you to tell us:
-  * What your setup is (Hardware, OS version, Imakefile.Config -D flags).
+  * What your setup is:
+       - Hardware platform (eg Sun Sparcstation 1+)
+       - OS version (eg SunOS 4.1.2)
+       - Windowing System (eg OpenWin 3, or MIT X11R5, DecWindows, etc)
+       - Compiler used (eg gcc 1.37, vendor cc, etc)
+       - any non-default Imakefile.Config -D flags
+       - what version of Xtank that you are trying to run
   * If it works.
   * If it doesn't work.
   * If it doesn't work, and you know why it doesn't
@@ -23,7 +29,7 @@ above "Beta Test Notes" info to xtank-request@eng.umd.edu along with
 a request to be added to the list.
 
 Note: requests to be added that are directed to the main mailing list
-are most likely to be ignored.
+are most likely to be ignored, with extreme prejudice.
 
 Our set-ups (where we test the release before shipping it):
     Sun3's running SunOS 4.1 and 4.1.1, using SUN_LWP, sun's cc
@@ -38,10 +44,11 @@ wasn't very portable for a while we used "arch", since that was
 longer!
 
 Now that we use a real Imakefile, we use the symbol that is defined
-in the X11R4 source tree from MIT.  This is large and ugly, and it
-shows in the Imakefile.  However, it is extremely portable across
-*lots* of architectures.  After all, if you have X, you ought to have
-xtank.  (The only thing that still requires some machine intelligence
-is the Bin/xtank shell script.  You're on your own there, sorry.)
+in the X11R4 or X11R5 source tree from MIT.  This is large and ugly,
+and it shows in the Imakefile.  However, it is extremely portable
+across *lots* of architectures.  After all, if you have X, you ought
+to have xtank.  (The only thing that still requires some machine
+intelligence is the Bin/xtank shell script.  You're on your own
+there, sorry.)
 
 						- stripes & lidl & aahz

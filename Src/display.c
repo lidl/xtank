@@ -8,9 +8,30 @@
 
 /*
 $Author: lidl $
-$Id: display.c,v 2.6 1991/09/19 02:39:55 lidl Exp $
+$Id: display.c,v 2.12 1992/01/29 08:37:01 lidl Exp $
 
 $Log: display.c,v $
+ * Revision 2.12  1992/01/29  08:37:01  lidl
+ * post aaron patches, seems to mostly work now
+ *
+ * Revision 2.11  1992/01/26  04:59:20  stripes
+ * delete this revision (KJL)
+ *
+ * Revision 2.10  1992/01/06  07:52:49  stripes
+ * Changes for teleport
+ *
+ * Revision 2.9  1991/11/24  17:52:20  lidl
+ * well, fixed an itts-bitsy bug in the mapper update bug.  Hopefull,
+ * I've really and truely fixed it this time.
+ *
+ * Revision 2.8  1991/11/08  06:29:38  lidl
+ * fixed the long-outstanding bug where the mapper doesn't get updated
+ * properly when the vehicle you are observing dies -- an extra radar
+ * line would get drawn into the radar display -- no more!
+ *
+ * Revision 2.7  1991/10/28  13:52:54  lidl
+ * removed #ifdefs for NONAMETAGS -- they are now the default
+ *
  * Revision 2.6  1991/09/19  02:39:55  lidl
  * NEW_STRING_REDRAW is now STINGY_REDRAW
  *
@@ -159,7 +180,6 @@ int lastterm;
 
 #define VEHICLE_NAME_Y 25
 
-
 /*
 ** Displays the specified vehicle and its turrets in the animation window.
 */
@@ -185,9 +205,7 @@ unsigned int status;
 		     old_loc->screen_y[term->num], pic, DRAW_XOR, v->color);
 
 	/* Erase the string showing name and team */
-#ifdef NONAMETAGS
 	if (!settings.si.no_nametags)
-#endif
 #ifdef STINGY_REDRAW
 	if ( (status != REDISPLAY) ||
 		(old_loc->screen_x[term->num] != loc->screen_x[term->num]) ||
@@ -199,6 +217,7 @@ unsigned int status;
 		      old_loc->screen_y[term->num] + VEHICLE_NAME_Y,
 		      v->disp, S_FONT, DRAW_XOR, v->color);
     }
+
     /* Draw the new vehicle picture */
     if (status != OFF) {
 	loc = v->loc;
@@ -214,9 +233,7 @@ unsigned int status;
 		     loc->screen_y[term->num], pic, DRAW_XOR, v->color);
 
 	/* Display a string showing name and team */
-#ifdef NONAMETAGS
 	if (!settings.si.no_nametags)
-#endif
 #ifdef STINGY_REDRAW
 	if ( (status != REDISPLAY) ||
 		(old_loc->screen_x[term->num] != loc->screen_x[term->num]) ||
@@ -270,11 +287,22 @@ unsigned int status;
 			pic = &obj->pic[t->old_rot];
 #ifdef STINGY_REDRAW
 			if ( (status != REDISPLAY) || mov_rot ||
+#ifdef NEW_TURRETS
+				(t->old_end.x != t->end.x) || (t->old_end.y != t->end.y) ||
+#endif
 				(t->old_rot != t->rot) )
 #endif /* STINGY_REDRAW */
+#ifndef TEST_TURRETS
 			draw_picture(ANIM_WIN, old_loc->screen_x[term->num] + old_tcoord->x,
 						 old_loc->screen_y[term->num] + old_tcoord->y,
 						 pic, DRAW_XOR, v->color);
+#else /* TEST_TURRETS */
+			draw_line(ANIM_WIN, old_loc->screen_x[term->num] + old_tcoord->x,
+						 old_loc->screen_y[term->num] + old_tcoord->y,
+			                    old_loc->screen_x[term->num] + old_tcoord->x + t->old_end.x,
+					    old_loc->screen_y[term->num] + old_tcoord->y + t->old_end.y,
+						 DRAW_XOR, v->color);
+#endif /* TEST_TURRETS */
 		}
 		/* draw the new turret */
 		if (status != OFF)
@@ -283,11 +311,22 @@ unsigned int status;
 			pic = &obj->pic[t->rot];
 #ifdef STINGY_REDRAW
 			if ( (status != REDISPLAY) || mov_rot ||
+#ifdef NEW_TURRETS
+				(t->old_end.x != t->end.x) || (t->old_end.y != t->end.y) ||
+#endif
 				(t->old_rot != t->rot) )
 #endif /* STINGY_REDRAW */
+#ifndef TEST_TURRETS
 			draw_picture(ANIM_WIN, loc->screen_x[term->num] + tcoord->x,
 						 loc->screen_y[term->num] + tcoord->y,
 						 pic, DRAW_XOR, v->color);
+#else /* TEST_TURRETS */
+			draw_line(ANIM_WIN, loc->screen_x[term->num] + tcoord->x,
+						 loc->screen_y[term->num] + tcoord->y,
+			                    loc->screen_x[term->num] + tcoord->x + t->end.x,
+					    loc->screen_y[term->num] + tcoord->y + t->end.y,
+						 DRAW_XOR, v->color);
+#endif /* TEST_TURRETS */
 		}
 	}
 }
@@ -432,7 +471,7 @@ unsigned int status;
 /* Draws fuel, ammo, armor, and goal in center, outpost wherever it is */
 #define draw_type(b,line_x,line_y,fr) \
   switch(b->type) { \
-    case FUEL: case AMMO: case ARMOR: case GOAL: case PEACE: \
+    case FUEL: case AMMO: case ARMOR: case GOAL: case PEACE: case TELEPORT: \
       pic = &landmark_obj[0]->pic[(int)b->type - 1]; \
       draw_picture(ANIM_WIN,line_x+BOX_WIDTH/2,line_y+BOX_HEIGHT/2, \
 		   pic,DRAW_XOR,WHITE); \
@@ -610,7 +649,6 @@ display_map(status)
     unsigned int status;
 {
     Vehicle *v = term->vehicle;
-
     /* Check for being exposed */
     check_expose(MAP_WIN, status);
 
@@ -631,8 +669,18 @@ display_map(status)
 	    action = SP_erase;
 	    break;
 	}
-	do_special(v, MAPPER, action);
-	do_special(v, RADAR, action);
+	if (tstflag(v->status, VS_is_alive)) {
+	    do_special(v, MAPPER, action);
+	    do_special(v, RADAR, action);
+#ifndef NO_NEW_RADAR
+		do_special(v, NEW_RADAR, action);
+		do_special(v, TACLINK, action);
+#endif /* !NO_NEW_RADAR */
+	} else {
+	    if (v->death_timer == DEATH_DELAY - 1) {
+		do_special(v, RADAR, SP_erase);
+	    }
+	}
     } else if (term->observer) {
 	full_mapper(status);
 	full_radar(status);
@@ -675,10 +723,11 @@ char *help_normal[] = {
 	"t      turn turret (middle)    M   toggle mapper      d   spin toggle        P   pause game         W   toggle wide         o   every 2 frames",
 	"g      turn tank   (right)     R   toggle radar       f   spin =>            <   slow down game     D   toggle distance     p   every 4 frames",
 	"0-9    set forward drive       z   toggle safety      w   throw slow         >   speed up game      E   toggle extend       [   every 8 frames",
-	"-      full reverse drive      c   stop               e   throw medium                              L   toggle clipping     ]   every 16 frames",
-	"!@#$%^ toggle weapons 1-6      v   speed up           r   throw fast",
-	"=      toggle all weapons      x   slow down",
-	"return send message",
+	"-      full reverse drive      +   toggle repair      e   throw medium                              L   toggle clipping     ]   every 16 frames",
+	"!@#$%^ toggle weapons 1-6      F   toggle teleport    r   throw fast",
+	"=      toggle all weapons      c   stop",
+	"return send message            v   speed up",
+	"                               x   slow down",
 };
 char *help_battle[] = {
 	"0-9     track vehicle",
@@ -690,6 +739,7 @@ char *help_battle[] = {
 	">       speed game up",
 	"Q       quit",
 	"",
+	""
 };
 
 /*
@@ -698,7 +748,7 @@ char *help_battle[] = {
 display_help(status)
 unsigned int status;
 {
-    int i;
+    int i, lim;
     char **text;
 
     /* Check for being exposed */
@@ -715,7 +765,9 @@ unsigned int status;
 	    text = help_normal;
 	}
 
-	for (i = 0; i < sizeof(help_normal) / sizeof(help_normal[0]); i++)
+	lim = (term->observer) ? sizeof(help_normal) / sizeof(help_normal[0]) :
+		sizeof(help_battle) / sizeof(help_battle[0]);
+	for (i = 0; i < lim; i++)
 	    display_mesg(HELP_WIN, text[i], i, T_FONT);
     }
 }
@@ -890,6 +942,28 @@ int first, last, view, x, y, height;
 				y + PIC_Y + height * (i - first), 0);
 }
 
+/* Keep names of land mark &c &c types in a global where others can see 'em */
+char *box_type_name[NUM_LANDMARK_TYPES];
+
+init_box_names()
+{
+	int i;
+
+    for (i = 0; i < NUM_LANDMARK_TYPES; i++) box_type_name[i] = "???";
+	
+    box_type_name[FUEL]      = "fuel";
+    box_type_name[AMMO]      = "ammo";
+    box_type_name[ARMOR]     = "armor";
+    box_type_name[GOAL]      = "goal";
+    box_type_name[OUTPOST]   = "outpost";
+    box_type_name[PEACE]     = "peace";
+    box_type_name[TELEPORT]  = "teleport";
+    box_type_name[SCROLL_N]  = "scroll";
+    box_type_name[SLIP]      = "slip";
+    box_type_name[SLOW]      = "slow";
+    box_type_name[START_POS] = "start";
+}
+
 /*
 ** Draws all the views of a given object in a vertical column, starting
 ** at the specified location and working downwards in jumps of height.
@@ -901,21 +975,8 @@ int type, x, y, height;
     extern Weapon_stat weapon_stat[];
     char *str;
     int adj, i;
-    char *box_type_name[NUM_LANDMARK_TYPES];
 
-    for (i = 0; i < NUM_LANDMARK_TYPES; i++)
-	box_type_name[i] = "";
-	
-    box_type_name[FUEL]      = "fuel";
-    box_type_name[AMMO]      = "ammo";
-    box_type_name[ARMOR]     = "armor";
-    box_type_name[GOAL]      = "goal";
-    box_type_name[OUTPOST]   = "outpost";
-    box_type_name[PEACE]     = "peace";
-    box_type_name[SCROLL_N]  = "scroll";
-    box_type_name[SLIP]      = "slip";
-    box_type_name[SLOW]      = "slow";
-    box_type_name[START_POS] = "start";
+	init_box_names();
 
     for (i = 0; i < obj->num_pics; i++)
     {

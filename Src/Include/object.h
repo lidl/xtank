@@ -1,10 +1,13 @@
 /* object.h - structures describing graphic objects */
 
 /*
-$Author: rpotter $
-$Id: object.h,v 2.3 1991/02/10 13:51:26 rpotter Exp $
+$Author: lidl $
+$Id: object.h,v 2.4 1991/12/10 01:21:04 lidl Exp $
 
 $Log: object.h,v $
+ * Revision 2.4  1991/12/10  01:21:04  lidl
+ * change all occurances of "float" to "FLOAT"
+ *
  * Revision 2.3  1991/02/10  13:51:26  rpotter
  * bug fixes, display tweaks, non-restart fixes, header reorg.
  *
@@ -45,7 +48,7 @@ typedef struct {
     int   y2;			/* The rest of the stuff is for SPEED */
     int   dx;			/* x2-x1 */
     int   dy;			/* y2-y1 */
-    float slope;		/* dy/dx */
+    FLOAT slope;		/* dy/dx */
     int   intercept;		/* y1 - slope * x1 */
     int   minx;			/* min(x1,x2) */
     int   miny;			/* min(y1,y2) */

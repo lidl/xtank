@@ -1,9 +1,15 @@
 
 /*
-$Author: rpotter $
-$Id: mazeconv.c,v 2.3 1991/02/10 13:51:14 rpotter Exp $
+$Author: stripes $
+$Id: mazeconv.c,v 2.5 1992/01/06 07:52:49 stripes Exp $
 
 $Log: mazeconv.c,v $
+ * Revision 2.5  1992/01/06  07:52:49  stripes
+ * Changes for teleport
+ *
+ * Revision 2.4  1991/12/03  19:52:51  stripes
+ * changed comment spacing
+ *
  * Revision 2.3  1991/02/10  13:51:14  rpotter
  * bug fixes, display tweaks, non-restart fixes, header reorg.
  *
@@ -45,6 +51,7 @@ static int external_type[] =
     NORTH_DEST_SYM,
     WEST_DEST_SYM,
     PEACE,
+    TELEPORT,
 	-1
 };
 
@@ -58,12 +65,12 @@ convert_maze(d, convtype)
     Byte flags, *dptr;
     int ctr;
 
-    /* For each box there is a byte that contains 8 flags.  If EMPTY_BOXES
-       is set, the remaining 7 bits give the number of empty boxes
-       (excluding this one) to make before reading the next byte.
-       Otherwise, If TYPE_EXISTS is set, the next byte is the box type.
-       Otherwise, the type is 0. If TEAM_EXISTS is set, the next byte is
-       the box team.  Otherwise, the team is 0. */
+    /* For each box there is a byte that contains 8 flags.  If EMPTY_BOXES is
+       set, the remaining 7 bits give the number of empty boxes (excluding this
+       one) to make before reading the next byte.  Otherwise, If TYPE_EXISTS is
+       set, the next byte is the box type.  Otherwise, the type is 0. If
+       TEAM_EXISTS is set, the next byte is the box team.  Otherwise, the team
+       is 0. */
     dptr = d->data;
     while (*dptr)
     {

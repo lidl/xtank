@@ -1,10 +1,16 @@
 /* types.h - simple typedefs that are used in many places */
 
 /*
-$Author: rpotter $
-$Id: types.h,v 2.3 1991/02/10 13:51:52 rpotter Exp $
+$Author: lidl $
+$Id: types.h,v 2.5 1992/01/29 08:39:11 lidl Exp $
 
 $Log: types.h,v $
+ * Revision 2.5  1992/01/29  08:39:11  lidl
+ * post aaron patches, seems to mostly work now
+ *
+ * Revision 2.4  1991/12/10  01:21:04  lidl
+ * change all occurances of "float" to "FLOAT"
+ *
  * Revision 2.3  1991/02/10  13:51:52  rpotter
  * bug fixes, display tweaks, non-restart fixes, header reorg.
  *
@@ -31,11 +37,17 @@ typedef enum {False = 0, True = 1} Boolean;
 #define TRUE ((int)True)
 typedef unsigned char Byte;
 typedef unsigned int Flag;	/* a set of bits */
-typedef float Angle;
+typedef FLOAT Angle;
 
 typedef struct {
     short x, y;
 } Coord;
+
+#ifndef NO_NEW_RADAR
+typedef struct {
+    long x, y;
+} lCoord;
+#endif /* !NO_NEW_RADAR */
 
 /* directions of rotation */
 typedef enum {

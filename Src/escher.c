@@ -3,10 +3,13 @@
  */
 
 /*
-$Author: rpotter $
-$Id: escher.c,v 2.3 1991/02/10 13:50:26 rpotter Exp $
+$Author: lidl $
+$Id: escher.c,v 2.4 1991/12/10 03:41:44 lidl Exp $
 
 $Log: escher.c,v $
+ * Revision 2.4  1991/12/10  03:41:44  lidl
+ * changed float to FLOAT, for portability reasons
+ *
  * Revision 2.3  1991/02/10  13:50:26  rpotter
  * bug fixes, display tweaks, non-restart fixes, header reorg.
  *
@@ -29,6 +32,7 @@ $Log: escher.c,v $
  * escher.c version started Thu d.07.12.1989
  */
 
+#include "sysdep.h"
 #include "graphics.h"
 
 /*

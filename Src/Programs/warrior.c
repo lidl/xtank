@@ -6,10 +6,13 @@
 \****************************************/
 
 /*
-$Author: rpotter $
-$Id: warrior.c,v 2.3 1991/02/10 13:52:09 rpotter Exp $
+$Author: lidl $
+$Id: warrior.c,v 2.4 1991/12/15 20:22:49 lidl Exp $
 
 $Log: warrior.c,v $
+ * Revision 2.4  1991/12/15  20:22:49  lidl
+ * changed all "float" occurances to "FLOAT"
+ *
  * Revision 2.3  1991/02/10  13:52:09  rpotter
  * bug fixes, display tweaks, non-restart fixes, header reorg.
  *
@@ -27,6 +30,7 @@ $Log: warrior.c,v $
  * 
 */
 
+#include "sysdep.h"
 #include "malloc.h"
 #include "xtanklib.h"
 #include <math.h>
@@ -74,7 +78,7 @@ typedef struct
     int num_blips, num_bullets, num_vehicles, target_id;
     int mode, frame, next_frame, crashed;
     WallSide last_dir;
-    float last_speed, last_angle, desired_speed;
+    FLOAT last_speed, last_angle, desired_speed;
     Timing timing;
     Location loc, target, destination, old_loc, dest, final_dest;
     Blip_info blip[MAX_BLIPS];
@@ -608,7 +612,7 @@ Everything *all;
        again, mileage may vary ... */
 
     int dx, dy;
-    float angle;
+    FLOAT angle;
 
     if (all->crashed)
     {
@@ -629,7 +633,7 @@ Everything *all;
 	else
 	    angle = 0.5 * PI;
     else
-        angle = (float) ATAN2(dy, dx);
+        angle = (FLOAT) ATAN2(dy, dx);
 
     switch (all->mode)
     {
@@ -651,10 +655,10 @@ Everything *all;
 
 warrior_try_to_go(all, angl, spd)
 Everything *all;
-float angl, spd;
+FLOAT angl, spd;
 {
 	/* theta is amount we need to turn */
-	float theta;
+	FLOAT theta;
 
 	theta = angl - all->last_angle;
 	if (theta < 0)

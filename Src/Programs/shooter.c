@@ -7,10 +7,13 @@
 */
 
 /*
-$Author: aahz $
-$Id: shooter.c,v 2.5 1991/09/28 23:32:05 aahz Exp $
+$Author: lidl $
+$Id: shooter.c,v 2.6 1991/12/15 20:22:49 lidl Exp $
 
 $Log: shooter.c,v $
+ * Revision 2.6  1991/12/15  20:22:49  lidl
+ * changed all "float" occurances to "FLOAT"
+ *
  * Revision 2.5  1991/09/28  23:32:05  aahz
  * no change.
  *
@@ -35,6 +38,7 @@ $Log: shooter.c,v $
 */
 
 #include <xtanklib.h>
+#include "sysdep.h"
 #include "malloc.h"
 #include <stdio.h>
 #if defined(i860)
@@ -174,11 +178,11 @@ shooter_shoot(sinfo, myloc, t)
     Location *myloc;
     Vehicle_info *t;
 {
-    extern float turret_angle(), aim_turret();
+    extern FLOAT turret_angle(), aim_turret();
     extern int frame;
     int dx, dy, range;
-    float lead_factor, ang;
-    float kludge;
+    FLOAT lead_factor, ang;
+    FLOAT kludge;
     int i, j, k;
     WeaponType weap_type;
     Weapon_info *wi, *twi;
@@ -196,8 +200,8 @@ shooter_shoot(sinfo, myloc, t)
 		continue;
 	    /* Lead the target approximately, shoot fanning */
 	    lead_factor = 2 * sqrt(0.0 + range) / wi->ammo_speed;
-	    dx += (int) (t->xspeed * lead_factor * (float) rnd(20) / 19.0);
-	    dy += (int) (t->yspeed * lead_factor * (float) rnd(20) / 19.0);
+	    dx += (int) (t->xspeed * lead_factor * (FLOAT) rnd(20) / 19.0);
+	    dy += (int) (t->yspeed * lead_factor * (FLOAT) rnd(20) / 19.0);
 
 	    /* Point the turret towards where he is going to be */
             ang = aim_turret((TurretNum)i, dx, dy);

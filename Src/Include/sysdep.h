@@ -8,9 +8,21 @@
 
 /*
 $Author: lidl $
-$Id: sysdep.h,v 2.7 1991/09/15 07:01:09 lidl Exp $
+$Id: sysdep.h,v 2.11 1991/12/27 02:31:55 lidl Exp $
 
 $Log: sysdep.h,v $
+ * Revision 2.11  1991/12/27  02:31:55  lidl
+ * fixed up for SVR4 machines
+ *
+ * Revision 2.10  1991/12/15  22:36:03  aahz
+ * added a macro for structure assignments.
+ *
+ * Revision 2.9  1991/12/10  01:16:51  lidl
+ * have a new define for FLOAT
+ *
+ * Revision 2.8  1991/10/07  03:16:12  lidl
+ * added multimax support (sys 5 universe)
+ *
  * Revision 2.7  1991/09/15  07:01:09  lidl
  * added i860 to list of machines that complain about domain errors with
  * atan2.
@@ -44,16 +56,22 @@ $Log: sysdep.h,v $
 #ifndef SYSDEP_H
 #define SYSDEP_H
 
+#ifdef i860
+#define STRUCT_ASSIGN(a,b,c) { memcpy(&(a), &(b), sizeof(c)); }
+#else
+#define STRUCT_ASSIGN(a,b,c) { a = b; }
+#endif
 
-#if defined(sun) || defined(hpux) || defined(apollo) || defined(mips) || defined(MOTOROLA) || defined(i860)
+
+#if defined(sun) || defined(hpux) || defined(apollo) || defined(mips) || defined(MOTOROLA) || defined(i860) || defined(mmax)
 /* Avoid domain errors when both x and y are 0 */
-#define ATAN2(Y,X) ((X)==0 && (Y)==0 ? 0.0 : atan2((double)Y, (double)X))
+#define ATAN2(_Y,_X) ((_X)==0 && (_Y)==0 ? 0.0 : atan2((double)_Y, (double)_X))
 #else
 #define ATAN2(Y,X) atan2((double)Y, (double)X)
 #endif
 
 
-#if defined(AMIGA) || defined(hpux) || defined(MOTOROLA) || defined(i860)
+#if defined(AMIGA) || defined(hpux) || defined(MOTOROLA) || defined(i860) || defined(mmax)
 /* drem() not available so replace with wrapper around fmod() */
 static double temp_drem;
 #define drem(a,b) ((temp_drem = fmod(a,b)) > (b)/2 ? temp_drem-(b) : temp_drem)
@@ -69,22 +87,36 @@ static double temp_drem;
 #if defined(mips) && defined(ultrix)
 /* DEC bites again - broken math.h */
 extern double fmod(), drem();
-/* rumor that DEC's drem has a bug.  Consider using the macro above. */
+/* There's a rumor that DEC's drem has a bug.  Consider using the macro above. */
 #endif
 
+/*
+** Some ANSI compilers bitch and moan about float != double, and then
+** also have different arguement promotion rules.
+*/
 
-#ifdef SYSV
-#define random lrand48
-#define srandom srand48
-#if defined(__hpux) || defined(__STDC__) || defined(STDC_LIBRARIES)
-#define bcopy(s,d,n) memmove(d,s,n)
+#if defined(i860)
+# define FLOAT double
 #else
-#define bcopy(s,d,n) memcpy(d,s,n)
+# define FLOAT float
 #endif
-#define bzero(d,n) memset(d,0,n)
-#define bcmp(a,b,n) memcmp(a,b,n)
-#define index(s,c) strchr(s,c)
-#define rindex(s,c) strrchr(s,c)
+
+#if defined(SYSV) || defined(SVR4)
+#  ifndef sgi
+#    define random lrand48
+#  endif
+#  define srandom srand48
+#  if defined(__hpux) || defined(__STDC__) || defined(STDC_LIBRARIES)
+#    define bcopy(s,d,n) memmove(d,s,n)
+#  else
+#    define bcopy(s,d,n) memcpy(d,s,n)
+#  endif
+#  define bzero(d,n) memset(d,0,n)
+#  define bcmp(a,b,n) memcmp(a,b,n)
+#  define index(s,c) strchr(s,c)
+#  ifndef sgi
+#    define rindex(s,c) strrchr(s,c)
+#  endif
 #endif
 
 

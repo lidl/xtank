@@ -7,10 +7,22 @@
 */
 
 /*
-$Author: rpotter $
-$Id: xtank.h,v 2.3 1991/02/10 13:52:15 rpotter Exp $
+$Author: lidl $
+$Id: xtank.h,v 2.7 1992/01/29 08:39:11 lidl Exp $
 
 $Log: xtank.h,v $
+ * Revision 2.7  1992/01/29  08:39:11  lidl
+ * post aaron patches, seems to mostly work now
+ *
+ * Revision 2.6  1991/12/03  20:15:57  lidl
+ * botched try for prototype support
+ *
+ * Revision 2.5  1991/11/23  06:31:27  lidl
+ * now includes the function prototypes file
+ *
+ * Revision 2.4  1991/10/27  22:35:15  aahz
+ * updated the number of weapons.
+ *
  * Revision 2.3  1991/02/10  13:52:15  rpotter
  * bug fixes, display tweaks, non-restart fixes, header reorg.
  *
@@ -32,18 +44,24 @@ $Log: xtank.h,v $
 #define _XTANK_H_
 
 #include <stdio.h>
-#ifdef SYSV
+#if defined(SYSV) || defined(SVR4)
 #include <string.h>
 #else
 #include <strings.h>
 #endif
+
 #include <math.h>
 #include "screen.h"
 #include "xtanklib.h"		/* many important things here */
+/* #include "proto.h"		/* function prototypes for ANSI compilers */
 
 #ifdef AMIGA
 #include "amiga.h"
 #endif
+
+#ifdef TEST_TURRETS
+#define TURRET_LENGTH 25
+#endif /* TEST_TURRETS */
 
 /* Number of frames animation lasts after end of game */
 #define QUIT_DELAY 17
@@ -64,8 +82,8 @@ $Log: xtank.h,v $
 #define ANY_VEHICLE	0x0fffff00
 
 /* General max values */
-#define MAX_WEAPON_STATS 18
-#define MAX_GAME_SPEED  30
+#define MAX_WEAPON_STATS 19
+#define MAX_GAME_SPEED   30
 
 /* Description max values */
 #define MAX_VDESCS	100
@@ -93,6 +111,8 @@ $Log: xtank.h,v $
 #define DESC_BAD_FORMAT 3
 #define DESC_NO_ROOM    4
 
+#ifdef NO_NEW_RADAR
+
 #define SP_update	0
 #define SP_activate	1
 #define SP_deactivate	2
@@ -103,6 +123,25 @@ $Log: xtank.h,v $
 #define SP_break	7
 #define SP_repair	8
 
+#else /* NO_NEW_RADAR */
+
+/*
+ * eithier this or use different symbols for do_special, 
+ * ie not SP_xxx
+ * this seemed simple enough
+ */
+
+#define SP_update	(0+MAX_SPEC_STATS)
+#define SP_activate	(1+MAX_SPEC_STATS)
+#define SP_deactivate	(2+MAX_SPEC_STATS)
+#define SP_toggle	(3+MAX_SPEC_STATS)
+#define SP_draw		(4+MAX_SPEC_STATS)
+#define SP_erase	(5+MAX_SPEC_STATS)
+#define SP_redisplay	(6+MAX_SPEC_STATS)
+#define SP_break	(7+MAX_SPEC_STATS)
+#define SP_repair	(8+MAX_SPEC_STATS)
+
+#endif /* NO_NEW_RADAR */
 /* Vehicle, weapon, and program status masks */
 #define VS_functioning		(1<<0)
 #define VS_is_alive		(1<<1)

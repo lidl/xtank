@@ -7,10 +7,22 @@
 */
 
 /*
-$Author: rpotter $
-$Id: actions.c,v 2.3 1991/02/10 13:50:05 rpotter Exp $
+$Author: lidl $
+$Id: actions.c,v 2.7 1992/01/29 08:35:48 lidl Exp $
 
 $Log: actions.c,v $
+ * Revision 2.7  1992/01/29  08:35:48  lidl
+ * post aaron patches, seems to mostly work now
+ *
+ * Revision 2.6  1991/12/15  21:10:07  aahz
+ * improved previous and next live_tank calls.
+ *
+ * Revision 2.5  1991/12/10  03:41:44  lidl
+ * changed float to FLOAT, for portability reasons
+ *
+ * Revision 2.4  1991/11/22  07:00:42  aahz
+ * added functions to return the next/previous number
+ *
  * Revision 2.3  1991/02/10  13:50:05  rpotter
  * bug fixes, display tweaks, non-restart fixes, header reorg.
  *
@@ -89,15 +101,32 @@ int dx, dy;
 ** Creates a bullet from the specified weapon type at the given location,
 ** owned by the vehicle v, moving at the specified angle.
 */
+#ifdef NO_NEW_RADAR
 make_bullet(v, loc, type, angle)
+#else /* NO_NEW_RADAR */
+/*
+ * New function for generating smart (has an internal coordinate)
+ * bullets.  The original function is replaced by a macro (someplace...)
+ * that points here.
+ */
+make_smart_bullet(v, loc, type, angle, target)
+#endif /* NO_NEW_RADAR */
 Vehicle *v;
 Loc *loc;
 WeaponType type;
 Angle angle;
+#ifndef NO_NEW_RADAR
+lCoord *target;
+#endif /* NO_NEW_RADAR */
 {
     Weapon_stat *ws;
     extern Bset *bset;
     Bullet *b;
+
+#ifndef NO_NEW_RADAR
+    if ((target == NULL) && (type == HARM))
+	return;
+#endif /* NO_NEW_RADAR */
 
     if (bset->number >= MAX_BULLETS)
 	return;			/* too many bullets */
@@ -110,12 +139,34 @@ Angle angle;
     b->loc = &b->loc1;
     b->old_loc = &b->loc2;
 
+#ifndef NO_NEW_RADAR
+/*
+ *
+ * Note that this "height" idea here is an extensive change. It moves a buncha
+ * logic from hit.c over here for setting the "height" of a bullet. Has the
+ * disadvantage that these "high" objects still hit the things they run
+ * into, they just don't explode! Maybe i'll fix that sometime...
+ * 
+ */
+    switch (type) {
+      case SEEKER:
+    		b->old_loc->z = b->loc->z = 1;
+		break;
+      case MINE:
+    		b->old_loc->z = b->loc->z = -1;
+		break;
+      default:                                   /* HARM when launched too */
+    		b->old_loc->z = b->loc->z = 0;
+		break;
+     }
+#endif
+
     /* Find the weapon_stat structure */
     ws = &weapon_stat[(int)type];
 
     /* Compute the x and y components of the bullet's speed */
-    b->xspeed = (float) ws->ammo_speed * cos(angle);
-    b->yspeed = (float) ws->ammo_speed * sin(angle);
+    b->xspeed = (FLOAT) ws->ammo_speed * cos(angle);
+    b->yspeed = (FLOAT) ws->ammo_speed * sin(angle);
 
     /* Add the motion of the owner (if necessary) */
     if (settings.si.rel_shoot == TRUE && v != NULL)
@@ -126,6 +177,12 @@ Angle angle;
     b->type = type;
     b->life = ws->frames;
     b->hurt_owner = FALSE;
+#ifndef NO_NEW_RADAR
+    if (type == HARM) {
+        b->target.y = target->y;
+        b->target.x = target->x; 
+    }
+#endif /* NO_NEW_RADAR */
 }
 
 /*
@@ -178,6 +235,10 @@ unsigned int action;
 
     switch (action)
     {
+/*
+ * Use the "activate" and "deactivate" for robots,
+ * the "on" and "off" for humans.
+ */
       case SP_update:
       case SP_redisplay:
       case SP_draw:
@@ -188,8 +249,18 @@ unsigned int action;
       case SP_activate:
 	if (s->status == SP_off)	/* why this test? -RDP */
 	{
+#ifdef NO_NEW_RADAR
+/*
+ * I'm not sure I'm using this re-arangement, but please incorporate
+ * it as it makes a class of operation on specials easier and
+ * more consistant.
+ */
 	    s->status = SP_on;
+#endif /* NO_NEW_RADAR */
 	    (*s->proc) (v, s->record, SP_activate);
+#ifndef NO_NEW_RADAR
+	    s->status = SP_on;
+#endif /* !NO_NEW_RADAR */
 	}
 	break;
       case SP_deactivate:
@@ -202,9 +273,15 @@ unsigned int action;
       case SP_toggle:
 	if (s->status == SP_off)
 	{
+#ifdef NO_NEW_RADAR
 	    s->status = SP_on;
+#endif /* NO_NEW_RADAR */
 	    (*s->proc) (v, s->record, SP_activate);
+#ifndef NO_NEW_RADAR
+	    s->status = SP_on;
+#endif /* !NO_NEW_RADAR */
 	    (*s->proc) (v, s->record, SP_draw);
+
 	}
 	else if (s->status == SP_on)
 	{
@@ -223,10 +300,32 @@ unsigned int action;
 	s->status = SP_broken;
 	break;
       case SP_repair:
-	s->status = SP_on;
+#ifdef NO_NEW_RADAR
+	    s->status = SP_on;
+#endif /* NO_NEW_RADAR */
 	(*s->proc) (v, s->record, SP_activate);
+#ifndef NO_NEW_RADAR
+	    s->status = SP_on;
+#endif /* !NO_NEW_RADAR */
 	(*s->proc) (v, s->record, SP_draw);
 	break;
+#ifndef NO_NEW_RADAR
+      case SP_on:
+	if (s->status == SP_off) {
+	    (*s->proc) (v, s->record, SP_activate);
+	    s->status = SP_on;
+	    (*s->proc) (v, s->record, SP_draw);
+
+	}
+	break;
+      case SP_off:
+	if (s->status == SP_on) {
+	    s->status = SP_off;
+	    (*s->proc) (v, s->record, SP_deactivate);
+	    (*s->proc) (v, s->record, SP_erase);
+	}
+	break;
+#endif /* !NO_NEW_RADAR */
     }
 }
 
@@ -254,6 +353,63 @@ int dx, dy;
 	new.grid_y >= 0 && new.grid_y < GRID_HEIGHT - 4)
 	term->loc = new;
 }
+
+#define INCR_WRAP(a,b) {if ((a) == (b)) (a) = 0; else (a)++;}
+#define DECR_WRAP(a,b) {if ((a) == 0) (a) = (b); else (a)--;}
+int next_live_tank()
+{
+	int iCurrentTank = -1;
+
+	if (term->vehicle)
+	{
+		iCurrentTank = term->vehicle->number;
+
+		INCR_WRAP(iCurrentTank, num_veh - 1);
+
+		while (! IsVehicleAlive(iCurrentTank))
+		{
+			INCR_WRAP(iCurrentTank, num_veh - 1);
+		}
+	}
+
+	return (iCurrentTank);
+}
+
+int previous_live_tank()
+{
+	int iCurrentTank = -1;
+
+	if (term->vehicle)
+	{
+		iCurrentTank = term->vehicle->number;
+
+		DECR_WRAP(iCurrentTank, num_veh - 1);
+
+		while (! IsVehicleAlive(iCurrentTank))
+		{
+			DECR_WRAP(iCurrentTank, num_veh - 1);
+		}
+	}
+
+	return (iCurrentTank);
+}
+
+int IsVehicleAlive(num)
+	int num;
+{
+	int i;
+
+	for (i = 0; i < num_veh_alive; i++) 
+	{
+	    if (live_vehicles[i]->number == num) 
+		{
+			break;
+	    }
+	}
+
+	return ((i != num_veh_alive));
+}
+
 
 /*
 ** Switches the view on the current terminal to the perspective of
@@ -318,13 +474,13 @@ switch_view(num)
 */
 release_discs(v, dspeed, delay)
 Vehicle *v;
-float dspeed;
+FLOAT dspeed;
 Boolean delay;
 {
     extern Bset *bset;
     Bullet *b;
-    float ratio;
-    float curspeed;
+    FLOAT ratio;
+    FLOAT curspeed;
     int i;
 
     if (v->num_discs > 0)

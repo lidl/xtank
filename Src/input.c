@@ -7,10 +7,28 @@
 */
 
 /*
-$Author: aahz $
-$Id: input.c,v 2.8 1991/09/28 19:22:35 aahz Exp $
+$Author: lidl $
+$Id: input.c,v 2.14 1992/01/29 08:37:01 lidl Exp $
 
 $Log: input.c,v $
+ * Revision 2.14  1992/01/29  08:37:01  lidl
+ * post aaron patches, seems to mostly work now
+ *
+ * Revision 2.13  1992/01/06  07:52:49  stripes
+ * Changes for teleport
+ *
+ * Revision 2.12  1991/12/15  21:38:30  aahz
+ * fixed typo
+ *
+ * Revision 2.11  1991/12/15  21:10:07  aahz
+ * improved previous and next live_tank calls.
+ *
+ * Revision 2.10  1991/12/10  03:41:44  lidl
+ * changed float to FLOAT, for portability reasons
+ *
+ * Revision 2.9  1991/11/22  07:01:20  stripes
+ * (AAHZ) - added + and - to the view mode for incr/decr veh #'s
+ *
  * Revision 2.8  1991/09/28  19:22:35  aahz
  * no change.
  *
@@ -100,6 +118,7 @@ Event *event;
     extern int sync_rate;
     Vehicle *v;
     int dx, dy;
+	int num;
 
     /* Compute dx and dy from center of animation window to cursor */
     dx = event->x - ANIM_WIN_WIDTH / 2;
@@ -116,6 +135,20 @@ Event *event;
 		break;
 	    case EVENT_KEY:
 		switch (event->key) {
+			case '-':
+                num = previous_live_tank();
+                if (num >= 0)
+                {
+                    switch_view(num);
+                }
+                break;
+			case '+':
+                num = next_live_tank();
+                if (num >= 0)
+                {
+                    switch_view(num);
+                }
+                break;
 		    case '0':
 		    case '1':
 		    case '2':
@@ -201,7 +234,7 @@ Event *event;
 			    }
 			} else {
 #endif
-			    set_rel_drive((float) (event->key - '0'));
+			    set_rel_drive((FLOAT) (event->key - '0'));
 #ifdef KEYPAD_DETECT
 			}
 #endif
@@ -276,6 +309,14 @@ Event *event;
 		    case 'M':
 			do_special(v, MAPPER, SP_toggle);
 			break;
+#ifndef NO_NEW_RADAR
+		    case 'N':
+			do_special(v, NEW_RADAR, SP_toggle);
+			break;
+		    case 'T':
+			do_special(v, TACLINK, SP_toggle);
+			break;
+#endif /* NO_NEW_RADAR */
 		    case 'R':
 			do_special(v, RADAR, SP_toggle);
 			break;
@@ -307,11 +348,15 @@ Event *event;
 			sync_rate = 16;
 			break;
 #endif
-
+#ifdef NO_NEW_RADAR
+/*
+ * Borrowing this key, sorry...
+ */
 		    case 'T':
 			toggle_3d(TS_3d);
 			expose_win(ANIM_WIN, TRUE);
 			break;
+#endif /* NO_NEW_RADAR */
 		    case 'W':
 			toggle_3d(TS_wide);
 			break;
@@ -324,9 +369,12 @@ Event *event;
 		    case 'L':
 			toggle_3d(TS_clip);
 			break;
+		    case 'F':
+			v->teleport ^= TRUE;
+			break;
 
 		    case 'z':
-			v->safety ^= TRUE;
+			if (v->vdesc->treads != HOVER_TREAD) v->safety ^= TRUE;
 			break;
 		    case '\r':
 			send_message(v);

@@ -7,10 +7,31 @@
 */
 
 /*
-$Author: lidl $
-$Id: init.c,v 2.5 1991/09/19 05:30:48 lidl Exp $
+$Author: aahz $
+$Id: init.c,v 2.12 1992/01/30 03:43:20 aahz Exp $
 
 $Log: init.c,v $
+ * Revision 2.12  1992/01/30  03:43:20  aahz
+ * removed ifdefs around no radar
+ *
+ * Revision 2.11  1992/01/30  03:25:48  aahz
+ * team score and disable radar where juxtaposed in init.
+ *
+ * Revision 2.10  1992/01/29  08:37:01  lidl
+ * post aaron patches, seems to mostly work now
+ *
+ * Revision 2.9  1991/12/10  03:41:44  lidl
+ * changed float to FLOAT, for portability reasons
+ *
+ * Revision 2.8  1991/11/27  06:45:25  aahz
+ * fixed typo
+ *
+ * Revision 2.7  1991/11/27  06:22:48  aahz
+ * default team score to on.
+ *
+ * Revision 2.6  1991/10/28  13:52:54  lidl
+ * removed #ifdefs for NONAMETAGS -- they are now the default
+ *
  * Revision 2.5  1991/09/19  05:30:48  lidl
  * run through indent, added NONAMETAGS default setting
  *
@@ -70,21 +91,20 @@ init_settings()
 	    TRUE,		/* Boolean restart */
 	    FALSE,		/* Boolean full_map */
 	    FALSE,		/* Boolean pay_to_play GHS */
-
-#ifdef NONAMETAGS
 	    FALSE,		/* Boolean no_nametags */
-#endif
+		TRUE,       /* Boolean team_score GHS */
+	    FALSE,		/* Boolean no_radar */
 
 	    10000,		/* int winning_score GHS */
 	    20,			/* int takeover_time */
 	    5,			/* int outpost_strength */
 	    1,			/* int shocker_walls GHS */
-	    5.0,		/* float scroll_speed */
-	    0.5,		/* float slip_friction */
-	    1.0,		/* float normal_friction */
-	    0.99,		/* float disc_friction */
-	    0.5,		/* float box_slowdown */
-	    0.3,		/* float owner_slowdown */
+	    5.0,		/* FLOAT scroll_speed */
+	    0.5,		/* FLOAT slip_friction */
+	    1.0,		/* FLOAT normal_friction */
+	    0.99,		/* FLOAT disc_friction */
+	    0.5,		/* FLOAT box_slowdown */
+	    0.3,		/* FLOAT owner_slowdown */
 	},
     };
 
@@ -101,9 +121,14 @@ Vehicle *v;
 	int views = t->obj->num_pics;
 
 	/* Give the turret a random initial angle */
-	t->desired_angle = t->angle = (float) rnd(100) * (2 * PI) / 100 - PI;
+	t->desired_angle = t->angle = (FLOAT) rnd(100) * (2 * PI) / 100 - PI;
 	t->old_rot = t->rot = ((int) ((t->angle) /
 				    (2 * PI) * views + views + .5)) % views;
+#ifdef TEST_TURRETS
+        t->old_end.x = t->end.x = cos(t->angle) * TURRET_LENGTH;
+        t->old_end.y = t->end.y = sin(t->angle) * TURRET_LENGTH;
+#endif /* TEST_TURRETS */
+
     }
 }
 

@@ -1,10 +1,13 @@
 /* vehicleparts.h - part of Xtank */
 
 /*
-$Author: lidl $
-$Id: vehicleparts.h,v 2.4 1991/09/17 17:07:03 lidl Exp $
+$Author: senft $
+$Id: vehicleparts.h,v 2.5 1991/12/03 20:22:08 senft Exp $
 
 $Log: vehicleparts.h,v $
+ * Revision 2.5  1991/12/03  20:22:08  senft
+ * Updated enums for the fourth turrent.
+ *
  * Revision 2.4  1991/09/17  17:07:03  lidl
  * changed name from vehicle_parts.h to vehicleparts.h
  * a little SysVRcrippled support/compatibility
@@ -39,7 +42,7 @@ typedef enum {
 
 /* the different turrets */
 typedef enum {
-    TURRET1, TURRET2, TURRET3,
+    TURRET1, TURRET2, TURRET3, TURRET4, 
     real_MAX_TURRETS
 } TurretNum;
 #define MAX_TURRETS ((int)real_MAX_TURRETS)	/* how many there are */
@@ -50,6 +53,7 @@ typedef enum {
     MOUNT_TURRET1 = TURRET1,
     MOUNT_TURRET2 = TURRET2,
     MOUNT_TURRET3 = TURRET3,
+    MOUNT_TURRET4 = TURRET4,
     MOUNT_FRONT, MOUNT_BACK, MOUNT_LEFT, MOUNT_RIGHT,
     real_NUM_MOUNTS
 } MountLocation;

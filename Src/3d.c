@@ -8,10 +8,13 @@
 */
 
 /*
-$Author: rpotter $
-$Id: 3d.c,v 2.3 1991/02/10 13:49:50 rpotter Exp $
+$Author: lidl $
+$Id: 3d.c,v 2.4 1991/12/10 03:41:44 lidl Exp $
 
 $Log: 3d.c,v $
+ * Revision 2.4  1991/12/10  03:41:44  lidl
+ * changed float to FLOAT, for portability reasons
+ *
  * Revision 2.3  1991/02/10  13:49:50  rpotter
  * bug fixes, display tweaks, non-restart fixes, header reorg.
  *
@@ -29,8 +32,8 @@ $Log: 3d.c,v $
  * 
 */
 
+#include "sysdep.h"
 #include "terminal.h"
-
 
 /*
 ** Displays the walls, bullets and vehicles in the animation window.

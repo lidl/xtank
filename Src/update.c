@@ -7,10 +7,25 @@
 */
 
 /*
-$Author: rpotter $
-$Id: update.c,v 2.3 1991/02/10 13:51:55 rpotter Exp $
+$Author: stripes $
+$Id: update.c,v 2.8 1992/02/10 05:26:49 stripes Exp $
 
 $Log: update.c,v $
+ * Revision 2.8  1992/02/10  05:26:49  stripes
+ * Exaust trails for various crap.
+ *
+ * Revision 2.7  1992/01/29  08:37:01  lidl
+ * post aaron patches, seems to mostly work now
+ *
+ * Revision 2.6  1991/12/10  03:41:44  lidl
+ * changed float to FLOAT, for portability reasons
+ *
+ * Revision 2.5  1991/11/22  06:01:12  stripes
+ * Changed hover's skid & safety
+ *
+ * Revision 2.4  1991/10/27  22:34:27  aahz
+ * made unguided missles have an exhaust trail.
+ *
  * Revision 2.3  1991/02/10  13:51:55  rpotter
  * bug fixes, display tweaks, non-restart fixes, header reorg.
  *
@@ -37,6 +52,9 @@ $Log: update.c,v $
 #include "bullet.h"
 #include "terminal.h"
 #include "globals.h"
+#ifndef NO_NEW_RADAR
+#include "graphics.h"
+#endif /* !NO_NEW_RADAR */
 
 extern Boolean intersect_wall();
 
@@ -93,7 +111,7 @@ update_vehicle(v)
     Loc *loc, *old_loc;
     Vector *vector;
     Box *b;
-    float xadj, yadj;
+    FLOAT xadj, yadj;
     int i;
 
     vector = &v->vector;
@@ -148,44 +166,35 @@ update_vehicle(v)
 }
 
 
-/* Updates the motion vector for the vehicle.  The model is designed for
-   regular tank treads, and is really not realistic for hover "treads".
-   Rotation handling is not realistic for any treads. */
-
+#if 0				/* basically a very old version (but maybe
+				   should be used for hover treads -- it's a
+				   better model for that) */
 update_vector(v)
     Vehicle *v;
 {
+    FLOAT xdrive, ydrive, xaccel, yaccel;
+    FLOAT turning_rate, friction, max_diff, accel, ratio;
+    Box *b;
     Vector *vector = &v->vector;
-    float turning_rate;		/* fastest they can turn at current speed */
-    float friction;		/* friction with the ground */
-    float heading_diff;		/* difference between direction it is moving
-				   and direction it is pointing */
-    float roll_speed;		/* how fast it is rolling forward */
-    float slide_speed;		/* how fast is is sliding sideways */
-    float accel_lim;		/* the limit to acceleration imposed by ground
-				   and tread friction */
-    float desired_acc;		/* how much more speed the driver wants */
-
 
     /* don't let them turn or accelerate if they are slicked with oil */
     if (v->status & VS_sliding)
 	return;
 
     /* Update heading */
-
     if (v->fuel > 0) {
-	int spd = 0;
+	int spd;
 
-	if (v->safety == TRUE) {/* pay attention to speed? */
+	if (v->safety == TRUE) { /* speed limits turning? */
 	    spd = ABS((int) vector->speed);
 	    if (spd > MAX_SPEED) {
 		spd = MAX_SPEED;
 	    }
-	}
-	turning_rate = v->turn_rate[spd];
     } else {
-	turning_rate = 0;	/* can't turn with no fuel */
+	    spd = 0;
     }
+
+	turning_rate = v->turn_rate[spd];
 
     switch (vector->heading_flag) {
 	case CLOCKWISE:
@@ -201,81 +210,208 @@ update_vector(v)
 	    }
 	    break;
     }
-
-    /* when out of fuel, pretend they want to stop (actually, we ought to let
-       them coast to a stop, but that involves figuring out what the rolling
-       friction should be, ugh) */
-    if (v->fuel <= 0)
+    } else {
 	vector->drive = 0.0;
+    }
 
-    /* break velocity into components W.R.T the heading */
-    heading_diff = vector->angle - vector->heading;
-    roll_speed = cos(heading_diff) * vector->speed;
-    slide_speed = sin(heading_diff) * vector->speed;
+    xdrive = cos(vector->heading) * vector->drive;
+    ydrive = sin(vector->heading) * vector->drive;
 
-    /* determine the ground friction */
+    /* If the vehicle owns discs, decrease the drive appropriately */
+    if(v->num_discs > 0) {
+	xdrive *= settings.si.owner_slowdown;
+	ydrive *= settings.si.owner_slowdown;
+    }
+
+    /* Compute acceleration needed to make speed match drive */
+    xaccel = xdrive - vector->xspeed;
+    yaccel = ydrive - vector->yspeed;
+
+    /* Amount of friction depends on box type */
     friction = (v->vdesc->treads != HOVER_TREAD &&
 		real_map[v->loc->grid_x][v->loc->grid_y].type == SLIP) ?
-	    settings.si.slip_friction :
-	    settings.si.normal_friction;
+		    settings.si.slip_friction : settings.si.normal_friction;
 
-    accel_lim = friction * v->vdesc->tread_acc;
+    /* If acc isn't in same direction as motion, then you're braking */
+    max_diff = ((vector->xspeed * xdrive + vector->yspeed * ydrive <= 0) ?
+		v->vdesc->tread_acc : v->vdesc->engine_acc) * friction;
 
-    /* figure out how much they want to accelerate */
+    /* Make certain you're not accelerating by more than allowed amount */
+    accel = sqrt(xaccel*xaccel + yaccel*yaccel);
+    if (accel > max_diff) {
+	ratio = max_diff/accel;
+	xaccel *= ratio;
+	yaccel *= ratio;
+    }
+
+    /* Compute new angle and speed */
+    vector->yspeed += yaccel;
+    vector->xspeed += xaccel;
+    vector->speed = hypot(vector->yspeed, vector->xspeed);
+    vector->angle = ATAN2(vector->yspeed, vector->xspeed);
+}
+
+#endif				/* old stuff */
+
+
+/* Updates the velocity and orientation of the given vehicle.  Rotation done is
+   unrealistically.  So is acceleration, but a somewhat more realistic
+   algorthim I tried was less fun.  Hovertreads should be treated separately,
+   but are not.  */
+
+update_vector(v)
+    Vehicle *v;
+{
+    Vector *vector = &v->vector;
+    FLOAT roll_speed;		/* how fast vehicle is rolling forward */
+    FLOAT slide_speed;		/* how fast vehicle is sliding sideways */
+    FLOAT roll_acc, slide_acc;
+    FLOAT traction;		/* the limit to acceleration imposed by ground
+				   and tread friction */
+    FLOAT desired_speed;	/* how fast driver wants to go */
+    FLOAT desired_acc;		/* how much the driver wants to speed up */
+    FLOAT drive_acc;		/* acceleration from engine power */
+    FLOAT ground_friction;
+
+    /* don't let them turn or accelerate if they are slicked with oil
+       (actually, air friction should be taken into account, but I'm lazy) */
+    if (v->status & VS_sliding)
+        return;
+
+    /* determine the ground friction here */
+    if (v->vdesc->treads == HOVER_TREAD) {
+        ground_friction = settings.si.normal_friction;
+    } else {
+    /* on slip square? */
+        ground_friction =
+            real_map[v->loc->grid_x][v->loc->grid_y].type == SLIP ?
+            settings.si.slip_friction :
+            settings.si.normal_friction;
+    }
+
+    /* determine the traction between treads and ground */
+    traction = ground_friction * v->vdesc->tread_acc;
+
+	if (v->vdesc->treads == HOVER_TREAD)
+	{
+		traction = 1.0;
+	}
+
+    if (v->fuel > 0) {
+        FLOAT turning_rate;
+
+        if (v->safety == TRUE && traction < vector->speed) {
+            turning_rate = asin(traction / vector->speed);
+            if (turning_rate > v->max_turn_rate)
+                turning_rate = v->max_turn_rate;
+        } else {
+            turning_rate = v->max_turn_rate;
+        }
+
+        switch (vector->heading_flag) {
+              case CLOCKWISE:
+            if ((vector->heading += turning_rate) >= vector->desired_heading) {
+                vector->heading = vector->desired_heading;
+                vector->heading_flag = NO_SPIN;
+            }
+            break;
+          case COUNTERCLOCKWISE:
+            if ((vector->heading -= turning_rate) <= vector->desired_heading) {
+                vector->heading = vector->desired_heading;
+                vector->heading_flag = NO_SPIN;
+            }
+            break;
+        }
+    } else {			/* no fuel? */
+	/* pretend they want to stop (actually, we ought to let them coast to a
+	   stop, but that involves figuring out what the rolling friction
+	   should be, ugh) */
+        vector->drive = 0.0;
+    }
+
+    /* break up the motion into components W.R.T. the orientation of the
+       vehicle */
+    {
+        FLOAT heading_diff;	/* difference between direction it is moving
+                   and direction it is facing */
+
+        heading_diff = vector->angle - vector->heading;
+        roll_speed = cos(heading_diff) * vector->speed;
+        slide_speed = sin(heading_diff) * vector->speed;
+    }
+
+    if (slide_speed != 0.0 &&
+        v->vdesc->treads != HOVER_TREAD &&
+        v->safety == FALSE) {
+        traction *= 0.7;	/* dynamic friction < stiction */
+    }
+
+    /* figure out what they WANT to do */
+    desired_speed = vector->drive;
     if (v->num_discs > 0) {
-	/* if they have discs, pretend they want to go slower (more discs does
-	   NOT mean more slowdown) */
-	desired_acc = (vector->drive * settings.si.owner_slowdown) -
-		roll_speed;
+        /* if they have discs, pretend they want to go slower (more discs
+           does NOT mean more slowdown) */
+        desired_speed *= settings.si.owner_slowdown;
+    }
+    desired_acc = desired_speed - roll_speed;
+
+    /* take engine power limit into account */
+    if (ABS(desired_acc) > v->vdesc->engine_acc) {
+        drive_acc = v->vdesc->engine_acc * SIGN(desired_acc);
     } else {
-	desired_acc = vector->drive - roll_speed;
+        drive_acc = desired_acc;
     }
 
-    /* figure out whether they are braking or accelerating */
-    if (desired_acc * roll_speed >= 0) {	/* same sign? */
-	/* reduce sliding speed by accel_lim */
-	if (ABS(slide_speed) > accel_lim) {
-	    slide_speed -= accel_lim * SIGN(slide_speed);
-	    /* since static friction is less than dynamic friction, we reduce
-	       accel_lim when the vehicle is sliding sideways (we assume that
-	       all vehicles have anti-lock brakes/engines so that they never
-	       skid forward or backward) */
-	    accel_lim *= 0.6;
-	} else {
-	    slide_speed = 0;
-	}
-
-	/* now take engine power into account */
-	accel_lim = MIN(accel_lim, v->vdesc->engine_acc);
-
-	/* don't let them accelerate more than accel_lim */
-	if (ABS(desired_acc) > accel_lim) {
-	    desired_acc = accel_lim * SIGN(desired_acc);
-	}
-
-	roll_speed += desired_acc;	/* accelerate */
-
-	/* re-compose the rolling and sliding vectors into the new x and y
-	   speeds */
-	assign_speed(vector,
-		     (cos(vector->heading) * roll_speed +
-		      cos(vector->heading + PI / 2) * slide_speed),
-		     (sin(vector->heading) * roll_speed +
-		      sin(vector->heading + PI / 2) * slide_speed));
+    if (drive_acc * roll_speed >= 0) { /* speed up? */
+    /* deal with sideways skidding */
+    if (ABS(slide_speed) <= traction) { /* enough to stop? */
+        slide_acc = -slide_speed;
     } else {
-	/* they are braking, so just reduce the magnitude of the overall vector
-	   without changing the direction (we presume they just lock their
-	   treads and skid */
-	if (ABS(vector->speed) > accel_lim) {
-	    vector->speed -= accel_lim * SIGN(vector->speed);
-	    vector->xspeed = vector->speed * cos(vector->angle);
-	    vector->yspeed = vector->speed * sin(vector->angle);
-	} else {
-	    vector->speed = vector->xspeed = vector->yspeed =
-		vector->angle = 0.0;
-	}
+        slide_acc = traction * SIGN(-slide_speed);
+    }
+    roll_acc = drive_acc;
+    } else {			/* braking */
+	FLOAT scale = vector->speed / traction;
+
+	/* the acceleration due to skidding acts in a direction opposite the
+	   direction of motion */
+	if (scale < 1.0) {	/* traction sufficient to stop? */
+        roll_acc = -roll_speed;
+        slide_acc = -slide_speed;
+    } else {
+        /* acceleration is limited by traction */
+        roll_acc = -roll_speed / scale;
+        slide_acc = -slide_speed / scale;
     }
 
+    /* engine contributes to the braking effort (fun, not realistic) */
+	roll_acc += drive_acc;
+
+	if (ABS(desired_acc) < ABS(roll_acc)) {
+        roll_acc = desired_acc; /* don't over-compensate */
+    }
+    }
+
+    /* make sure that the magnitude of the acceleration does not exceed the
+       traction limit */
+    {
+    FLOAT total_acc = hypot(roll_acc, slide_acc);
+
+    if (total_acc > traction) {
+        FLOAT scale = traction / total_acc;
+
+        roll_acc *= scale;
+        slide_acc *= scale;
+    }
+    }
+
+    /* add the roll_acc and slide_acc to the motion */
+    vector->xspeed += cos(vector->heading) * roll_acc +
+	cos(vector->heading + PI/2) * slide_acc;
+    vector->yspeed += sin(vector->heading) * roll_acc +
+	sin(vector->heading + PI/2) * slide_acc;
+    vector->speed = hypot(vector->yspeed, vector->xspeed);
+    vector->angle = ATAN2(vector->yspeed, vector->xspeed);
 }
 
 
@@ -296,11 +432,15 @@ Vehicle *v;
 update_turret(t)
 Turret *t;
 {
-    float delta_angle;
+    FLOAT delta_angle;
     int views;
     Boolean angle_changed = TRUE;
 
     t->old_rot = t->rot;
+#ifdef TEST_TURRETS
+    t->old_end.y = t->end.y;
+    t->old_end.x = t->end.x;
+#endif /* TEST_TURREST */
     delta_angle = t->turn_rate;
     switch (t->angle_flag)
     {
@@ -326,6 +466,10 @@ Turret *t;
     {
 	views = t->obj->num_pics;
 	t->rot = ((int) ((t->angle) / (2 * PI) * views + views + .5)) % views;
+#ifdef TEST_TURRETS
+	t->end.x = cos(t->angle) * TURRET_LENGTH;
+	t->end.y = sin(t->angle) * TURRET_LENGTH;
+#endif /* TEST_TURRETS */
     }
 }
 
@@ -367,9 +511,18 @@ update_bullets()
 			case SEEKER:
 				update_seeker(b);
 				break;
+			case PROCKET:
+			case UMISSLE:
+                make_explosion(b->loc, EXP_EXHAUST);
+				break;
 			case DISC:
 				update_disc(b);
 				break;
+#ifndef NO_NEW_RADAR
+			case HARM:
+				update_harm(b);
+				break;
+#endif /* !NO_NEW_RADAR */
 		}
 
 		/* Update the bullet location */
@@ -443,7 +596,7 @@ update_seeker(b)
 Bullet *b;
 {
     Loc *loc;
-    float accel, sp, sp2, axs, ays, xdir, ydir;
+    FLOAT accel, sp, sp2, axs, ays, xdir, ydir;
     int dx, dy, seek, best_dx, best_dy, best_seek, best_heat, i;
 
     /* Make a trail of exhaust */
@@ -451,7 +604,8 @@ Bullet *b;
 
     /* Find all vehicles that would affect heat seeking */
     best_seek = 0;
-    for (i = 0; i < num_veh_alive; i++) {
+    for (i = 0; i < num_veh_alive; i++) 
+    {
 	/* Is vehicle within 3 boxes, in line of sight, in front of the seeker
 	   and hotter/closer than the previous targets? */
 	loc = live_vehicles[i]->loc;
@@ -510,15 +664,206 @@ Bullet *b;
     }
 }
 
+#ifndef NO_NEW_RADAR
+
+/*
+ * Adapted from "Graphics Gems"
+ * gives approximate distance from loc1 to loc2
+ * with only overestimations, and then never by more
+ * than (9/8) + one bit uncertainty.
+ */
+
+/* !!! Wrong place for this, move! !!! */
+
+long idist(loc1, loc2)
+lCoord loc1, loc2;
+{
+    if ((loc2.x -= loc1.x) < 0) loc2.x = -loc2.x;
+    if ((loc2.y -= loc1.y) < 0) loc2.y = -loc2.y;
+    return (loc2.x + loc2.y - (((loc2.x>loc2.y) ? loc2.y : loc2.x) >> 1) );
+}
+
+/*
+ * 
+ */
+
+#define HARM_ACC 4
+
+update_harm(b)
+Bullet *b;
+{
+    Loc *loc, best_loc;
+    lCoord bCoord, vCoord, best_vCoord;
+    float accel, sp, sp2, axs, ays, xdir, ydir;
+    int i;
+    
+    int dx, dy, best_dx, best_dy;
+    Vehicle *best_v;
+    long best_dist, dist;
+    float angle;
+    int projected_x, projected_y, time_to_target;
+    int my_speed;
+
+   make_explosion(b->loc, EXP_EXHAUST);
+   /*
+    * If age > BOOST_PHASE
+    *   perform updates
+    * else if age = BOOST_PHASE
+    *   set elevation to flying
+    */
+
+    b->state = RED;
+
+    if (weapon_stat[(int)b->type].frames - b->life > BOOST_PHASE)  {
+
+
+       /* 
+        * Look at each vehicle, at determine it's brightness relative to
+        * the last target coordinate.
+        */
+
+        best_dist = 1<<30;
+
+       /*
+        * don't look for radar when we are within 1 boxes (they see us by now)
+        */
+
+	bCoord.x = b->loc->x;
+	bCoord.y = b->loc->y;
+
+
+        if (idist(bCoord, b->target) > BOX_WIDTH) 
+            for (i = 0; i < num_veh_alive; i++) {
+
+
+	   /*
+            * Rule out team members (and ourselves), 
+            * those with radar off,  
+            * those who are IFF friends
+	    *
+	    * Find the vehicle and coordinates that are emitting closest to
+	    * the stored coordinates.  It would be cheating to save the actual
+	    * vehicle pointer we found last update!
+            */
+
+	    if ( (b->owner->team == live_vehicles[i]->team)
+                 || (live_vehicles[i]->special[(SpecialType)NEW_RADAR].status != SP_on)
+                 || (live_vehicles[i]->special[(SpecialType)RADAR].status != SP_on)
+                 || (live_vehicles[i]->have_IFF_key[b->owner->number]) 
+		)
+                continue;
+
+
+	    vCoord.x = live_vehicles[i]->loc->x;
+	    vCoord.y = live_vehicles[i]->loc->y;
+
+	    dist = idist(b->target, vCoord);
+
+	    if (dist < best_dist) {
+	        best_v = live_vehicles[i];
+	        best_dist = dist;
+	        best_vCoord = vCoord;
+		b->state = GREEN;
+            }
+
+        } 
+
+
+       /* 
+        *  If nothing was emitting 2 boxes from our target, (or we are
+	*  within two boxes of our target, as best_dist will still be a
+	*  big num) look for something on radar near our target 
+	*  coordinates.
+        */
+
+#define MAGIC_RCS 10
+
+        if (best_dist > BOX_WIDTH) for (i = 0; i < num_veh_alive; i++) {
+
+
+	    if ( (b->owner->team == live_vehicles[i]->team)
+               || (live_vehicles[i]->have_IFF_key[b->owner->number])
+	       || (live_vehicles[i]->rcs < MAGIC_RCS)
+		 )
+                continue;
+		
+	    vCoord.x = live_vehicles[i]->loc->x;
+	    vCoord.y = live_vehicles[i]->loc->y;
+
+	    dist = idist(b->target, vCoord);
+
+	    if (dist < best_dist) {
+	        best_v = live_vehicles[i];
+	        best_dist = dist;
+	        best_vCoord = vCoord;
+		b->state = YELLOW;
+            }
+	}
+
+	/*
+         * make sure we locked on to something, then use code stolen from seeker
+         */
+
+	if (best_dist != 1<<30) {
+
+	    b->target = best_vCoord;
+	    best_dx = (int) (best_v->loc->x - b->loc->x);
+	    best_dy = (int) (best_v->loc->y - b->loc->y);
+
+	    sp = weapon_stat[(int)b->type].ammo_speed;
+	    sp2 = sp * sp;
+
+	    xdir = ((b->xspeed > 0) ? 1 : -1);
+	    ydir = ((b->yspeed > 0) ? 1 : -1);
+
+	    axs = ABS(b->xspeed);
+	    ays = ABS(b->yspeed);
+
+	    if (b->xspeed * best_dy < b->yspeed * best_dx)
+		accel = HARM_ACC;
+	    else
+		accel = -HARM_ACC;
+
+	    if (axs > ays) {
+		b->yspeed -= xdir * accel;
+		if (ABS(b->yspeed) >= sp) {
+		    b->xspeed = 0;
+		    b->yspeed = ydir * sp;
+		}
+		else
+		    b->xspeed = xdir * sqrt(sp2 - b->yspeed * b->yspeed);
+	    } else {
+		b->xspeed += ydir * accel;
+		if (ABS(b->xspeed) >= sp) {
+		    b->yspeed = 0;
+		    b->xspeed = xdir * sp;
+		} else
+		    b->yspeed = ydir * sqrt(sp2 - b->xspeed * b->xspeed);
+	    }
+
+        /*
+         * Dive on target if close
+         */
+
+         if ( (best_dx < 10) && (best_dy < 10) ) b->loc->z = 1;
+    }
+	} else if (weapon_stat[(int)b->type].frames - b->life == BOOST_PHASE)
+		b->loc->z = 9;
+
+}
+
+#endif /* !NO_NEW_RADAR */
+
+
 /*
 ** Applies friction to disc in free flight, and computes its orbit when owned.
 */
 update_disc(b)
 Bullet *b;
 {
-    float dx, dy;
-    float dist;
-    float angle, delta;
+    FLOAT dx, dy;
+    FLOAT dist;
+    FLOAT angle, delta;
 
     /* If the disc is owned by someone, change its velocity to orbit him */
     if (b->owner != (Vehicle *) NULL)

@@ -8,9 +8,12 @@
 
 /*
 $Author: lidl $
-$Id: x11.h,v 2.4 1991/09/19 07:41:04 lidl Exp $
+$Id: x11.h,v 2.5 1992/01/29 08:39:11 lidl Exp $
 
 $Log: x11.h,v $
+ * Revision 2.5  1992/01/29  08:39:11  lidl
+ * post aaron patches, seems to mostly work now
+ *
  * Revision 2.4  1991/09/19  07:41:04  lidl
  * added macros for the USE_BATCHED_LINES and USE_BATCHED_POINTS mods
  *
@@ -130,15 +133,21 @@ extern int pointBatchWin;
 
 #define BATCHDEPTH 80
 
+#ifdef BATCH_COLOR_LINES
+  extern XSegment lineBatch[MAX_COLORS][BATCHDEPTH];
+  extern int linesBatched[MAX_COLORS];
+#else /* BATCH_COLOR_LINES */
   extern XSegment lineBatch[];
   extern int linesBatched;
   extern int lineBatchColor;
+#endif /* BATCH_COLOR_LINES */
   extern int lineBatchFunc;
   extern int lineBatchWin;
 
 #endif
 
 #ifdef USE_BATCHED_LINES
+#ifndef BATCH_COLOR_LINES
 #define flush_line_batch \
    if (linesBatched) { \
       XDrawSegments(vid->dpy, \
@@ -147,7 +156,23 @@ extern int pointBatchWin;
                  lineBatch, \
                  linesBatched); \
       linesBatched = 0; \
+  }
+#else /* BATCH_COLOR_LINES */
+#define flush_line_batch \
+   { \
+      int col; \
+      for (col = 0; col < MAX_COLORS; ++col) { \
+         if (linesBatched[col]) { \
+            XDrawSegments(vid->dpy, \
+                 vid->win[lineBatchWin].id, \
+                 vid->graph_gc[lineBatchFunc][col], \
+                 lineBatch[col], \
+                 linesBatched[col]); \
+      linesBatched[col] = 0; \
+         } \
+      } \
    }
+#endif /* BATCH_COLOR_LINES */
 #else
 #define flush_line_batch
 #endif
@@ -158,6 +183,24 @@ extern int pointBatchWin;
   (XDrawLine(vid->dpy,vid->win[w].id,vid->graph_gc[func][color],x1,y1,x2,y2))
 
 #else
+
+#ifdef BATCH_COLOR_LINES
+
+#define draw_line(w,xx1,yy1,xx2,yy2,func,color) \
+   { \
+      if ( (w != lineBatchWin) || (func != lineBatchFunc) || (linesBatched[color] == BATCHDEPTH) ) { \
+         flush_line_batch; \
+         lineBatchWin = w; \
+         lineBatchFunc = func; \
+      }  \
+      lineBatch[color][linesBatched[color]].x1 = xx1; \
+      lineBatch[color][linesBatched[color]].y1 = yy1; \
+      lineBatch[color][linesBatched[color]].x2 = xx2; \
+      lineBatch[color][linesBatched[color]].y2 = yy2; \
+      ++linesBatched[color]; \
+   }
+
+#else /* BATCH_COLOR_LINES */
 
 #define draw_line(w,xx1,yy1,xx2,yy2,func,color) \
    { \
@@ -173,6 +216,8 @@ extern int pointBatchWin;
       lineBatch[linesBatched].y2 = yy2; \
       ++linesBatched; \
    }
+
+#endif /* BATCH_COLOR_LINES */
 
 #endif
 

@@ -1,7 +1,7 @@
 /**/#
 /**/# Top-Level Imakefile - part of the UMDENG X-Tank distribution
 /**/#
-/**/# $Id: Imakefile,v 1.5 1991/09/30 01:05:33 lidl Exp $
+/**/# $Id: Imakefile,v 1.7 1992/02/13 06:19:58 lidl Exp $
 /**/#
 
 #include "./Imakefile.Config"
@@ -18,10 +18,13 @@ MakeSubdirs($(SUBDIRS))
 
 release:
 	cp /dev/null ${EXCLUDE}
+	(cd Src ; flex -t setups.l > setups.flexed )
+	(cd Src ; flex -t vload.l | sed 's/yy/zz/g' > vload.flexed )
 	find . \( -name \*,v -o -name RCS -o -name Makefile -o \
 		-name Makefile.bak -o -name Patches -o -name HeartBurn\* -o \
 		-name tags -o -name TAGS -o -name .version \) -print | \
 	sed 's/^.\///' >> ${EXCLUDE}
 	gtar +create +verbose +exclude-from ${EXCLUDE} +file ${TARFILE} .
+	(cd Src ; rm -f setups.flexed vload.flexed)
 	compress -v ${TARFILE}
 	rm -f ${EXCLUDE}

@@ -6,6 +6,11 @@
 #include "types.h"
 #include "xtanklib.h"
 
+#ifndef NO_NEW_RADAR
+#ifndef _XTANK_H_
+#include "xtank.h"
+#endif
+#endif /* !NO_NEW_RADAR */
 
 typedef struct {
     char  string[MAX_STRING];
@@ -22,6 +27,7 @@ typedef struct {
 typedef struct {
     Boolean need_redisplay;
     Boolean initial_update;
+    Boolean map_invalid;
     Coord marker;		/* shows vehicle location */
     Coord old_marker;
     Map   map;
@@ -32,6 +38,31 @@ typedef struct {
     int   num_landmarks;
     Landmark_info landmark[MAX_LANDMARKS];
 } Mapper;
+
+#ifndef NO_NEW_RADAR
+
+typedef struct {
+   Coord draw_loc;
+   Coord drawn_loc;
+   Coord draw_grid;
+   Coord drawn_grid;
+   Boolean draw_radar;
+   Boolean drawn_radar;
+   Boolean draw_friend;
+   Boolean drawn_friend;
+   Boolean draw_tactical;
+   Boolean drawn_tactical;
+} newBlip;
+
+typedef struct {
+   int rad_frame_updated;
+   int tac_frame_updated;
+   Boolean need_redisplay;
+   newBlip blip[MAX_VEHICLES];
+   newBlip *map[GRID_WIDTH][GRID_HEIGHT];
+} newRadar;
+
+#endif /* NO_NEW_RADAR */
 
 typedef struct {
     Byte  x;
@@ -54,12 +85,20 @@ typedef struct {
 
 typedef enum {
     SP_nonexistent, SP_off, SP_on, SP_broken
+#ifndef NO_NEW_RADAR
+    , real_MAX_SPEC_STATS
+#endif /* !NO_NEW_RADAR */
 } SpecialStatus;
+
+#ifndef NO_NEW_RADAR
+#define MAX_SPEC_STATS ((int)real_MAX_SPEC_STATS) 
+#endif /* !NO_NEW_RADAR */
 
 typedef struct {
     SpecialStatus status;	/* status of the special */
     int (*proc)();		/* function to call for special */
     void *record;		/* pointer to special structure */
+    Boolean shared;		/* flag for shared record space */
 } Special;
 
 

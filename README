@@ -24,6 +24,10 @@ xtank-request@eng.umd.edu.
 
 To build this UMDENG Xtank distribution:
 
+         0) Make sure that you system has "imake" installed on it.
+            If your computer vendor was stupid enough to ship X11R?,
+            and not ship "imake" with it, we don't want to know about
+            it.  Tell your vendor to fix this brain damage, quickly.
          1) "chmod +w Imakefile.Config"
          2) Edit Imakefile.Config for your site
          3) "xmkmf"
@@ -31,3 +35,10 @@ To build this UMDENG Xtank distribution:
          5) "make"
          6) Edit the xtank shell script in Bin/xtank so it knows
             where you put the xtank binaries.
+
+Note: If you do not have have "flex" installed on your system, you will
+need to copy some files around before you can build things.  Namely,
+you should copy .../Src/vload.flexed to .../Src/vload.c and
+copy .../Src/setups.flexed to .../Src/setups.c
+
+Keep the original .flexed files around, in case something bad happens...

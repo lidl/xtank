@@ -7,10 +7,47 @@
 */
 
 /*
-$Author: lidl $
-$Id: program.c,v 2.10 1991/09/30 01:25:44 lidl Exp $
+$Author: aahz $
+$Id: program.c,v 2.22 1992/02/13 05:05:12 aahz Exp $
 
 $Log: program.c,v $
+ * Revision 2.22  1992/02/13  05:05:12  aahz
+ * changed gnat5 to gnat
+ *
+ * Revision 2.21  1992/02/13  03:47:23  aahz
+ * changed gnat_prog to gnat5_prog.
+ *
+ * Revision 2.20  1992/02/06  09:01:11  aahz
+ * set statically linked robot's filename to NULL
+ *
+ * Revision 2.19  1992/02/01  22:21:08  lidl
+ * added gnat as one of the compiled in programs
+ *
+ * Revision 2.18  1992/01/30  03:43:20  aahz
+ * removed ifdefs around no radar
+ *
+ * Revision 2.17  1992/01/29  08:37:01  lidl
+ * post aaron patches, seems to mostly work now
+ *
+ * Revision 2.16  1992/01/03  05:51:27  aahz
+ * *** empty log message ***
+ *
+ * Revision 2.15  1991/12/27  02:16:09  lidl
+ * changed to used compile-flag defines, debugging info for SVR4 boxen
+ *
+ * Revision 2.14  1991/12/16  02:54:24  lidl
+ * changed the MP_OR_SUNLWP flag to THREADING_DEFINED
+ * added check for the THREAD_SVR4 code
+ *
+ * Revision 2.13  1991/12/15  23:51:42  stripes
+ * Added find_pdesc.
+ *
+ * Revision 2.12  1991/12/10  03:50:39  senft
+ * Added tagman. Kurt added bootlegger.
+ *
+ * Revision 2.11  1991/12/03  19:57:09  stripes
+ * changes to allow robots to run every frame (KJL)
+ *
  * Revision 2.10  1991/09/30  01:25:44  lidl
  * removed warbuddy from list of programs that get compiled in
  *
@@ -67,15 +104,15 @@ extern Map real_map;
 extern Settings settings;
 
 
-/* Time (in microseconds) a program is allowed to run */
-#define PROGRAM_TIME 10000
-
-/* Time (in microseconds) a program is allotted per frame */
+/* Time (in microseconds) a program is allotted per frame (on average) */
 #define PROGRAM_ALLOT 5000
 
+/* maximum time (in microseconds) a program is allowed to run on any given
+   frame */
+#define PROGRAM_TIME 10000
+
 /* stack space programs get */
-#define THREAD_STACKSIZE (25 * 1024)
-#define THREAD_TOTALSIZE (sizeof(Thread) + THREAD_STACKSIZE)
+#define THREAD_TOTALSIZE (sizeof(Thread) + STACK_SIZE)
 
 
 /* Clock values to time robot program execution */
@@ -102,12 +139,14 @@ Vehicle *v;
 */
 init_prog_descs()
 {
-    extern Prog_desc
-     kamikaze_prog, drone_prog, warrior_prog, shooter_prog, eliza_prog, Buddy_prog,
-     Flipper_prog, artful_prog, spot_prog, Diophantine_prog, hud3_prog,
-     Dio_prog,			/* New with 1.2g & not all that tested: */
-     Pzkw_I_prog, dum_maze_prog, roadrunner_prog,
-     Guard_prog, RacerX_prog;
+	int iCtr;
+	extern Prog_desc
+	kamikaze_prog, drone_prog, warrior_prog, shooter_prog, eliza_prog,
+	Buddy_prog, Flipper_prog, artful_prog, spot_prog, Diophantine_prog,
+	hud3_prog, Dio_prog,			/* New with 1.2g & not all that tested: */
+	Pzkw_I_prog, dum_maze_prog, roadrunner_prog,
+	Guard_prog, RacerX_prog,		/* New with 1.3b & extensively tested */
+	tagman_prog, Bootlegger_prog, gnat_prog;
 
     num_prog_descs = 0;
     prog_desc[num_prog_descs++] = &kamikaze_prog;
@@ -127,6 +166,15 @@ init_prog_descs()
     prog_desc[num_prog_descs++] = &roadrunner_prog;
     prog_desc[num_prog_descs++] = &Guard_prog;
     prog_desc[num_prog_descs++] = &RacerX_prog;
+    prog_desc[num_prog_descs++] = &tagman_prog;
+    prog_desc[num_prog_descs++] = &Bootlegger_prog;
+    prog_desc[num_prog_descs++] = &gnat_prog;
+
+	for (iCtr = 0; iCtr < num_prog_descs; iCtr++)
+	{
+		prog_desc[iCtr]->filename = (char *)0;
+	}
+
 }
 
 /*
@@ -139,19 +187,23 @@ init_threader()
 
     /* how 'bout some error checking here? */
 
-#ifdef MP_OR_SUNLWP
+#ifdef THREADING_DEFINED
     syntax error - if this define is used, choose another
 #endif
 
 #ifdef THREAD_MP
-#define MP_OR_SUNLWP
+#define THREADING_DEFINED
 #endif
 
 #ifdef THREAD_SUNLWP
-#define MP_OR_SUNLWP
+#define THREADING_DEFINED
 #endif
 
-#ifdef MP_OR_SUNLWP
+#ifdef THREAD_SVR4
+#define THREADING_DEFINED
+#endif
+
+#ifdef THREADING_DEFINED
     if (!scheduler_thread)
 	 rorre("malloc failed in thread_setup");
 
@@ -168,6 +220,11 @@ Vehicle *v;
 {
     int i, j;
     Mapper *m = (Mapper *) v->special[(int) MAPPER].record;
+
+    if (settings.si.no_radar) {
+        v->special[(int) RADAR].status = SP_nonexistent;
+        v->special[(int) NEW_RADAR].status = SP_nonexistent;
+    }
 
     if (v->special[CONSOLE].status != SP_nonexistent) {
 	/* initialize console */
@@ -209,7 +266,24 @@ Vehicle *v;
     }
 }
 
+#ifndef NO_NEW_RADAR
 
+/*
+ * This is an unused stub, but I plan to use it in the
+ * future. It might be wired up now, I'm not sure.
+ */
+ 
+zap_specials(v)
+Vehicle *v;
+{
+    int i;
+    for (i = 0; i < MAX_SPECIALS; i++) {
+	if (v->special[i].status == SP_on)
+	  ;  /* do_special(v, (SpecialType) i, SP_deactivate); */
+    }
+}
+
+#endif /* !NO_NEW_RADAR */
 
 /*
 ** Initializes all programs for the specified vehicle.
@@ -232,15 +306,14 @@ Vehicle *v;
 	prog->thread = (char *) thread_init(prog->thread_buf, THREAD_TOTALSIZE,
 					(Thread * (*) ()) prog->desc->func);
 
-#ifdef MP_OR_SUNLWP
+#ifdef THREADING_DEFINED
 	if (prog->thread == NULL)
 	    rorre("thread_init() failed in init_programs()");
 #endif
 
-	/* Programs run every other frame; try to make about half run each
-	   frame.  Don't have any of them run the first frame, since mapper
-	   has not received its initial update by then. */
-	prog->total_time = (frame + 1 + rnd(TICKSZ)) * PROGRAM_ALLOT;
+	/* programs shouldn't run the first frame, since mapper has not
+	   received its initial update by then */
+	prog->total_time = (frame + 1) * PROGRAM_ALLOT;
 	prog->status = PROG_on;
 
 	prog->next_message = 0;	/* no new messages yet */
@@ -250,9 +323,6 @@ Vehicle *v;
 
 /*
 ** Runs all the programs that should be run during a frame of execution.
-** On average, a program is executed PROGRAM_ALLOT microseconds per frame.
-** It simulates this by running each program for PROGRAM_TIME
-** microseconds once every PROGRAM_TIME/PROGRAM_ALLOT frames.
 */
 run_all_programs()
 {
@@ -321,12 +391,15 @@ check_time()
 	/* If the program has been running too long, stop it */
 	get_clock(&current_time);
 	if (compare_clocks(&current_time, &end_time) == -1)
+#ifdef SVR4
+            printf("check_time: Switching back to the scheduler thread.\n");
+#endif
 	    thread_switch(scheduler_thread);
     }
 }
 
 /*
-** Stops the current program, upping elapsed_prog_time to PROGRAM_TIME.
+** Stops the current program, upping elapsed_prog_time to PROGRAM_ALLOT.
 */
 stop_program()
 {
@@ -334,11 +407,14 @@ stop_program()
 
     if (cv->current_prog != (Program *) NULL) {
 	/* Up the elapsed time to the given amount */
-	write_clock(&temp, PROGRAM_TIME);
+	write_clock(&temp, PROGRAM_ALLOT);
 	get_clock(&current_time);
 	if (compare_clocks(&current_time, &temp) == 1) {
-	    write_clock(&current_time, PROGRAM_TIME);
+	    write_clock(&current_time, PROGRAM_ALLOT);
 	}
+#ifdef SVR4
+	printf("stop_program: Switching back to the scheduler thread.\n");
+#endif
 	thread_switch(scheduler_thread);	/* Stop the program */
     } else {
 	printf("stop_program(): no program??\n");
@@ -369,4 +445,20 @@ int prog_num[];
 	/* Copy the program description pointer into the program */
 	v->program[v->num_programs++].desc = prog_desc[num];
     }
+}
+
+int find_pdesc(prog_name, index_return)
+int *index_return;
+char *prog_name;
+{
+	int i;
+
+	for(i = 0; i < num_prog_descs; i++) {
+		if (!prog_desc[i] || strcmp(prog_name, prog_desc[i]->name)) continue;
+
+		*index_return = i;
+		return DESC_LOADED;
+	}
+
+	return DESC_NOT_FOUND;
 }

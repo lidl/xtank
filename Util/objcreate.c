@@ -24,7 +24,7 @@
 #define PI 3.1415926535897932384626433832795028841971
 #define MAX_VIEWS 32
 #define MAX_BITMAPS 32
-#define MAX_TURRETS 3
+#define MAX_TURRETS 4
 #define MAX_SEGMENTS 6
 #define BODY_BITMAPS 4
 #define BODY_VIEWS 16
@@ -182,7 +182,7 @@ main(argc, argv)
 		fprintf(object_file, "{0,0}");
 	    } else {
 		for (j = 0; j < num_turrets; j++) {
-		    rotate_point(turret[j].x, turret[j].y, &x, &y, 2 * PI * i / num_views);
+		    rotate_point(turret[j].x, turret[j].y, &x, &y, (double) (2 * PI * i) / num_views);
 		    fprintf(object_file, "{%d,%d}", x, y);
 		    if (j != num_turrets - 1)
 			fprintf(object_file, ", ");
@@ -265,11 +265,11 @@ main(argc, argv)
 	}
 	fgets(line, 80, bitmap_file);	/* width line */
 	fgets(line, 80, bitmap_file);	/* height line */
-	fgets(line, 80, bitmap_file);	/* static short declaration line */
+	fgets(line, 80, bitmap_file);	/* static unsigned char decl. line */
 
 	/* Replace declaration with something that makes sense */
 	/* fprintf(object_file,"static short %s%d_bits[] = {\n",name,i); */
-	fprintf(object_file, "static char %s%d_bits[] = {\n", name, i);
+	fprintf(object_file, "static unsigned char %s%d_bits[] = {\n", name, i);
 
 	/* Copy the shorts quickly */
 	while (fgets(line, 80, bitmap_file) != NULL)
@@ -280,7 +280,7 @@ main(argc, argv)
     }
 
     /* Add bitmap ordering to object file */
-    fprintf(object_file, "short *%s_bitmap[%s_views] = {\n", name, name);
+    fprintf(object_file, "unsigned char *%s_bitmap[%s_views] = {\n", name, name);
     for (i = 0; i < num_bitmaps; i++) {
 	sprintf(line, "\t%s%d_bits", name, i);
 	if (i < num_bitmaps - 1)

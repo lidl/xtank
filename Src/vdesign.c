@@ -7,10 +7,25 @@
 */
 
 /*
-$Author: rpotter $
-$Id: vdesign.c,v 2.3 1991/02/10 13:51:59 rpotter Exp $
+$Author: lidl $
+$Id: vdesign.c,v 2.8 1992/01/29 08:37:01 lidl Exp $
 
 $Log: vdesign.c,v $
+ * Revision 2.8  1992/01/29  08:37:01  lidl
+ * post aaron patches, seems to mostly work now
+ *
+ * Revision 2.7  1992/01/26  05:01:15  stripes
+ * delete this revision (KJL)
+ *
+ * Revision 2.6  1991/12/03  19:53:38  lidl
+ * now uses NUM_MOUNTS instead of hard-coded number of mounts in menu
+ *
+ * Revision 2.5  1991/12/02  10:38:19  lidl
+ * added panzy type vehicle body to arrays
+ *
+ * Revision 2.4  1991/10/27  21:34:50  aahz
+ * no change.
+ *
  * Revision 2.3  1991/02/10  13:51:59  rpotter
  * bug fixes, display tweaks, non-restart fixes, header reorg.
  *
@@ -35,6 +50,7 @@ $Log: vdesign.c,v $
 #include "vstructs.h"
 #include "menu.h"
 #include "terminal.h"
+#include "vehicleparts.h"
 
 
 extern Terminal *term;
@@ -148,7 +164,8 @@ Body_stat body_stat[MAX_BODIES] = {
     {"Rhino",      7, 12000, 40000, 30000, 2.00,  3,  2, 10000},
     {"Medusa",     7, 14000, 40000, 25000, 1.20,  4,  3, 15000},
     {"Malice",     5,  4000, 20000, 15000,  .40,  7,  1, 17000},
-    {"Trike",      2,   400,  1600,  1200,  .15,  6,  0,  4000}
+    {"Trike",      2,   400,  1600,  1200,  .15,  6,  0,  4000},
+    {"Panzy",      8, 22000, 70000, 45000, 3.00,  3,  4, 25000}
 };
 
 Suspension_stat suspension_stat[MAX_SUSPENSIONS] = {
@@ -194,10 +211,11 @@ static char *main_entries[] = {
     "Heat sinks", "Suspension", "Treads", "Bumpers", "Load vehicle",
 "Save vehicle", "Reset vehicle", "Quit"};
 
-static char *mount_entries[] = {
-"Turret 1", "Turret 2", "Turret 3", "Front", "Back", "Left", "Right"};
+char *mount_entries[] = {
+    "Turret 1", "Turret 2", "Turret 3", "Turret 4",
+    "Front", "Back", "Left", "Right"};
 
-static char *side_entries[] = {
+char *side_entries[] = {
 "Front", "Back", "Left", "Right", "Top", "Bottom", "All"};
 
 static char *weapnum_entries[] = {"1", "2", "3", "4", "5", "6"};
@@ -221,6 +239,7 @@ static Boolean modified = FALSE;	/* if the vehicle has been modified
 design_vehicle()
 {
     Vdesc *d;
+printf("vmax weapons %i \n", VMAX_WEAPONS);
 
     /* Initialize everything */
     d = &design_vdesc;
@@ -248,7 +267,7 @@ init_vdesign_interface()
 		   LEV1_X, LEV0_Y, armor_entries, L_FONT);
     menu_norm_make(&menu_sys, BODIES_MENU, "Bodies", MAX_BODIES, 0,
 		   LEV1_X, LEV0_Y, body_entries, M_FONT);
-    menu_norm_make(&menu_sys, MOUNTS_MENU, "Mounts", 7, 0,
+    menu_norm_make(&menu_sys, MOUNTS_MENU, "Mounts", NUM_MOUNTS, 0,
 		   LEV1_X, LEV0_Y, mount_entries, L_FONT);
     menu_flag_make(&menu_sys, SPECIALS_MENU, "Specials", MAX_SPECIALS, 0,
 		   LEV1_X, LEV0_Y, special_entries, L_FONT);
@@ -589,7 +608,11 @@ init_vdesc(d)
 
     d->specials = 0;
     for (i = 0; i < MAX_SPECIALS; i++) {
+#ifndef NO_NEW_RADAR
+	if (i == (int) CONSOLE || i == (int) MAPPER || i == (int) RADAR || i == (int) NEW_RADAR || i == (int) TACLINK)
+#else /* !NO_NEW_RADAR */
 	if (i == (int) CONSOLE || i == (int) MAPPER || i == (int) RADAR)
+#endif /* !NO_NEW_RADAR */
 	    d->specials |= (1 << i);
     }
 }
@@ -631,6 +654,13 @@ compute_vdesc(d)
 	    bumper_stat[d->bumpers].cost * size;
 
     for (i = 0; i < d->num_weapons; i++) {
+#ifndef NO_NEW_RADAR
+	/*
+	 * Checks that HARMs are only on side mounts.
+	 */
+	if ( !(IS_SIDE(d->mount[i])) && (d->weapon[i] == HARM) )
+	    problems |= MIS_MOUNT;
+#endif /* !NO_NEW_RADAR */
 	d->weight += weapon_stat[(int) d->weapon[i]].weight;
 	d->space += weapon_stat[(int) d->weapon[i]].space;
 	d->cost += weapon_stat[(int) d->weapon[i]].cost;
@@ -638,6 +668,7 @@ compute_vdesc(d)
 		(int) d->mount[i] + 1 > body_stat[d->body].turrets)
 	    problems |= BAD_MOUNT;
     }
+
 
     for (i = 0; i < MAX_SPECIALS; i++)
 	if (d->specials & 1 << i) {
@@ -747,6 +778,10 @@ display_vdesc(d, status)
 	   ((problems & OVER_SPACE) != (oproblems & OVER_SPACE)), 8, 41);
     dprint(((problems & BAD_MOUNT) ? "BAD WEAPON MOUNT" : ""),
 	   ((problems & BAD_MOUNT) != (oproblems & BAD_MOUNT)), 9, 41);
+#ifndef NO_NEW_RADAR
+    dprint(((problems & MIS_MOUNT) ? "WEAPON MISMOUNTED" : ""),
+	   ((problems & MIS_MOUNT) != (oproblems & MIS_MOUNT)), 10, 41);
+#endif /* !NO_NEW_RADAR */
 
     dprint("# Weapon             Mount", FALSE, 13, 0);
     for (i = 0; i < d->num_weapons; ++i) {

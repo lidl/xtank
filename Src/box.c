@@ -7,10 +7,16 @@
 */
 
 /*
-$Author: rpotter $
-$Id: box.c,v 2.3 1991/02/10 13:50:09 rpotter Exp $
+$Author: stripes $
+$Id: box.c,v 2.5 1992/01/06 07:52:49 stripes Exp $
 
 $Log: box.c,v $
+ * Revision 2.5  1992/01/06  07:52:49  stripes
+ * Changes for teleport
+ *
+ * Revision 2.4  1991/12/10  03:41:44  lidl
+ * changed float to FLOAT, for portability reasons
+ *
  * Revision 2.3  1991/02/10  13:50:09  rpotter
  * bug fixes, display tweaks, non-restart fixes, header reorg.
  *
@@ -124,7 +130,7 @@ Coord outpost_coord[OUTPOST_PATS][OUTPOST_FRAMES] = {
 box_type_check(v, b, xadj, yadj)
 Vehicle *v;
 Box *b;
-float *xadj, *yadj;
+FLOAT *xadj, *yadj;
 {
 	int x, y;
 
@@ -136,6 +142,7 @@ float *xadj, *yadj;
 		case AMMO:
 		case ARMOR:
 		case PEACE:
+		case TELEPORT:
 			box_landmark(v, b);
 			break;
 		case SCROLL_N:
@@ -183,7 +190,8 @@ Box *b;
 	loc = v->loc;
 
 	/* If we're moving, ignore it */
-	if (v->vector.speed != 0.0)
+	if (v->vector.speed == 0.0 && b->type == TELEPORT ||
+	    v->vector.speed != 0.0 && b->type != TELEPORT)
 		return;
 
 	/* If we're not close, ignore it */
@@ -244,6 +252,77 @@ Box *b;
 				}
 			}
 			break;
+		case TELEPORT:
+			{
+			  int xd, yd, x, y, xmax = -1, ymax, found = 0;
+			  Box *dest;
+			  float ftemp, fmax;
+
+			  /* if this teleport isn't neutral, or on our side, ignore it */
+			  if (v-> teleport == TRUE &&
+			      (b->team == v->team || b->team == NEUTRAL))
+			    {
+			      /* else search the maze for a different teleport */
+			      for (x = 0; x < GRID_WIDTH; x++) 
+				for (y = 0; y < GRID_HEIGHT; y++)
+				  {
+				    if (x == v->loc->grid_x &&
+					y == v->loc->grid_y)
+				      continue;
+				    
+				    dest = &real_map[x][y];
+				    if (dest->type == TELEPORT &&
+					(dest->team == v->team ||
+					 dest->team == NEUTRAL))
+				      {
+					xd = x - v->loc->grid_x;
+					yd = y - v->loc->grid_y;
+					
+					/* calculate how close to our current direction of */
+					/* travel this offset is */
+					ftemp = (v->vector.xspeed * xd +
+						 v->vector.yspeed * yd) /
+						   sqrt((double)(xd * xd + yd * yd));
+					
+					/* keep a note of the closest one */
+					if (xmax == -1 ||
+					    ftemp > fmax)
+					  {
+					    fmax = ftemp;
+					    xmax = x;
+					    ymax = y;
+					  }
+				      }
+				  }
+			      
+			      /* if we found a suitable place to jump to */
+			      if (xmax != -1)
+				/* calculate an offset to take us there ensuring that we */
+				/* land just past the teleport, so that we don't */
+				/* immediately re-enter it */
+				if (ABS(v->vector.xspeed) > ABS(v->vector.yspeed))
+				  adjust_loc(v->loc,
+					     (int)(BOX_WIDTH / 2 - v->loc->box_x +
+						   (v->vector.xspeed < 0 ? -1 : 1) *
+						   LANDMARK_WIDTH / 2 +
+						   (xmax - v->loc->grid_x) * BOX_WIDTH),
+					     (int)(BOX_HEIGHT / 2 - v->loc->box_y +
+						   v->vector.yspeed / ABS(v->vector.xspeed) *
+						   LANDMARK_HEIGHT / 2 +
+						   (ymax - v->loc->grid_y) * BOX_HEIGHT));
+				else
+				  adjust_loc(v->loc,
+					     (int)(BOX_WIDTH / 2 - v->loc->box_x +
+						   v->vector.xspeed / ABS(v->vector.yspeed) *
+						   LANDMARK_WIDTH / 2 +
+						   (xmax - v->loc->grid_x) * BOX_WIDTH),
+					     (int)(BOX_HEIGHT / 2 - v->loc->box_y +
+						   (v->vector.yspeed < 0 ? -1 : 1) *
+						   LANDMARK_HEIGHT / 2 +
+						   (ymax - v->loc->grid_y) * BOX_HEIGHT));
+			    }
+			  break;
+			}
 	}
 }
 
@@ -374,9 +453,9 @@ Box *b;
 */
 box_scroll(type, xadj, yadj)
     LandmarkType type;
-float *xadj, *yadj;
+FLOAT *xadj, *yadj;
 {
-	float ss;
+	FLOAT ss;
 
 	ss = settings.si.scroll_speed;
 

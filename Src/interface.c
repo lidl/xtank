@@ -7,10 +7,92 @@
 */
 
 /*
-$Author: lidl $
-$Id: interface.c,v 2.9 1991/09/29 17:23:41 lidl Exp $
+$Author: stripes $
+$Id: interface.c,v 2.33 1992/02/13 05:05:35 stripes Exp $
 
 $Log: interface.c,v $
+ * Revision 2.33  1992/02/13  05:05:35  stripes
+ * Made a callable load progame function.  Made the old function do
+ * user I/O & call new function.
+ *
+ * Revision 2.32  1992/02/08  08:38:35  senft
+ * fixed bug where autostart without autoexit did not provide a working
+ * main screen after the first run.
+ *
+ * Revision 2.31  1992/02/06  10:09:59  aahz
+ * fixed -F option.  fixed -s option mostly.
+ *
+ * Revision 2.30  1992/02/06  07:59:20  lidl
+ * now has menus for both a release notes file and the CFV file
+ *
+ * Revision 2.29  1992/02/06  07:45:59  senft
+ * added support for autostart and loaded settings
+ *
+ * Revision 2.28  1992/02/06  05:54:43  aahz
+ * added saving the fully qualified path name of dynamic robots.
+ *
+ * Revision 2.27  1992/02/06  04:19:36  senft
+ * Added code for auto-exit feature.
+ *
+ * Revision 2.26  1992/02/06  03:33:24  aahz
+ * removed old code.
+ * moved the resizing of menus inside of reset_dynamic_entries.
+ * since reset_dynamic_entries is called by the make_?desc calls the
+ * menus will work when anyone calls make_?desc rather than having the
+ * kludge call each time.
+ *
+ * Revision 2.25  1992/01/30  05:25:52  aahz
+ * moved the game_running flag lower (into setup.c)
+ *
+ * Revision 2.24  1992/01/30  05:08:13  stripes
+ * Reduced idle CPU useage.
+ *
+ * Revision 2.23  1992/01/30  05:01:49  aahz
+ * fixed keeping the old filename for settings around.
+ *
+ * Revision 2.22  1992/01/30  03:43:20  aahz
+ * removed ifdefs around no radar
+ *
+ * Revision 2.21  1992/01/29  08:37:01  lidl
+ * post aaron patches, seems to mostly work now
+ *
+ * Revision 2.20  1992/01/10  02:02:47  aahz
+ * fixed settings the display values for load settings in grids.
+ *
+ * Revision 2.19  1992/01/02  02:53:12  aahz
+ * added prompts to ask for the settings file name with save and load.
+ *
+ * Revision 2.18  1992/01/02  01:38:12  stripes
+ * Properly set c->num_players and c->num_programs in combatant to grid.
+ *
+ * Revision 2.17  1991/12/19  05:47:12  stripes
+ * Can't tell, got "bin file diff" err from rcsdiff.
+ *
+ * Something to do w/ load combatants I think...
+ *
+ * Revision 2.16  1991/12/02  06:36:45  lidl
+ * changed to use limits.h, and got rid of the foolish things
+ *
+ * Revision 2.15  1991/12/02  05:41:38  stripes
+ * Fixed 2 players w/ same name in combatants grid bug (I think)
+ * 
+ *
+ * Revision 2.14  1991/11/27  06:49:18  stripes
+ * added team score stuff to the flags menu
+ * added the combatant to grid function (untested)
+ *
+ * Revision 2.13  1991/11/22  06:01:12  stripes
+ * Changed hover's skid & safety
+ *
+ * Revision 2.12  1991/10/28  13:52:54  lidl
+ * removed #ifdefs for NONAMETAGS -- they are now the default
+ *
+ * Revision 2.11  1991/10/28  13:27:01  lidl
+ * small #ifdef prototype botch fixed for the i860
+ *
+ * Revision 2.10  1991/10/07  06:16:17  stripes
+ * Added save_settings to the interface.
+ *
  * Revision 2.9  1991/09/29  17:23:41  lidl
  * changed slightly to show the build information, no longer has a version.h
  *
@@ -53,6 +135,7 @@ $Log: interface.c,v $
  * 
 */
 
+#include "limits.h"
 #include "malloc.h"
 #include "xtank.h"
 #include "screen.h"
@@ -66,16 +149,9 @@ $Log: interface.c,v $
 #include <sys/param.h>
 #include <sys/dir.h>
 #endif
+#include "clfkr.h"
 
-
-#ifndef MAXPATHLEN
-#define MAXPATHLEN 1024
-#endif
-
-#ifndef MAXNAMLEN
-#define MAXNAMLEN 256
-#endif
-
+extern int num_veh;
 
 extern int num_terminals;
 extern Terminal *terminal[];
@@ -98,6 +174,8 @@ extern char *version1;
 extern char *version2;
 extern char *version3;
 
+extern struct CLFkr command_options;
+
 static whichlevel[MAX_MENUS] = {0,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,3};
 
 /* For convienence */
@@ -114,21 +192,20 @@ static char
     *settings_entries[] = {"Vehicle", "Maze", "Game", "Flags", "Winning score",
 			   "Difficulty", "Outpost strength", "Scroll speed",
 			   "Box slowdown", "Disc friction", "Owner slowdown",
-			   "Shocker Walls"},
+			   "Shocker Walls", "Save settings", "Load Settings"},
     *view_entries[] = {"Maze", "Vehicle", "Program", "Setup", "Player"},
     *load_entries[] = {"Maze", "Vehicle", "Program", "Setup"},
     *design_entries[] = {"Maze", "Vehicle"},
     *help_entries[] = {"General", "Pictures", "Multi-player", "Games",
-		       "Vehicles", "Mazes", "Setups", "Credits", "Motd"},
+		       "Vehicles", "Mazes", "Setups", "Credits", "Motd",
+               "Release", "Votes"},
     *grid_entries[] = {"Player", "Program", "Vehicle", "Team"},
     *num_entries[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"},
     *flags_entries[] = {"Point bullets", "Ricochet", "Rel. shooting",
 			"No wear", "Restart", "Commentator", "Full map",
 			"Pay to Play", "Robots don't Win",
-			"Scale Armor to Max"
-#ifdef NONAMETAGS
-			,"No name tags"
-#endif
+			"Scale Armor to Max", "No name tags",
+			"Team Scoring","Disable RADAR"
 			},
     *programs_entries[MAX_PDESCS],
     *players_entries[MAX_TERMINALS];
@@ -160,6 +237,10 @@ int reset_dynamic_entries()
 	menu_set_choices(&menu_sys, MAZES_MENU, mazes_entries);
 	menu_set_choices(&menu_sys, SETUPS_MENU, setups_entries);
 
+	fix_desc_menu(VDESC);
+	fix_desc_menu(MDESC);
+	fix_desc_menu(SDESC);
+
 	for (i = 0; i < num_vdescs; ++i)
 	{
 		vehicles_entries[i] = vdesc[i].name;
@@ -183,6 +264,40 @@ int reset_dynamic_entries()
 /*
 ** Initializes the main interface menus.
 */
+init_flags_hil()
+{
+	menu_unhighlight(&menu_sys, FLAGS_MENU);
+
+    /* Set up the correct highlighting for the flags menu */
+    if (settings.point_bullets)
+		menu_set_hil(&menu_sys, FLAGS_MENU, 0);
+    if (settings.si.ricochet)
+		menu_set_hil(&menu_sys, FLAGS_MENU, 1);
+    if (settings.si.rel_shoot)
+		menu_set_hil(&menu_sys, FLAGS_MENU, 2);
+    if (settings.si.no_wear)
+		menu_set_hil(&menu_sys, FLAGS_MENU, 3);
+    if (settings.si.restart)
+		menu_set_hil(&menu_sys, FLAGS_MENU, 4);
+    if (settings.commentator)
+		menu_set_hil(&menu_sys, FLAGS_MENU, 5);
+    if (settings.si.full_map)
+		menu_set_hil(&menu_sys, FLAGS_MENU, 6);
+    if (settings.si.pay_to_play)
+		menu_set_hil(&menu_sys, FLAGS_MENU, 7);
+    if (settings.robots_dont_win)
+		menu_set_hil(&menu_sys, FLAGS_MENU, 8);
+    if (settings.max_armor_scale)
+		menu_set_hil(&menu_sys, FLAGS_MENU, 9);
+    if (settings.si.no_nametags)
+		menu_set_hil(&menu_sys, FLAGS_MENU, 10);
+    if (settings.si.team_score)
+		menu_set_hil(&menu_sys, FLAGS_MENU, 11);
+	if (settings.si.no_radar)
+		menu_set_hil(&menu_sys, FLAGS_MENU, 12);
+
+}
+
 init_interface()
 {
     menu_sys_window(&menu_sys, ANIM_WIN);
@@ -200,7 +315,7 @@ init_interface()
 		   LEV1_X, LEV0_Y, load_entries, M_FONT);
     menu_norm_make(&menu_sys, DESIGN_MENU, "Design", 2, 0,
 		   LEV1_X, LEV0_Y, design_entries, M_FONT);
-    menu_norm_make(&menu_sys, HELP_MENU, "Help", 9, 0,
+    menu_norm_make(&menu_sys, HELP_MENU, "Help", 11, 0,
 		   LEV1_X, LEV0_Y, help_entries, M_FONT);
     menu_nohil_make(&menu_sys, GAMES_MENU, "Games", MAX_GAMES, 0,
 		    LEV2_X, LEV0_Y, games_entries, M_FONT);
@@ -210,31 +325,7 @@ init_interface()
 		   (sizeof(flags_entries) / sizeof(char *)), /* GHS */
 		   0, LEV3_X, LEV0_Y, flags_entries, M_FONT);
 
-    /* Set up the correct highlighting for the flags menu */
-    if (settings.point_bullets)
-	menu_set_hil(&menu_sys, FLAGS_MENU, 0);
-    if (settings.si.ricochet)
-	menu_set_hil(&menu_sys, FLAGS_MENU, 1);
-    if (settings.si.rel_shoot)
-	menu_set_hil(&menu_sys, FLAGS_MENU, 2);
-    if (settings.si.no_wear)
-	menu_set_hil(&menu_sys, FLAGS_MENU, 3);
-    if (settings.si.restart)
-	menu_set_hil(&menu_sys, FLAGS_MENU, 4);
-    if (settings.commentator)
-	menu_set_hil(&menu_sys, FLAGS_MENU, 5);
-    if (settings.si.full_map)
-	menu_set_hil(&menu_sys, FLAGS_MENU, 6);
-    if (settings.si.pay_to_play)
-	menu_set_hil(&menu_sys, FLAGS_MENU, 7);
-    if (settings.robots_dont_win)
-	menu_set_hil(&menu_sys, FLAGS_MENU, 8);
-    if (settings.max_armor_scale)
-	menu_set_hil(&menu_sys, FLAGS_MENU, 9);
-#ifdef NONAMETAGS
-    if (settings.si.no_nametags)
-	menu_set_hil(&menu_sys, FLAGS_MENU, 10);
-#endif
+	init_flags_hil();
 
     init_comb_menus();
 }
@@ -448,6 +539,12 @@ void sub_interface_help(choice)
 		case 8:
 			display_file(ANIM_WIN, "Help/motd");
 			break;
+		case 9:
+			display_file(ANIM_WIN, "Help/release-notes");
+			break;
+		case 10:
+			display_file(ANIM_WIN, "Help/vote");
+			break;
 	}
 	menu_unhighlight(&menu_sys, HELP_MENU);
 	expose_win(ANIM_WIN, TRUE);
@@ -508,6 +605,18 @@ void sub_interface_play(choice)
 void sub_interface_settings(choice)
 	int choice;
 {
+	char acFileName[MAXPATHLEN];
+	static int inited = 0;
+	static char acPrevFileName[MAXPATHLEN];
+
+	if (! inited)
+	{
+		acPrevFileName[0] = '\0';
+		acFileName[0] = '\0';
+
+		inited = 1;
+	}
+
 	switch (choice)
 	{
 		case 0:
@@ -549,6 +658,24 @@ void sub_interface_settings(choice)
 			break;
 		case 11:
 			do_num(SET_SHOCKERWALL, TRUE);
+			break;
+		case 12:
+    		clear_window(ANIM_WIN);
+    		iprint("Enter the settings filename.", 0, 8);
+			input_filename(ANIM_WIN, acPrevFileName, acFileName,
+						   10, INT_FONT, 256);
+			save_settings(acFileName);
+			expose_win(ANIM_WIN, TRUE);
+			break;
+		case 13:
+    		clear_window(ANIM_WIN);
+    		iprint("Enter the settings filename.", 0, 8);
+			input_filename(ANIM_WIN, acPrevFileName, acFileName,
+						   10, INT_FONT, 256);
+			load_settings(acFileName);
+			display_settings();
+			init_flags_hil();
+			expose_win(ANIM_WIN, TRUE);
 			break;
 	}
 }
@@ -593,11 +720,15 @@ void sub_interface_flags(choice)
 		case 9:
 			settings.max_armor_scale ^= TRUE;
 			break;
-#ifdef NONAMETAGS
 		case 10:
 			settings.si.no_nametags ^= TRUE;
 			break;
-#endif
+		case 11:
+			settings.si.team_score ^= TRUE;
+			break;
+		case 12:
+			settings.si.no_radar ^= TRUE;
+			break;
 	}
 }
 
@@ -619,7 +750,35 @@ main_interface()
     follow_mouse(ANIM_WIN, TRUE);
 #endif
 
-    /* Display the motd then the title */
+    if (command_options.UseSetting)
+	{
+		if (!load_settings(command_options.Settings))
+		{
+			puts("Failed to load settings file.\n");
+			return (0);
+		}
+	}
+
+    if (command_options.AutoStart)
+	{
+		if (command_options.UseSetting)
+		{
+			sub_interface_play(3);
+		}
+		else
+		{
+			sub_interface_play(0);
+		}
+
+		command_options.AutoStart = FALSE;
+
+		if (command_options.AutoExit)
+		{
+			return (0);
+		}
+	}
+
+    /* Display the 10 then the title */
     display_file(ANIM_WIN, "Help/motd");
     display_title(TRUE);
 
@@ -664,7 +823,7 @@ main_interface()
 		  case MAIN_MENU:
 		    if (sub_interface_main(choice))
 		    {
-			return;
+			    return (0);
 		    }
 		    break;
 
@@ -714,6 +873,10 @@ main_interface()
 
 		  case PLAY_MENU:
 		    sub_interface_play(choice);
+			if (command_options.AutoExit)
+			{
+				return (0);
+			}
 		    break;
 
 		  case SETTINGS_MENU:
@@ -781,7 +944,7 @@ static int handle_comb_button(evp, mv)
 	for (itemp = 0; itemp < MAX_VEHICLES; itemp++)
 	{
 	    if (!strcmp(players_entries[choice],
-			grid_ent[menu - PLAYERS_MENU][gridsel]))
+			grid_ent[menu - PLAYERS_MENU][itemp]))
 		break;
 	}
 	if (itemp != MAX_VEHICLES)
@@ -920,6 +1083,65 @@ int row;
     if (c->player[0] == UNDEFINED && c->program[0] == UNDEFINED)
 	return -1;
     return 0;
+}
+
+/*
+** Doesn't belong here...
+*/
+combatant_to_grid(c, row)
+Combatant *c;
+int row;
+{
+	int val;
+	char *ptr;
+
+    if (c->vdesc == UNDEFINED)
+	{
+		return -1;
+	}
+
+    grid_val[2][row] = c->vdesc;
+	grid_ent[2][row] = vehicles_entries[c->vdesc];
+
+	/* PLAYER */
+	val = c->player[0];
+	if (val == UNDEFINED)
+	{
+		ptr = "";
+	}
+	else
+	{
+		ptr = players_entries[val];
+	}
+    grid_val[0][row] = val;
+	grid_ent[0][row] = ptr;
+
+	/* PROGRAM */
+    val = c->program[0];
+	if (val == UNDEFINED)
+	{
+		ptr = "";
+	}
+	else
+	{
+		ptr = programs_entries[c->program[0]];
+	}
+    grid_val[1][row] = val;
+	grid_ent[1][row] = ptr;
+
+	/* TEAM */
+    if (c->team == UNDEFINED)
+	{
+		c->team = 0;
+	}
+
+    grid_val[3][row] = c->team;
+	grid_ent[3][row] = teams_entries[c->team];
+    if (c->player[0] == UNDEFINED && c->program[0] == UNDEFINED)
+	{
+		return -1;
+	}
+	return 0;
 }
 
 /*
@@ -1086,16 +1308,32 @@ interface_play()
 	{
 	    set_terminal(i);
 	    line = 3;
+	    if (!command_options.AutoStart)
+		{
 	    iprint("This game failed to work either because there were no",
 		   0, line++);
 	    iprint("combatants or there was no room in the maze for them.",
 		   0, line++);
 	    iprint("Vehicles won't be placed on landmarks in the maze.",
 		   0, line++);
+		}
+		else
+		{
+	        fprintf(stderr, 
+				"This game failed to work either because there were no");
+	        fprintf(stderr, 
+				"combatants or there was no room in the maze for them.");
+	        fprintf(stderr, 
+				"Vehicles won't be placed on landmarks in the maze.");
+			break;
+		}
 	}
 	set_terminal(0);
+	if (!command_options.AutoStart)
+	{
 	iprint("Any key or button to continue", 0, line + 1);
 	wait_input();
+    }
     }
     expose_win(ANIM_WIN, TRUE);
     expose_win(GAME_WIN, TRUE);
@@ -1328,8 +1566,6 @@ int num;
 	menu_resize(&menu_sys, PLAYERS_MENU, num_terminals);
 }
 
-#define MAXPNAME 12
-
 /*
 ** Asks the current terminal for a player name and a vehicle name.
 */
@@ -1353,9 +1589,13 @@ get_player_info()
 	display_mesg2(ANIM_WIN, "                               ",
 		      0, line, INT_FONT);
 
-	if (vid->kludge.player_name[0] == '\0') {
-	    input_string(ANIM_WIN, "Enter player name:", term->player_name, 0,
-			 line, INT_FONT, MAXPNAME /*MAX_STRING - 1*/);
+	if (vid->kludge.player_name[0] == '\0') 
+	{
+		if (!command_options.AutoStart)
+		{
+	    	input_string(ANIM_WIN, "Enter player name:", term->player_name, 0,
+				 line, INT_FONT, MAXPNAME /*MAX_STRING - 1*/);
+		}
 	}
 	else
 	{
@@ -1383,9 +1623,15 @@ get_player_info()
 		display_mesg2(ANIM_WIN, "Name used.  Please try another.",
 			      0, line + 1, INT_FONT);
 		duplicate = TRUE;
+		vid->kludge.player_name[0] = '\0';
 		break;
 	    }
 	}
+        if (command_options.AutoStart && duplicate)
+		{
+			puts("Duplicate names specified but not allowed!");
+			exit;
+		}
     }
     while (duplicate);
 
@@ -1393,7 +1639,10 @@ get_player_info()
 
     display_mesg2(ANIM_WIN, "                               ",
 		  0, line, INT_FONT);
+    if (!command_options.AutoStart)
+	{
     vd = ask_desc(VDESC, 0, line);
+	}
     flush_output();
     if (vd == -1)
         vd = 0;
@@ -1404,6 +1653,34 @@ get_player_info()
     }				/* GHS 9/12/90 - kludge */
 }
 
+input_filename(iWindow, pcPrevFileName, pcFileName, iLineNum, iFont, iMaxLen)
+	int iWindow;
+	char *pcPrevFileName;
+	char *pcFileName;
+	int iLineNum;
+	int iFont;
+	int iMaxLen;
+{
+	char temp[MAXPATHLEN];
+
+    sprintf(temp, "Enter filename [%s]:", pcPrevFileName);
+
+	input_string(iWindow, temp, pcFileName, 0, iLineNum, iFont, iMaxLen);
+
+    /* If nothing entered use default (if any), otherwise set default */
+    if (pcFileName[0] == '\0')
+    {
+		if (pcPrevFileName[0])
+		{
+	    	(void) strcpy(pcFileName, pcPrevFileName);
+		}
+    }
+    else
+    {
+		(void) strcpy(pcPrevFileName, pcFileName);
+    }
+}
+
 /*
 ** Prompts the user for a program name.
 ** Compiles and loads the program, adding it to the program list.
@@ -1412,108 +1689,128 @@ get_player_info()
 */
 make_prog_desc()
 {
+	char filename[MAXPATHLEN];
+    static char prev_filename[MAXPATHLEN];
+    int ret, line, i;
+
+	clear_window(ANIM_WIN);
+	line = 3;
+
+    /* Prompt the user for the program name */
+    iprint("Give full program filename for a .c or .o file", 0, line++);
+
+	input_filename(ANIM_WIN, prev_filename, filename, line++, INT_FONT, 256);
+
+	load_prog_desc(filename, FALSE);
+}
+
+load_prog_desc(filename, batch)
+{
     extern char pathname[], programsdir[];
     static char *report[] = {
         "Program loaded", "Improper filename", "Compiler errors",
-	"Linker errors", "Can't read output", "Can't parse symbol table",
-	"Missing description"};
-    static char prev_filename[MAXPATHLEN];
-#ifndef hpux
+		"Linker errors", "Can't read output", "Can't parse symbol table",
+		"Missing description"};
+	char *strdup();
+	char *ptr;
+#if !defined(hpux) && !defined(i860)
     char *rindex();
 #endif
-    char *output_name, *error_name, filename[MAXPATHLEN], temp[MAXPATHLEN];
+    char *output_name, *error_name, temp[MAXPATHLEN];
     char *code;
     Prog_desc *pdesc;
     int ret, line, i;
 
-    clear_window(ANIM_WIN);
-    line = 3;
+	line = 6;
 
     /* Check that there is room for another program */
     if (num_prog_descs >= MAX_PDESCS)
     {
-        iprint("No room for more programs.  Key or button to continue", 0,
-	       line);
-	wait_input();
-	return;
-    }
-    /* Prompt the user for the program name */
-    iprint("Give full program filename for a .c or .o file", 0, line++);
-    sprintf(temp, "Enter filename [%s]:", prev_filename);
-    input_string(ANIM_WIN, temp, filename, 0, line++, INT_FONT, 256);
-
-    /* If nothing entered use default (if any), otherwise set default */
-    if (filename[0] == '\0')
-    {
-	if (prev_filename[0] == '\0')
-	    return;
-	else
-	    (void) strcpy(filename, prev_filename);
-    }
-    else
-    {
-	(void) strcpy(prev_filename, filename);
-    }
+		if (batch) {
+			iprint("No room for more programs.  Key or button to continue", 0,
+			   line);
+			wait_input();
+			return;
+		} else {
+			fprintf(stderr, "No room for more programs.\n");
+			exit(3);
+		}
+	}
+    
+	ptr = strdup(filename);
+	assert(ptr);
 
     /* Prepend the path to the programs directory if necessary */
     if (!rindex(filename, '/'))
     {
-	(void) strcpy(temp, pathname);
-	(void) strcat(temp, "/");
-	(void) strcat(temp, programsdir);
-	(void) strcat(temp, "/");
-	(void) strcat(temp, filename);
-	(void) strcpy(filename, temp);
+		(void) strcpy(temp, pathname);
+		(void) strcat(temp, "/");
+		(void) strcat(temp, programsdir);
+		(void) strcat(temp, "/");
+		(void) strcat(temp, filename);
+		(void) strcpy(filename, temp);
     }
-    /* State the load request and flush */
-    sprintf(temp, "Loading %s", filename);
-    iprint(temp, 0, line++);
-    flush_output();
+
+	if (!batch) {
+		/* State the load request and flush */
+		sprintf(temp, "Loading %s", filename);
+		iprint(temp, 0, line++);
+		flush_output();
+	}
 
     /* Compile and load the program */
     error_name = "/tmp/xtank.error";
     output_name = "/tmp/xtank.output";
     pdesc = prog_desc[num_prog_descs];
+
     ret = compile_module(filename, (char **) &pdesc, &code, error_name,
 			 output_name);
 
-    /* Report the result */
-    (void) strcpy(temp, report[ret]);
-    (void) strcat(temp, ".  Key or button to continue.");
-    iprint(temp, 0, line);
-    wait_input();
+	if (!batch) {
+		/* Report the result */
+		(void) strcpy(temp, report[ret]);
+		(void) strcat(temp, ".  Key or button to continue.");
+		iprint(temp, 0, line);
+		wait_input();
+	}
 
     /* If there are any errors, show the error file */
-    if (ret == 2 || ret == 3)
-	display_file(ANIM_WIN, error_name);
-    else if (ret == 0)
-    {
-	pdesc->code = code;
+    if (ret == 2 || ret == 3) {
+		if (batch) {
+			fprintf(stderr, "Linker/compiler errors\n");
+		} else {
+			display_file(ANIM_WIN, error_name);
+		}
+    } else {
+		if (ret == 0) {
+			pdesc->code = code;
 
-	/* If program has been loaded before, free the previous one and
-	   replace */
-	for (i = 0; i < num_prog_descs; i++)
-	{
-	    /* Look for a loaded program (code != NULL) with matching name */
-	    if (prog_desc[i]->code != (char *) NULL &&
-		!strcmp(prog_desc[i]->name, pdesc->name))
-	    {
-		free(prog_desc[i]->code);
-		break;
-	    }
+			/* If program has been loaded before, free the previous one and
+			   replace */
+			for (i = 0; i < num_prog_descs; i++)
+			{
+				/* Look for a loaded program (code != NULL) with matching name */
+				if (prog_desc[i]->code != (char *) NULL &&
+				!strcmp(prog_desc[i]->name, pdesc->name))
+				{
+				free(prog_desc[i]->code);
+				break;
+				}
+			}
+
+			/* Copy the pointers into the description and menu entries arrays */
+			prog_desc[i] = pdesc;
+			programs_entries[i] = pdesc->name;
+			pdesc->filename = ptr;
+
+			/* If new slot used, increment the count and resize the menu */
+			if (i == num_prog_descs)
+			{
+				num_prog_descs++;
+				menu_resize(&menu_sys, PROGRAMS_MENU, num_prog_descs);
+			}
+		}
 	}
-
-	/* Copy the pointers into the description and menu entries arrays */
-	prog_desc[i] = pdesc;
-	programs_entries[i] = pdesc->name;
-
-	/* If new slot used, increment the count and resize the menu */
-	if (i == num_prog_descs)
-	{
-	    num_prog_descs++;
-	    menu_resize(&menu_sys, PROGRAMS_MENU, num_prog_descs);
-	}
-    }
 
     unlink(error_name);
     unlink(output_name);
@@ -1525,6 +1822,7 @@ make_prog_desc()
 interface_load(type)
 int type;
 {
+#ifdef OLD
 	int max_descs;
 
 	switch (type)
@@ -1543,6 +1841,9 @@ int type;
 	/* If we just added to the end, fix the menu */
 	if (ask_desc(type, ASK_X, ASK_Y) == max_descs)
 		fix_desc_menu(type);
+#else
+	ask_desc(type, ASK_X, ASK_Y);
+#endif
 }
 
 /*
@@ -1584,8 +1885,10 @@ char *name;
 			case SDESC:
 				break;
 		}
+#ifdef OLD
 		if (num == max_descs)
 			fix_desc_menu(type);
+#endif
 	}
 }
 
@@ -1667,6 +1970,10 @@ int type;
 				break;
 			case MDESC:
 				ret = make_mdesc(resp, &num);
+      if (ret == DESC_LOADED) {
+      settings.mdesc = &mdesc[num];
+      display_settings();
+      }
 				break;
 			case SDESC:
 				ret = DESC_NOT_FOUND;

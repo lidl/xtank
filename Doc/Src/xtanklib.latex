@@ -81,6 +81,7 @@ Here are a few things you should keep in mind while writing your \xtank\ robot:
 
   \item Your object (\verb~.o~) file should not be larger than 32K.  If it is,
 	\xtank\ might not load it properly.  (Or did this restriction go away?)
+	(At this point, the maintainers are still unsure of this feature.)
 \end{itemize}
 
  
@@ -271,8 +272,9 @@ into \xtank.  For the curious or adventurous, a browse through
   \vitem{NEUTRAL} The team number of the neutral team.
   \vitem{PI} $\pi$.
   \vitem{TICKSZ} Robot programs only get control every \verb~TICKSZ~ (currently
-	2) frames.  This is a drag, but is necessary to keep the game from
-	being slowed down too much by robot multitasking.
+	1) frames.  This value used to be 2, but that was somewhat of a drag,
+	but it seemed necessary to keep the game from being too slow due to
+        excessive robot multitasking.
 \end{description}
 
 
@@ -469,7 +471,7 @@ float speed()
 \end{verbatim}
 \vspace{-1ex}
 Returns the current speed of the vehicle in pixels per frame.  If you need to
-know the direction or X and Y components of the vehcicle's velocity, use
+know the direction or X and Y components of the vehicle's velocity, use
 \verb~get_self()~.
 
 \index{max_speed}
@@ -866,7 +868,7 @@ Your map may become out-of-date, however, if somebody destroys a wall or
 outpost when you aren't around to see it.
 
 If the full-map setting is in effect, of course, all vehicles get to see
-everthing.
+everything.
 
 \subsubsection*{Constants:}
 
@@ -883,8 +885,8 @@ typedef enum {
 
 typedef enum {
     MAP_NONE = 0,               /* no wall at all */
-    MAP_WALL,                   /* normal (indestructible) wall */
-    MAP_DEST                    /* destructible wall */
+    MAP_WALL,                   /* normal (indestructable) wall */
+    MAP_DEST                    /* destructable wall */
 } WallType;
 
 typedef enum {
@@ -1248,7 +1250,7 @@ Spins all the discs owned by the vehicle in the specified direction.
 
 \subsection{Messages}\label{Messages}
 
-Messages are used to commnunicate between vehicles.
+Messages are used to communicate between vehicles.
 
 \subsubsection*{Constants:}
 
@@ -1354,7 +1356,7 @@ This function tells you where an outpost is, or where it will be in the future.
 The \verb~frame_num~ argument is a frame number, it can be in the future or in
 the present (or even in the past, if you care).  The location in absolute pixel
 coordinates of the outpost at that time is returned in \verb~xret~ and
-\verb~yret~.  This location is acccurate for future times only if the outpost
+\verb~yret~.  This location is accurate for future times only if the outpost
 does not get hit by any bullets.
 
 
@@ -1413,8 +1415,6 @@ may have \verb~malloc()~ed.  Do not try to do anything else, such as calling
 other \xtanklib\ functions, or you might crash \xtank!
 
 
-
-
 \section{Time Constraints}
 
 The execution of \xtank\ robot programs is interleaved with the execution of
@@ -1422,11 +1422,9 @@ The execution of \xtank\ robot programs is interleaved with the execution of
 limit on the CPU time that robots can use each frame.  The upshot of this is
 that if your robot tries to run some really hairy algorithm, it will find
 itself losing turns.  To see if this is happening, check the
-\verb~frame_number()~ each time through your main loop (but remember that your
-robot only gets a turn every \verb~TICKSZ~ frames, no matter how fast it runs).
-
-
-
+\verb~frame_number()~ each time through your main loop (but remember
+that your robot only gets a turn every \verb~TICKSZ~ frames, no matter
+how fast it runs (\verb~TICKSZ~ is currently set to 1, for the time being).
 
 
 \section{Compiling Your Robot}
@@ -1440,8 +1438,6 @@ compile your program yourself.  To do this just compile your program into a
 \verb|$(XTANK_DIR)/$(XTANK_PROGRAMS)|, and load it directly.  You don't have to
 link your program with the math library because you automatically get access to
 the library routines already linked into \xtank.
-
-
 
 
 \section{Debugging Your Robot}

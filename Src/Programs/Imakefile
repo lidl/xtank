@@ -1,19 +1,27 @@
 /**/#
 /**/# Imakefile for ./Src/Programs - part of the UMDENG X-Tank distribution
 /**/#
-/**/# $Id: Imakefile,v 1.5 1991/09/30 01:29:21 lidl Exp $
+/**/# $Id: Imakefile,v 1.12 1992/02/01 22:26:30 lidl Exp $
 /**/#
 
 #include "../../Imakefile.Config"
 
+#if !defined(i860) && !defined(sun)
     CDEBUGFLAGS = -g
-        DEPLIBS = $(DEPXLIB)
-LOCAL_LIBRARIES = $(XLIB)
-           SRCS = drone.c warrior.c shooter.c eliza.c Buddy.c Flipper.c \
+#endif
+#ifdef i860Architecture
+    CDEBUGFLAGS = -gg
+#endif
+#ifdef SunArchitecture
+    CDEBUGFLAGS = -O4
+#endif
+           SRCS = tagman.c Bootlegger.c gnat.c \
+                  drone.c warrior.c shooter.c eliza.c Buddy.c Flipper.c \
                   Dio.c Diophantine.c artful.c spot.c hud3.c kamikaze.c \
                   Pzkw_I.c dum_maze.c roadrunner.c runner.c Guard.c \
                   RacerX.c $(SRCS2)
-           OBJS = drone.o warrior.o shooter.o eliza.o Buddy.o Flipper.o \
+           OBJS = tagman.o Bootlegger.o gnat.o \
+                  drone.o warrior.o shooter.o eliza.o Buddy.o Flipper.o \
                   Dio.o Diophantine.o artful.o spot.o hud3.o kamikaze.o \
                   Pzkw_I.o dum_maze.o roadrunner.o runner.o Guard.o \
                   RacerX.o $(OBJS2)

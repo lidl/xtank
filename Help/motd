@@ -1,37 +1,27 @@
-Send comments to xtank@eng.umd.edu                              29 Sept 1991
+Send comments to xtank@eng.umd.edu                              13 Feb 1992
 
-The latest Xtank beta release is available via FTP on ftp.eng.umd.edu.
+The latest Xtank beta release is available via anonymous FTP on the
+host ftp.eng.umd.edu, in the directory /pub/xtank,
 
-Documentation can be found in xtank/Doc:
-	essential  - How to play xtank
-	mdesign    - How to design mazes
-	vdesign    - How to design vehicles
-	xtanklib   - How to write robot programs
+Be sure to read Help/Votes -- please vote as you see fit!!!
+Also check out Help/Release Notes for better documentation.
 
-UMD-ENG Hacks (partial list):
-    Screenery
-        Shocker Walls   - Electrified walls really hurt.  Scalable (0-10).
-        Peace           - Bullets ting while on YOUR peace square.
-    Treads
-        Hover           - Experimental.
-    Specials
-        Repair          - Costs ALOT, when not moving, swaps fuel for armor.
-        RamPlate        - When you hit someone with your FRONT, 
-                          you cause extra damage and take less.
-                          The RamPlate weighs half that of your front armor.
-        Navigation      - Makes driving backwards much easier.  You
-                          head toward the direction you choose,
-                          rather than away from it.
-    Misc
-        Scrolling menus - Kinda obvious
-        Xdefaults       - Documented elsewhere
+PIX.COM Hacks (partial list):
+    Save/Load Setting         - Josh & Gordon
+    New Vehicle Body          - Kurt Lidl
+    Batch Mode                - Matt Senft
+    New Lowlib Calls          - All
+    New Vehicle Save/Load     - All
+    New Weapons               - All
 
 Contibuted Hacks (partial list):
-    X11 Optimization and generally cluefull hacking
-        Line Batching   - Aaron Eastlund
-        Point Batching
-        Stingy Redraw
-        Blank Nametags
-    Robots:
-        Pzkw_I          - Hans Jeppesen
-        RacerX          - Robert Potter
+    New Radar Code            - Aaron Eastlund
+    HARMS                     - Aaron Eastlund
+    Tac-Link                  - Aaron Eastlund
+    Bullet/Armor Fixes        - Adam Bryant (Area code -- 617)
+    Teleport Mode             - Chris Moore
+
+New Robots:
+    Tagman                    - Matt Senft
+    Gnat                      - William Katz
+    Bootlegger                - Sean Barrett

@@ -195,6 +195,7 @@ static void main()
 		  case MOUNT_TURRET1:
 		  case MOUNT_TURRET2:
 		  case MOUNT_TURRET3:
+		  case MOUNT_TURRET4:
 		    {
 			int tdx, tdy;
 

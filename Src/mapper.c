@@ -7,10 +7,28 @@
 */
 
 /*
-$Author: lidl $
-$Id: mapper.c,v 2.4 1991/09/23 01:11:32 lidl Exp $
+$Author: aahz $
+$Id: mapper.c,v 2.8 1992/01/30 03:19:22 aahz Exp $
 
 $Log: mapper.c,v $
+ * Revision 2.8  1992/01/30  03:19:22  aahz
+ * made the terminal's vehicle appear as an x in team color on the mapper.
+ *
+ * Revision 2.7  1992/01/29  08:37:01  lidl
+ * post aaron patches, seems to mostly work now
+ *
+ * Revision 2.6  1992/01/02  16:22:14  lidl
+ * Patch from battle@cs.utk.edu (David) to fix the purple walls bug
+ * From his patch mail:
+ * The determination of whether the wall being drawn was destructable or not
+ * was being done incorrectly, resulting in a grey wall be xored over by
+ * a white line, thus the strange effect.  The basic idea [of this patch]
+ * is to consult the real map for the type of the wall rather than the
+ * difference between the real map and the player's map.
+ *
+ * Revision 2.5  1991/12/03  19:51:24  lidl
+ * new map speedup code (lost the address & name of the person who mailed this)
+ *
  * Revision 2.4  1991/09/23  01:11:32  lidl
  * From rpotter@grip.cis.upenn.edu (Robert Potter)
  * All walls looked indestructible to robots (unless full-map was on).
@@ -47,13 +65,28 @@ $Log: mapper.c,v $
 
 extern Terminal *term;
 extern Map real_map;
+extern int team_color_bright[];
 
 
-#define draw_marker(x,y) \
+#ifdef OLD_MARKER
+#define draw_marker(x,y,c) \
   draw_filled_square(MAP_WIN,x,y,MAP_BOX_SIZE-3,DRAW_XOR,WHITE)
+#define draw_grid_marker(x,y) \
+  draw_marker(grid2map(x+NUM_BOXES/2)+2, grid2map(y+NUM_BOXES/2)+2, CUR_COLOR)
+#else
+#define draw_marker(x,y,c) \
+  { \
+	draw_line(MAP_WIN, x, y, x+5, y+5, DRAW_XOR, c); \
+    draw_line(MAP_WIN, x+5, y, x, y+5, DRAW_XOR, c); \
+  }
 
 #define draw_grid_marker(x,y) \
-  draw_marker(grid2map(x+NUM_BOXES/2) + 2,grid2map(y+NUM_BOXES/2) + 2)
+  { \
+    int x1 = grid2map(x+NUM_BOXES/2)+2; \
+    int y1 = grid2map(y+NUM_BOXES/2)+2; \
+    draw_filled_square(MAP_WIN,x1,y1,MAP_BOX_SIZE-3,DRAW_XOR,WHITE); \
+  }
+#endif
 
 /*
 ** Handles all mapper actions for the specified vehicle.
@@ -70,6 +103,10 @@ special_mapper(v, record, action)
     int left_x, top_y, line_x, line_y;
     unsigned int flags;
     int i, x, y;
+#ifndef NO_NEW_RADAR
+    int veh;
+    Vehicle *mv;
+#endif /* !NO_NEW_RADAR */
 
     switch (action)
     {
@@ -77,7 +114,8 @@ special_mapper(v, record, action)
 	/* If the vehicle hasn't move to a new box, do nothing */
 	if ((v->loc->grid_x == v->old_loc->grid_x) &&
 	    (v->loc->grid_y == v->old_loc->grid_y) &&
-	    (m->initial_update == FALSE))
+	    (m->initial_update == FALSE) &&
+	    (m->map_invalid == FALSE))
 	{
 	    m->need_redisplay = FALSE;
 	    break;
@@ -85,6 +123,7 @@ special_mapper(v, record, action)
 	/* Otherwise, we need to redisplay */
 	m->initial_update = FALSE;
 	m->need_redisplay = TRUE;
+	m->map_invalid = FALSE;
 	m->num_symbols = 0;
 
 	/* Update the marker location */
@@ -116,7 +155,7 @@ special_mapper(v, record, action)
 		{
 		    /* add symbol to display list */
 		    s = &m->symbol[m->num_symbols++];
-		    s->type = (flags & NORTH_DEST) ? NORTH_DEST_SYM :
+		    s->type = ((b->flags) & NORTH_DEST) ? NORTH_DEST_SYM :
 			                             NORTH_SYM;
 		    s->x = line_x;
 		    s->y = line_y;
@@ -126,7 +165,7 @@ special_mapper(v, record, action)
 		if (flags & WEST_WALL && x != left)
 		{
 		    s = &m->symbol[m->num_symbols++];
-		    s->type = (flags & WEST_DEST) ? WEST_DEST_SYM : WEST_SYM;
+		    s->type = ((b->flags) & WEST_DEST) ? WEST_DEST_SYM : WEST_SYM;
 		    s->x = line_x;
 		    s->y = line_y;
 		    mb->flags ^= WEST_WALL;
@@ -178,8 +217,30 @@ special_mapper(v, record, action)
 	    draw_symbol(&m->symbol[i]);
 
 	/* Redisplay the vehicle marker */
-	draw_marker(m->old_marker.x, m->old_marker.y);
-	draw_marker(m->marker.x, m->marker.y);
+	draw_marker(m->old_marker.x, m->old_marker.y, team_color_bright[v->team]);
+	draw_marker(m->marker.x, m->marker.y, team_color_bright[v->team]);
+/*
+	for (veh = 0; veh < MAX_VEHICLES; veh++) {
+	    mv = &actual_vehicles[veh];
+	    m = (Mapper *)(mv->special[(int) MAPPER].record)
+	    if ( !tstflag(mv->status, VS_is_alive) ||
+             ( !v->have_IFF_key[mv->number] && mv->team != v->team ) ||
+	     ( ( mv->special[(int) TACLINK].status != SP_on ||
+	     v->special[(int) TACLINK].status != SP_on ) && v != mv ) ||
+	     !m->need_redisplay ||
+	     mv->special[(int) MAPPER].status != SP_on);
+		continue;
+	    for (i = 0; i < m->num_symbols; i++)
+		draw_symbol(&m->symbol[i]);
+	}
+
+        *m = (Mapper *) record;
+
+	if (m->need_redisplay) {
+	    draw_marker(m->old_marker.x, m->old_marker.y, team_color_bright[v->team]);
+	    draw_marker(m->marker.x, m->marker.y, team_color_bright[v->team]);
+	}
+*/
 	break;
       case SP_draw:
       case SP_erase:
@@ -187,7 +248,7 @@ special_mapper(v, record, action)
 	draw_full_map(m->map);
 
 	/* Draw/erase the vehicle marker */
-	draw_marker(m->marker.x, m->marker.y);
+	draw_marker(m->marker.x, m->marker.y, team_color_bright[v->team]);
 	break;
       case SP_activate:
 	/* compute initial location of the marker */
@@ -195,6 +256,7 @@ special_mapper(v, record, action)
 	m->marker.y = grid2map(v->loc->grid_y) + 2;
 
 	m->initial_update = TRUE;
+	m->map_invalid = FALSE;
 	break;
       case SP_deactivate:
 	break;
@@ -248,7 +310,6 @@ draw_symbol(s)
     Landmark_info *s;
 {
     extern Object *landmark_obj[];
-    extern int team_color_bright[];
     Picture *pic;
 
     switch (s->type)

@@ -2,9 +2,10 @@
 **  This is the object file for map landmarks.
 */
 
-#define map_landmarks_views 16
+#define map_landmarks_views 17
 
 static Picture map_landmarks_pic[map_landmarks_views] = {
+      { 6, 6, -2, -2 },
       { 6, 6, -2, -2 },
       { 6, 6, -2, -2 },
       { 6, 6, -2, -2 },
@@ -48,6 +49,9 @@ static unsigned char map_outpost_bits[] = {
 static unsigned char map_peace_bits[] = {
    0x3e, 0x22, 0x3e, 0x02, 0x02, 0x02};
 
+static unsigned char map_teleport_bits[] = {
+   0x3f, 0x3f, 0x0c, 0x0c, 0x0c, 0x0c};
+
 static unsigned char map_scroll_n_bits[] = {
     0x0c, 0x1e, 0x3f, 0x2d, 0x0c, 0x0c};
 
@@ -85,6 +89,7 @@ static unsigned char *map_landmarks_bitmap[map_landmarks_views] = {
 	map_goal_bits,
 	map_outpost_bits,
 	map_peace_bits,
+	map_teleport_bits,
 	map_scroll_n_bits,
 	map_scroll_ne_bits,
 	map_scroll_e_bits,
