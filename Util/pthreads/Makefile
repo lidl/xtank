@@ -2,12 +2,18 @@
 # build a sample pthreads program#
 #
 
-PROG=pthreads
-NOMAN=
+PROGS=cond pthreads
 CC=gcc
-LDCC=${CC}
-CFLAGS+= -g -pg -Wall
-LDFLAGS+= -pg
-CLEANFILES+= gmon.out
+CFLAGS+= -g -Wall #-pg
+#LDFLAGS+= -pg
+#CLEANFILES+= gmon.out
 
-.include <bsd.prog.mk>
+all: ${PROGS}
+
+clean:
+	-rm -f ${PROGS} *.o *.core
+
+pthreads: pthreads.c
+
+cond: cond.c
+
