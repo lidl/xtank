@@ -7,25 +7,8 @@
 */
 
 /*
-$Author: rpotter $
-$Id: disc.h,v 2.3 1991/02/10 13:50:21 rpotter Exp $
-
-$Log: disc.h,v $
- * Revision 2.3  1991/02/10  13:50:21  rpotter
- * bug fixes, display tweaks, non-restart fixes, header reorg.
- *
- * Revision 2.2  91/01/20  09:57:34  rpotter
- * complete rewrite of vehicle death, other tweaks
- * 
- * Revision 2.1  91/01/17  07:11:12  rpotter
- * lint warnings and a fix to update_vector()
- * 
- * Revision 2.0  91/01/17  02:09:17  rpotter
- * small changes
- * 
- * Revision 1.1  90/12/29  21:02:18  aahz
- * Initial revision
- * 
+$Author: lidl $
+$Id: disc.h,v 1.1.1.1 1995/02/01 00:25:40 lidl Exp $
 */
 
 #define DISC_ORBIT_SQ	1600.0

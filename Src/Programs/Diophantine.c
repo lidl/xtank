@@ -1,3 +1,16 @@
+/*
+** Xtank
+**
+** Copyright 1988 by Steve Worley
+**
+** Diophantine.c
+*/
+
+/*
+$Author: lidl $
+$Id: Diophantine.c,v 1.1.1.1 1995/02/01 00:25:45 lidl Exp $
+*/
+
 /*  ========================================================================
     ========================================================================
     =====                  THE DIOPHANTINE EXPLORER                     ====
@@ -16,34 +29,6 @@
 ***** Modified to work with Xtank v0.95 by Dan Schmidt *****
 ***** Modified to work with Xtank v1.20 by Gordon Smith *****
 
-*/
-
-/*
-$Author: lidl $
-$Id: Diophantine.c,v 2.5 1992/08/19 05:18:46 lidl Exp $
-
-$Log: Diophantine.c,v $
- * Revision 2.5  1992/08/19  05:18:46  lidl
- * changed to use FLOAT, instead of float
- *
- * Revision 2.4  1992/08/19  05:13:49  lidl
- * changed sqrt to SQRT
- *
- * Revision 2.3  1991/02/10  13:49:58  rpotter
- * bug fixes, display tweaks, non-restart fixes, header reorg.
- *
- * Revision 2.2  91/01/20  09:57:09  rpotter
- * complete rewrite of vehicle death, other tweaks
- * 
- * Revision 2.1  91/01/17  07:10:38  rpotter
- * lint warnings and a fix to update_vector()
- * 
- * Revision 2.0  91/01/17  02:08:51  rpotter
- * small changes
- * 
- * Revision 1.1  90/12/29  21:01:47  aahz
- * Initial revision
- * 
 */
 
 #include <xtanklib.h>

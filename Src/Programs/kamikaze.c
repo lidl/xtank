@@ -1,33 +1,14 @@
 /*
-$Author: lidl $
-$Id: kamikaze.c,v 2.6 1991/12/15 20:22:49 lidl Exp $
+** Xtank
+**
+** Copyright 1990 by Robert Potter
+**
+** kamikaze.c
+*/
 
-$Log: kamikaze.c,v $
- * Revision 2.6  1991/12/15  20:22:49  lidl
- * changed all "float" occurances to "FLOAT"
- *
- * Revision 2.5  1991/09/19  05:26:54  lidl
- * cleaned up a few compile-time errors, removed declaration of fixed_angle()
- *
- * Revision 2.4  1991/03/25  23:32:19  stripes
- * Added patches lurker!greg that brighten up kamikazi's when their pray slips
- * around a wall.    - Thanks.
- *
- * Revision 2.3  1991/02/10  13:50:57  rpotter
- * bug fixes, display tweaks, non-restart fixes, header reorg.
- *
- * Revision 2.2  91/01/20  09:58:11  rpotter
- * complete rewrite of vehicle death, other tweaks
- *
- * Revision 2.1  91/01/17  07:12:00  rpotter
- * lint warnings and a fix to update_vector()
- *
- * Revision 2.0  91/01/17  02:09:48  rpotter
- * small changes
- *
- * Revision 1.1  90/12/29  21:02:38  aahz
- * Initial revision
- *
+/*
+$Author: lidl $
+$Id: kamikaze.c,v 1.1.1.1 1995/02/01 00:25:47 lidl Exp $
 */
 
 /*

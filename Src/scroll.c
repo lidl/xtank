@@ -8,34 +8,14 @@
 
 /*
 $Author: lidl $
-$Id: scroll.c,v 2.4 1991/12/10 03:41:44 lidl Exp $
-
-$Log: scroll.c,v $
- * Revision 2.4  1991/12/10  03:41:44  lidl
- * changed float to FLOAT, for portability reasons
- *
- * Revision 2.3  1991/02/10  13:51:35  rpotter
- * bug fixes, display tweaks, non-restart fixes, header reorg.
- *
- * Revision 2.2  91/01/20  09:58:53  rpotter
- * complete rewrite of vehicle death, other tweaks
- * 
- * Revision 2.1  91/01/17  07:12:52  rpotter
- * lint warnings and a fix to update_vector()
- * 
- * Revision 2.0  91/01/17  02:10:26  rpotter
- * small changes
- * 
- * Revision 1.1  90/12/29  21:03:02  aahz
- * Initial revision
- * 
+$Id: scroll.c,v 1.1.1.1 1995/02/01 00:25:37 lidl Exp $
 */
 
 #include "xtank.h"
 #include "graphics.h"
 #include "scroll.h"
 #include "gr.h"
-
+#include "proto.h"
 
 draw_scrollbar(sbar)
 scrollbar *sbar;
@@ -47,8 +27,7 @@ scrollbar *sbar;
 			  DRAW_COPY, GREY);
 	draw_filled_rect(sbar->win, sbar->x + 1, sbar->y + 1, sbar->w - 2, sbar->h - 2,
 					 DRAW_COPY, BLACK);
-	if (sbar->span >= sbar->total)
-	{
+	if (sbar->span >= sbar->total) {
 		/* entire list is displayed */
 		draw_filled_rect(sbar->win, sbar->x + 1, sbar->y + 1, sbar->w - 2, sbar->h - 2,
 						 DRAW_COPY, BLUE);
@@ -56,14 +35,12 @@ scrollbar *sbar;
 	}
 	fspan = (0.0 + sbar->span) / (0.0 + sbar->total);
 	pspan = sbar->h * fspan;
-	if (sbar->pos + sbar->span > sbar->total)
-	{
+	if (sbar->pos + sbar->span > sbar->total) {
 		sbar->pos = sbar->total - sbar->span;
 	}
 	fpos = (0.0 + sbar->pos) / (0.0 + sbar->total);
 	ppos = sbar->h * fpos;
-	if (ppos + 1 + pspan > sbar->h)
-	{
+	if (ppos + 1 + pspan > sbar->h) {
 		ppos = sbar->h - pspan - 1;
 	}
 	ppos += sbar->y;
@@ -81,41 +58,34 @@ unsigned int button;
 	FLOAT fpos;
 	int new_pos;
 
-	if (my < sbar->y || my > sbar->y + sbar->h)
-	{
+	if (my < sbar->y || my > sbar->y + sbar->h) {
 		rorre("This sucks\n");
 	}
-	if (mx < sbar->x || mx > sbar->x + sbar->w)
-	{
+	if (mx < sbar->x || mx > sbar->x + sbar->w) {
 		rorre("This sucks wind\n");
 	}
+	switch (button) {
+	  case EVENT_MBUTTON:
+		  fpos = (my - sbar->y + 0.0) / (0.0 + sbar->h);
+		  new_pos = fpos * sbar->total;
+		  break;
 
-	switch (button)
-	{
-		case EVENT_MBUTTON:
-			fpos = (my - sbar->y + 0.0) / (0.0 + sbar->h);
-			new_pos = fpos * sbar->total;
-			break;
+	  case EVENT_LBUTTON:
+		  new_pos = sbar->pos + (sbar->span >> 1);
+		  break;
 
-		case EVENT_LBUTTON:
-			new_pos = sbar->pos + (sbar->span >> 1);
-			break;
-
-		case EVENT_RBUTTON:
-			new_pos = sbar->pos - (sbar->span >> 1);
-			break;
+	  case EVENT_RBUTTON:
+		  new_pos = sbar->pos - (sbar->span >> 1);
+		  break;
 	}
 
-	if (new_pos > (sbar->total - sbar->span))
-	{
+	if (new_pos > (sbar->total - sbar->span)) {
 		new_pos = sbar->total - sbar->span;
 	}
-	if (new_pos < 0)
-	{
+	if (new_pos < 0) {
 		new_pos = 0;
 	}
-	if (new_pos == sbar->pos)
-	{
+	if (new_pos == sbar->pos) {
 		return (FALSE);
 	}
 	sbar->pos = new_pos;

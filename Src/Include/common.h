@@ -8,53 +8,11 @@
 
 /*
 $Author: lidl $
-$Id: common.h,v 2.11 1992/06/07 02:52:54 lidl Exp $
-
-$Log: common.h,v $
- * Revision 2.11  1992/06/07  02:52:54  lidl
- * Post Adam Bryant patches and a manual merge of the rejects (ugh!)
- *
- * Revision 2.10  1992/05/19  22:56:08  lidl
- * post chris moore patches
- *
- * Revision 2.9  1992/04/18  15:36:55  lidl
- * minor sequent #ifdef hack
- *
- * Revision 2.8  1992/03/31  21:49:23  lidl
- * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
- *
- * Revision 2.7  1991/10/07  03:16:12  lidl
- * fixed a botch in sgi support on mips platforms (hopefully)
- *
- * Revision 2.6  1991/09/19  05:29:07  lidl
- * mips header problem cleaned up
- *
- * Revision 2.5  1991/08/22  03:08:15  aahz
- * avoided warnings on the i860 machine.
- *
- * Revision 2.4  1991/03/25  00:40:13  stripes
- * RS6K patches
- *
- * Revision 2.3  1991/02/10  13:50:14  rpotter
- * bug fixes, display tweaks, non-restart fixes, header reorg.
- *
- * Revision 2.2  91/01/20  09:57:27  rpotter
- * complete rewrite of vehicle death, other tweaks
- * 
- * Revision 2.1  91/01/17  07:11:03  rpotter
- * lint warnings and a fix to update_vector()
- * 
- * Revision 2.0  91/01/17  02:09:11  rpotter
- * small changes
- * 
- * Revision 1.1  90/12/29  21:02:08  aahz
- * Initial revision
- * 
+$Id: common.h,v 1.1.1.1 1995/02/01 00:25:40 lidl Exp $
 */
 
 #ifndef _COMMON_H_
 #define _COMMON_H_
-
 
 /* Useful constants */
 
@@ -63,11 +21,11 @@ $Log: common.h,v $
 #endif
 
 #ifndef PI
-#define PI 3.14159265358979323846  /* Not PI, but an incredible simulation */
+#define PI 3.14159265358979323846	/* Not PI, but an incredible simulation */
 #endif
 
 #ifndef SQRT_2
-#define SQRT_2 1.4142136	/* close enough for goverment work */
+#define SQRT_2 1.4142136		/* close enough for goverment work */
 #endif
 
 #define BAD_VALUE       (-1)
@@ -104,27 +62,32 @@ $Log: common.h,v $
 
 /* avoid some lint warnings */
 #ifndef __GNUC__
-# if (!defined(hpux) && !defined(sgi))
-#  if (!defined(_IBMR2))
-#   if (!defined(i860) && !defined(sequent))
-#    if !defined(mips)
+#if (!defined(hpux) && !defined(sgi)) && !defined(__alpha)
+#if (!defined(_IBMR2))
+#if (!defined(i860) && !defined(sequent))
+#if !defined(mips)
 extern char *sprintf(), *memset(), *memcpy();
-#    else
+
+#else
 extern char *sprintf();
-#    endif
-#   endif
-#   if defined(i860)
+
+#endif
+#endif
+#if defined(i860)
 extern char *strcpy();
-#   else
+
+#else
 extern char *malloc(), *calloc(), *realloc(), *strcpy();
-#   endif
-#  endif
-# endif
+
+#endif
+#endif
+#endif
 extern long random();
 extern void exit();
 extern double atan2(), hypot(), sin(), cos(), sqrt(), floor(), aint();
 extern double pow(), asin();
+
 #endif
 
 
-#endif ndef _COMMON_H_
+#endif /* ndef _COMMON_H_ */

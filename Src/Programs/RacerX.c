@@ -1,3 +1,16 @@
+/*
+** Xtank
+**
+** Copyright 1991 by Robert Potter
+**
+** RacerX.c
+*/
+
+/*
+$Author: lidl $
+$Id: RacerX.c,v 1.1.1.1 1995/02/01 00:25:46 lidl Exp $
+*/
+
 /************************************************\
 * "RacerX" - an Xtank player by Robert D. Potter *
 \************************************************/
@@ -22,12 +35,6 @@ Fixed a couple of problems.  Now much smarter about shooting at
 destructible walls.
 */
 
-/*
-$Author: lidl $
-$Id: RacerX.c,v 1.4 1991/09/25 07:18:40 lidl Exp $
-
-$Rlog$
-*/
 #include <math.h>
 #include <xtanklib.h>
 

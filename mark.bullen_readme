@@ -1,0 +1,125 @@
+
+	MouseDrive.patch:
+	------------------
+
+Vehicle follows mouse at all times, no need to click that RMB anymore! This
+patch assumes that you've got access to a reasonably fast network, X
+Servers and a machine to run XTank as it generates LOTS & LOTS of
+mouse_move events!
+
+MouseDrive has two flags, one for the INITIAL state of MouseDrive when a
+players' vehicle is activated (i.e. start of game, restart after death),
+and one for the IN-GAME state of MouseDrive, i.e. whether it is currently
+active.
+
+You'll need to add the following to your XDefaults;
+
+!
+xtank*MouseDrive:	<Integer>
+!
+
+where <Integer> is interpreted as follows;
+
+<Integer> == 0 -- MouseDrive is disabled (DEFAULT)
+           > 0 -- MouseDrive is enabled, but inactive by default
+           < 0 -- MouseDrive is enabled, and active by default
+
+NB: if <Integer> == 0, MouseDrive is not available AT ALL during the game,
+you will have to change your XDefaults and reboot xtank! (almost everybody
+here plays with MouseDrive enabled and active by default.)
+
+You may use the <TAB> key to toggle on/off MouseDrive during a game,
+holding down (e.g. dragging) the RMB will temporarily toggle on/off
+MouseDrive (whilst the RMB is held DOWN)
+
+MouseSpeed is also used to set the speed of your vehicle, I recommend having
+that active too (front mounted weapons are also quite popular).
+
+With MouseSpeed and MouseDrive active you should now be able to comfortably
+out maneuver most robots :-)
+
+>>----------------------------------------------------------------------
+
+	MouseHeat.patch:
+	----------------
+
+You may now program your mouse/space-bar weapon firing buttons to only fire
+certain types of weapons by use of a new Xtank X Resource, XTank.MouseHeat:
+You supply a single numeric value to specify the amount of heat per weapon
+to be used as the threshold for mouse/space-bar firing. 
+
+For example;
+
+xtank.MouseHeat:	5
+
+will configure your xtank terminal such that any weapons present on your
+current vehicle that generate LESS than 5 units of heat will be fired by
+the space bar, and those that generate MORE than 5 units of heat will be
+fired by the left mouse button.
+
+You may supply a negative value to switch the firing order around;
+
+xtank.MouseHeat:	-5
+
+will configure your space-bar to fire weapons that generate MORE than 5
+units of heat, and your left mouse button to fire weapons that generate
+LESS than 5 units of heat.
+
+setting MouseHeat to 0 (Zero) or omitting it from your ~/.XDefaults file
+will give you the default fire-everything behaviour.
+
+NOTE: The left mouse button aims & fires, the space-bar just fires, you'll
+need to use the middle mouse button to aim when firing with the space-bar.
+
+>>----------------------------------------------------------------------
+
+	KeyMapping.patch:
+	-----------------
+
+Allows you to swap around keys in the "Anim Window"; so you can move the
+Radar On/Off keys somewhere else if you're left handed :-)
+
+xtank.KeyMap: <string of pairs of chars>
+
+Maps the first keycode to the second keycode of each pair of chars.
+
+example:
+
+xtank.KeyMap: abcd
+
+will map the "a" key to "b" key, and the "c" key to "d" key. Note that "b"
+still returns "b" and "d" still returns "d" -- if you want to swap "a" and
+"b" around you'd need something like
+
+xtank.KeyMap: abba
+
+Which, despite it's 70's Euro-Pop connections, will do the trick :-)
+
+Also, at no extra cost ...
+
+The numeric keypad on Sun X Servers is now correctly decoded, so you may
+use the Numeric Keypad keys 1-6 to fire or toggle on/off individual weapons
+and KP Zero (Ins) to fire all weapons once (Weapons that were `off' are
+turned `on', fired, and turned back `off').
+
+xtank*Keypad: <int>
+
+if <int> == 0 keypad works to set speed, as per usual
+if <int> >= 0 keypad works to fire coresponding numbered weapon
+if <int> <= 0 keypad works to toggle on/off   - " -
+
+>>----------------------------------------------------------------------
+
+	SpecialsFix.patch
+	-----------------
+
+Uncommented call to de_activate specials upon vehicle death. Cleans up
+mapper window, else you get stale radar blips left on the window when you
+are "revived".
+
+>>----------------------------------------------------------------------
+
+
+	Tha-tha-that's all folks!
+
+ Mark.Bullen@src.bae.co.uk 			(28th July 1993)

@@ -1,3 +1,16 @@
+/*
+** Xtank
+**
+** Copyright 1993 by Pix Technologies Corp.
+**
+** setups.l
+*/
+
+/*
+$Author: lidl $
+$Id: setups.l,v 1.1.1.1 1995/02/01 00:25:38 lidl Exp $
+*/
+
 %{
 
 #include <stdio.h>
@@ -49,7 +62,6 @@ f		{B}[0-9]+("."[0-9]*)?
 ^Robots\ Don't\ Win{b}/\n	{ cv_bool(yval(), &settings.robots_dont_win); }
 ^Max\ Armor\ Scale{b}/\n	{ cv_bool(yval(), &settings.max_armor_scale); }
 ^Nametags{b}/\n				{ cv_bool(yval(), &settings.si.no_nametags); }
-^No\ Radar{b}/\n			{ cv_bool(yval(), &settings.si.no_radar); }
 ^Team\ Score{b}/\n			{ cv_bool(yval(), &settings.si.team_score); }
 ^Player\ Teleport{b}/\n		{ cv_bool(yval(), &settings.si.player_teleport); }
 ^Disc\ Teleport{b}/\n		{ cv_bool(yval(), &settings.si.disc_teleport); }

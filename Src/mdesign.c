@@ -1,4 +1,3 @@
-#include "malloc.h"
 /*
 ** Xtank
 **
@@ -8,44 +7,17 @@
 */
 
 /*
-$Author: aahz $
-$Id: mdesign.c,v 2.7 1992/09/12 09:42:26 aahz Exp $
-
-$Log: mdesign.c,v $
- * Revision 2.7  1992/09/12  09:42:26  aahz
- * removed unused global
- *
- * Revision 2.6  1992/05/19  22:57:19  lidl
- * post Chris Moore patches, and sqrt to SQRT changes
- *
- * Revision 2.5  1992/03/31  04:04:16  lidl
- * pre-aaron patches, post 1.3d release (ie mailing list patches)
- *
- * Revision 2.4  1992/01/06  07:52:49  stripes
- * Changes for teleport
- *
- * Revision 2.3  1991/02/10  13:51:15  rpotter
- * bug fixes, display tweaks, non-restart fixes, header reorg.
- *
- * Revision 2.2  91/01/20  09:58:33  rpotter
- * complete rewrite of vehicle death, other tweaks
- * 
- * Revision 2.1  91/01/17  07:12:26  rpotter
- * lint warnings and a fix to update_vector()
- * 
- * Revision 2.0  91/01/17  02:10:07  rpotter
- * small changes
- * 
- * Revision 1.1  90/12/29  21:02:49  aahz
- * Initial revision
- * 
+$Author: lidl $
+$Id: mdesign.c,v 1.1.1.1 1995/02/01 00:25:36 lidl Exp $
 */
 
+#include "malloc.h"
 #include "xtank.h"
 #include "mdesign.h"
 #include "graphics.h"
 #include "gr.h"
 #include "terminal.h"
+#include "proto.h"
 
 extern Terminal *term;
 extern Map real_map;
@@ -65,120 +37,117 @@ Event *event;
 	ploc.y = event->y;
 	pix_to_box(&ploc, &bloc);
 
-	switch (event->key)
-	{
-		case ' ':
-			make_landmark(&bloc, NORMAL);
-			break;
-		case 'a':
-			make_landmark(&bloc, ARMOR);
-			break;
-		case 'p':
-			make_landmark(&bloc, PEACE);
-			break;
-		case 't':
-			set_teleport_code(&bloc);
-			make_landmark(&bloc, TELEPORT);
-			break;
-		case 'f':
-			make_landmark(&bloc, FUEL);
-			break;
-		case 'w':
-			make_landmark(&bloc, AMMO);
-			break;
-		case 'o':
-			make_landmark(&bloc, OUTPOST);
-			break;
-		case 'g':
-			make_landmark(&bloc, GOAL);
-			break;
-		case '-':
-			make_landmark(&bloc, SLIP);
-			break;
-		case '=':
-			make_landmark(&bloc, SLOW);
-			break;
-		case 'x':
-			make_landmark(&bloc, START_POS);
-			break;
-		case '1':
-			make_landmark(&bloc, SCROLL_SW);
-			break;
-		case '2':
-			make_landmark(&bloc, SCROLL_S);
-			break;
-		case '3':
-			make_landmark(&bloc, SCROLL_SE);
-			break;
-		case '4':
-			make_landmark(&bloc, SCROLL_W);
-			break;
-		case '6':
-			make_landmark(&bloc, SCROLL_E);
-			break;
-		case '7':
-			make_landmark(&bloc, SCROLL_NW);
-			break;
-		case '8':
-			make_landmark(&bloc, SCROLL_N);
-			break;
-		case '9':
-			make_landmark(&bloc, SCROLL_NE);
-			break;
+	switch (event->key) {
+	  case ' ':
+		  make_landmark(&bloc, NORMAL);
+		  break;
+	  case 'a':
+		  make_landmark(&bloc, ARMOR);
+		  break;
+	  case 'p':
+		  make_landmark(&bloc, PEACE);
+		  break;
+	  case 't':
+		  set_teleport_code(&bloc);
+		  make_landmark(&bloc, TELEPORT);
+		  break;
+	  case 'f':
+		  make_landmark(&bloc, FUEL);
+		  break;
+	  case 'w':
+		  make_landmark(&bloc, AMMO);
+		  break;
+	  case 'o':
+		  make_landmark(&bloc, OUTPOST);
+		  break;
+	  case 'g':
+		  make_landmark(&bloc, GOAL);
+		  break;
+	  case '-':
+		  make_landmark(&bloc, SLIP);
+		  break;
+	  case '=':
+		  make_landmark(&bloc, SLOW);
+		  break;
+	  case 'x':
+		  make_landmark(&bloc, START_POS);
+		  break;
+	  case '1':
+		  make_landmark(&bloc, SCROLL_SW);
+		  break;
+	  case '2':
+		  make_landmark(&bloc, SCROLL_S);
+		  break;
+	  case '3':
+		  make_landmark(&bloc, SCROLL_SE);
+		  break;
+	  case '4':
+		  make_landmark(&bloc, SCROLL_W);
+		  break;
+	  case '6':
+		  make_landmark(&bloc, SCROLL_E);
+		  break;
+	  case '7':
+		  make_landmark(&bloc, SCROLL_NW);
+		  break;
+	  case '8':
+		  make_landmark(&bloc, SCROLL_N);
+		  break;
+	  case '9':
+		  make_landmark(&bloc, SCROLL_NE);
+		  break;
 
-		case ')':
-			set_team(&bloc, 0);
-			break;
-		case '!':
-			set_team(&bloc, 1);
-			break;
-		case '@':
-			set_team(&bloc, 2);
-			break;
-		case '#':
-			set_team(&bloc, 3);
-			break;
-		case '$':
-			set_team(&bloc, 4);
-			break;
-		case '%':
-			set_team(&bloc, 5);
-			break;
-		case '^':
-			set_team(&bloc, 6);
-			break;
+	  case ')':
+		  set_team(&bloc, 0);
+		  break;
+	  case '!':
+		  set_team(&bloc, 1);
+		  break;
+	  case '@':
+		  set_team(&bloc, 2);
+		  break;
+	  case '#':
+		  set_team(&bloc, 3);
+		  break;
+	  case '$':
+		  set_team(&bloc, 4);
+		  break;
+	  case '%':
+		  set_team(&bloc, 5);
+		  break;
+	  case '^':
+		  set_team(&bloc, 6);
+		  break;
 
-		case 'm':
-			move_area();
-			break;
-		case 'c':
-			copy_area();
-			break;
-		case 'e':
-			erase_area();
-			break;
+	  case 'm':
+		  move_area();
+		  break;
+	  case 'c':
+		  copy_area();
+		  break;
+	  case 'e':
+		  erase_area();
+		  break;
 
-		case 'Q':
-			if (confirm(ANIM_WIN, "quit", 0, INPUT_Y, MD_FONT))
-				return GAME_QUIT;
-			mdesign_clear_input();
-			break;
-		case 'E':
-			if (confirm(ANIM_WIN, "erase this maze", 0, INPUT_Y, MD_FONT))
-			{
-				unmake_maze();
-				mdesign_show_anim();
-			}
-			else
-				mdesign_clear_input();
-			break;
-		case 'S':
-			mdesign_save();
-			break;
-		case 'L':
-			mdesign_load();
-			mdesign_show_anim();
-			break;
+	  case 'Q':
+		  if (confirm(ANIM_WIN, "quit", 0, INPUT_Y, MD_FONT))
+			  return GAME_QUIT;
+		  mdesign_clear_input();
+		  break;
+	  case 'E':
+		  if (confirm(ANIM_WIN, "erase this maze", 0, INPUT_Y, MD_FONT)) {
+			  unmake_maze();
+			  mdesign_show_anim();
+		  } else
+			  mdesign_clear_input();
+		  break;
+	  case 'S':
+		  mdesign_save();
+		  break;
+	  case 'L':
+		  mdesign_load();
+		  mdesign_show_anim();
+		  break;
 	}
 
 	return GAME_RUNNING;
@@ -194,15 +163,12 @@ design_maze()
 	expose_win(ANIM_WIN, TRUE);
 	set_cursor(PLUS_CURSOR);
 
-	do
-	{
-		if (win_exposed(ANIM_WIN))
-		{
+	do {
+		if (win_exposed(ANIM_WIN)) {
 			mdesign_show_anim();
 			expose_win(ANIM_WIN, FALSE);
 		}
-		if (win_exposed(HELP_WIN))
-		{
+		if (win_exposed(HELP_WIN)) {
 			mdesign_show_help();
 			expose_win(HELP_WIN, FALSE);
 		}
@@ -210,18 +176,17 @@ design_maze()
 		get_events(&num_events, &event);
 		if (num_events == 0)
 			continue;
-		switch ((int) event.type)
-		{
-			case EVENT_KEY:
-				if (handle_key(&event) == GAME_QUIT)
-					finished = TRUE;
-				break;
-			case EVENT_LBUTTON:
-			case EVENT_MBUTTON:
-			case EVENT_RBUTTON:
-				if (handle_button(&event) == GAME_QUIT)
-					finished = TRUE;
-				break;
+		switch ((int) event.type) {
+		  case EVENT_KEY:
+			  if (handle_key(&event) == GAME_QUIT)
+				  finished = TRUE;
+			  break;
+		  case EVENT_LBUTTON:
+		  case EVENT_MBUTTON:
+		  case EVENT_RBUTTON:
+			  if (handle_button(&event) == GAME_QUIT)
+				  finished = TRUE;
+			  break;
 		}
 	} while (finished == FALSE);
 
@@ -239,17 +204,16 @@ Event *event;
 	loc.x = event->x;
 	loc.y = event->y;
 
-	switch (event->type)
-	{
-		case EVENT_LBUTTON:
-			change_maze(&loc, MAKE_NORM_WALL);
-			break;
-		case EVENT_MBUTTON:
-			change_maze(&loc, MAKE_DEST_WALL);
-			break;
-		case EVENT_RBUTTON:
-			change_maze(&loc, DESTROY_WALL);
-			break;
+	switch (event->type) {
+	  case EVENT_LBUTTON:
+		  change_maze(&loc, MAKE_NORM_WALL);
+		  break;
+	  case EVENT_MBUTTON:
+		  change_maze(&loc, MAKE_DEST_WALL);
+		  break;
+	  case EVENT_RBUTTON:
+		  change_maze(&loc, DESTROY_WALL);
+		  break;
 	}
 
 #ifndef X11
@@ -259,22 +223,20 @@ Event *event;
 
 	/* Keep trying to change the maze until the button is released */
 	finished = FALSE;
-	do
-	{
+	do {
 		num_events = 1;
 		get_events(&num_events, event);
-		switch (event->type)
-		{
-			case EVENT_LBUTTONUP:
-			case EVENT_MBUTTONUP:
-			case EVENT_RBUTTONUP:
-				finished = TRUE;
-				break;
-			case EVENT_MOVED:
-				loc.x = event->x;
-				loc.y = event->y;
-				change_maze(&loc, CONTINUE);
-				break;
+		switch (event->type) {
+		  case EVENT_LBUTTONUP:
+		  case EVENT_MBUTTONUP:
+		  case EVENT_RBUTTONUP:
+			  finished = TRUE;
+			  break;
+		  case EVENT_MOVED:
+			  loc.x = event->x;
+			  loc.y = event->y;
+			  change_maze(&loc, CONTINUE);
+			  break;
 		}
 	} while (finished == FALSE);
 
@@ -306,8 +268,7 @@ display_mdesc_maze()
 	BoxC loc;
 
 	for (loc.x = PAD; loc.x <= GRID_WIDTH - PAD; ++(loc.x))
-		for (loc.y = PAD; loc.y <= GRID_HEIGHT - PAD; ++(loc.y))
-		{
+		for (loc.y = PAD; loc.y <= GRID_HEIGHT - PAD; ++(loc.y)) {
 			show_dot(&loc);
 			show_box_fast(&loc);
 		}
@@ -326,7 +287,7 @@ Mdesc *d;
 	extern char *games_entries[];
 
 	sprintf(temp, "Name: %-15s  Type: %-10s  Designer: %-24s",
-            d->name, games_entries[(int)d->type], d->designer);
+			d->name, games_entries[(int) d->type], d->designer);
 	mprint(temp, 0, INFO_Y);
 	sprintf(temp, "Description: %-50s", d->desc);
 	mprint(temp, 0, INFO_Y + 1);
@@ -392,96 +353,89 @@ change_maze(loc, action)
 PixC *loc;
 int action;						/* was short */
 {
-    static int cur_action;
-    static Wall cur_wall;
-    static BoxC curbloc;
-    BoxC bloc;
-    int i, j;			/* location of cursor in pixels, initially */
-    Wall wl = 0;
+	static int cur_action;
+	static Wall cur_wall;
+	static BoxC curbloc;
+	BoxC bloc;
+	int i, j;					/* location of cursor in pixels, initially */
+	Wall wl = 0;
 
-    i = loc->x - X_OFFSET;
-    j = loc->y - Y_OFFSET;
+	i = loc->x - X_OFFSET;
+	j = loc->y - Y_OFFSET;
 
-    /* See if the location is in the maze */
-    if ((i / DES_BOX_WIDTH < PAD) || (i / DES_BOX_WIDTH > GRID_WIDTH - PAD) ||
-	(j / DES_BOX_HEIGHT < PAD) || (j / DES_BOX_HEIGHT > GRID_HEIGHT - PAD))
-	return;
+	/* See if the location is in the maze */
+	if ((i / DES_BOX_WIDTH < PAD) || (i / DES_BOX_WIDTH > GRID_WIDTH - PAD) ||
+	 (j / DES_BOX_HEIGHT < PAD) || (j / DES_BOX_HEIGHT > GRID_HEIGHT - PAD))
+		return;
 
-    /* See if location is within THRESHOLD pixels of a vertical wall */
-    if ((i + THRESHOLD) % DES_BOX_WIDTH <= 2 * THRESHOLD)
-    {
-	wl |= WEST_WALL;
-	/* When we do an int division by DES_BOX_WIDTH, we'll get the right
+	/* See if location is within THRESHOLD pixels of a vertical wall */
+	if ((i + THRESHOLD) % DES_BOX_WIDTH <= 2 * THRESHOLD) {
+		wl |= WEST_WALL;
+		/* When we do an int division by DES_BOX_WIDTH, we'll get the right
 	   box */
-	i += THRESHOLD;
-    }
-    /* See if location is within THRESHOLD pixels of a horizontal wall */
-    if ((j + THRESHOLD) % DES_BOX_HEIGHT <= 2 * THRESHOLD)
-    {
-	wl |= NORTH_WALL;
-	j += THRESHOLD;
-    }
-    /* * If he's close to both walls, we check to see if this is a new click *
+		i += THRESHOLD;
+	}
+	/* See if location is within THRESHOLD pixels of a horizontal wall */
+	if ((j + THRESHOLD) % DES_BOX_HEIGHT <= 2 * THRESHOLD) {
+		wl |= NORTH_WALL;
+		j += THRESHOLD;
+	}
+	/* * If he's close to both walls, we check to see if this is a new click *
        or if he's holding it down.  If he's holding it down, he's probably *
        trying to continue the line he started.  Otherwise, we toggle the *
        wall which he's closest to. */
-    if (wl == (WEST_WALL | NORTH_WALL))
-    {
-	if (((action == CONTINUE) && (cur_wall == WEST_WALL)) ||
-	    ((action != CONTINUE) &&
-	     (ABS(i % DES_BOX_WIDTH - THRESHOLD) < ABS(j % DES_BOX_HEIGHT - THRESHOLD))))
-	{
-	    wl = WEST_WALL;
-	    j -= THRESHOLD;	/* return j to old value */
+	if (wl == (WEST_WALL | NORTH_WALL)) {
+		if (((action == CONTINUE) && (cur_wall == WEST_WALL)) ||
+			((action != CONTINUE) &&
+			 (ABS(i % DES_BOX_WIDTH - THRESHOLD) < ABS(j % DES_BOX_HEIGHT - THRESHOLD)))) {
+			wl = WEST_WALL;
+			j -= THRESHOLD;		/* return j to old value */
+		} else {
+			wl = NORTH_WALL;
+			i -= THRESHOLD;		/* return i to old value */
+		}
 	}
-	else
-	{
-	    wl = NORTH_WALL;
-	    i -= THRESHOLD;	/* return i to old value */
-	}
-    }
-    /* Change to maze coords */
-    bloc.x = i / DES_BOX_WIDTH;
-    bloc.y = j / DES_BOX_HEIGHT;
+	/* Change to maze coords */
+	bloc.x = i / DES_BOX_WIDTH;
+	bloc.y = j / DES_BOX_HEIGHT;
 
-    /* If we are not in the maze area, return */
-    if (check_wall(&bloc, wl) == FALSE)
-	return;
+	/* If we are not in the maze area, return */
+	if (check_wall(&bloc, wl) == FALSE)
+		return;
 
-    /* * If the button is being held down, and we are on the same wall as *
+	/* * If the button is being held down, and we are on the same wall as *
        before, don't change it. */
-    if ((action == CONTINUE) && (wl == cur_wall) &&
-	(bloc.x == curbloc.x) && (bloc.y == curbloc.y))
-	return;
+	if ((action == CONTINUE) && (wl == cur_wall) &&
+		(bloc.x == curbloc.x) && (bloc.y == curbloc.y))
+		return;
 
-    /* We are on a new wall, so remember it for later. * If the calling
+	/* We are on a new wall, so remember it for later. * If the calling
        function sent a CONTINUE, a button is being held down. * Otherwise, a
        button was just pressed. */
-    if (action != CONTINUE)
-	cur_action = action;
-    cur_wall = wl;
-    curbloc.x = bloc.x;
-    curbloc.y = bloc.y;
+	if (action != CONTINUE)
+		cur_action = action;
+	cur_wall = wl;
+	curbloc.x = bloc.x;
+	curbloc.y = bloc.y;
 
-    /* Change the internal state */
-    switch (cur_action)
-    {
-      case MAKE_NORM_WALL:
-	make_wall(&bloc, wl);
-	break;
-      case MAKE_DEST_WALL:
-	make_destructible(&bloc, wl);
-	break;
-      case DESTROY_WALL:
-	unmake_wall(&bloc, wl);
-	break;
-    }
+	/* Change the internal state */
+	switch (cur_action) {
+	  case MAKE_NORM_WALL:
+		  make_wall(&bloc, wl);
+		  break;
+	  case MAKE_DEST_WALL:
+		  make_destructible(&bloc, wl);
+		  break;
+	  case DESTROY_WALL:
+		  unmake_wall(&bloc, wl);
+		  break;
+	}
 
-    /* Show the change on the screen */
-    if (real_map[bloc.x][bloc.y].flags & wl)
-	show_wall(&bloc, wl);
-    else
-	unshow_wall(&bloc, wl);
+	/* Show the change on the screen */
+	if (real_map[bloc.x][bloc.y].flags & wl)
+		show_wall(&bloc, wl);
+	else
+		unshow_wall(&bloc, wl);
 }
 
 /*
@@ -489,7 +443,8 @@ int action;						/* was short */
 */
 unmake_maze()
 {
-    static Box empty_box = {0, NORMAL, 0};
+	static Box empty_box =
+	{0, NORMAL, 0};
 	int i, j;
 
 	for (i = 0; i < GRID_WIDTH; ++i)
@@ -506,36 +461,32 @@ unmake_maze()
 */
 mdesign_save()
 {
-    Game type;
+	Game type;
 	char name[80], desc[256];
 
 	if (figure_insideness() == FALSE)
 		mprint("Your maze is not completely surrounded.", 0, INPUT_Y);
-	else
-	{
+	else {
 		/* Prompt the user for the type, name, and description of the maze */
 		input_string(ANIM_WIN, "Enter maze name:", name,
 					 0, INPUT_Y, MD_FONT, 256);
-		if (name[0] != '\0')
-		{
+		if (name[0] != '\0') {
 			mprint("1) Combat  2) War  3) Ultimate  4) Capture  5) Race",
 				   0, INPUT_Y + 1);
-            type = (Game) (input_int(ANIM_WIN, "Enter maze type", 0,
-				     INPUT_Y + 2, 1, 1, 5, MD_FONT) - 1);
+			type = (Game) (input_int(ANIM_WIN, "Enter maze type", 0,
+									 INPUT_Y + 2, 1, 1, 5, MD_FONT) - 1);
 			input_string(ANIM_WIN, "Enter maze description:", desc,
 						 0, INPUT_Y + 3, MD_FONT, 256);
 
-            build_mdesc(&design_mdesc, type, name, term->player_name,
-			desc);
+			build_mdesc(&design_mdesc, type, name, term->player_name,
+						desc);
 			display_mdesc_info(&design_mdesc);
 			mdesign_clear_input();
 
-			if (save_mdesc(&design_mdesc) == DESC_SAVED)
-			{
+			if (save_mdesc(&design_mdesc) == DESC_SAVED) {
 				mprint("Maze saved.", 0, INPUT_Y);
 				interface_set_desc(MDESC, name);
-			}
-			else
+			} else
 				mprint("Maze name already used.  Try another.", 0, INPUT_Y);
 		}
 	}
@@ -552,14 +503,11 @@ mdesign_load()
 	char name[80];
 
 	input_string(ANIM_WIN, "Enter maze name:", name, 0, INPUT_Y, MD_FONT, 256);
-	if (name[0] != '\0')
-	{
-		if (load_mdesc(&design_mdesc, name) == DESC_LOADED)
-		{
+	if (name[0] != '\0') {
+		if (load_mdesc(&design_mdesc, name) == DESC_LOADED) {
 			mprint("Maze loaded.", 0, INPUT_Y + 1);
 			make_maze(&design_mdesc);
-		}
-		else
+		} else
 			mprint("Error.  Maze not loaded.", 0, INPUT_Y + 1);
 	}
 	mprint("Any key or button to return", 0, INPUT_Y + 3);
@@ -587,12 +535,12 @@ BoxC *loc;
 	extern Object *landmark_obj[];
 	Picture *pic;
 	PixC ploc;
-    LandmarkType type;
+	LandmarkType type;
 
 	box_to_pix(loc, &ploc);
 
 	type = real_map[loc->x][loc->y].type;
-    pic = &landmark_obj[2]->pic[(int)type];
+	pic = &landmark_obj[2]->pic[(int) type];
 	draw_picture(ANIM_WIN, ploc.x, ploc.y, pic, DRAW_COPY, WHITE);
 }
 
@@ -610,23 +558,23 @@ int teamnum;
 set_teleport_code(loc)
 BoxC *loc;
 {
-  int code;
+	int code;
 
-  /* Check that this location is inside the maze area. */
-  if (!check_box(loc))
-    return;
+	/* Check that this location is inside the maze area. */
+	if (!check_box(loc))
+		return;
 
-  /* If it was already a teleport, the default code is the current code,
+	/* If it was already a teleport, the default code is the current code,
    * otherwise default to 1.
    */
 
-  code = (real_map[loc->x][loc->y].type == TELEPORT) ?
-    real_map[loc->x][loc->y].teleport_code :
-      1;
+	code = (real_map[loc->x][loc->y].type == TELEPORT) ?
+	  real_map[loc->x][loc->y].teleport_code :
+	  1;
 
-  code = input_int(ANIM_WIN, "Code number", 0, INPUT_Y, code, 1, 255, MD_FONT);
-  real_map[loc->x][loc->y].teleport_code = code;
-  mdesign_clear_input();
+	code = input_int(ANIM_WIN, "Code number", 0, INPUT_Y, code, 1, 255, MD_FONT);
+	real_map[loc->x][loc->y].teleport_code = code;
+	mdesign_clear_input();
 }
 
 /*
@@ -635,37 +583,33 @@ BoxC *loc;
 show_box_fast(loc)
 BoxC *loc;
 {
-    extern Object *random_obj[];
-    Box *b;
-    Picture *pic;
-    PixC ploc;
+	extern Object *random_obj[];
+	Box *b;
+	Picture *pic;
+	PixC ploc;
 
-    b = &real_map[loc->x][loc->y];
+	b = &real_map[loc->x][loc->y];
 
-    if (b->team != 0)
-    {
-	box_to_pix(loc, &ploc);
-	if (color_display())
-	{
-	    /* HACK.  Draw overlapping rectangles so that I don't draw over
+	if (b->team != 0) {
+		box_to_pix(loc, &ploc);
+		if (color_display()) {
+			/* HACK.  Draw overlapping rectangles so that I don't draw over
 	       the gridpoints. */
-	    draw_filled_rect(ANIM_WIN, ploc.x + 2, ploc.y, DES_BOX_WIDTH - 3,
-			     DES_BOX_HEIGHT, DRAW_COPY, team_color[b->team]);
-	    draw_filled_rect(ANIM_WIN, ploc.x, ploc.y + 2, DES_BOX_WIDTH,
-			     DES_BOX_HEIGHT, DRAW_COPY, team_color[b->team]);
+			draw_filled_rect(ANIM_WIN, ploc.x + 2, ploc.y, DES_BOX_WIDTH - 3,
+							 DES_BOX_HEIGHT, DRAW_COPY, team_color[b->team]);
+			draw_filled_rect(ANIM_WIN, ploc.x, ploc.y + 2, DES_BOX_WIDTH,
+							 DES_BOX_HEIGHT, DRAW_COPY, team_color[b->team]);
+		} else {
+			pic = &random_obj[TEAM_OBJ]->pic[b->team];
+			draw_picture(ANIM_WIN, ploc.x, ploc.y, pic, DRAW_COPY, WHITE);
+		}
 	}
-	else
-	{
-	    pic = &random_obj[TEAM_OBJ]->pic[b->team];
-	    draw_picture(ANIM_WIN, ploc.x, ploc.y, pic, DRAW_COPY, WHITE);
-	}
-    }
-    if (b->type != NORMAL)
-	show_landmark(loc);
-    if (b->flags & NORTH_WALL)
-	show_wall(loc, NORTH_WALL);
-    if (b->flags & WEST_WALL)
-	show_wall(loc, WEST_WALL);
+	if (b->type != NORMAL)
+		show_landmark(loc);
+	if (b->flags & NORTH_WALL)
+		show_wall(loc, NORTH_WALL);
+	if (b->flags & WEST_WALL)
+		show_wall(loc, WEST_WALL);
 }
 
 /*
@@ -674,38 +618,35 @@ BoxC *loc;
 show_box(loc)
 BoxC *loc;
 {
-    extern Object *random_obj[];
-    Picture *pic;
-    Team tm;
-    LandmarkType type;
-    PixC ploc;
-    int color;
+	extern Object *random_obj[];
+	Picture *pic;
+	Team tm;
+	LandmarkType type;
+	PixC ploc;
+	int color;
 
-    box_to_pix(loc, &ploc);
-    tm = real_map[loc->x][loc->y].team;
-    type = real_map[loc->x][loc->y].type;
+	box_to_pix(loc, &ploc);
+	tm = real_map[loc->x][loc->y].team;
+	type = real_map[loc->x][loc->y].type;
 
-    if (color_display())
-    {
-	/* HACK.  Draw overlapping rectangles so that I don't draw over the
+	if (color_display()) {
+		/* HACK.  Draw overlapping rectangles so that I don't draw over the
 	   gridpoints. */
-	if (tm == 0)
-	    color = BLACK;
-	else
-	    color = team_color[tm];
-	draw_filled_rect(ANIM_WIN, ploc.x + 2, ploc.y, DES_BOX_WIDTH - 3,
-			 DES_BOX_HEIGHT, DRAW_COPY, color);
-	draw_filled_rect(ANIM_WIN, ploc.x, ploc.y + 2, DES_BOX_WIDTH,
-			 DES_BOX_HEIGHT - 3, DRAW_COPY, color);
-    }
-    else
-    {
-	pic = &random_obj[TEAM_OBJ]->pic[tm];
-	draw_picture(ANIM_WIN, ploc.x, ploc.y, pic, DRAW_COPY, WHITE);
-    }
-    if (type != NORMAL)
-	show_landmark(loc);
-    show_surrounding_walls(loc);
+		if (tm == 0)
+			color = BLACK;
+		else
+			color = team_color[tm];
+		draw_filled_rect(ANIM_WIN, ploc.x + 2, ploc.y, DES_BOX_WIDTH - 3,
+						 DES_BOX_HEIGHT, DRAW_COPY, color);
+		draw_filled_rect(ANIM_WIN, ploc.x, ploc.y + 2, DES_BOX_WIDTH,
+						 DES_BOX_HEIGHT - 3, DRAW_COPY, color);
+	} else {
+		pic = &random_obj[TEAM_OBJ]->pic[tm];
+		draw_picture(ANIM_WIN, ploc.x, ploc.y, pic, DRAW_COPY, WHITE);
+	}
+	if (type != NORMAL)
+		show_landmark(loc);
+	show_surrounding_walls(loc);
 }
 
 /*
@@ -776,8 +717,7 @@ BoxC *loc;
 	mprint("Click where you want to move it", 0, INPUT_Y);
 	set_cursor(UL_CURSOR);
 
-	do
-	{
+	do {
 		num_events = 1;
 		get_events(&num_events, &event);
 	} while (num_events == 0 ||
@@ -813,24 +753,20 @@ BoxC vertices[2];
 	BoxC loc;
 
 	for (i = vertices[0].x; i <= vertices[1].x; ++i)
-		for (j = vertices[0].y; j <= vertices[1].y; ++j)
-		{
+		for (j = vertices[0].y; j <= vertices[1].y; ++j) {
 			loc.x = i;
 			loc.y = j;
-			if (j != vertices[1].y)
-			{
+			if (j != vertices[1].y) {
 				unmake_wall(&loc, WEST_WALL);
 				unshow_wall(&loc, WEST_WALL);
 			}
-			if (i != vertices[1].x)
-			{
+			if (i != vertices[1].x) {
 				unmake_wall(&loc, NORTH_WALL);
 				unshow_wall(&loc, NORTH_WALL);
 			}
-			if (i != vertices[1].x && j != vertices[1].y)
-			{
+			if (i != vertices[1].x && j != vertices[1].y) {
 				real_map[i][j].flags = 0;
-                real_map[i][j].type = NORMAL;
+				real_map[i][j].type = NORMAL;
 				real_map[i][j].team = 0;
 				show_box(&loc);
 			}
@@ -847,50 +783,40 @@ BoxC *new_start;
 	int maxi, maxj;
 	BoxC loc;
 
-    maxi = MIN(old_vertices[1].x,
+	maxi = MIN(old_vertices[1].x,
 			   GRID_WIDTH - PAD - new_start->x + old_vertices[0].x);
-    maxj = MIN(old_vertices[1].y,
+	maxj = MIN(old_vertices[1].y,
 			   GRID_HEIGHT - PAD - new_start->y + old_vertices[0].y);
 
 	for (i = old_vertices[0].x; i <= maxi; ++i)
-		for (j = old_vertices[0].y; j <= maxj; ++j)
-		{
+		for (j = old_vertices[0].y; j <= maxj; ++j) {
 			loc.x = i - old_vertices[0].x + new_start->x;
 			loc.y = j - old_vertices[0].y + new_start->y;
-			if (i != maxi)
-			{
-				if (temp_maze[i][j].flags & NORTH_WALL)
-				{
+			if (i != maxi) {
+				if (temp_maze[i][j].flags & NORTH_WALL) {
 					if (temp_maze[i][j].flags & NORTH_DEST)
 						make_destructible(&loc, NORTH_WALL);
 					else
 						make_wall(&loc, NORTH_WALL);
 					show_wall(&loc, NORTH_WALL);
-				}
-				else
-				{
+				} else {
 					unmake_wall(&loc, NORTH_WALL);
 					unshow_wall(&loc, NORTH_WALL);
 				}
 			}
-			if (j != maxj)
-			{
-				if (temp_maze[i][j].flags & WEST_WALL)
-				{
+			if (j != maxj) {
+				if (temp_maze[i][j].flags & WEST_WALL) {
 					if (temp_maze[i][j].flags & WEST_DEST)
 						make_destructible(&loc, WEST_WALL);
 					else
 						make_wall(&loc, WEST_WALL);
 					show_wall(&loc, WEST_WALL);
-				}
-				else
-				{
+				} else {
 					unmake_wall(&loc, WEST_WALL);
 					unshow_wall(&loc, WEST_WALL);
 				}
 			}
-			if (i != maxi && j != maxj)
-			{
+			if (i != maxi && j != maxj) {
 				real_map[loc.x][loc.y] = temp_maze[i][j];
 				show_box(&loc);
 			}
@@ -905,83 +831,79 @@ BoxC *new_start;
 select_area(bvertices)
 BoxC bvertices[2];
 {
-    Event event;
-    int num_events;
-    PixC pvertices[2];
-    PixC oldvertex;
+	Event event;
+	int num_events;
+	PixC pvertices[2];
+	PixC oldvertex;
 
-    mprint("Drag the mouse over the area", 0, INPUT_Y);
-    set_cursor(UL_CURSOR);
+	mprint("Drag the mouse over the area", 0, INPUT_Y);
+	set_cursor(UL_CURSOR);
 
-    /* wait for him to press at the upper left corner */
-    do
-    {
-	num_events = 1;
-	get_events(&num_events, &event);
-    } while (num_events == 0 ||
-	     (event.type != EVENT_LBUTTON &&
-	      event.type != EVENT_MBUTTON &&
-	      event.type != EVENT_RBUTTON));
-    pvertices[0].x = event.x;
-    pvertices[0].y = event.y;
+	/* wait for him to press at the upper left corner */
+	do {
+		num_events = 1;
+		get_events(&num_events, &event);
+	} while (num_events == 0 ||
+			 (event.type != EVENT_LBUTTON &&
+			  event.type != EVENT_MBUTTON &&
+			  event.type != EVENT_RBUTTON));
+	pvertices[0].x = event.x;
+	pvertices[0].y = event.y;
 
-    /* move it NW to the nearest grid intersection */
-    pix_to_box(&pvertices[0], &bvertices[0]);
-    box_to_pix(&bvertices[0], &pvertices[0]);
+	/* move it NW to the nearest grid intersection */
+	pix_to_box(&pvertices[0], &bvertices[0]);
+	box_to_pix(&bvertices[0], &pvertices[0]);
 
-    /* Make a rectangle to indicate what area he is selecting.  Its corners
+	/* Make a rectangle to indicate what area he is selecting.  Its corners
        are also at grid intersections. */
-    set_cursor(LR_CURSOR);
-    oldvertex = pvertices[1] = pvertices[0];
-    pix_to_box(&pvertices[1], &bvertices[1]);
-    xor_rectangle(&pvertices[0], &pvertices[0]);
+	set_cursor(LR_CURSOR);
+	oldvertex = pvertices[1] = pvertices[0];
+	pix_to_box(&pvertices[1], &bvertices[1]);
+	xor_rectangle(&pvertices[0], &pvertices[0]);
 
 #ifndef X11
-    follow_mouse(ANIM_WIN, TRUE);
-    button_up(ANIM_WIN, TRUE);
+	follow_mouse(ANIM_WIN, TRUE);
+	button_up(ANIM_WIN, TRUE);
 #endif
 
-    while (TRUE)
-    {
-	num_events = 1;
-	get_events(&num_events, &event);
-	if (num_events == 0)
-	    continue;
-	if (event.type == EVENT_MOVED)
-	{
-	    pvertices[1].x = event.x;
-	    pvertices[1].y = event.y;
+	while (TRUE) {
+		num_events = 1;
+		get_events(&num_events, &event);
+		if (num_events == 0)
+			continue;
+		if (event.type == EVENT_MOVED) {
+			pvertices[1].x = event.x;
+			pvertices[1].y = event.y;
 
-	    /* If the location is legal, move the rectangle to it */
-	    if (check_pixel_extra(&pvertices[1]))
-	    {
-		/* Move the location to the nearest grid intersection */
-		pix_to_box(&pvertices[1], &bvertices[1]);
-		box_to_pix(&bvertices[1], &pvertices[1]);
+			/* If the location is legal, move the rectangle to it */
+			if (check_pixel_extra(&pvertices[1])) {
+				/* Move the location to the nearest grid intersection */
+				pix_to_box(&pvertices[1], &bvertices[1]);
+				box_to_pix(&bvertices[1], &pvertices[1]);
 
-		/* Move the rectangle on the screen */
-		xor_rectangle(&pvertices[0], &oldvertex);
-		xor_rectangle(&pvertices[0], &pvertices[1]);
+				/* Move the rectangle on the screen */
+				xor_rectangle(&pvertices[0], &oldvertex);
+				xor_rectangle(&pvertices[0], &pvertices[1]);
 
-		oldvertex = pvertices[1];
-	    }
+				oldvertex = pvertices[1];
+			}
+		}
+		if (event.type == EVENT_LBUTTONUP ||
+			event.type == EVENT_MBUTTONUP ||
+			event.type == EVENT_RBUTTONUP)
+			break;
 	}
-	if (event.type == EVENT_LBUTTONUP ||
-	    event.type == EVENT_MBUTTONUP ||
-	    event.type == EVENT_RBUTTONUP)
-	    break;
-    }
 
 #ifndef X11
-    follow_mouse(ANIM_WIN, FALSE);
-    button_up(ANIM_WIN, FALSE);
+	follow_mouse(ANIM_WIN, FALSE);
+	button_up(ANIM_WIN, FALSE);
 #endif
 
-    /* Erase last remaining rectangle */
-    xor_rectangle(&pvertices[0], &oldvertex);
+	/* Erase last remaining rectangle */
+	xor_rectangle(&pvertices[0], &oldvertex);
 
-    set_cursor(PLUS_CURSOR);
-    mdesign_clear_input();
+	set_cursor(PLUS_CURSOR);
+	mdesign_clear_input();
 }
 
 xor_rectangle(start, end)
@@ -1013,54 +935,45 @@ figure_insideness()
 
 	for (i = 0; i < GRID_WIDTH; ++i)
 		for (j = 0; j < GRID_HEIGHT; ++j)
-		  if (real_map[i][j].type == TELEPORT)
-		    {
-		      add_to_maze(i, j, boxes, &size);
-		      flags = 1;
-		    }
-	
-	if (flags == 0)
-	  {
-	    get_inside_spot(&temp);
-	    i = temp.x;
-	    j = temp.y;
-	    add_to_maze(i, j, boxes, &size);
-	  }
-	else
-	  flags = 0;
+			if (real_map[i][j].type == TELEPORT) {
+				add_to_maze(i, j, boxes, &size);
+				flags = 1;
+			}
+	if (flags == 0) {
+		get_inside_spot(&temp);
+		i = temp.x;
+		j = temp.y;
+		add_to_maze(i, j, boxes, &size);
+	} else
+		flags = 0;
 
-	while (size)
-	{
+	while (size) {
 		temp = boxes[--size];
 		i = temp.x;
 		j = temp.y;
 
 		flags = real_map[i][j].flags;
-		if (!(flags & WEST_WALL) || flags & WEST_DEST)
-		{
+		if (!(flags & WEST_WALL) || flags & WEST_DEST) {
 			if (i <= PAD)
 				return FALSE;
 			else
 				add_to_maze(i - 1, j, boxes, &size);
 		}
-		if (!(flags & NORTH_WALL) || flags & NORTH_DEST)
-		{
+		if (!(flags & NORTH_WALL) || flags & NORTH_DEST) {
 			if (j <= PAD)
 				return FALSE;
 			else
 				add_to_maze(i, j - 1, boxes, &size);
 		}
 		flags = real_map[i + 1][j].flags;
-		if (!(flags & WEST_WALL) || flags & WEST_DEST)
-		{
+		if (!(flags & WEST_WALL) || flags & WEST_DEST) {
 			if (i >= GRID_WIDTH - PAD)
 				return FALSE;
 			else
 				add_to_maze(i + 1, j, boxes, &size);
 		}
 		flags = real_map[i][j + 1].flags;
-		if (!(flags & NORTH_WALL) || flags & NORTH_DEST)
-		{
+		if (!(flags & NORTH_WALL) || flags & NORTH_DEST) {
 			if (j >= GRID_HEIGHT - PAD)
 				return FALSE;
 			else
@@ -1083,14 +996,12 @@ BoxC *bloc;
 	Boolean finished = FALSE;
 
 	mprint("Click in a box inside the maze", 0, INPUT_Y);
-	do
-	{
+	do {
 		num_events = 1;
 		get_events(&num_events, &event);
 		if (num_events != 0 && (event.type == EVENT_LBUTTON ||
 								event.type == EVENT_MBUTTON ||
-								event.type == EVENT_RBUTTON))
-		{
+								event.type == EVENT_RBUTTON)) {
 			ploc.x = event.x;
 			ploc.y = event.y;
 			if (check_pixel(&ploc))
@@ -1113,8 +1024,7 @@ int *size;
 {
 	BoxC temp;
 
-	if (!(real_map[x][y].flags & INSIDE_MAZE))
-	{
+	if (!(real_map[x][y].flags & INSIDE_MAZE)) {
 		real_map[x][y].flags |= INSIDE_MAZE;
 		temp.x = x;
 		temp.y = y;
@@ -1129,9 +1039,9 @@ check_pixel(loc)
 PixC *loc;
 {
 	if ((loc->x < X_OFFSET + PAD * DES_BOX_WIDTH) ||
-			(loc->x > X_OFFSET + (GRID_WIDTH - PAD) * DES_BOX_WIDTH) ||
-			(loc->y < Y_OFFSET + PAD * DES_BOX_HEIGHT) ||
-			(loc->y > Y_OFFSET + (GRID_HEIGHT - PAD) * DES_BOX_HEIGHT))
+		(loc->x > X_OFFSET + (GRID_WIDTH - PAD) * DES_BOX_WIDTH) ||
+		(loc->y < Y_OFFSET + PAD * DES_BOX_HEIGHT) ||
+		(loc->y > Y_OFFSET + (GRID_HEIGHT - PAD) * DES_BOX_HEIGHT))
 		return FALSE;
 	else
 		return TRUE;
@@ -1145,9 +1055,9 @@ check_pixel_extra(loc)
 PixC *loc;
 {
 	if ((loc->x < X_OFFSET + PAD * DES_BOX_WIDTH) ||
-			(loc->x > X_OFFSET + (GRID_WIDTH - PAD) * DES_BOX_WIDTH + DES_BOX_WIDTH / 2) ||
-			(loc->y < Y_OFFSET + PAD * DES_BOX_HEIGHT) ||
-			(loc->y > Y_OFFSET + (GRID_HEIGHT - PAD) * DES_BOX_HEIGHT + DES_BOX_HEIGHT / 2))
+		(loc->x > X_OFFSET + (GRID_WIDTH - PAD) * DES_BOX_WIDTH + DES_BOX_WIDTH / 2) ||
+		(loc->y < Y_OFFSET + PAD * DES_BOX_HEIGHT) ||
+		(loc->y > Y_OFFSET + (GRID_HEIGHT - PAD) * DES_BOX_HEIGHT + DES_BOX_HEIGHT / 2))
 		return FALSE;
 	else
 		return TRUE;
@@ -1160,7 +1070,7 @@ check_box(loc)
 BoxC *loc;
 {
 	if (loc->x < PAD || loc->x >= GRID_WIDTH - PAD ||
-			loc->y < PAD || loc->y >= GRID_HEIGHT - PAD)
+		loc->y < PAD || loc->y >= GRID_HEIGHT - PAD)
 		return FALSE;
 	else
 		return TRUE;
@@ -1198,8 +1108,8 @@ Wall wl;
 	/* First handle special case walls along right and bottom edge */
 	if (((loc->x == GRID_WIDTH - PAD) && (loc->y >= PAD) &&
 		 (loc->y < GRID_HEIGHT - PAD) && (wl == WEST_WALL)) ||
-			((loc->y == GRID_HEIGHT - PAD) && (loc->x >= PAD) &&
-			 (loc->x < GRID_WIDTH - PAD) && (wl == NORTH_WALL)))
+		((loc->y == GRID_HEIGHT - PAD) && (loc->x >= PAD) &&
+		 (loc->x < GRID_WIDTH - PAD) && (wl == NORTH_WALL)))
 		return TRUE;
 	else
 		return check_box(loc);
@@ -1239,30 +1149,28 @@ unshow_wall(loc, wl)
 BoxC *loc;
 Wall wl;
 {
-    BoxC iloc;
+	BoxC iloc;
 
-    /* Make a copy of the location, so we can frob with it */
-    iloc = *loc;
+	/* Make a copy of the location, so we can frob with it */
+	iloc = *loc;
 
-    draw_wall(loc, wl, BLACK);
+	draw_wall(loc, wl, BLACK);
 
-    /* We might have covered the edge of a team pattern with black, so we
+	/* We might have covered the edge of a team pattern with black, so we
        redraw any necessary patterns */
-    if (real_map[iloc.x][iloc.y].team)
-	show_box(&iloc);
+	if (real_map[iloc.x][iloc.y].team)
+		show_box(&iloc);
 
-    if (wl == NORTH_WALL)
-    {
-	iloc.y--;
-	if (real_map[iloc.x][iloc.y].team)
-	    show_box(&iloc);
-    }
-    if (wl == WEST_WALL)
-    {
-	iloc.x--;
-	if (real_map[iloc.x][iloc.y].team)
-	    show_box(&iloc);
-    }
+	if (wl == NORTH_WALL) {
+		iloc.y--;
+		if (real_map[iloc.x][iloc.y].team)
+			show_box(&iloc);
+	}
+	if (wl == WEST_WALL) {
+		iloc.x--;
+		if (real_map[iloc.x][iloc.y].team)
+			show_box(&iloc);
+	}
 }
 
 draw_wall(loc, wl, color)
@@ -1270,27 +1178,26 @@ BoxC *loc;
 Wall wl;
 int color;
 {
-    PixC ploc;
+	PixC ploc;
 
-    box_to_pix(loc, &ploc);
+	box_to_pix(loc, &ploc);
 
-    switch (wl)
-    {
-      case NORTH_WALL:
-	draw_filled_rect(ANIM_WIN, ploc.x + 2, ploc.y - 1,
-			 DES_BOX_WIDTH - 3, 3, DRAW_COPY, color);
-	if (real_map[loc->x][loc->y].flags & NORTH_DEST)	/* destructible */
-	    draw_filled_rect(ANIM_WIN, ploc.x + 2, ploc.y,
-			     DES_BOX_WIDTH - 3, 1, DRAW_COPY, BLACK);
-	break;
-      case WEST_WALL:
-	draw_filled_rect(ANIM_WIN, ploc.x - 1, ploc.y + 2, 3,
-			 DES_BOX_HEIGHT - 3, DRAW_COPY, color);
-	if (real_map[loc->x][loc->y].flags & WEST_DEST)	/* destructible */
-	    draw_filled_rect(ANIM_WIN, ploc.x, ploc.y + 2, 1,
-			     DES_BOX_HEIGHT - 3, DRAW_COPY, BLACK);
-	break;
-    }
+	switch (wl) {
+	  case NORTH_WALL:
+		  draw_filled_rect(ANIM_WIN, ploc.x + 2, ploc.y - 1,
+						   DES_BOX_WIDTH - 3, 3, DRAW_COPY, color);
+		  if (real_map[loc->x][loc->y].flags & NORTH_DEST)	/* destructible */
+			  draw_filled_rect(ANIM_WIN, ploc.x + 2, ploc.y,
+							   DES_BOX_WIDTH - 3, 1, DRAW_COPY, BLACK);
+		  break;
+	  case WEST_WALL:
+		  draw_filled_rect(ANIM_WIN, ploc.x - 1, ploc.y + 2, 3,
+						   DES_BOX_HEIGHT - 3, DRAW_COPY, color);
+		  if (real_map[loc->x][loc->y].flags & WEST_DEST)	/* destructible */
+			  draw_filled_rect(ANIM_WIN, ploc.x, ploc.y + 2, 1,
+							   DES_BOX_HEIGHT - 3, DRAW_COPY, BLACK);
+		  break;
+	}
 }
 
 /*
@@ -1299,8 +1206,8 @@ int color;
 show_dot(loc)
 BoxC *loc;
 {
-    PixC ploc;
+	PixC ploc;
 
-    box_to_pix(loc, &ploc);
-    draw_filled_rect(ANIM_WIN, ploc.x - 1, ploc.y - 1, 3, 3, DRAW_COPY, WHITE);
+	box_to_pix(loc, &ploc);
+	draw_filled_rect(ANIM_WIN, ploc.x - 1, ploc.y - 1, 3, 3, DRAW_COPY, WHITE);
 }

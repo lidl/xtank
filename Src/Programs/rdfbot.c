@@ -6,18 +6,21 @@
  *
  * Give the vehicle rdf and send it a ACK message for
  * it to dump state.
+ *
+ * Test vehicle must not have radar or newradar, as these
+ * start up activated and will prevent RDF from working.
  */
 
 /*
- * $Id: rdfbot.c,v 1.2 1992/09/13 07:12:30 lidl Exp $
+ * $Id: rdfbot.c,v 1.1.1.1 1995/02/01 00:25:48 lidl Exp $
  */
 
 #include <stdio.h>
 #include "xtanklib.h"
 
-static void main();
+static void rdfbot_main();
 
-Prog_desc tagman_prog = {
+Prog_desc rdfbot_prog = {
 	"rdfbot",
 	"Any",
 	"Demonstrator for RDF interface",

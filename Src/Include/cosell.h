@@ -1,25 +1,14 @@
-/* cosell.h - stuff for the commentator */
+/*
+** Xtank
+**
+** Copyright 1993 by Pix Technologies Corp.
+**
+** cosell.h
+*/
 
 /*
-$Author: rpotter $
-$Id: cosell.h,v 2.3 1991/02/10 13:50:19 rpotter Exp $
-
-$Log: cosell.h,v $
- * Revision 2.3  1991/02/10  13:50:19  rpotter
- * bug fixes, display tweaks, non-restart fixes, header reorg.
- *
- * Revision 2.2  91/01/20  09:57:33  rpotter
- * complete rewrite of vehicle death, other tweaks
- * 
- * Revision 2.1  91/01/17  07:11:10  rpotter
- * lint warnings and a fix to update_vector()
- * 
- * Revision 2.0  91/01/17  02:09:16  rpotter
- * small changes
- * 
- * Revision 1.1  90/12/29  21:02:16  aahz
- * Initial revision
- * 
+$Author: lidl $
+$Id: cosell.h,v 1.1.1.1 1995/02/01 00:25:40 lidl Exp $
 */
 
 /* Cosell, the ultimate commentator (in the wrong sense) opcodes */
@@ -29,6 +18,7 @@ $Log: cosell.h,v $
 #define COS_BIG_SMASH     3
 #define COS_GOAL_SCORED   4
 #define COS_BEEN_SLICKED  5
+#define COS_NUKE	  6
 
 #define COS_IGNORE        0
 #define COS_WALL_HIT      1

@@ -1,14 +1,25 @@
-.TH XTANK 6 "20 March 1992" "Xtank 1.3d" 
+.\"
+.\" Xtank
+.\"
+.\" Copyright 1993 by Pix Technologies Corp
+.\"
+.\" Xtank.man
+.\"
+.TH XTANK 6 "15 Febuary 1993" "Xtank 1.3d" 
 .SH NAME
-xtank - a game of tank combat
+xtank - a X11 based game of tank combat
 .SH SYNOPSIS
 .B xtank
 .B [-h]
+.B [display0]
+.B [display1]
+.B [...]
 .SH DESCRIPTION
-.I xtank
-is a multi-player vehicle combat game played in mazes of various
+.I Xtank
+is a multi-player vehicle game played in mazes of various
 sizes and types.  You control a vehicle (usually a tank) equipped with
-the latest in armor and weaponry.  Your objective depends on the game
+the latest in armor and weaponry.  Xtank has several different
+types of games available.  Your objective depends on the type of game
 you play.
 .LP
 The
@@ -21,26 +32,35 @@ has the following options:
 .B -h
 provides a brief summary of the known options, which are in too great
 a state of flux to include here.
+.TP
+.B display0 ... displayN
+represent the
+.I X Window System
+displays to which
+.I xtank
+should attempt to establish connections at the start of the game.
 .SH X DEFAULTS
 .PP
 .TP 8
 .B escherWidth (\fPclass\fB Width)
-Specifies the width of the bogus escher menus.  Zero is strongly recomended.
+Specifies the width of the bogus escher menus.
+Zero is strongly recommended.
 .TP 8
 .B beep (\fPclass\fB Beep)
-Specifies the value of the beep flags.  Use 0 or 1.
+Specifies the value of the beep flags.  Use 0 to turn it off, and
+1 to turn it on.  The default value is 1.
 .TP 8
 .B drawName (\fPclass\fB Drawname)
-Specifies the value of the display name tags flag.
+Specifies the value of the display name tags flag for your vehicle.
 .TP 8
 .B keypad (\fPclass\fB Keypad)
-Specifies the value of the use keypad flag.
+Specifies the value of the use keypad flag for your vehicle.
 .TP 8
 .B background (\fPclass\fB BackGround)
 Specifies the background color.
 .TP 8
 .B foreground (\fPclass\fB ForeGround)
-Specifies the foregroud color.
+Specifies the foreground color.
 .TP 8
 .B color.red (\fPclass\fB Color.Team)
 .TP 8
@@ -58,47 +78,39 @@ Specifies the foregroud color.
 Specifies the color of the coresponding team.
 .TP 8
 .B color.cursor (\fPclass\fB Color.Cursor)
-Specifies the color to be used for the cursor, the "tink", commentator, radar, etc...
+Specifies the color to be used for the cursor, the "tink",
+commentator, radar, etc...
 .TP 8
 .B playerName (\fPclass\fB PlayerName)
-Specifies the player's name.
+Specifies the player's name for their vehicle.  This will be displayed
+under the moving tank.
 .TP 8
 .B tankName (\fPclass\fB TankName)
-Specifies the vehicle design to use.
+Specifies the default vehicle to use for the the game.
 .SH ENVIRONMENT
 .TP 15
 .B DISPLAY
 to get the default host and display number.
 .TP
 .B XTANK_DIR
-If set,
-its value overrides
+If set, its value overrides
 .B $XTANK_DIR
 as the default xtank directory.
 .TP
 .B XTANK_VEHICLES
-If set,
-its value overrides
+If set, its value overrides
 .B $XTANK_DIR/Vehicles
 as the default xtank vehicle directory.
 .TP
 .B XTANK_MAZES
-If set,
-its value overrides
+If set, its value overrides
 .B $XTANK_DIR/Mazes
 as the default xtank maze directory.
 .TP
 .B XTANK_PROGRAMS
-If set,
-its value overrides
+If set, its value overrides
 .B $XTANK_DIR/Programs
 as the default xtank robot program directory.
-.TP
-.B XTANK_VEHICLES
-If set,
-its value overrides
-.B $XTANK_DIR/Vehicles
-as the default xtank vehicle directory.
 .TP
 .B FONT_DIR
 If set,
@@ -191,5 +203,5 @@ Steve Worley
 .br
 Mike Zehr
 .br
-Manual page contributed by Aaron Nabil Eastlund.
-
+Manual page contributed by Aaron Nabil Eastlund, and editted by
+Kurt Lidl.

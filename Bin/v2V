@@ -1,0 +1,73 @@
+#!/usr/local/bin/perl
+
+@bodies = ("Lightcycle", "Hexo", "Spider", "Psycho", "Tornado", "Marauder",
+	"Tiger", "Rhino", "Medusa", "Malice", "Trike", "Panzy", "Disk", "Delta");
+
+@engines = ("Small Electric", "Medium Electric", "Large Electric",
+	"Super Electric", "Small Combustion", "Medium Combustion", 
+	"Large Combustion", "Super Combustion", "Small Turbine", "Medium Turbine",
+	"Large Turbine", "Turbojet Turbine", "Fuel Cell", "Fission",
+	"Breeder Fission", "Fusion");
+
+@weapons = ( "Light Machine Gun", "Machine Gun", "Heavy Machine Gun",
+	"Light Pulse Rifle", "Pulse Rifle", "Heavy Pulse Rifle",
+	"Light Autocannon", "Autocannon", "Heavy Autocannon", "Light Rkt Launcher",
+	"Rkt Launcher", "Heavy Rkt Launcher", "Acid Sprayer", "Flame Thrower",
+	"Mine Layer", "Heat Seeker", "Oil Slick", "Pocket Rocket",
+	"Unguided Missle", "Tactical Nuke", "Anti-Radiation", "Anti-Radiation");
+
+@armors = ( "Steel", "Kevlar", "Hardened Steel", "Composite", "Compound Steel",
+	"Titanium", "Tungsten", "New Steel", "Carapice", "Porcelain",
+	"New Tungsten", "Crumple");
+
+@suspensions = ("Light", "Normal", "Heavy", "Active");
+
+@bumpers = ("None", "Normal", "Rubber", "Retro");
+
+@specials = ( "Console", "Mapper", "Radar", "Repair", "Ram Plate",
+	"HU Display", "Deep Radar", "Stealth", "Navigation", "New Radar",
+	"Tac Link", "Camo", "Rdf");
+
+@treads = ("Smooth", "Normal", "Chained", "Spiked", "Hover");
+
+@mounts = ("T1", "T2", "T3", "F", "B",
+	"L", "R");
+
+@sides = ("Front", "Back", "Left", "Right", "Top", "Bottom");
+
+print "Vehicle: ", &get, "\n";
+print "Designer: ", &get, "\n";
+print "Body: ", $bodies[&get], "\n";
+print "Engine: ", $engines[&get], "\n";
+
+$nwep = &get;
+for($i = 0; $i < $nwep; $i++) {
+	$_ = &get;
+	($weap, $mount) = m/(\S+)\s+(\S+)/;
+	print "W#$i: ", $mounts[$mount], " ", $weapons[$weap], "\n";
+}
+
+print "Armor Type: ", @armors[&get], "\n";
+
+for($i = 0; $i < 6; $i++) {
+	print $sides[$i], ": ", &get, "\n";
+}
+
+$specials = &get;
+# What?
+for($i = 0; $i < 16; $i++) {
+	next unless ($specials & 2**$i);
+	print "Special: ", $specials[$i], "\n";
+}
+
+print "Heat sinks: ", &get, "\n";
+print "Suspension: ", @suspensions[&get], "\n";
+print "Treads: ", @treads[&get], "\n";
+print "Bumpers: ", @bumpers[&get], "\n";
+
+###############################################################################
+sub get {
+	$_ = <>;
+	chop;
+	$_;
+}

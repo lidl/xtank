@@ -1,30 +1,51 @@
 /**/#
-/**/# Top-Level Imakefile - part of the UMDENG X-Tank distribution
+/**/# Top-Level Imakefile - part of the PIX X-Tank distribution
 /**/#
-/**/# $Id: Imakefile,v 1.7 1992/02/13 06:19:58 lidl Exp $
+/**/# $Id: Imakefile,v 1.1.1.1 1995/02/01 00:25:32 lidl Exp $
 /**/#
 
-#include "./Imakefile.Config"
 
 #define PassCDebugFlags
 #define IHaveSubdirs
 
+        TARFILE = /tmp/xtank.tar
+        EXCLUDE = /tmp/excluded
+       COMPRESS = gzip -v -9
+         GNUTAR = gnutar
+           FLEX = flex
+
         SUBDIRS = Src
+
+#include "./Imakefile.Config"
 
 MakeSubdirs($(SUBDIRS))
 
-        TARFILE = /tmp/xtank.tar
-        EXCLUDE = /tmp/excluded
+
+beta:
+	cp /dev/null ${EXCLUDE}
+	(cd Src ; ${FLEX} -t setups.l > setups.flexed )
+	(cd Src ; ${FLEX} -t vload.l | sed 's/yy/zz/g' > vload.flexed )
+	(cd Src ; ${FLEX} -t sload.l | sed 's/yy/ss/g' > sload.flexed )
+	find . \( -name \*,v -o -name RCS -o -name Makefile -o \
+		-name Makefile.bak -o -name tags -o -name TAGS -o \
+		-name .version \) -print | \
+	sed 's/^.\///' >> ${EXCLUDE}
+	$(GNUTAR) --create --verbose --exclude-from ${EXCLUDE} --file ${TARFILE} .
+	(cd Src ; rm -f setups.flexed vload.flexed sload.flexed)
+	$(COMPRESS) ${TARFILE}
+	rm -f ${EXCLUDE}:
 
 release:
 	cp /dev/null ${EXCLUDE}
-	(cd Src ; flex -t setups.l > setups.flexed )
-	(cd Src ; flex -t vload.l | sed 's/yy/zz/g' > vload.flexed )
+	(cd Src ; ${FLEX} -t setups.l > setups.flexed )
+	(cd Src ; ${FLEX} -t sload.l | sed -e 's/yy/ss/g' -e 's/sswrap/yywrap/g' > sload.flexed )
+	(cd Src ; ${FLEX} -t vload.l | sed -e 's/yy/zz/g' -e 's/zzwrap/yywrap/g' > vload.flexed )
 	find . \( -name \*,v -o -name RCS -o -name Makefile -o \
 		-name Makefile.bak -o -name Patches -o -name HeartBurn\* -o \
 		-name tags -o -name TAGS -o -name .version \) -print | \
 	sed 's/^.\///' >> ${EXCLUDE}
-	gtar +create +verbose +exclude-from ${EXCLUDE} +file ${TARFILE} .
-	(cd Src ; rm -f setups.flexed vload.flexed)
-	compress -v ${TARFILE}
+	$(GNUTAR) --create --verbose --exclude-from ${EXCLUDE} --file ${TARFILE} .
+	(cd Src ; rm -f setups.flexed vload.flexed sload.flexed)
+	$(COMPRESS) ${TARFILE}
 	rm -f ${EXCLUDE}
+

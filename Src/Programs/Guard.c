@@ -1,3 +1,16 @@
+/*
+** Xtank
+**
+** Copyright 1993 by Robert Potter
+**
+** Guard.c
+*/
+
+/*
+$Author: lidl $
+$Id: Guard.c,v 1.1.1.1 1995/02/01 00:25:46 lidl Exp $
+*/
+
 /***********************************************\
 * "Guard" - an Xtank player by Robert Potter	*
 \***********************************************/

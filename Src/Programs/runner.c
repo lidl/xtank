@@ -1,19 +1,14 @@
 /*
-$Author: lidl $
-$Id: runner.c,v 1.6 1991/12/15 20:22:49 lidl Exp $
+** Xtank
+**
+** Copyright 1991 by Hans Mejdahl Jeppesen
+**
+** runner.c
+*/
 
-$Log: runner.c,v $
- * Revision 1.6  1991/12/15  20:22:49  lidl
- * changed all "float" occurances to "FLOAT"
- *
- * Revision 1.5  1991/09/29  15:40:22  lidl
- * changed all occurances of atan2 to ATAN2, so it uses the correct macro
- *
- * Revision 1.4  1991/09/19  05:23:59  lidl
- * cleaned up a few little compiling errors, made it use the right flags
- * in the program description.
- * Run through indent. Added RCS header information.
- *
+/*
+$Author: lidl $
+$Id: runner.c,v 1.1.1.1 1995/02/01 00:25:47 lidl Exp $
 */
 
 /**********************************************************************/

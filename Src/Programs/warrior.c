@@ -1,41 +1,20 @@
-/****************************************\
-* copyright (c) 1988 by michael j zehr   *
-* xtank battle program. first try        *
-*                                        *
-* algorithm: just moves and shoots a bit *
-\****************************************/
+/*
+** Xtank
+**
+** Copyright 1988 by Michael J. Zehr
+**
+** warrior.c
+*/
 
 /*
 $Author: lidl $
-$Id: warrior.c,v 2.6 1992/08/19 05:19:46 lidl Exp $
-
-$Log: warrior.c,v $
- * Revision 2.6  1992/08/19  05:19:46  lidl
- * changed to use SQRT instead of sqrt
- *
- * Revision 2.5  1992/04/18  15:41:04  lidl
- * fixed a mod by zero bug
- * patch by Bob Manson <manson@magnus.acs.ohio-state.edu>
- *
- * Revision 2.4  1991/12/15  20:22:49  lidl
- * changed all "float" occurances to "FLOAT"
- *
- * Revision 2.3  1991/02/10  13:52:09  rpotter
- * bug fixes, display tweaks, non-restart fixes, header reorg.
- *
- * Revision 2.2  91/01/20  09:59:27  rpotter
- * complete rewrite of vehicle death, other tweaks
- * 
- * Revision 2.1  91/01/17  07:13:36  rpotter
- * lint warnings and a fix to update_vector()
- * 
- * Revision 2.0  91/01/17  02:10:54  rpotter
- * small changes
- * 
- * Revision 1.1  90/12/29  21:03:21  aahz
- * Initial revision
- * 
+$Id: warrior.c,v 1.1.1.1 1995/02/01 00:25:48 lidl Exp $
 */
+
+/****************************************\
+* xtank battle program. first try        *
+* algorithm: just moves and shoots a bit *
+\****************************************/
 
 #include "sysdep.h"
 #include "malloc.h"

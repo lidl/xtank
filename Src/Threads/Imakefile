@@ -1,0 +1,42 @@
+/**/#
+/**/# Imakefile for ./Src/Threads - part of the PIX X-Tank distribution
+/**/#
+/**/# $Author: lidl $
+/**/# $Id: Imakefile,v 1.1.1.1 1995/02/01 00:25:39 lidl Exp $
+/**/#
+
+#include "../../Imakefile.Config"
+
+           SRCS = thread.c threadglue.c
+           OBJS = thread.o threadglue.o
+
+/**/# Important things that we might want to find
+
+ EXTRA_INCLUDES = -I. -I../Include
+
+#ifdef DebugThreads && ProfileThreads
+DebuggedAndProfiledLibraryObjectRule()
+#else
+# if DebugThreads
+DebuggedLibraryObjectRule()
+# else
+#  if ProfileThreads
+ProfiledLibraryObjectRule()
+#  else
+NormalLibraryObjectRule()
+#  endif
+# endif
+#endif
+
+NormalLibraryTarget(xtankthreads,$(OBJS))
+InstallLibrary(xtankthreads,$(XTANK_DIR)/Lib)
+DependTarget()
+
+#if ProfileThreads
+ProfiledLibraryTarget(xtankthreads,$(OBJS))
+InstallLibrary(xtankthreads_p,$(XTANK_DIR)/Lib)
+#endif
+
+#ifdef DebugThreads
+DebuggedLibraryTarget(xtankthreads,$(OBJS))
+#endif

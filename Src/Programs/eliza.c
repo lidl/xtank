@@ -1,40 +1,21 @@
-#include "malloc.h"
 /*
 ** Xtank
 **
 ** Copyright 1988 by Terry Donahue
 **
 ** eliza.c
-**
-** This is an xtank program designed to talk with bored players.
 */
 
 /*
 $Author: lidl $
-$Id: eliza.c,v 2.4 1992/04/18 15:40:18 lidl Exp $
-
-$Log: eliza.c,v $
- * Revision 2.4  1992/04/18  15:40:18  lidl
- * fixed a mod by zero bug
- * patch submitted by Bob Manson <manson@magnus.acs.ohio-state.edu>
- *
- * Revision 2.3  1991/02/10  13:50:25  rpotter
- * bug fixes, display tweaks, non-restart fixes, header reorg.
- *
- * Revision 2.2  91/01/20  09:57:40  rpotter
- * complete rewrite of vehicle death, other tweaks
- * 
- * Revision 2.1  91/01/17  07:11:17  rpotter
- * lint warnings and a fix to update_vector()
- * 
- * Revision 2.0  91/01/17  02:09:22  rpotter
- * small changes
- * 
- * Revision 1.1  90/12/29  21:02:20  aahz
- * Initial revision
- * 
+$Id: eliza.c,v 1.1.1.1 1995/02/01 00:25:46 lidl Exp $
 */
 
+/*
+** This is an xtank program designed to talk with bored players.
+*/
+
+#include "malloc.h"
 #include <stdio.h>
 #include "xtanklib.h"
 

@@ -8,109 +8,7 @@
 
 /*
 $Author: lidl $
-$Id: file.c,v 2.30 1992/09/14 01:06:49 lidl Exp $
-
-$Log: file.c,v $
- * Revision 2.30  1992/09/14  01:06:49  lidl
- * hpux sux
- *
- * Revision 2.29  1992/09/12  19:46:50  stripes
- * Added force specials support.
- *
- * Revision 2.27  1992/06/07  02:45:08  lidl
- * Post Adam Bryant patches and a manual merge of the rejects (ugh!)
- *
- * Revision 2.26  1992/04/09  04:16:46  lidl
- * hmmm, old copy seems to be damaged.  Only changes should have been
- * to use tanklimits.h and not limits.h
- *
- * Revision 2.25  1992/03/31  04:04:16  lidl
- * pre-aaron patches, post 1.3d release (ie mailing list patches)
- *
- * Revision 2.24  1992/02/06  09:00:37  aahz
- * added save Program info in the save_settings file.
- *
- * Revision 2.23  1992/02/04  08:25:08  lidl
- * removed ifdef of new vehicle ending letter code
- *
- * Revision 2.22  1992/02/04  07:25:33  aahz
- * init retcode to desc_loaded rather than a hard-coded 0
- *
- * Revision 2.21  1992/02/03  07:31:09  lidl
- * the new load code now can be linked, but core-dumps when it attempts
- * to load a new (.V) file.  Checking in so that others can play with the code
- *
- * Revision 2.20  1992/01/30  03:41:21  aahz
- * removed ifdefs around no radar
- *
- * Revision 2.19  1992/01/29  08:37:01  lidl
- * post aaron patches, seems to mostly work now
- *
- * Revision 2.18  1992/01/21  03:44:24  aahz
- * reorganized load_vdesc to make loading of multiple formats
- * easier.
- *
- * Revision 2.17  1992/01/21  02:36:03  stripes
- * Added call to save vechiles in new format.
- *
- * Revision 2.16  1992/01/02  02:53:12  aahz
- * added a filename parameter to save_settings
- *
- * Revision 2.15  1991/12/20  21:11:24  lidl
- * made char *games_entries[]; an extern, so as to mollify ANSI C compilers
- *
- * Revision 2.14  1991/12/19  05:38:24  stripes
- * changed delimter from space to tab (Kurt as Josh)
- *
- * Revision 2.13  1991/12/15  20:27:36  lidl
- * a small SVR4 compatibility hack
- *
- * Revision 2.12  1991/12/02  10:31:45  lidl
- * changed to handle a forth turret on tanks
- *
- * Revision 2.11  1991/12/02  06:38:23  lidl
- * changed to use limits.h, and got rid of the foolish things
- *
- * Revision 2.10  1991/11/27  06:26:13  aahz
- * added team score to save setup.
- *
- * Revision 2.9  1991/11/15  04:11:53  stripes
- * Stuff in save_settings, I think it is done.
- *
- * Revision 2.8  1991/10/07  06:15:33  stripes
- * Added a save_settings(), it saves to /tmp/something-or-other
- *
- * Revision 2.7  1991/09/24  14:08:56  lidl
- * changes to reflect moving the .h files in xtank/Src/Include
- *
- * Revision 2.6  1991/09/19  05:29:45  lidl
- * added NONAMETAGS flag ifdefs
- *
- * Revision 2.5  1991/09/15  09:24:51  lidl
- * removed vestiges of config.h file, now all configuration is done in
- * the Imakefile, and propogated via compile-time -D flags
- *
- * Revision 2.4  1991/09/15  06:54:19  stripes
- * *** empty log message ***
- *
- * Revision 2.3  1991/02/10  13:50:29  rpotter
- * bug fixes, display tweaks, non-restart fixes, header reorg.
- *
- * Revision 2.2  91/01/20  09:57:43  rpotter
- * complete rewrite of vehicle death, other tweaks
- * 
- * Revision 2.1  91/01/17  07:11:21  rpotter
- * lint warnings and a fix to update_vector()
- * 
- * Revision 2.0  91/01/17  02:09:24  rpotter
- * small changes
- * 
- * Revision 1.2  90/12/30  02:24:33  aahz
- * added functions for loading setups.  These are only stubs so far.
- * 
- * Revision 1.1  90/12/29  21:02:21  aahz
- * Initial revision
- * 
+$Id: file.c,v 1.1.1.1 1995/02/01 00:25:35 lidl Exp $
 */
 
 #include "tanklimits.h"
@@ -128,6 +26,9 @@ $Log: file.c,v $
 #include "vstructs.h"
 #ifdef UNIX
 #include <sys/param.h>
+#ifdef linux
+#define MAXNAMLEN NAME_MAX
+#endif
 #ifndef __hpux
 #include <sys/dir.h>
 #endif
@@ -135,6 +36,7 @@ $Log: file.c,v $
 #if defined(SVR4) || defined(SYSV)
 #include <dirent.h>
 #endif
+#include "proto.h"
 
 char pathname[MAXPATHLEN];
 char headersdir[MAXPATHLEN];	/* full name of directory to find headers in */
@@ -143,6 +45,7 @@ char username[MAX_STRING], displayname[256];
 
 #ifdef NEED_AUX_FONT
 char fontdir[MAXNAMLEN];
+
 #endif
 
 extern char *games_entries[];
@@ -168,65 +71,63 @@ int num_sdescs = 0;
 */
 load_desc_lists()
 {
-    FILE *file;
-    char filename[MAXPATHLEN];
-    char name[MAXNAMLEN];
-    int num;
+	FILE *file;
+	char filename[MAXPATHLEN];
+	char name[MAXNAMLEN];
+	int num;
 
-    /* Make all the vehicle descriptions in the vehicle list */
+	/* Make all the vehicle descriptions in the vehicle list */
 
 #ifdef UNIX
-    (void) strcpy(filename, pathname);
-    (void) strcat(filename, "/");
-    (void) strcat(filename, vehiclesdir);
-    (void) strcat(filename, "/");
-    (void) strcat(filename, "list");
+	(void) strcpy(filename, pathname);
+	(void) strcat(filename, "/");
+	(void) strcat(filename, vehiclesdir);
+	(void) strcat(filename, "/");
+	(void) strcat(filename, "list");
 #endif /* UNIX */
 
 #ifdef AMIGA
-    (void) strcpy(filename, "XVDIR:list");
+	(void) strcpy(filename, "XVDIR:list");
 #endif /* AMIGA */
 
-    draw_text_rc(ANIM_WIN, 0, 1, "Reading vehicle list...", M_FONT, WHITE);
-    sync_output(TRUE);
-    if ((file = fopen(filename, "r")) != NULL)
-    {
-	while (fscanf(file, "%s", name) != EOF)
-	    make_vdesc(name, &num);
+	draw_text_rc(ANIM_WIN, 0, 2, "Reading vehicle list...", M_FONT, WHITE);
+	sync_output(TRUE);
+	if ((file = fopen(filename, "r")) != NULL) {
+		while (fscanf(file, "%s", name) != EOF)
+			make_vdesc(name, &num);
 
-	(void) fclose(file);
-    } else {
-	fprintf(stderr, "Could not open file '%s'.\n", filename);
-	exit(1);
-    }
+		(void) fclose(file);
+	} else {
+		fprintf(stderr, "Could not open file '%s'.\n", filename);
+		exit(1);
+	}
 
 
-    /* Make all the maze descriptions in the maze list */
+	/* Make all the maze descriptions in the maze list */
 
 #ifdef UNIX
-    (void) strcpy(filename, pathname);
-    (void) strcat(filename, "/");
-    (void) strcat(filename, mazesdir);
-    (void) strcat(filename, "/");
-    (void) strcat(filename, "list");
+	(void) strcpy(filename, pathname);
+	(void) strcat(filename, "/");
+	(void) strcat(filename, mazesdir);
+	(void) strcat(filename, "/");
+	(void) strcat(filename, "list");
 #endif /* UNIX */
 
 #ifdef AMIGA
-    (void) strcpy(filename, "XMDIR:list");
+	(void) strcpy(filename, "XMDIR:list");
 #endif /* AMIGA */
 
-    draw_text_rc(ANIM_WIN, 0, 2, "Reading maze list...", M_FONT, WHITE);
-    sync_output(TRUE);
-    if ((file = fopen(filename, "r")) != NULL)
-    {
-        while (fscanf(file, "%s", name) != EOF)
-	    make_mdesc(name, &num);
+	draw_text_rc(ANIM_WIN, 0, 3, "Reading maze list...", M_FONT, WHITE);
+	sync_output(TRUE);
+	if ((file = fopen(filename, "r")) != NULL) {
+		while (fscanf(file, "%s", name) != EOF)
+			make_mdesc(name, &num);
 
-        (void) fclose(file);
-    } else {
-        fprintf(stderr, "Could not open file '%s'.\n", filename);
-        exit(1);
-    }
+		(void) fclose(file);
+	} else {
+		fprintf(stderr, "Could not open file '%s'.\n", filename);
+		exit(1);
+	}
 }
 
 /*
@@ -238,169 +139,157 @@ make_vdesc(name, num)
 char *name;
 int *num;
 {
-    Vdesc *d;
-    int retval, i;
+	Vdesc *d;
+	int retval, i;
+        Vdesc tmpveh;
 
-    /* if (num_vdescs >= MAX_VDESCS) return DESC_NO_ROOM; */
+	/* if (num_vdescs >= MAX_VDESCS) return DESC_NO_ROOM; */
 
-    /* if the vehicle could not be found, we will be leaving room for an
+	/* if the vehicle could not be found, we will be leaving room for an
        extra Vdesc.  This should probably be cleaned up later. */
+        /* It is fixed, I cloned the KNG fix from make_mdesc up here. -ane */
 
-    /* If name present, load into that slot, else load into next empty slot */
-    for (i = 0; i < num_vdescs; i++)
-	{
-		if (!strcmp(name, vdesc[i].name))
-		{
-	    	break;
+	/* If name present, load into that slot, else load into next empty slot */
+	for (i = 0; i < num_vdescs; i++) {
+		if (!strcmp(name, vdesc[i].name)) {
+			break;
 		}
 	}
 
-	if (i == num_vdescs)
-	{
-    	if (vdesc == NULL)
-    	{
+      /* Load the vehicle before resizing the array; if it's not found, return
+       * (don't resize the array).  Fix cloned from KNG fix in make_mdesc.  -ane
+       */
+        retval = load_vdesc(&tmpveh, name);
+        if (retval != DESC_LOADED) {
+           return(retval);
+        }
+
+
+	if (i == num_vdescs) {
+		if (vdesc == NULL) {
 			vdesc = (Vdesc *) malloc(sizeof(Vdesc));
 			vehicles_entries = (char **) malloc(sizeof(char *));
-    	}
-    	else
-    	{
-        	vdesc = (Vdesc *) realloc((char *)vdesc,
-				  	(unsigned) (num_vdescs + 1) * sizeof(Vdesc));
-        	vehicles_entries = (char **) realloc((char *)vehicles_entries,
-					     	(unsigned) (num_vdescs+1) *
-					                	sizeof(char *));
-    	}
+		} else {
+			vdesc = (Vdesc *) realloc((char *) vdesc,
+							   (unsigned) (num_vdescs + 1) * sizeof(Vdesc));
 
-    	assert(vdesc != NULL);
-    	assert(vehicles_entries != NULL);
+			vehicles_entries = (char **) realloc((char *) vehicles_entries,
+											   (unsigned) (num_vdescs + 1) *
+												 sizeof(char *));
+		}
+
+		assert(vdesc != NULL);
+		assert(vehicles_entries != NULL);
 	}
+	d = &vdesc[i];
+	memcpy(d, &tmpveh, sizeof(Vdesc));
 
-    d = &vdesc[i];
-    retval = load_vdesc(d, name);
-
-    /* Increment the number if a vdesc was loaded in the last slot */
-    if (retval == DESC_LOADED && i == num_vdescs)
-	{
+	/* Increment the number if a vdesc was loaded in the last slot */
+	if (retval == DESC_LOADED && i == num_vdescs) {
 		num_vdescs++;
 	}
-    *num = i;
-    reset_dynamic_entries();
-    return retval;
+	*num = i;
+	reset_dynamic_entries();
+	return retval;
 }
 
 #define check_range(val,mx) \
   if((int)(val) < 0 || (int)(val) >= (int)(mx)) return DESC_BAD_FORMAT;
 
 int ReadVehicleFormat0(file, d)
-	FILE *file;
-	Vdesc *d;
+FILE *file;
+Vdesc *d;
 {
 	int i;
-    int num_tur;
+	int num_tur;
 	int iRetCode = DESC_LOADED;
-    WeaponType weapon;
-    MountLocation mount;
+	WeaponType weapon;
+	MountLocation mount;
 
 	/* Initialize max side to 0 */
 	d->armor.max_side = 0;
 
-    /* Load the values into the vdesc structure, checking their validity */
-    (void) fscanf(file, "%s", d->name);
-    (void) fscanf(file, "%s", d->designer);
+	/* Load the values into the vdesc structure, checking their validity */
+	(void) fscanf(file, "%s", d->name);
+	(void) fscanf(file, "%s", d->designer);
 
-    (void) fscanf(file, "%d", &d->body);
-    check_range(d->body, num_vehicle_objs);
-    num_tur = vehicle_obj[d->body]->num_turrets;
+	(void) fscanf(file, "%d", &d->body);
+	check_range(d->body, num_vehicle_objs);
+	num_tur = vehicle_obj[d->body]->num_turrets;
 
-	if (num_tur == 4)
-	{
+	if (num_tur == 4) {
 		iRetCode = DESC_BAD_FORMAT;
-	}
-	else
-	{
-    	(void) fscanf(file, "%d", &d->engine);
-    	check_range(d->engine, MAX_ENGINES);
+	} else {
+		(void) fscanf(file, "%d", &d->engine);
+		check_range(d->engine, MAX_ENGINES);
 
-    	(void) fscanf(file, "%d", &d->num_weapons);
-    	check_range(d->num_weapons, MAX_WEAPONS + 1);
+		(void) fscanf(file, "%d", &d->num_weapons);
+		check_range(d->num_weapons, MAX_WEAPONS + 1);
 
-    	for (i = 0; i < d->num_weapons; i++)
-    	{
+		for (i = 0; i < d->num_weapons; i++) {
 			(void) fscanf(file, "%d %d", &weapon, &mount);
-        	check_range((int)weapon, MAX_WEAPON_STATS);
+			check_range((int) weapon, MAX_WEAPON_STATS);
 
-			if (mount >= MOUNT_TURRET4)
-			{
+			if (mount >= MOUNT_TURRET4) {
 				++mount;
 			}
-
-			switch (mount)
-			{
-	  			case MOUNT_TURRET1:
-	    			if (num_tur < 1)
-					{
-						iRetCode = DESC_BAD_FORMAT;
-					}
-	    			break;
-	  			case MOUNT_TURRET2:
-	    			if (num_tur < 2)
-					{
-						iRetCode = DESC_BAD_FORMAT;
-					}
-	    			break;
-	  			case MOUNT_TURRET3:
-	    			if (num_tur < 3)
-					{
-						iRetCode = DESC_BAD_FORMAT;
-					}
-	    			break;
-	  			case MOUNT_FRONT:
-				case MOUNT_BACK:
-				case MOUNT_LEFT:
-				case MOUNT_RIGHT:
-	    			break;
-	  			default:
-	    			iRetCode = DESC_BAD_FORMAT;
-					break;
+			switch (mount) {
+			  case MOUNT_TURRET1:
+				  if (num_tur < 1) {
+					  iRetCode = DESC_BAD_FORMAT;
+				  }
+				  break;
+			  case MOUNT_TURRET2:
+				  if (num_tur < 2) {
+					  iRetCode = DESC_BAD_FORMAT;
+				  }
+				  break;
+			  case MOUNT_TURRET3:
+				  if (num_tur < 3) {
+					  iRetCode = DESC_BAD_FORMAT;
+				  }
+				  break;
+			  case MOUNT_FRONT:
+			  case MOUNT_BACK:
+			  case MOUNT_LEFT:
+			  case MOUNT_RIGHT:
+				  break;
+			  default:
+				  iRetCode = DESC_BAD_FORMAT;
+				  break;
 			}
 
-			if (iRetCode)
-			{
+			if (iRetCode) {
 				break;
 			}
-
 			d->weapon[i] = weapon;
 			d->mount[i] = mount;
-    	}
+		}
 	}
 
-	if (iRetCode == 0)
-	{
-    	(void) fscanf(file, "%d", &d->armor.type);
-    	check_range(d->armor.type, MAX_ARMORS);
+	if (iRetCode == 0) {
+		(void) fscanf(file, "%d", &d->armor.type);
+		check_range(d->armor.type, MAX_ARMORS);
 
-    	for (i = 0; i < MAX_SIDES; i++)
-    	{
+		for (i = 0; i < MAX_SIDES; i++) {
 			(void) fscanf(file, "%d", &d->armor.side[i]);
-			if (d->armor.max_side < d->armor.side[i])
-			{
-	    		d->armor.max_side = d->armor.side[i];
+			if (d->armor.max_side < d->armor.side[i]) {
+				d->armor.max_side = d->armor.side[i];
 			}
-    	}
+		}
 
-    	(void) fscanf(file, "%d", &d->specials);
-    	(void) fscanf(file, "%d", &d->heat_sinks);
+		(void) fscanf(file, "%d", &d->specials);
+		(void) fscanf(file, "%d", &d->heat_sinks);
 
-    	(void) fscanf(file, "%d", &d->suspension);
-    	check_range(d->suspension, MAX_SUSPENSIONS);
+		(void) fscanf(file, "%d", &d->suspension);
+		check_range(d->suspension, MAX_SUSPENSIONS);
 
-    	(void) fscanf(file, "%d", &d->treads);
-    	check_range(d->treads, MAX_TREADS);
+		(void) fscanf(file, "%d", &d->treads);
+		check_range(d->treads, MAX_TREADS);
 
-    	(void) fscanf(file, "%d", &d->bumpers);
-    	check_range(d->bumpers, MAX_BUMPERS);
+		(void) fscanf(file, "%d", &d->bumpers);
+		check_range(d->bumpers, MAX_BUMPERS);
 	}
-
 	return (iRetCode);
 }
 
@@ -412,32 +301,32 @@ load_vdesc(d, name)
 Vdesc *d;
 char *name;
 {
-    extern int num_vehicle_objs;
-    extern Object *vehicle_obj[];
-    FILE *file;
-    char filename[MAXPATHLEN];
-    int i;
+	extern int num_vehicle_objs;
+	extern Object *vehicle_obj[];
+	FILE *file;
+	char filename[MAXPATHLEN];
+	int i;
 	int iFormatType;
 	int iRetCode = DESC_LOADED;
 
 	/* initialize the vdesc struct */
 	memset(d, 0, sizeof(Vdesc));
 
-    /* Open the vehicle description file */
+	/* Open the vehicle description file */
 
 #ifdef UNIX
-    (void) strcpy(filename, pathname);
-    (void) strcat(filename, "/");
-    (void) strcat(filename, vehiclesdir);
-    (void) strcat(filename, "/");
+	(void) strcpy(filename, pathname);
+	(void) strcat(filename, "/");
+	(void) strcat(filename, vehiclesdir);
+	(void) strcat(filename, "/");
 #endif /* UNIX */
 
 #ifdef AMIGA
-    (void) strcpy(filename, "XVDIR:");
+	(void) strcpy(filename, "XVDIR:");
 #endif /* AMIGA */
 
-    (void) strcat(filename, name);
-    (void) strcat(filename, ".V");
+	(void) strcat(filename, name);
+	(void) strcat(filename, ".V");
 
 	if ((file = fopen(filename, "r")) == NULL) {
 		filename[strlen(filename) - 1] = 'v';
@@ -452,27 +341,25 @@ char *name;
 
 	if (iRetCode == 0) {
 		switch (iFormatType) {
-			case 0:
-				iRetCode = ReadVehicleFormat0(file, d);
-				break;
+		  case 0:
+			  iRetCode = ReadVehicleFormat0(file, d);
+			  break;
 
-			case 1:
-				iRetCode = ReadVehicleFormat1(file, d);
-				break;
+		  case 1:
+			  iRetCode = ReadVehicleFormat1(file, d);
+			  break;
 		}
 
 		if (iRetCode == 0) {
-    		/* Compute parameters, and see if there are any problems */
-				if (compute_vdesc(d)) {
-					iRetCode = DESC_BAD_FORMAT;
+			/* Compute parameters, and see if there are any problems */
+			if (compute_vdesc(d)) {
+				iRetCode = DESC_BAD_FORMAT;
 			}
 		}
 	}
-
 	if (file) {
 		(void) fclose(file);
 	}
-
 	return (iRetCode);
 }
 
@@ -496,52 +383,57 @@ make_mdesc(name, num)
 char *name;
 int *num;
 {
-    Mdesc *d;
-    int retval, i;
+	Mdesc *d;
+	int retval, i;
+        Mdesc tmpmaze;
 
-    /* If name present, load into that slot, else load into next empty slot */
-    for (i = 0; i < num_mdescs; i++)
-	{
-		if (!strcmp(name, mdesc[i].name))
-		{
-	    	break;
+	/* If name present, load into that slot, else load into next empty slot */
+	for (i = 0; i < num_mdescs; i++) {
+		if (!strcmp(name, mdesc[i].name)) {
+			break;
 		}
 	}
 
-	if (i == num_mdescs)
-	{
-    /* if the maze could not be found, we will be leaving room for an extra
+       /* Load the maze before resizing the array; if it's not found, return
+        * (don't resize the array).  This way settings.mdesc is left pointing
+        * into valid data (see ask_desc() in interface.c).  -KNG 930916
+        */
+        retval = load_mdesc(&tmpmaze, name);
+        if (retval != DESC_LOADED) {
+            return(retval);
+        }
+
+
+	if (i == num_mdescs) {
+		/* if the maze could not be found, we will be leaving room for an extra
        Mdesc.  This should probably be cleaned up later. */
-    	if (mdesc == NULL)
-    	{
+                /* It just was, see KNG code above -ane */
+		if (mdesc == NULL) {
 			mdesc = (Mdesc *) malloc(2 * sizeof(Mdesc));
 			mazes_entries = (char **) malloc(2 * sizeof(char *));
-    	}
-    	else
-    	{
-        	mdesc = (Mdesc *) realloc((char *)mdesc,
-				  	(unsigned) ((num_mdescs + 2) *
-					      	sizeof(Mdesc)));
-        	mazes_entries = (char **) realloc((char *)mazes_entries,
-					  	(unsigned) ((num_mdescs + 2) *
-						      	sizeof(char *)));
-    	}
+		} else {
+			mdesc = (Mdesc *) realloc((char *) mdesc,
+									  (unsigned) ((num_mdescs + 2) *
+												  sizeof(Mdesc)));
 
-    	assert(mdesc != NULL);
-    	assert(mazes_entries != NULL);
+			mazes_entries = (char **) realloc((char *) mazes_entries,
+											  (unsigned) ((num_mdescs + 2) *
+														  sizeof(char *)));
+		}
+
+		assert(mdesc != NULL);
+		assert(mazes_entries != NULL);
 	}
+	d = &mdesc[i];
+        memcpy(d, &tmpmaze, sizeof(Mdesc));	
 
-    d = &mdesc[i];
-    retval = load_mdesc(d, name);
-
-    /* Increment the number if a mdesc was loaded in the last slot */
-    if (retval == DESC_LOADED && i == num_mdescs)
-	{
+	/* Increment the number if a mdesc was loaded in the last slot */
+	if (retval == DESC_LOADED && i == num_mdescs) {
 		num_mdescs++;
 	}
-    *num = i;
-    reset_dynamic_entries();
-    return retval;
+	*num = i;
+	reset_dynamic_entries();
+	return retval;
 }
 
 /*
@@ -552,43 +444,43 @@ load_mdesc(d, name)
 Mdesc *d;
 char *name;
 {
-    FILE *file;
-    char filename[MAXPATHLEN];
-    int temp;
+	FILE *file;
+	char filename[MAXPATHLEN];
+	int temp;
 
 #ifdef UNIX
-    (void) strcpy(filename, pathname);
-    (void) strcat(filename, "/");
-    (void) strcat(filename, mazesdir);
-    (void) strcat(filename, "/");
-#endif				/* UNIX */
+	(void) strcpy(filename, pathname);
+	(void) strcat(filename, "/");
+	(void) strcat(filename, mazesdir);
+	(void) strcat(filename, "/");
+#endif /* UNIX */
 
 #ifdef AMIGA
-    (void) strcpy(filename, "XVDIR:");
-#endif				/* AMIGA */
+	(void) strcpy(filename, "XVDIR:");
+#endif /* AMIGA */
 
-    (void) strcat(filename, name);
-    (void) strcat(filename, ".m");
-    if ((file = fopen(filename, "r")) == NULL)
-	return DESC_NOT_FOUND;
+	(void) strcat(filename, name);
+	(void) strcat(filename, ".m");
+	if ((file = fopen(filename, "r")) == NULL)
+		return DESC_NOT_FOUND;
 
-    if ((temp = getc(file)) == EOF)
-	return DESC_BAD_FORMAT;
-    d->type = (Game) temp;
-    if (alloc_str(file, &d->name) == DESC_BAD_FORMAT)
-	return DESC_BAD_FORMAT;
-    if (alloc_str(file, &d->designer) == DESC_BAD_FORMAT)
-	return DESC_BAD_FORMAT;
-    if (alloc_str(file, &d->desc) == DESC_BAD_FORMAT)
-	return DESC_BAD_FORMAT;
-    if (alloc_str(file, (char **) &d->data) == DESC_BAD_FORMAT)
-	return DESC_BAD_FORMAT;
+	if ((temp = getc(file)) == EOF)
+		return DESC_BAD_FORMAT;
+	d->type = (Game) temp;
+	if (alloc_str(file, &d->name) == DESC_BAD_FORMAT)
+		return DESC_BAD_FORMAT;
+	if (alloc_str(file, &d->designer) == DESC_BAD_FORMAT)
+		return DESC_BAD_FORMAT;
+	if (alloc_str(file, &d->desc) == DESC_BAD_FORMAT)
+		return DESC_BAD_FORMAT;
+	if (alloc_str(file, (char **) &d->data) == DESC_BAD_FORMAT)
+		return DESC_BAD_FORMAT;
 
-    convert_maze(d, TO_INTERNAL_TYPE);
+	convert_maze(d, TO_INTERNAL_TYPE);
 
-    (void) fclose(file);
+	(void) fclose(file);
 
-    return DESC_LOADED;
+	return DESC_LOADED;
 }
 
 /* At most 3 bytes per box in the grid for a maze description */
@@ -604,24 +496,23 @@ alloc_str(file, strp)
 FILE *file;
 char **strp;
 {
-    int ret;
-    char temp[MAX_DATA_BYTES];
-    unsigned int len;
+	int ret;
+	char temp[MAX_DATA_BYTES];
+	unsigned int len;
 
-    /* Read chars from file into temp up to and including the first '\0' */
-    len = 0;
-    do
-    {
-	if ((ret = getc(file)) == EOF || len >= MAX_DATA_BYTES)
-	    return DESC_BAD_FORMAT;
-	temp[len++] = (char) ret;
-    } while ((char) ret != '\0');
+	/* Read chars from file into temp up to and including the first '\0' */
+	len = 0;
+	do {
+		if ((ret = getc(file)) == EOF || len >= MAX_DATA_BYTES)
+			return DESC_BAD_FORMAT;
+		temp[len++] = (char) ret;
+	} while ((char) ret != '\0');
 
-    *strp = malloc(len);
-    assert(*strp != NULL);
-    (void) strcpy(*strp, temp);
+	*strp = (char *)malloc(len);
+	assert(*strp != NULL);
+	(void) strcpy(*strp, temp);
 
-    return DESC_LOADED;
+	return DESC_LOADED;
 }
 
 /*
@@ -639,17 +530,17 @@ Mdesc *d;
 	(void) strcat(filename, "/");
 	(void) strcat(filename, mazesdir);
 	(void) strcat(filename, "/");
-#endif							/* UNIX */
+#endif /* UNIX */
 
 #ifdef AMIGA
 	(void) strcpy(filename, "XVDIR:");
-#endif							/* AMIGA */
+#endif /* AMIGA */
 
 	(void) strcat(filename, d->name);
 	(void) strcat(filename, ".m");
 	if ((file = fopen(filename, "w")) == NULL)
 		return DESC_NOT_FOUND;
-	
+
 	convert_maze(d, TO_EXTERNAL_TYPE);
 
 	(void) fputc((char) d->type, file);
@@ -684,11 +575,11 @@ char *name;
 	(void) strcat(filename, "/");
 	(void) strcat(filename, mazesdir);
 	(void) strcat(filename, "/");
-#endif							/* UNIX */
+#endif /* UNIX */
 
 #ifdef AMIGA
 	(void) strcpy(filename, "XVDIR:");
-#endif							/* AMIGA */
+#endif /* AMIGA */
 
 	(void) strcat(filename, name);
 	(void) strcat(filename, ".s");
@@ -727,7 +618,7 @@ char *name;
 int *num;
 {
 
-    return (DESC_NOT_FOUND);
+	return (DESC_NOT_FOUND);
 }
 
 
@@ -761,7 +652,7 @@ get_environment()
 #endif
 }
 
-#endif							/* UNIX */
+#endif /* UNIX */
 
 #ifdef UNIX
 #include <sys/types.h>
@@ -779,106 +670,101 @@ get_environment()
 char *read_file(filename)
 char *filename;
 {
-    FILE *file;
-    char *string, temp[MAXPATHLEN];
-    long size;
+	FILE *file;
+	char *string, temp[MAXPATHLEN];
+	long size;
 
 #ifdef AMIGA
-    strcpy(temp, "XVDIR:");
+	strcpy(temp, "XVDIR:");
 #endif
 
 #ifdef UNIX
-    if (filename[0] != '/')
-    {
-	strcpy(temp, pathname);
-	strcat(temp, "/");
-    }
-    else
-	temp[0] = '\0';
+	if (filename[0] != '/') {
+		strcpy(temp, pathname);
+		strcat(temp, "/");
+	} else
+		temp[0] = '\0';
 #endif
 
-    strcat(temp, filename);
+	strcat(temp, filename);
 
-    file = fopen(temp, "r");
-    if (file == (FILE *) NULL)
-    {
-	char *empty;
+	file = fopen(temp, "r");
+	if (file == (FILE *) NULL) {
+		char *empty;
 
-	empty = malloc(1);	/* JMO 1/19/90 is free()'ed later */
-	*empty = '\0';
-	return (empty);
-    }
-    /* Get file size */
-
-#ifdef AMIGA
-    {
-	struct FILEINFO finfo;
-
-	if (dfind(&finfo, temp, 0))
-	    return ("");
-	size = finfo.fib_Size;
-    }
-#endif				/* AMIGA */
-
-#ifdef UNIX
-    {
-	struct stat fileinfo;
-
-	if (fstat(fileno(file), &fileinfo))
-	{
-	    char *empty;
-
-	    empty = malloc(1);	/* It get's fred'ed JMO - 1/19/90 */
-	    *empty = '\0';
-	    return (empty);
+		empty = (char *)malloc(1);		/* JMO 1/19/90 is free()'ed later */
+		*empty = '\0';
+		return (empty);
 	}
-	size = fileinfo.st_size;
-    }
-#endif				/* UNIX */
+	/* Get file size */
 
-    /* Leave space for the NULL */
-    string = malloc((unsigned)size + 1);
+#ifdef AMIGA
+	{
+		struct FILEINFO finfo;
 
-    /* Copy the file into memory and close the file */
-    (void) fread(string, sizeof(char), (int)size, file);
-    (void) fclose(file);
+		if (dfind(&finfo, temp, 0))
+			return ("");
+		size = finfo.fib_Size;
+	}
+#endif /* AMIGA */
 
-    /* Put NULL at end of string */
-    string[size] = '\0';
+#ifdef UNIX
+	{
+		struct stat fileinfo;
 
-    return (string);
+		if (fstat(fileno(file), &fileinfo)) {
+			char *empty;
+
+			empty = malloc(1);	/* It get's fred'ed JMO - 1/19/90 */
+			*empty = '\0';
+			return (empty);
+		}
+		size = fileinfo.st_size;
+	}
+#endif /* UNIX */
+
+	/* Leave space for the NULL */
+	string = (char *)malloc((unsigned) size + 1);
+
+	/* Copy the file into memory and close the file */
+	(void) fread(string, sizeof(char), (int) size, file);
+
+	(void) fclose(file);
+
+	/* Put NULL at end of string */
+	string[size] = '\0';
+
+	return (string);
 }
 
 int save_settings(pcFileName)
-	char *pcFileName;
+char *pcFileName;
 {
-    int ctri, ctrj;
+	int ctri, ctrj;
 	int iProg;
-    char *dispname;
+	char *dispname;
 	char *ProgWritten;
-    FILE *outfile, *fopen();
-    Video *vidptr;
-    Vehicle *vptr;
+	FILE *outfile, *fopen();
+	Video *vidptr;
+	Vehicle *vptr;
 	Prog_desc *pdesc;
 	int i;
-    extern char *teams_entries[];
-    extern Terminal *terminal[];
-    extern int num_terminals;
+	extern char *teams_entries[];
+	extern Terminal *terminal[];
+	extern int num_terminals;
 	extern char force_states[MAX_SPECIALS];
 
-	if (! *pcFileName)
-	{
+	if (!*pcFileName) {
 		return 0;
 	}
-
-    outfile = fopen(pcFileName, "w");
+	outfile = fopen(pcFileName, "w");
 	assert(outfile);
 
 	fprintf(outfile, "xtank: 114336\n");
 	/* Settings */
 	/* Maze */
 	fprintf(outfile, "Maze: %s\n", (settings.mdesc) ? settings.mdesc->name
-		: "Random");
+			: "Random");
 
 	/* Game */
 	fprintf(outfile, "Game: %s\n", games_entries[settings.si.game]);
@@ -895,7 +781,6 @@ int save_settings(pcFileName)
 	fprintf(outfile, "Robots Don't Win: %d\n", settings.robots_dont_win);
 	fprintf(outfile, "Max Armor Scale: %d\n", settings.max_armor_scale);
 	fprintf(outfile, "Nametags: %d\n", settings.si.no_nametags);
-	fprintf(outfile, "No Radar: %d\n", settings.si.no_radar);
 	fprintf(outfile, "Team Score: %d\n", settings.si.team_score);
 	fprintf(outfile, "Player Teleport: %d\n", settings.si.player_teleport);
 	fprintf(outfile, "Disc Teleport: %d\n", settings.si.disc_teleport);
@@ -923,12 +808,12 @@ int save_settings(pcFileName)
 	fprintf(outfile, "Shocker Walls: %d\n", settings.si.shocker_walls);
 	fprintf(outfile, "Difficulty: %d\n", settings.difficulty);
 
-	for(i = 0; i < MAX_SPECIALS; i++) {
+	for (i = 0; i < MAX_SPECIALS; i++) {
 		if (force_states[i] == INT_FORCE_OFF) {
 			fprintf(outfile, "Force Off: %s\n", special_stat[i].type);
 		}
 	}
-	for(i = 0; i < MAX_SPECIALS; i++) {
+	for (i = 0; i < MAX_SPECIALS; i++) {
 		if (force_states[i] == INT_FORCE_ON) {
 			fprintf(outfile, "Force On: %s\n", special_stat[i].type);
 		}
@@ -938,7 +823,8 @@ int save_settings(pcFileName)
 	init_combatants();
 	setup_game(False);
 
-	ProgWritten = calloc(num_prog_descs, sizeof(char));
+	ProgWritten = (char *)calloc(num_prog_descs, sizeof(char));
+
 	assert(ProgWritten);
 
 	fprintf(outfile, "Tanks: %d\n", num_veh_alive);
@@ -949,23 +835,17 @@ int save_settings(pcFileName)
 
 		/* join the players grid's programs with the prog_desc dynamic progs */
 		/* and write the result */
-		if (vptr->num_programs)
-		{
-			for (ctrj = 0; ctrj < vptr->num_programs; ctrj++) 
-			{
-				for (iProg = 0; iProg < num_prog_descs; iProg++)
-				{
+		if (vptr->num_programs) {
+			for (ctrj = 0; ctrj < vptr->num_programs; ctrj++) {
+				for (iProg = 0; iProg < num_prog_descs; iProg++) {
 					pdesc = prog_desc[iProg];
 
 					/* if it is the same struct */
-					if (vptr->program[ctrj].desc == pdesc)
-					{
+					if (vptr->program[ctrj].desc == pdesc) {
 						/* if the program is dynamically loaded */
-						if (pdesc->filename != (char *)0)
-						{
+						if (pdesc->filename != (char *) 0) {
 							/* if I have not already written it */
-							if (ProgWritten[iProg] == False)
-							{
+							if (ProgWritten[iProg] == False) {
 								fprintf(outfile, "Program:\t%s\t%s\n",
 										pdesc->name, pdesc->filename);
 
@@ -976,11 +856,10 @@ int save_settings(pcFileName)
 				}
 			}
 		}
-
 		dispname = "NONE";
 		for (ctrj = 0; ctrj < num_terminals; ctrj++) {
 			if (terminal[ctrj]->vehicle == vptr) {
-				vidptr = (Video *)terminal[ctrj]->video;
+				vidptr = (Video *) terminal[ctrj]->video;
 				dispname = vidptr->display_name;
 			}
 		}
@@ -1006,18 +885,18 @@ int save_settings(pcFileName)
 		/* Num Programs */
 		fprintf(outfile, "%d,\t", vptr->owner->num_programs);
 
-		if (vptr->num_programs)
-		{
+		if (vptr->num_programs) {
 			for (ctrj = 0; ctrj < vptr->num_programs; ctrj++) {
 				fprintf(outfile, "%s", vptr->program[ctrj].desc->name);
-				if (ctrj != vptr->num_programs - 1) fprintf(outfile, ",\t");
+				if (ctrj != vptr->num_programs - 1)
+					fprintf(outfile, ",\t");
 			}
 		} else {
 			fprintf(outfile, "NONE");
 		}
 
 		fprintf(outfile, "\n");
-	}				/* end of for - for each vehicle */
+	}							/* end of for - for each vehicle */
 
 	fclose(outfile);
 }

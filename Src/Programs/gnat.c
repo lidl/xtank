@@ -1,4 +1,17 @@
 /*
+** Xtank
+**
+** Copyright 1992 by William T. Katz
+**
+** gnat.c
+*/
+
+/*
+$Author: lidl $
+$Id: gnat.c,v 1.1.1.1 1995/02/01 00:25:46 lidl Exp $
+*/
+
+/*
      Gnat: A vehicle and bullet-dodging terminator.
      Version 5.0: February 5, 1992  
      Only 140,000 bytes long.  Why?  Because the man won't give him 

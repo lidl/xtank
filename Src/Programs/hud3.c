@@ -1,3 +1,16 @@
+/*
+** Xtank
+**
+** Copyright 1992 by Robert Potter
+**
+** hud3.c
+*/
+
+/*
+$Author: lidl $
+$Id: hud3.c,v 1.1.1.1 1995/02/01 00:25:47 lidl Exp $
+*/
+
 /*****************************************************************************\
 * hud3.c - an Xtank assistant by Robert Potter (rpotter@grip.cis.upenn.edu)   *
 * 									      *
@@ -215,9 +228,11 @@ static void main()
 		  case LMG: case MG: case HMG:
 		    color = BLUE;
 		    break;
+/* HAK
 		  case LRIFLE: case RIFLE: case HRIFLE:
 		    color = RED;
 		    break;
+*/
 		  case LCANNON: case CANNON: case HCANNON:
 		    color = ORANGE;
 		    break;

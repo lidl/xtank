@@ -1,72 +1,48 @@
 /*
-** Graphics Toolkit
+** Xtank
 **
 ** Copyright 1988 by Terry Donahue
+**
+** Comment: Graphics Toolkit
 **
 ** graphics.h
 */
 
 /*
 $Author: lidl $
-$Id: graphics.h,v 2.6 1992/03/31 21:49:23 lidl Exp $
-
-$Log: graphics.h,v $
- * Revision 2.6  1992/03/31  21:49:23  lidl
- * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
- *
- * Revision 2.5  1991/09/19  05:30:16  lidl
- * added KEYPAD_DETECT ifdef
- *
- * Revision 2.4  1991/09/15  09:24:51  lidl
- * removed vestiges of config.h file, now all configuration is done in
- * the Imakefile, and propogated via compile-time -D flags
- *
- * Revision 2.3  1991/02/10  13:50:39  rpotter
- * bug fixes, display tweaks, non-restart fixes, header reorg.
- *
- * Revision 2.2  91/01/20  09:57:53  rpotter
- * complete rewrite of vehicle death, other tweaks
- * 
- * Revision 2.1  91/01/17  07:11:34  rpotter
- * lint warnings and a fix to update_vector()
- * 
- * Revision 2.0  91/01/17  02:09:31  rpotter
- * small changes
- * 
- * Revision 1.1  90/12/29  21:02:26  aahz
- * Initial revision
- * 
+$Id: graphics.h,v 1.1.1.1 1995/02/01 00:25:40 lidl Exp $
 */
 
 #include "common.h"
 #include "object.h"
 
+  typedef struct {
+	  int x, y;
+	  int len;
+	  char *str;
+  }
+Word;
 
-typedef struct {
-    int   x, y;
-    int   len;
-    char *str;
-} Word;
+  typedef enum {
+	  EVENT_RBUTTON, EVENT_LBUTTON, EVENT_MBUTTON,
+	  EVENT_RBUTTONUP, EVENT_LBUTTONUP, EVENT_MBUTTONUP,
+	  EVENT_KEY,
+	  EVENT_MOVED
+  } EventType;
 
-typedef enum {
-    EVENT_RBUTTON, EVENT_LBUTTON,    EVENT_MBUTTON,
-    EVENT_RBUTTONUP, EVENT_LBUTTONUP, EVENT_MBUTTONUP,
-    EVENT_KEY,
-    EVENT_MOVED,
-} EventType;
-
-typedef struct {
-    int   win;
-    EventType  type;
-    int   x, y;
-    char  key;
+  typedef struct {
+	  int win;
+	  EventType type;
+	  int x, y;
+	  char key;
 #ifdef KEYPAD_DETECT
-    int   keypad;
+	  int keypad;
 #endif
-} Event;
+  }
+Event;
 
 
-#define T_FONT    0	/* Tiny/Toddler - your pick */
+#define T_FONT    0				/* Tiny/Toddler - your pick */
 #define S_FONT	  1
 #define M_FONT	  2
 #define L_FONT	  3
@@ -81,7 +57,7 @@ typedef struct {
 #define GREEN      5
 #define BLUE       6
 #define VIOLET     7
-#define GREY       8	/* grey71 */
+#define GREY       8			/* grey71 */
 #define CUR_COLOR  9
 #define DASHED     10
 #define MAX_COLORS 11
@@ -93,7 +69,7 @@ typedef struct {
 #define MAX_CURSORS  4
 
 /* #define MAX_PIXMAPS	350 */
-#define MAX_PIXMAPS	450		/* GHS */
+#define MAX_PIXMAPS	500		/* GHS */ /*HAK*/
 #define MAX_WINDOWS	 16
 
 #define LEFT_BORDER  5

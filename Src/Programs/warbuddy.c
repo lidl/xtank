@@ -1,3 +1,16 @@
+/*
+** Xtank
+**
+** Copyright 1992 by Mike Lee
+**
+** warbuddy.c
+*/
+
+/*
+$Author: lidl $
+$Id: warbuddy.c,v 1.1.1.1 1995/02/01 00:25:48 lidl Exp $
+*/
+
 #include "sysdep.h"
 #include "xtanklib.h"
 #include <math.h>
@@ -24,7 +37,7 @@ Prog_desc warbuddy_prog = {
    "warbuddy",
    "Timebandit",
    "Follows team mate around and kills tanks",
-   "Michael T Lee",
+   "Michael T. Lee",
    PLAYS_COMBAT | DOES_SHOOT,
    4,
    warbuddy_main

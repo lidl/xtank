@@ -1,33 +1,34 @@
 /**/#
-/**/# Imakefile for ./Src - part of the UMDENG X-Tank distribution
+/**/# Imakefile for ./Src - part of the PIX X-Tank distribution
 /**/#
-/**/# $Id: Imakefile,v 1.37 1992/09/12 19:36:29 lidl Exp $
+/**/# $Author: lidl $
+/**/# $Id: Imakefile,v 1.1.1.1 1995/02/01 00:25:33 lidl Exp $
 /**/#
 
 #include "../Imakefile.Config"
 
-          DEPLIBS = $(DEPXLIB)
-  LOCAL_LIBRARIES = $(XLIB)
-             SRCS = 3d.c XMultiSync.c actions.c animate.c box.c camo.c \
+             SRCS = actions.c animate.c box.c camo.c \
                     collision.c cosell.c disc.c display.c escher.c \
-                    explosion.c file.c game.c gr.c graphics.c highlib.c \
+                    explosion.c file.c game.c gr.c highlib.c \
                     hit.c hud.c icounter.c init.c input.c interface.c \
                     intersect.c lowlib.c main.c malloc.c mapper.c maze.c \
-                    mdesign.c menu.c message.c newconsole.c objects.c \
-                    program.c radar.c repair.c scroll.c setup.c setups.c \
-                    status.c sysdep.c thread.c unix.c update.c util.c \
-                    vdesign.c vehicle.c players.c newfile.c vload.c \
-                    version.c $(SRCS2)
-             OBJS = 3d.o XMultiSync.o actions.o animate.o box.o camo.o \
+                    mdesign.c menu.c message.c newconsole.c \
+                    newradar.c program.c radar.c repair.c scroll.c setup.c \
+                    setups.c status.c sysdep.c unix.c update.c \
+                    util.c vdesign.c vehicle.c players.c newfile.c vload.c \
+                    version.c $(ARCH_SRCS) $(SUPP_SRCS)
+        SUPP_SRCS = $(SOUND_SRCS)
+             OBJS = actions.o animate.o box.o camo.o \
                     collision.o cosell.o disc.o display.o escher.o \
-                    explosion.o file.o game.o gr.o graphics.o highlib.o \
+                    explosion.o file.o game.o gr.o highlib.o \
                     hit.o hud.o icounter.o init.o input.o interface.o \
                     intersect.o lowlib.o main.o malloc.o mapper.o maze.o \
-                    mdesign.o menu.o message.o newconsole.o objects.o \
-                    program.o radar.o repair.o scroll.o setup.o setups.o \
-                    status.o sysdep.o thread.o unix.o update.o util.o \
-                    vdesign.o vehicle.o players.o newfile.o vload.o \
-                    version.o $(OBJS2)
+                    mdesign.o menu.o message.o newconsole.o \
+                    newradar.o program.o radar.o repair.o scroll.o setup.o \
+                    setups.o status.o sysdep.o unix.o update.o \
+                    util.o vdesign.o vehicle.o players.o newfile.o vload.o \
+                    version.o $(ARCH_OBJS) $(SUPP_OBJS)
+        SUPP_OBJS = $(SOUND_OBJS)
              INCL = Include/bullet.h Include/common.h Include/cosell.h \
                     Include/disc.h Include/game.h Include/globals.h \
                     Include/gr.h Include/graphics.h Include/icounter.h \
@@ -36,41 +37,93 @@
                     Include/mdesign.h Include/menu.h Include/message.h \
                     Include/object.h Include/outpost.h Include/program.h \
                     Include/screen.h Include/scroll.h Include/settings.h \
-                    Include/setup.h Include/special-defs.h Include/special.h \
-                    Include/sysdep.h Include/tanklimits.h Include/tanktypes.h \
-                    Include/team.h Include/terminal.h Include/thread.h \
-                    Include/tread-defs.h Include/vdesc.h Include/vehicle.h \
-                    Include/vehicleparts.h Include/vstructs.h \
-                    Include/weapon-defs.h Include/xtank.h Include/xtanklib.h
+                    Include/setup.h Include/special-defs.h \
+                    Include/special.h Include/sysdep.h Include/tanklimits.h \
+                    Include/tanktypes.h Include/team.h Include/terminal.h \
+                    Include/thread.h Include/tread-defs.h Include/vdesc.h \
+                    Include/vehicle.h Include/vehicleparts.h \
+                    Include/vstructs.h Include/weapon-defs.h \
+                    Include/xtank.h Include/xtanklib.h \
+                    $(ARCH_INCS) $(SUPP_INCS)
+        SUPP_INCS = $(SOUND_INCS)
             XINCL = Include/x11.h
 
 /**/# Note that both x11.c and mazeconv.c are included in other .c files,
 /**/# so they are not listed above!
 
-/**/# Important things that Xtank wants to find
+#if defined(HAVE_SOUND)
+       SOUND_SRCS = sload.c sound.c
+       SOUND_OBJS = sload.o sound.o
+       SOUND_INCS = Include/sound.h
+#endif
 
-   EXTRA_INCLUDES = -I. -IInclude
+/**/# Important things that Xtank wants to find and link with, for
+/**/# all supported architechtures
 
-/**/# Everybody needs the following libraries
+          DEPLIBS = $(DEPXLIB) ./Display/libxtankdisplay.a \
+                    ./Threads/libxtankthreads.a \
+                    ./Programs/libxtankrobots.a
+  LOCAL_LIBRARIES = -LDisplay -lxtankdisplay -LThreads -lxtankthreads \
+                    -LPrograms -lxtankrobots $(XLIB)
 
-  EXTRA_LIBRARIES = -LPrograms -lxtankrobots -lm
+/**/# We might have some extra support libraries that need to be
+/**/# linked into the file version, we will round all these up
+/**/# into EXTRA_SUPP_LIBRARIES
+
+   EXTRA_SUPP_INC = $(SOUND_INCLUDES)
+   EXTRA_SUPP_LIB = $(SOUND_LIBRARY)
+
+   EXTRA_INCLUDES = -I. -IInclude $(EXTRA_SUPP_INC)
+  EXTRA_LIBRARIES = $(EXTRA_SUPP_LIB) -lm
 
 /**/# Start of System Dependent Things
 /**/# (e.g. libraries, linker flags and so forth)
 
 #ifdef i860Architecture
     SYS_LIBRARIES = -lnsl
-            SRCS2 = floor.c
-            OBJS2 = floor.o
+        ARCH_SRCS = floor.c
+        ARCH_OBJS = floor.o
 #endif
+
+#ifdef AlphaArchitecture
+    SYS_LIBRARIES = -lc_r -lpthreads -lmach -ldnet_stub
+#endif
+
 #ifdef ApolloArchitecture
     SYS_LIBRARIES = -L/usr/X11/lib
 #endif
+
+/* Stupid fucking changes between BSDI v1.0 and v1.1 cause needless */
+/* pain and suffering for those that wish to support both! */
+
+/* We only need -ll on BSDi v1.1, but so help me god, I am just */
+/* furious that the only way of figuring out what version of the OS */
+/* is running is truely stupid.  It was 1.0 for the bsdi v1.0 release */
+/* and the Xfree folks conveinently made it 4.3 for the 1.1 release. */
+
+/* They all deserve to lose massively for not making the major/minor */
+/* OS release numbers for 1.1 what they should be.  Since they are */
+/* determined to lose, I made this file fail if the system isn't either */
+/* 1.0 (figured out correctly) or 4.3 (==1.1), so someone will have to */
+/* examine this once the first post-1.1 systems arrive. */
+
+#ifdef i386BsdArchitecture
+#if (OSMajorVersion == 4) && (OSMinorVersion == 3)
+	/* duh, this is really bsdi v1.1 */
+     SYS_LIBRARIES =
+#endif
+#if (OSMajorVersion == 1) && (OSMinorVersion == 0)
+	/* duh, this is really bsdi v1.0 */
+	/* nothing special to do for bsdi v1.0 */
+     SYS_LIBRARIES =
+#endif
+#endif
+
 #ifdef HPArchitecture
     SYS_LIBRARIES = -lBSD -lmalloc
 # ifdef hp9000s800
-            SRCS2 = flush_hp9k8.s
-            OBJS2 = flush_hp9k8.o
+        ARCH_SRCS = flush_hp9k8.s
+        ARCH_OBJS = flush_hp9k8.o
 # endif
 #endif
 #ifdef MultimaxArchitecture
@@ -80,8 +133,8 @@
 /**/#
 /**/# Which is real?  I don't know... X11R5 says the latter...
 /**/#
-            SRCS2 = rs6klongjmp.s
-            OBJS2 = rs6klongjmp.o
+        ARCH_SRCS = rs6klongjmp.s
+        ARCH_OBJS = rs6klongjmp.o
  EXTRA_LOAD_FLAGS = -lbsd
 #endif
 #ifdef RtArchitecture
@@ -92,7 +145,7 @@
 #endif
 #ifdef SunArchitecture
     SYS_LIBRARIES = /usr/lib/debug/malloc.o -llwp
-#if HasGcc
+#if defined(HasGcc) || defined(FORCE_GCC)
         CCOPTIONS = -static $(EXTRA_CCOPTS)
 #else
         CCOPTIONS = -Bstatic /usr/lib/libm.il $(EXTRA_CCOPTS)
@@ -111,13 +164,13 @@
 #           SYS_LIBRARIES = -ldnet
 #           CCOPTIONS = -Wl,-D,1000000
 #           STD_INCLUDES = $(EXTRA_INCLUDES) -I/usr/include/mit
-            SRCS2 = mipssj.s
-            OBJS2 = mipssj.o
+        ARCH_SRCS = mipssj.s
+        ARCH_OBJS = mipssj.o
 #endif
 #endif
 #ifdef VaxArchitecture
-            SRCS2 = vaxsj.s
-            OBJS2 = vaxsj.o
+        ARCH_SRCS = vaxsj.s
+        ARCH_OBJS = vaxsj.o
 #endif
 
 /**/# End of System Dependent Things
@@ -128,8 +181,6 @@
 #define PassCDebugFlags
 #define PassDefines 'DEFINES=$(DEFINES)'
 
-          SUBDIRS = Programs
-
 MakeSubdirs($(SUBDIRS))
 
 all::
@@ -137,14 +188,23 @@ all::
 
 ComplexProgramTarget($(XTANK_TARGET))
 
+InstallManPageLong(Xtank,$(MANDIR),Xtank)
+
 ExtraSpecialObjectRule(init.o, init.c, -g)
 
+          SUBDIRS = Threads Display Programs
+          DependSubdirs($(SUBDIRS))
+
 setups.c: setups.l
-	flex -t setups.l > $@
+	$(FLEX) -t setups.l > $@
+	@-chmod 664 $@ 2>/dev/null
+
+sload.c: sload.l
+	$(FLEX) -t sload.l | sed 's/yy/ss/g'-e 's/sswrap/yywrap/g' > $@
 	@-chmod 664 $@ 2>/dev/null
 
 vload.c: vload.l
-	flex -t vload.l | sed 's/yy/zz/g' > $@
+	$(FLEX) -t vload.l | sed -e 's/yy/zz/g' -e 's/zzwrap/yywrap/g' > $@
 	@-chmod 664 $@ 2>/dev/null
 
 version.c:

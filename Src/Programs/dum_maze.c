@@ -1,17 +1,14 @@
 /*
-$Author: lidl $
-$Id: dum_maze.c,v 1.5 1992/02/17 09:14:28 lidl Exp $
+** Xtank
+**
+** Copyright 1991 by Hans Mejdahl Jeppesen
+**
+** dum_maze.c
+*/
 
-$Log: dum_maze.c,v $
- * Revision 1.5  1992/02/17  09:14:28  lidl
- * now have static variables where they should have before
- *
- * Revision 1.4  1991/09/29  15:40:22  lidl
- * changed all occurances of atan2 to ATAN2, so it uses the correct macro
- *
- * Revision 1.3  1991/09/19  05:25:28  lidl
- * fixed a few compile-time errors, added RCS headers, run through indent
- *
+/*
+$Author: lidl $
+$Id: dum_maze.c,v 1.1.1.1 1995/02/01 00:25:46 lidl Exp $
 */
 
 /**********************************************************************/

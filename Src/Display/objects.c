@@ -8,45 +8,7 @@
 
 /*
 $Author: lidl $
-$Id: objects.c,v 2.10 1992/08/22 23:56:54 lidl Exp $
-
-$Log: objects.c,v $
- * Revision 2.10  1992/08/22  23:56:54  lidl
- * missed some things for the new body types
- *
- * Revision 2.9  1992/08/19  05:25:29  lidl
- * added two new tank bodies, disk, delta
- *
- * Revision 2.8  1992/08/18  05:41:55  lidl
- * added tac nuke patches
- *
- * Revision 2.7  1992/04/09  04:14:48  lidl
- * changed limits.h to tanklimits.h
- *
- * Revision 2.6  1991/12/02  07:24:37  lidl
- * added stuff for the new panzy body type
- *
- * Revision 2.5  1991/09/19  05:35:22  lidl
- * side-effect of shorting des_landmarks.obj to des_lmarks.obj
- *
- * Revision 2.4  1991/09/17  17:02:59  lidl
- * shortened various names of objects to 14 characters for SVRcrippled compat.
- *
- * Revision 2.3  1991/02/10  13:51:27  rpotter
- * bug fixes, display tweaks, non-restart fixes, header reorg.
- *
- * Revision 2.2  91/01/20  09:58:45  rpotter
- * complete rewrite of vehicle death, other tweaks
- * 
- * Revision 2.1  91/01/17  07:12:42  rpotter
- * lint warnings and a fix to update_vector()
- * 
- * Revision 2.0  91/01/17  02:10:18  rpotter
- * small changes
- * 
- * Revision 1.1  90/12/29  21:02:57  aahz
- * Initial revision
- * 
+$Id: objects.c,v 1.1.1.1 1995/02/01 00:25:49 lidl Exp $
 */
 
 #include "tanklimits.h"
@@ -54,6 +16,7 @@ $Log: objects.c,v $
 #include "xtank.h"
 #include "graphics.h"
 #include "gr.h"
+#include "proto.h"
 
 #include "Objects/lightc.obj"
 #include "Objects/hexo.obj"
@@ -82,10 +45,7 @@ $Log: objects.c,v $
 #include "Objects/exhaust.obj"
 #include "Objects/electric.obj"
 #include "Objects/bullets.obj"
-
-#ifdef NO_GAME_BALANCE
 #include "Objects/nuke.obj"
-#endif
 
 #include "Objects/anm_lmarks.obj"
 #include "Objects/map_lmarks.obj"
@@ -104,7 +64,8 @@ Object *turret_obj[MAX_TURRET_OBJS];
 int num_exp_objs;
 Object *exp_obj[MAX_EXP_OBJS];
 
-Object *bullet_obj;
+int num_bullet_objs;   /* NUM_BULLET_OBJS defined in bullets.obj */
+Object *bullet_obj[NUM_BULLET_OBJS];
 
 int num_landmark_objs;
 Object *landmark_obj[MAX_LANDMARK_OBJS];
@@ -135,68 +96,101 @@ int object_error;
 */
 make_objects()
 {
-    int num;
-    extern Object *make_object();
+	int num;
+	extern Object *make_object();
 
-    /* Clear the error flag */
-    object_error = 0;
+	/* Clear the error flag */
+	object_error = 0;
 
-    /* Make all of the vehicle objects */
-    num = 0;
-    vehicle_obj[num++] = make_object(&lightc_obj, lightc_bitmap);
-    vehicle_obj[num++] = make_object(&hexo_obj, hexo_bitmap);
-    vehicle_obj[num++] = make_object(&spider_obj, spider_bitmap);
-    vehicle_obj[num++] = make_object(&psycho_obj, psycho_bitmap);
-    vehicle_obj[num++] = make_object(&tornado_obj, tornado_bitmap);
-    vehicle_obj[num++] = make_object(&marauder_obj, marauder_bitmap);
-    vehicle_obj[num++] = make_object(&tiger_obj, tiger_bitmap);
-    vehicle_obj[num++] = make_object(&rhino_obj, rhino_bitmap);
-    vehicle_obj[num++] = make_object(&medusa_obj, medusa_bitmap);
-    vehicle_obj[num++] = make_object(&malice_obj, malice_bitmap);
-    vehicle_obj[num++] = make_object(&trike_obj, trike_bitmap);
-    vehicle_obj[num++] = make_object(&panzy_obj, panzy_bitmap);
-    vehicle_obj[num++] = make_object(&disk_obj, disk_bitmap);
-    vehicle_obj[num++] = make_object(&delta_obj, delta_bitmap);
-    num_vehicle_objs = num;
+	/* Rearranged the order of these: (HAK 2/93) */
+	/* Make all of the vehicle objects */
+	num = 0;
+	vehicle_obj[num++] = make_object(&lightc_obj, lightc_bitmap);
+	vehicle_obj[num++] = make_object(&trike_obj, trike_bitmap);
+	vehicle_obj[num++] = make_object(&hexo_obj, hexo_bitmap);
+	vehicle_obj[num++] = make_object(&spider_obj, spider_bitmap);
+	vehicle_obj[num++] = make_object(&psycho_obj, psycho_bitmap);
+	vehicle_obj[num++] = make_object(&tornado_obj, tornado_bitmap);
+	vehicle_obj[num++] = make_object(&marauder_obj, marauder_bitmap);
+	vehicle_obj[num++] = make_object(&tiger_obj, tiger_bitmap);
+	vehicle_obj[num++] = make_object(&rhino_obj, rhino_bitmap);
+	vehicle_obj[num++] = make_object(&medusa_obj, medusa_bitmap);
+	vehicle_obj[num++] = make_object(&delta_obj, delta_bitmap);
+	vehicle_obj[num++] = make_object(&disk_obj, disk_bitmap);
+	vehicle_obj[num++] = make_object(&malice_obj, malice_bitmap);
+	vehicle_obj[num++] = make_object(&panzy_obj, panzy_bitmap);
+	num_vehicle_objs = num;
 
 
-    /* Make all of the turret objects */
-    turret_obj[0] = make_object(&turret_sm_obj, turret_sm_bitmap);
-    num_turret_objs = 1;
+	/* Make all of the turret objects */
+	turret_obj[0] = make_object(&turret_sm_obj, turret_sm_bitmap);
+	num_turret_objs = 1;
 
-    /* Make all of the explosion objects */
-    num_exp_objs = 0;
-    exp_obj[num_exp_objs++] = make_object(&shock_obj, shock_bitmap);
-    exp_obj[num_exp_objs++] = make_object(&gleam_obj, gleam_bitmap);
-    exp_obj[num_exp_objs++] = make_object(&tink_obj, tink_bitmap);
-    exp_obj[num_exp_objs++] = make_object(&soft_obj, soft_bitmap);
-    exp_obj[num_exp_objs++] = make_object(&circle_obj, circle_bitmap);
-    exp_obj[num_exp_objs++] = make_object(&fiery_obj, fiery_bitmap);
-    exp_obj[num_exp_objs++] = make_object(&double_obj, double_bitmap);
-    exp_obj[num_exp_objs++] = make_object(&exhaust_obj, exhaust_bitmap);
-    /*GHS*/
-    exp_obj[num_exp_objs++] = make_object(&electric_obj, electric_bitmap);
-#ifdef NO_GAME_BALANCE
-    exp_obj[num_exp_objs++] = make_object(&nuke_obj, nuke_bitmap);
-#endif
+	/* Make all of the explosion objects */
+	num_exp_objs = 0;
+	exp_obj[num_exp_objs++] = make_object(&shock_obj, shock_bitmap);
+	exp_obj[num_exp_objs++] = make_object(&gleam_obj, gleam_bitmap);
+	exp_obj[num_exp_objs++] = make_object(&tink_obj, tink_bitmap);
+	exp_obj[num_exp_objs++] = make_object(&soft_obj, soft_bitmap);
+	exp_obj[num_exp_objs++] = make_object(&circle_obj, circle_bitmap);
+	exp_obj[num_exp_objs++] = make_object(&fiery_obj, fiery_bitmap);
+	exp_obj[num_exp_objs++] = make_object(&double_obj, double_bitmap);
+	exp_obj[num_exp_objs++] = make_object(&exhaust_obj, exhaust_bitmap);
+	/*GHS*/
+	exp_obj[num_exp_objs++] = make_object(&electric_obj, electric_bitmap);
+	exp_obj[num_exp_objs++] = make_object(&nuke_obj, nuke_bitmap);
 
-    /* Make the bullet object */
-    bullet_obj = make_object(&all_bullets_obj, all_bullets_bitmap);
+	if(num_exp_objs != MAX_EXP_OBJS)
+		printf("Yikes!!!!  MAX_EXP_OBJS mismatched!\n");
 
-    /* Make the landmark objects */
-    landmark_obj[0] = make_object(&anim_landmarks_obj, anim_landmarks_bitmap);
-    landmark_obj[1] = make_object(&map_landmarks_obj, map_landmarks_bitmap);
-    landmark_obj[2] = make_object(&design_landmarks_obj,
-				  design_landmarks_bitmap);
-    num_landmark_objs = 3;
+	/* Make the bullet object */
+/*
+	bullet_obj = make_object(&all_bullets_obj, all_bullets_bitmap);
+*/
+	num_bullet_objs = 0;
+	bullet_obj[num_bullet_objs++] = make_object(&lmg_obj, lmg_bitmap);
+	bullet_obj[num_bullet_objs++] = make_object(&mg_obj, mg_bitmap);
+	bullet_obj[num_bullet_objs++] = make_object(&hmg_obj, hmg_bitmap);
+	bullet_obj[num_bullet_objs++] = make_object(&lac_obj, lac_bitmap);
+	bullet_obj[num_bullet_objs++] = make_object(&ac_obj, ac_bitmap);
+	bullet_obj[num_bullet_objs++] = make_object(&hac_obj, hac_bitmap);
+	bullet_obj[num_bullet_objs++] = make_object(&lrl_obj, lrl_bitmap);
+	bullet_obj[num_bullet_objs++] = make_object(&rl_obj, rl_bitmap);
+	bullet_obj[num_bullet_objs++] = make_object(&hrl_obj, hrl_bitmap);
+	bullet_obj[num_bullet_objs++] = make_object(&as_obj, as_bitmap);
+	bullet_obj[num_bullet_objs++] = make_object(&ft_obj, ft_bitmap);
+	bullet_obj[num_bullet_objs++] = make_object(&seek_obj, seek_bitmap);
+	bullet_obj[num_bullet_objs++] = make_object(&pr_obj, pr_bitmap);
+	bullet_obj[num_bullet_objs++] = make_object(&um_obj, um_bitmap);
+	bullet_obj[num_bullet_objs++] = make_object(&tele_obj, tele_bitmap);
+	bullet_obj[num_bullet_objs++] = make_object(&tow_obj, tow_bitmap);
+	bullet_obj[num_bullet_objs++] = make_object(&ltorp_obj, ltorp_bitmap);
+	bullet_obj[num_bullet_objs++] = make_object(&bc_obj, bc_bitmap);
+	bullet_obj[num_bullet_objs++] = bullet_obj[0];/* pulse laser, no bitmap */
+	bullet_obj[num_bullet_objs++] = make_object(&mine_obj, mine_bitmap);
+	bullet_obj[num_bullet_objs++] = make_object(&slick_obj, slick_bitmap);
+	bullet_obj[num_bullet_objs++] = make_object(&mort_obj, mort_bitmap);
+	bullet_obj[num_bullet_objs++] = make_object(&tn_obj, tn_bitmap);
+	bullet_obj[num_bullet_objs++] = make_object(&harm_obj, harm_bitmap);
+	bullet_obj[num_bullet_objs++] = make_object(&disc_obj, disc_bitmap);
 
-    /* Make the random objects */
-    random_obj[XTANK_OBJ] = make_object(&xtank_obj, xtank_bitmap);
-    random_obj[TEAM_OBJ] = make_object(&team_obj, team_bitmap);
-    random_obj[TERP_OBJ] = make_object(&terp_obj, terp_bitmap);
-    num_random_objs = 3;
+	if(num_bullet_objs != NUM_BULLET_OBJS)
+		printf("Yikes!!!!  NUM_BULLET_OBJS mismatched!\n");
 
-    return object_error;
+	/* Make the landmark objects */
+	landmark_obj[0] = make_object(&anim_landmarks_obj, anim_landmarks_bitmap);
+	landmark_obj[1] = make_object(&map_landmarks_obj, map_landmarks_bitmap);
+	landmark_obj[2] = make_object(&design_landmarks_obj,
+								  design_landmarks_bitmap);
+	num_landmark_objs = 3;
+
+	/* Make the random objects */
+	random_obj[XTANK_OBJ] = make_object(&xtank_obj, xtank_bitmap);
+	random_obj[TEAM_OBJ] = make_object(&team_obj, team_bitmap);
+	random_obj[TERP_OBJ] = make_object(&terp_obj, terp_bitmap);
+	num_random_objs = 3;
+
+	return object_error;
 }
 
 /*
@@ -206,16 +200,14 @@ Object *make_object(obj, bitmap)
 Object *obj;
 Bits **bitmap;
 {
-    int i;
+	int i;
 
-    for (i = 0; i < obj->num_pics; i++)
-    {
-	if (make_picture(&obj->pic[i], (char *)bitmap[i]))
-	{
-	    object_error = 1;
+	for (i = 0; i < obj->num_pics; i++) {
+		if (make_picture(&obj->pic[i], (char *) bitmap[i])) {
+			object_error = 1;
+		}
 	}
-    }
-    return (obj);
+	return (obj);
 }
 
 /*
@@ -223,24 +215,24 @@ Bits **bitmap;
 */
 free_objects()
 {
-    int i;
+	int i;
 
-    for (i = 0; i < num_vehicle_objs; i++)
-	free_object(vehicle_obj[i]);
+	for (i = 0; i < num_vehicle_objs; i++)
+		free_object(vehicle_obj[i]);
 
-    for (i = 0; i < num_turret_objs; i++)
-	free_object(turret_obj[i]);
+	for (i = 0; i < num_turret_objs; i++)
+		free_object(turret_obj[i]);
 
-    for (i = 0; i < num_exp_objs; i++)
-	free_object(exp_obj[i]);
+	for (i = 0; i < num_exp_objs; i++)
+		free_object(exp_obj[i]);
 
-    free_object(bullet_obj);
+	free_object(bullet_obj);
 
-    for (i = 0; i < num_landmark_objs; i++)
-	free_object(landmark_obj[i]);
+	for (i = 0; i < num_landmark_objs; i++)
+		free_object(landmark_obj[i]);
 
-    for (i = 0; i < num_random_objs; i++)
-	free_object(random_obj[i]);
+	for (i = 0; i < num_random_objs; i++)
+		free_object(random_obj[i]);
 }
 
 /*
@@ -291,8 +283,7 @@ Bits **bitmap;
 	int dest, source;
 
 	/* Create next 4 pictures by rotating the first 4 by 90 degrees */
-	for (source = 0; source < 4; source++)
-	{
+	for (source = 0; source < 4; source++) {
 		dest = source + 4;
 		pic = &obj->pic[source];
 		rot_pic = &obj->pic[dest];
@@ -300,8 +291,7 @@ Bits **bitmap;
 	}
 
 	/* Create last 8 pictures by rotating the first 8 by 180 degrees */
-	for (source = 0; source < 8; source++)
-	{
+	for (source = 0; source < 8; source++) {
 		dest = source + 8;
 		pic = &obj->pic[source];
 		rot_pic = &obj->pic[dest];

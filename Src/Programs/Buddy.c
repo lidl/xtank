@@ -1,53 +1,46 @@
+
+
+/*
+** Xtank
+**
+** Copyright 1990 by Daniel Schmidt; All rights reserved.
+**
+** Buddy.c
+*/
+
+/*
+$Author: lidl $
+$Id: Buddy.c,v 1.1.1.1 1995/02/01 00:25:45 lidl Exp $
+*/
+
 /*
 ** thatsBUDDYtoyoubuddy
 **
 ** An ultimate playing robot for xtank.
-** 
+**
 ** This file is Copyright 1990 by Daniel Schmidt; All rights reserved.
 **
 ** You are free to modify this file as long as you make clear
 ** what code is yours and what is mine.
-**          
-** Previous Log:  Buddy.c,v 
+**
+** Previous Log:  Buddy.c,v
  * Revision 1.4  90/08/19  15:15:53  dschmidt
  * Better throwing code, including throwing in a range.
  * Throw at the whole side of a goal, rather than a point on that side.
  * Clear the disc.
  * Run after discs at full speed.
  * Keep track of disc spin internally.
- * 
+ *
  * Revision 1.3  90/08/17  20:27:50  dschmidt
  * Only throw to a teammate if he's closer to the goal than I am
- * 
+ *
  * Revision 1.2  90/08/15  21:24:08  dschmidt
  * Rip out Buddy_move_carefully and use Buddy_wander instead.
- * 
+ *
  * Revision 1.1  90/08/15  19:32:56  dschmidt
  * Initial revision
- * 
-**
-*/
-
-/*
-$Author: rpotter $
-$Id: Buddy.c,v 2.3 1991/02/10 13:49:52 rpotter Exp $
-
-$Log: Buddy.c,v $
- * Revision 2.3  1991/02/10  13:49:52  rpotter
- * bug fixes, display tweaks, non-restart fixes, header reorg.
  *
- * Revision 2.2  91/01/20  09:57:02  rpotter
- * complete rewrite of vehicle death, other tweaks
- * 
- * Revision 2.1  91/01/17  07:10:28  rpotter
- * lint warnings and a fix to update_vector()
- * 
- * Revision 2.0  91/01/17  02:08:46  rpotter
- * small changes
- * 
- * Revision 1.1  90/12/29  21:01:35  aahz
- * Initial revision
- * 
+**
 */
 
 #include "xtanklib.h"
@@ -59,13 +52,13 @@ $Log: Buddy.c,v $
 ** Tells everybody how studly I am.
 */
 static Inline
-Buddy_show_off(size)
-     int size;
+  Buddy_show_off(size)
+int size;
 {
-  char text[MAX_DATA_LEN];
+	char text[MAX_DATA_LEN];
 
-  sprintf(text,"%d bytes, beat that",size);
-  send_msg(RECIPIENT_ALL,OP_TEXT,(Byte *)text);
+	sprintf(text, "%d bytes, beat that", size);
+	send_msg(RECIPIENT_ALL, OP_TEXT, (Byte *) text);
 }
 
 /* Buddy_init_bi(bi)
@@ -73,25 +66,25 @@ Buddy_show_off(size)
 ** Initializes the Binfo structure.
 */
 static Inline
-Buddy_init_bi(bi)
-    Binfo *bi;
+  Buddy_init_bi(bi)
+Binfo *bi;
 {
-  get_settings(&bi->settings);
-  if (bi->settings.full_map)
-    bi->map = map_get();
-  else
-    Buddy_sulk();
-  bi->throwing = FALSE;
-  bi->frame = 0;
-  bi->next_frame = -1;
-  bi->maxspeed = max_speed();
-  bi->numgoals = 0;
-  bi->enemy_goal = -1;
-  bi->men_on = 0;
-  bi->num_goal_locs = 0;
-  bi->lastfillorigin.x = -1;
-  bi->spin = CLOCKWISE;
-  spin_discs(CLOCKWISE);
+	get_settings(&bi->settings);
+	if (bi->settings.full_map)
+		bi->map = map_get();
+	else
+		Buddy_sulk();
+	bi->throwing = FALSE;
+	bi->frame = 0;
+	bi->next_frame = -1;
+	bi->maxspeed = max_speed();
+	bi->numgoals = 0;
+	bi->enemy_goal = -1;
+	bi->men_on = 0;
+	bi->num_goal_locs = 0;
+	bi->lastfillorigin.x = -1;
+	bi->spin = CLOCKWISE;
+	spin_discs(CLOCKWISE);
 }
 
 /* Buddy_sulk(bi)
@@ -100,15 +93,16 @@ Buddy_init_bi(bi)
 ** and refuses to play any more.
 */
 static Inline
-Buddy_sulk()
+  Buddy_sulk()
 {
-  char text[MAX_DATA_LEN];
+	char text[MAX_DATA_LEN];
 
-  strcpy(text,"GIVE ME A FULL MAP NOW.");
-  send_msg(RECIPIENT_ALL,OP_TEXT,(Byte *)text);
+	strcpy(text, "GIVE ME A FULL MAP NOW.");
+	send_msg(RECIPIENT_ALL, OP_TEXT, (Byte *) text);
 
-  set_abs_drive(0.0);
-  while(TRUE) done();
+	set_abs_drive(0.0);
+	while (TRUE)
+		done();
 }
 
 /* Buddy_initialize_maze(bi)
@@ -116,16 +110,16 @@ Buddy_sulk()
 ** Initializes the internal maze representation.
 */
 static Inline
-Buddy_initialize_maze(bi)
-     Binfo *bi;
+  Buddy_initialize_maze(bi)
+Binfo *bi;
 {
-  int i,j;
-  
-  for (i=0; i<GRID_WIDTH; ++i) {
-    for (j=0; j<GRID_HEIGHT; ++j) {
-      bi->maze[i][j].seen = FALSE;
-    }
-  }
+	int i, j;
+
+	for (i = 0; i < GRID_WIDTH; ++i) {
+		for (j = 0; j < GRID_HEIGHT; ++j) {
+			bi->maze[i][j].seen = FALSE;
+		}
+	}
 }
 
 /* main()
@@ -136,50 +130,51 @@ Buddy_initialize_maze(bi)
 */
 static void main()
 {
-  Binfo bi;			/* Everything you ever wanted to know */
-  
-  Buddy_initialize_maze(&bi);	/* Get the maze set up */
-  Buddy_init_bi(&bi);		/* Initialize the bi structure */
-  set_safety(FALSE);		/* No safe turns here */
-  set_rel_drive(9.0);		/* Let's cruise */
-  Buddy_show_off(sizeof(Binfo));
-  get_self(&bi.me);
-  Buddy_find_goals(&bi);	/* Find where the goals are */
-  while (TRUE) {
-    bi.frame = frame_number();
-    
-    /* Am I on the next frame yet? */
-    if (bi.frame >= bi.next_frame) {
-      /* Get external information */
-      bi.next_frame = bi.frame + 1;
-      get_self(&bi.me);
-      get_vehicles(&bi.numvehicles, bi.vinfo);
-      get_discs(&bi.numdiscs, bi.dinfo);
-      bi.discowned  = num_discs();
-      bi.mode       = (bi.discowned)?(GOT_DISC):(CHAOS);
-      
-      Buddy_deal_with_messages(&bi);
+	Binfo bi;					/* Everything you ever wanted to know */
 
-      /* Decide how to react based on my environment */
-      switch(bi.mode) {
-	case GOT_DISC:
-	  Buddy_deal_with_disc(&bi);
-	  break;
-	case CHAOS:
-	  set_rel_drive(9.0);
-	  bi.throwing = FALSE;
-	  if (bi.numdiscs)
-	    Buddy_go_get_the_disc(&bi);
-	  else
-	    Buddy_find_the_action(&bi);
-	  break;
-	default:
-	  Buddy_panic(&bi);
-	  break;
-      }
-    }
-    else done();		/* Wait until the world changes */
-  }
+	Buddy_initialize_maze(&bi);	/* Get the maze set up */
+	Buddy_init_bi(&bi);			/* Initialize the bi structure */
+	set_safety(FALSE);			/* No safe turns here */
+	set_rel_drive(9.0);			/* Let's cruise */
+	Buddy_show_off(sizeof(Binfo));
+
+	get_self(&bi.me);
+	Buddy_find_goals(&bi);		/* Find where the goals are */
+	while (TRUE) {
+		bi.frame = frame_number();
+
+		/* Am I on the next frame yet? */
+		if (bi.frame >= bi.next_frame) {
+			/* Get external information */
+			bi.next_frame = bi.frame + 1;
+			get_self(&bi.me);
+			get_vehicles(&bi.numvehicles, bi.vinfo);
+			get_discs(&bi.numdiscs, bi.dinfo);
+			bi.discowned = num_discs();
+			bi.mode = (bi.discowned) ? (GOT_DISC) : (CHAOS);
+
+			Buddy_deal_with_messages(&bi);
+
+			/* Decide how to react based on my environment */
+			switch (bi.mode) {
+			  case GOT_DISC:
+				  Buddy_deal_with_disc(&bi);
+				  break;
+			  case CHAOS:
+				  set_rel_drive(9.0);
+				  bi.throwing = FALSE;
+				  if (bi.numdiscs)
+					  Buddy_go_get_the_disc(&bi);
+				  else
+					  Buddy_find_the_action(&bi);
+				  break;
+			  default:
+				  Buddy_panic(&bi);
+				  break;
+			}
+		} else
+			done();				/* Wait until the world changes */
+	}
 }
 
 /* Buddy_deal_with_messages(bi)
@@ -191,41 +186,40 @@ static void main()
 **   If I do know where the disc is, and someone asked, tell them.
 **   If someone told me where the disc is, store this information.
 */
-static
-Buddy_deal_with_messages(bi)
-     Binfo *bi;
+static Buddy_deal_with_messages(bi)
+Binfo *bi;
 {
-  int i;			/* counter */
-  int msgs;			/* number of messages in queue */
-  char data[MAX_DATA_LEN];	/* message to send */
+	int i;						/* counter */
+	int msgs;					/* number of messages in queue */
+	char data[MAX_DATA_LEN];	/* message to send */
 
-  msgs = messages();
-  
-  if (msgs) {
-    for (i=0; i<msgs; ++i) {
-      receive_msg(&bi->msg);
-      if ((!bi->numdiscs) && (bi->msg.opcode == OP_LOCATION)) {
-	/* It's a message telling me where the disc is */
-	bi->numdiscs = 1;
-	bi->dinfo[0].owner = NO_OWNER;
-	bi->dinfo[0].loc.grid_x = bi->msg.data[0];
-	bi->dinfo[0].loc.grid_y = bi->msg.data[1];
-	bi->dinfo[0].loc.x = bi->msg.data[0] * BOX_WIDTH + HALF_BOX_WIDTH;
-	bi->dinfo[0].loc.y = bi->msg.data[1] * BOX_HEIGHT + HALF_BOX_HEIGHT;
-	bi->dinfo[0].xspeed = 0;
-	bi->dinfo[0].yspeed = 0;
-      }
-      if ((bi->numdiscs) && (bi->msg.opcode == OP_HELP)) {
-	/* Respond to the call for help */
-	data[0] = bi->dinfo[0].loc.grid_x;
-	data[1] = bi->dinfo[0].loc.grid_y;
-	send_msg(bi->msg.sender, OP_LOCATION, (Byte *)data);
-      }
-    }
-  }
-  if (!bi->numdiscs)
-    /* Ask for help */
-    send_msg(MAX_VEHICLES+bi->me.team,OP_HELP,(Byte *)data);
+	msgs = messages();
+
+	if (msgs) {
+		for (i = 0; i < msgs; ++i) {
+			receive_msg(&bi->msg);
+			if ((!bi->numdiscs) && (bi->msg.opcode == OP_LOCATION)) {
+				/* It's a message telling me where the disc is */
+				bi->numdiscs = 1;
+				bi->dinfo[0].owner = NO_OWNER;
+				bi->dinfo[0].loc.grid_x = bi->msg.data[0];
+				bi->dinfo[0].loc.grid_y = bi->msg.data[1];
+				bi->dinfo[0].loc.x = bi->msg.data[0] * BOX_WIDTH + HALF_BOX_WIDTH;
+				bi->dinfo[0].loc.y = bi->msg.data[1] * BOX_HEIGHT + HALF_BOX_HEIGHT;
+				bi->dinfo[0].xspeed = 0;
+				bi->dinfo[0].yspeed = 0;
+			}
+			if ((bi->numdiscs) && (bi->msg.opcode == OP_HELP)) {
+				/* Respond to the call for help */
+				data[0] = bi->dinfo[0].loc.grid_x;
+				data[1] = bi->dinfo[0].loc.grid_y;
+				send_msg(bi->msg.sender, OP_LOCATION, (Byte *) data);
+			}
+		}
+	}
+	if (!bi->numdiscs)
+		/* Ask for help */
+		send_msg(MAX_VEHICLES + bi->me.team, OP_HELP, (Byte *) data);
 }
 
 /* Buddy_find_goals(bi)
@@ -239,49 +233,48 @@ Buddy_deal_with_messages(bi)
 **   We know everything about the current maze.
 **   There is only one enemy_goal.
 */
-static
-Buddy_find_goals(bi)
-     Binfo *bi;
+static Buddy_find_goals(bi)
+Binfo *bi;
 {
-  int i;			/* counter */
-  Goal_info *gi;		/* current goal I'm looking at */
-  Landmark_info *li;		/* current landmark */
-  int numlandmarks;		/* how many landmarks there are */
+	int i;						/* counter */
+	Goal_info *gi;				/* current goal I'm looking at */
+	Landmark_info *li;			/* current landmark */
+	int numlandmarks;			/* how many landmarks there are */
 
-  get_landmarks(&numlandmarks,bi->linfo);
-  if (numlandmarks) {
-    for (i = 0; i < numlandmarks; ++i) {
-      if (bi->linfo[i].type == GOAL) {
-	gi = &bi->ginfo[bi->numgoals];
-	li = &bi->linfo[i];
-	gi->team = li->team;
-	gi->loc.grid_x = li->x;
-	gi->loc.grid_y = li->y;
-	gi->loc.x = gi->loc.grid_x * BOX_WIDTH + HALF_BOX_WIDTH;
-	gi->loc.y = gi->loc.grid_y * BOX_HEIGHT + HALF_BOX_HEIGHT;
-	if (gi->team != bi->me.team) { /* Is it an enemy goal? */
-	  bi->enemy_goal = bi->numgoals;
-	  Buddy_set_open_goal_locs(bi,gi);
+	get_landmarks(&numlandmarks, bi->linfo);
+	if (numlandmarks) {
+		for (i = 0; i < numlandmarks; ++i) {
+			if (bi->linfo[i].type == GOAL) {
+				gi = &bi->ginfo[bi->numgoals];
+				li = &bi->linfo[i];
+				gi->team = li->team;
+				gi->loc.grid_x = li->x;
+				gi->loc.grid_y = li->y;
+				gi->loc.x = gi->loc.grid_x * BOX_WIDTH + HALF_BOX_WIDTH;
+				gi->loc.y = gi->loc.grid_y * BOX_HEIGHT + HALF_BOX_HEIGHT;
+				if (gi->team != bi->me.team) {	/* Is it an enemy goal? */
+					bi->enemy_goal = bi->numgoals;
+					Buddy_set_open_goal_locs(bi, gi);
+				}
+				bi->numgoals++;
+			}
+		}
 	}
-	bi->numgoals++;
-      }
-    }
-  }
-  /* If there are no enemy goals, what's the point of playing? */
-  if (bi->enemy_goal == -1) {
-    printf("No enemy goals!\n");
-    set_abs_drive(0.0);
-    while (TRUE) done();
-  }
-  else
-    /* Find the shortest path from the enemy goal to all squares which
+	/* If there are no enemy goals, what's the point of playing? */
+	if (bi->enemy_goal == -1) {
+		printf("No enemy goals!\n");
+		set_abs_drive(0.0);
+		while (TRUE)
+			done();
+	} else
+		/* Find the shortest path from the enemy goal to all squares which
        are 30 or few squares away from it. */
-    Buddy_compute_path(bi,
-		       -1, -1,	/* so it won't find a path to me and exit */
-		       bi->ginfo[bi->enemy_goal].loc.grid_x,
-		       bi->ginfo[bi->enemy_goal].loc.grid_y,
-		       bi->maze,
-		       30);	/* maximum depth of search */
+		Buddy_compute_path(bi,
+						   -1, -1,	/* so it won't find a path to me and exit */
+						   bi->ginfo[bi->enemy_goal].loc.grid_x,
+						   bi->ginfo[bi->enemy_goal].loc.grid_y,
+						   bi->maze,
+						   30);	/* maximum depth of search */
 }
 
 /* Buddy_set_open_goal_locs(bi,gi)
@@ -292,61 +285,60 @@ Buddy_find_goals(bi)
 ** Buddy_throw_at_goal will attempt to throw between the two
 ** points.
 */
-static
-Buddy_set_open_goal_locs(bi,gi)
-     Binfo *bi;
-     Goal_info *gi;
+static Buddy_set_open_goal_locs(bi, gi)
+Binfo *bi;
+Goal_info *gi;
 {
-  Location *g1, *g2;
+	Location *g1, *g2;
 
-  if (!Buddy_wall_north(bi,gi->loc.grid_x,gi->loc.grid_y)) {
-    g1 = &bi->goal_locs_1[bi->num_goal_locs];
-    g2 = &bi->goal_locs_2[bi->num_goal_locs++];
-    g1->grid_x = gi->loc.grid_x;
-    g1->grid_y = gi->loc.grid_y;
-    g2->grid_x = gi->loc.grid_x;
-    g2->grid_y = gi->loc.grid_y;
-    g1->x = gi->loc.x - HALF_BOX_WIDTH + 1;
-    g2->x = gi->loc.x + HALF_BOX_WIDTH - 1;
-    g1->y = gi->loc.y - HALF_BOX_WIDTH + 1;
-    g2->y = gi->loc.y - HALF_BOX_WIDTH + 1;
-  }
-  if (!Buddy_wall_south(bi,gi->loc.grid_x,gi->loc.grid_y)) {
-    g1 = &bi->goal_locs_1[bi->num_goal_locs];
-    g2 = &bi->goal_locs_2[bi->num_goal_locs++];
-    g1->grid_x = gi->loc.grid_x;
-    g1->grid_y = gi->loc.grid_y;
-    g2->grid_x = gi->loc.grid_x;
-    g2->grid_y = gi->loc.grid_y;
-    g1->x = gi->loc.x - HALF_BOX_WIDTH + 1;
-    g2->x = gi->loc.x + HALF_BOX_WIDTH - 1;
-    g1->y = gi->loc.y + HALF_BOX_WIDTH - 1;
-    g2->y = gi->loc.y + HALF_BOX_WIDTH - 1;
-  }
-  if (!Buddy_wall_west(bi,gi->loc.grid_x,gi->loc.grid_y)) {
-    g1 = &bi->goal_locs_1[bi->num_goal_locs];
-    g2 = &bi->goal_locs_2[bi->num_goal_locs++];
-    g1->grid_x = gi->loc.grid_x;
-    g1->grid_y = gi->loc.grid_y;
-    g2->grid_x = gi->loc.grid_x;
-    g2->grid_y = gi->loc.grid_y;
-    g1->x = gi->loc.x - HALF_BOX_WIDTH + 1;
-    g2->x = gi->loc.x - HALF_BOX_WIDTH + 1;
-    g1->y = gi->loc.y - HALF_BOX_WIDTH + 1;
-    g2->y = gi->loc.y + HALF_BOX_WIDTH - 1;
-  }
-  if (!Buddy_wall_east(bi,gi->loc.grid_x,gi->loc.grid_y)) {
-    g1 = &bi->goal_locs_1[bi->num_goal_locs];
-    g2 = &bi->goal_locs_2[bi->num_goal_locs++];
-    g1->grid_x = gi->loc.grid_x;
-    g1->grid_y = gi->loc.grid_y;
-    g2->grid_x = gi->loc.grid_x;
-    g2->grid_y = gi->loc.grid_y;
-    g1->x = gi->loc.x + HALF_BOX_WIDTH - 1;
-    g2->x = gi->loc.x + HALF_BOX_WIDTH - 1;
-    g1->y = gi->loc.y - HALF_BOX_WIDTH + 1;
-    g2->y = gi->loc.y + HALF_BOX_WIDTH - 1;
-  }
+	if (!Buddy_wall_north(bi, gi->loc.grid_x, gi->loc.grid_y)) {
+		g1 = &bi->goal_locs_1[bi->num_goal_locs];
+		g2 = &bi->goal_locs_2[bi->num_goal_locs++];
+		g1->grid_x = gi->loc.grid_x;
+		g1->grid_y = gi->loc.grid_y;
+		g2->grid_x = gi->loc.grid_x;
+		g2->grid_y = gi->loc.grid_y;
+		g1->x = gi->loc.x - HALF_BOX_WIDTH + 1;
+		g2->x = gi->loc.x + HALF_BOX_WIDTH - 1;
+		g1->y = gi->loc.y - HALF_BOX_WIDTH + 1;
+		g2->y = gi->loc.y - HALF_BOX_WIDTH + 1;
+	}
+	if (!Buddy_wall_south(bi, gi->loc.grid_x, gi->loc.grid_y)) {
+		g1 = &bi->goal_locs_1[bi->num_goal_locs];
+		g2 = &bi->goal_locs_2[bi->num_goal_locs++];
+		g1->grid_x = gi->loc.grid_x;
+		g1->grid_y = gi->loc.grid_y;
+		g2->grid_x = gi->loc.grid_x;
+		g2->grid_y = gi->loc.grid_y;
+		g1->x = gi->loc.x - HALF_BOX_WIDTH + 1;
+		g2->x = gi->loc.x + HALF_BOX_WIDTH - 1;
+		g1->y = gi->loc.y + HALF_BOX_WIDTH - 1;
+		g2->y = gi->loc.y + HALF_BOX_WIDTH - 1;
+	}
+	if (!Buddy_wall_west(bi, gi->loc.grid_x, gi->loc.grid_y)) {
+		g1 = &bi->goal_locs_1[bi->num_goal_locs];
+		g2 = &bi->goal_locs_2[bi->num_goal_locs++];
+		g1->grid_x = gi->loc.grid_x;
+		g1->grid_y = gi->loc.grid_y;
+		g2->grid_x = gi->loc.grid_x;
+		g2->grid_y = gi->loc.grid_y;
+		g1->x = gi->loc.x - HALF_BOX_WIDTH + 1;
+		g2->x = gi->loc.x - HALF_BOX_WIDTH + 1;
+		g1->y = gi->loc.y - HALF_BOX_WIDTH + 1;
+		g2->y = gi->loc.y + HALF_BOX_WIDTH - 1;
+	}
+	if (!Buddy_wall_east(bi, gi->loc.grid_x, gi->loc.grid_y)) {
+		g1 = &bi->goal_locs_1[bi->num_goal_locs];
+		g2 = &bi->goal_locs_2[bi->num_goal_locs++];
+		g1->grid_x = gi->loc.grid_x;
+		g1->grid_y = gi->loc.grid_y;
+		g2->grid_x = gi->loc.grid_x;
+		g2->grid_y = gi->loc.grid_y;
+		g1->x = gi->loc.x + HALF_BOX_WIDTH - 1;
+		g2->x = gi->loc.x + HALF_BOX_WIDTH - 1;
+		g1->y = gi->loc.y - HALF_BOX_WIDTH + 1;
+		g2->y = gi->loc.y + HALF_BOX_WIDTH - 1;
+	}
 }
 
 /* Buddy_panic(bi)
@@ -354,15 +346,14 @@ Buddy_set_open_goal_locs(bi,gi)
 ** This routine is only called in case of some internal error.
 ** And that never happens, right?
 */
-static
-Buddy_panic(bi)
-     Binfo *bi;
+static Buddy_panic(bi)
+Binfo *bi;
 {
-  char buf[MAX_DATA_LEN];
-  
-  strcpy(buf, "Hey, who is this anyway");
-  send_msg(RECIPIENT_ALL, OP_TEXT, (Byte *)buf);
-  bi->mode = CHAOS;
+	char buf[MAX_DATA_LEN];
+
+	strcpy(buf, "Hey, who is this anyway");
+	send_msg(RECIPIENT_ALL, OP_TEXT, (Byte *) buf);
+	bi->mode = CHAOS;
 }
 
 /* Buddy_deal_with_disc(bi)
@@ -376,14 +367,16 @@ Buddy_panic(bi)
 **   Clearing the disc if I'm in trouble.
 */
 static Inline
-Buddy_deal_with_disc(bi)
-     Binfo *bi;
+  Buddy_deal_with_disc(bi)
+Binfo *bi;
 {
-  Buddy_go_to_goal(bi);
-  if (bi->discowned) Buddy_throw_at_goal(bi);
-  Buddy_maybe_pass(bi,BOX_WIDTH*BOX_WIDTH*2);
-  Buddy_play_keep_away(bi);
-  if (bi->men_on > 1) Buddy_clear_the_disc(bi);
+	Buddy_go_to_goal(bi);
+	if (bi->discowned)
+		Buddy_throw_at_goal(bi);
+	Buddy_maybe_pass(bi, BOX_WIDTH * BOX_WIDTH * 2);
+	Buddy_play_keep_away(bi);
+	if (bi->men_on > 1)
+		Buddy_clear_the_disc(bi);
 }
 
 /* Buddy_throw_at_goal(bi)
@@ -393,25 +386,25 @@ Buddy_deal_with_disc(bi)
 ** into them.
 */
 static Inline
-Buddy_throw_at_goal(bi)
-     Binfo *bi;
+  Buddy_throw_at_goal(bi)
+Binfo *bi;
 {
-  int i;			/* counter */
-  Boolean cp1, cp2;		/* clear path to loc 1?  loc 2? */
+	int i;						/* counter */
+	Boolean cp1, cp2;			/* clear path to loc 1?  loc 2? */
 
-  for (i = 0; i < bi->num_goal_locs; ++i) {
-    /* See if I have a chance of throwing it in */
-    cp1 = clear_path(&bi->dinfo[0].loc,&bi->goal_locs_1[0]);
-    cp2 = clear_path(&bi->dinfo[0].loc,&bi->goal_locs_2[0]);
-    if (cp1 || cp2) {
-      bi->throwing = TRUE;
-      /* If I have a clear path to one end but not the other, the
+	for (i = 0; i < bi->num_goal_locs; ++i) {
+		/* See if I have a chance of throwing it in */
+		cp1 = clear_path(&bi->dinfo[0].loc, &bi->goal_locs_1[0]);
+		cp2 = clear_path(&bi->dinfo[0].loc, &bi->goal_locs_2[0]);
+		if (cp1 || cp2) {
+			bi->throwing = TRUE;
+			/* If I have a clear path to one end but not the other, the
 	 throw's going to be tricky (thus the !(cp1 && cp2) argument) */
-      Buddy_throw_in_range(bi,&bi->goal_locs_1[0],&bi->goal_locs_2[0],
-			   !(cp1 && cp2), MAX_DISC_SPEED);
-      return;
-    }
-  }
+			Buddy_throw_in_range(bi, &bi->goal_locs_1[0], &bi->goal_locs_2[0],
+								 !(cp1 && cp2), MAX_DISC_SPEED);
+			return;
+		}
+	}
 }
 
 /* Buddy_go_to_goal(bi)
@@ -419,18 +412,19 @@ Buddy_throw_at_goal(bi)
 ** Goes to the enemy goal, taking the shortest path.
 */
 static Inline
-Buddy_go_to_goal(bi)
-     Binfo *bi;
+  Buddy_go_to_goal(bi)
+Binfo *bi;
 {
-  int mx,my;			/* My location on the grid */
+	int mx, my;					/* My location on the grid */
 
-  mx = bi->me.loc.grid_x;
-  my = bi->me.loc.grid_y;
+	mx = bi->me.loc.grid_x;
+	my = bi->me.loc.grid_y;
 
-  /* Do I know how to get to the goal from here? */
-  if (bi->maze[mx][my].seen)
-    Buddy_move_into_box(bi, bi->maze[mx][my].nextx, bi->maze[mx][my].nexty);
-  else Buddy_wander(bi);
+	/* Do I know how to get to the goal from here? */
+	if (bi->maze[mx][my].seen)
+		Buddy_move_into_box(bi, bi->maze[mx][my].nextx, bi->maze[mx][my].nexty);
+	else
+		Buddy_wander(bi);
 }
 
 /* Buddy_maybe_pass(bi,mindistsqr)
@@ -446,43 +440,42 @@ Buddy_go_to_goal(bi)
 **   Am I double-teamed?
 **   Is my teammate open? (no enemies near him)
 */
-static
-Buddy_maybe_pass(bi,mindistsqr)
-     Binfo *bi;
-     int mindistsqr;
+static Buddy_maybe_pass(bi, mindistsqr)
+Binfo *bi;
+int mindistsqr;
 {
-  int i;			/* counter; current vehicle */
-  int dx,dy;			/* deltas to current vehicle */
-  int dist;			/* distance to current vehicles */
-  int distsqr;			/* square of distance to current vehicle */
-  
-  /* Don't throw to a teammate if I'm in the middle of throwing at a goal. */
-  if (bi->numvehicles && !bi->throwing) {
-    for (i=0;i<bi->numvehicles;++i) {
-      /* on my team? */
-      if (bi->vinfo[i].team == bi->me.team) {
-	/* only pass if he's closer to the enemy goal than I am */
-	if (bi->maze[bi->vinfo[i].loc.grid_x][bi->vinfo[i].loc.grid_y].seen &&
-	    bi->maze[bi->vinfo[i].loc.grid_x][bi->vinfo[i].loc.grid_y].dist <
-	    bi->maze[bi->me.loc.grid_x][bi->me.loc.grid_y].dist) {
-	  /* is there a clear path to him? */
-	  if (clear_path(&bi->dinfo[0].loc,&bi->vinfo[i].loc)) {
-	    dx = bi->vinfo[i].loc.x - bi->me.loc.x;
-	    dy = bi->vinfo[i].loc.y - bi->me.loc.y;
-	    distsqr = sqr(dx) + sqr(dy);
-	    /* Pass to him if he's not too close to me. */
-	    if (distsqr > mindistsqr) {
-	      dist = sqrtint(distsqr);
-	      /* Throw a lead pass.  This could probably be a lot better. */
-	      bi->vinfo[i].loc.x += ((int)bi->vinfo[i].xspeed) * dist / 20;
-	      bi->vinfo[i].loc.y += ((int)bi->vinfo[i].yspeed) * dist / 20;
-	      Buddy_throw_at_loc(bi,&bi->vinfo[i].loc,MAX_DISC_SPEED);
-	    }
-	  }
+	int i;						/* counter; current vehicle */
+	int dx, dy;					/* deltas to current vehicle */
+	int dist;					/* distance to current vehicles */
+	int distsqr;				/* square of distance to current vehicle */
+
+	/* Don't throw to a teammate if I'm in the middle of throwing at a goal. */
+	if (bi->numvehicles && !bi->throwing) {
+		for (i = 0; i < bi->numvehicles; ++i) {
+			/* on my team? */
+			if (bi->vinfo[i].team == bi->me.team) {
+				/* only pass if he's closer to the enemy goal than I am */
+				if (bi->maze[bi->vinfo[i].loc.grid_x][bi->vinfo[i].loc.grid_y].seen &&
+					bi->maze[bi->vinfo[i].loc.grid_x][bi->vinfo[i].loc.grid_y].dist <
+					bi->maze[bi->me.loc.grid_x][bi->me.loc.grid_y].dist) {
+					/* is there a clear path to him? */
+					if (clear_path(&bi->dinfo[0].loc, &bi->vinfo[i].loc)) {
+						dx = bi->vinfo[i].loc.x - bi->me.loc.x;
+						dy = bi->vinfo[i].loc.y - bi->me.loc.y;
+						distsqr = sqr(dx) + sqr(dy);
+						/* Pass to him if he's not too close to me. */
+						if (distsqr > mindistsqr) {
+							dist = sqrtint(distsqr);
+							/* Throw a lead pass.  This could probably be a lot better. */
+							bi->vinfo[i].loc.x += ((int) bi->vinfo[i].xspeed) * dist / 20;
+							bi->vinfo[i].loc.y += ((int) bi->vinfo[i].yspeed) * dist / 20;
+							Buddy_throw_at_loc(bi, &bi->vinfo[i].loc, MAX_DISC_SPEED);
+						}
+					}
+				}
+			}
+		}
 	}
-      }
-    }
-  }
 }
 
 /* Buddy_play_keep_away(bi)
@@ -490,60 +483,63 @@ Buddy_maybe_pass(bi,mindistsqr)
 ** Makes sure no one steals the disc.
 ** Also sets bi->men_on, the number of enemy vehicles near me.
 */
-static
-Buddy_play_keep_away(bi)
-     Binfo *bi;
+static Buddy_play_keep_away(bi)
+Binfo *bi;
 {
-  int i;			/* counter; current vehicle */
-  int dx,dy;			/* deltas of current vehicle */
-  int distsqr;			/* square of distance to current vehicle */
-  int cdx,cdy;			/* deltas of closest vehicle */
-  int closestdistsqr = VEHICLE_TOO_CLOSE * VEHICLE_TOO_CLOSE;
-				/* how close is too close */
-  Angle delta;			/* Angle between enemy vehicle and the disc */
-  
-  bi->men_on = 0;
-  if (bi->numvehicles)
-    for (i=0;i<bi->numvehicles;++i) {
-      /* Is it an enemy? */
-      if (bi->vinfo[i].team != bi->me.team) {
-	/* Look ahead one frame on his position */
-	dx = bi->vinfo[i].loc.x + (int) bi->vinfo[i].xspeed - bi->me.loc.x;
-	dy = bi->vinfo[i].loc.y + (int) bi->vinfo[i].yspeed - bi->me.loc.y;
-	distsqr = (sqr(dx) + sqr(dy));
-	if (distsqr < VEHICLE_TOO_CLOSE * VEHICLE_TOO_CLOSE) ++bi->men_on;
-	if (distsqr < closestdistsqr) {
-	  closestdistsqr = distsqr;
-	  cdx = dx;  cdy = dy;
+	int i;						/* counter; current vehicle */
+	int dx, dy;					/* deltas of current vehicle */
+	int distsqr;				/* square of distance to current vehicle */
+	int cdx, cdy;				/* deltas of closest vehicle */
+	int closestdistsqr = VEHICLE_TOO_CLOSE * VEHICLE_TOO_CLOSE;
+
+	/* how close is too close */
+	Angle delta;				/* Angle between enemy vehicle and the disc */
+
+	bi->men_on = 0;
+	if (bi->numvehicles)
+		for (i = 0; i < bi->numvehicles; ++i) {
+			/* Is it an enemy? */
+			if (bi->vinfo[i].team != bi->me.team) {
+				/* Look ahead one frame on his position */
+				dx = bi->vinfo[i].loc.x + (int) bi->vinfo[i].xspeed - bi->me.loc.x;
+				dy = bi->vinfo[i].loc.y + (int) bi->vinfo[i].yspeed - bi->me.loc.y;
+				distsqr = (sqr(dx) + sqr(dy));
+				if (distsqr < VEHICLE_TOO_CLOSE * VEHICLE_TOO_CLOSE)
+					++bi->men_on;
+				if (distsqr < closestdistsqr) {
+					closestdistsqr = distsqr;
+					cdx = dx;
+					cdy = dy;
+				}
+			}
+		}
+	if (bi->men_on) {
+		delta = bi->dinfo[0].angle - ATAN2(cdy, cdx);
+		fix_angle(delta);
+		/* Spin the discs so as to maximize delta */
+		if (delta < PI)
+			Buddy_spin_discs(CLOCKWISE);
+		else
+			Buddy_spin_discs(COUNTERCLOCKWISE);
 	}
-      }
-    }
-  if (bi->men_on) {
-    delta = bi->dinfo[0].angle - ATAN2(cdy,cdx);
-    fix_angle(delta);
-    /* Spin the discs so as to maximize delta */
-    if (delta < PI) Buddy_spin_discs(CLOCKWISE);
-    else Buddy_spin_discs(COUNTERCLOCKWISE);
-  }
 }
 
 /* Buddy_clear_the_disc(bi)
 **
 ** Clears the disc in a generally good direction.
-** 
+**
 ** Unless I'm real close to a goal, I find out a good area to throw
 ** the disc in, and then throw it in that direction.
 */
-static
-Buddy_clear_the_disc(bi)
-     Binfo *bi;
+static Buddy_clear_the_disc(bi)
+Binfo *bi;
 {
-  Location loc1, loc2;		/* endpoints of range */
-  
-  if (!(bi->maze[bi->me.loc.grid_x][bi->me.loc.grid_y].seen &&
-	bi->maze[bi->me.loc.grid_x][bi->me.loc.grid_y].dist < 3))
-    if (Buddy_get_clear_range(bi,&loc1,&loc2))
-      Buddy_throw_in_range(bi,&loc1,&loc2,FALSE,MAX_DISC_SPEED);
+	Location loc1, loc2;		/* endpoints of range */
+
+	if (!(bi->maze[bi->me.loc.grid_x][bi->me.loc.grid_y].seen &&
+		  bi->maze[bi->me.loc.grid_x][bi->me.loc.grid_y].dist < 3))
+		if (Buddy_get_clear_range(bi, &loc1, &loc2))
+			Buddy_throw_in_range(bi, &loc1, &loc2, FALSE, MAX_DISC_SPEED);
 }
 
 /* Buddy_get_clear_range(bi,loc1,loc2)
@@ -554,205 +550,217 @@ Buddy_clear_the_disc(bi)
 ** I look ahead two squares towards the goal, and try to throw in
 ** that general direction.
 */
-static
-Buddy_get_clear_range(bi,loc1,loc2)
-     Binfo *bi;
-     Location *loc1, *loc2;
+static Buddy_get_clear_range(bi, loc1, loc2)
+Binfo *bi;
+Location *loc1, *loc2;
 {
-  int mx, my;			/* my grid coordinate */
-  int gx, gy;			/* next square in path to goal */
-  int gx2, gy2;			/* next square after that */
-  
-  mx = bi->me.loc.grid_x;
-  my = bi->me.loc.grid_y;
+	int mx, my;					/* my grid coordinate */
+	int gx, gy;					/* next square in path to goal */
+	int gx2, gy2;				/* next square after that */
 
-  if (!bi->maze[mx][my].seen) return(FALSE);
+	mx = bi->me.loc.grid_x;
+	my = bi->me.loc.grid_y;
 
-  gx = bi->maze[mx][my].nextx;
-  gy = bi->maze[mx][my].nexty;
+	if (!bi->maze[mx][my].seen)
+		return (FALSE);
 
-  gx2 = bi->maze[gx][gy].nextx;
-  gy2 = bi->maze[gx][gy].nexty;
+	gx = bi->maze[mx][my].nextx;
+	gy = bi->maze[mx][my].nexty;
+
+	gx2 = bi->maze[gx][gy].nextx;
+	gy2 = bi->maze[gx][gy].nexty;
 
 #define set_locs(x1,y1,x2,y2) \
   { loc1->grid_x = (x1); loc1->grid_y = (y1); \
     loc2->grid_x = (x2); loc2->grid_y = (y2); }
 
-  /* Now comes the massive special casing.  Basically, I want to
+	/* Now comes the massive special casing.  Basically, I want to
      throw a disc so that it will go through (gx2,gy2).  Walls
      between me and that location may either be good (by making bounce
      passes possible) or bad (by blocking the path to the location. */
 
-  if (gy2 == gy)
-    if (gx2 == mx + 2)		/* east */
-      if (Buddy_wall_north(bi,gx,gy))
-	if (Buddy_wall_south(bi,gx,gy))
-	  set_locs(gx, gy, gx, gy + 1)
-	else
-	  set_locs(gx, gy, gx + 1, gy + 1)
-      else
-	if (Buddy_wall_south(bi,gx,gy))
-	  set_locs(gx + 1, gy, gx, gy + 1)
-	else
-	  set_locs(gx + 1, gy, gx + 1, gy + 1)
-    else			/* west */
-      if (Buddy_wall_north(bi,gx,gy))
-	if (Buddy_wall_south(bi,gx,gy))
-	  set_locs(gx + 1, gy, gx + 1, gy + 1)
-	else
-	  set_locs(gx + 1, gy, gx, gy + 1)
-      else
-	if (Buddy_wall_south(bi,gx,gy))
-	  set_locs(gx, gy, gx + 1, gy + 1)
-	else
-	  set_locs(gx, gy, gx, gy + 1)
-  else if (gx2 == mx + 1)
-    if (gy2 == my + 1)		/* southeast */
-      if (Buddy_wall_north(bi,gx2,gy2))
-	set_locs(gx2, gy2, gx2, gy2 + 1)
-      else if (Buddy_wall_west(bi,gx2,gy2))
-	set_locs(gx2, gy2, gx2 + 1, gy2)
-      else
-	set_locs(gx2, gy2 + 1, gx2 + 1, gy2)
-    else			/* northeast */
-      if (Buddy_wall_south(bi,gx2,gy2))
-	set_locs(gx2, gy2 + 1, gx2, gy2)
-      else if (Buddy_wall_west(bi,gx2,gy2)) 
-	set_locs(gx2 + 1, gy2 + 1, gx2, gy2 + 1)
-      else 
-	set_locs(gx2, gy2, gx2 + 1, gy2 + 1)
-  else if (gx2 == mx)
-    if (gy2 == my + 2)		/* south */
-      if (Buddy_wall_west(bi,gx,gy))
-	if (Buddy_wall_east(bi,gx,gy))
-	  set_locs(gx, gy, gx + 1, gy)
-	else
-	  set_locs(gx, gy, gx + 1, gy + 1)
-      else
-	if (Buddy_wall_east(bi,gx,gy))
-	  set_locs(gx, gy + 1, gx + 1, gy)
-	else
-	  set_locs(gx, gy + 1, gx + 1, gy + 1)
-    else			/* north */
-      if (Buddy_wall_west(bi,gx,gy))
-	if (Buddy_wall_east(bi,gx,gy))
-	  set_locs(gx, gy + 1, gx + 1, gy + 1)
-	else
-	  set_locs(gx, gy + 1, gx + 1, gy)
-      else
-	if (Buddy_wall_east(bi,gx,gy))
-	  set_locs(gx, gy, gx + 1, gy + 1)
-	else
-	  set_locs(gx, gy, gx + 1, gy)
-  else if (gx2 == mx - 1)
-    if (gy2 == my + 1)		/* southwest */
-      if (Buddy_wall_north(bi,gx2,gy2))
-	set_locs(gx2 + 1, gy2, gx2 + 1, gy2 + 1)
-      else if (Buddy_wall_east(bi,gx2,gy2))
-	set_locs(gx2, gy2, gx2 + 1, gy2)
-      else
-	set_locs(gx2, gy2, gx2 + 1, gy2 + 1)
-    else			/* northwest */
-      if (Buddy_wall_south(bi,gx2,gy2))
-	set_locs(gx2 + 1, gy2, gx2 + 1, gy2 + 1)
-      else if (Buddy_wall_east(bi,gx2,gy2))
-	set_locs(gx2, gy2 + 1, gx2 + 1, gy2 + 1)
-      else
-	set_locs(gx2, gy2 + 1, gx2 + 1, gy2)
-  else {
-    printf ("I give up: <%d %d>  <%d %d>  <%d %d>\n",
-	    mx, my, gx, gy, gx2, gy2);
-    return (FALSE);
-  }
-
-  /* Fill up the rest of the location structures */
-  loc1->x = loc1->grid_x * BOX_WIDTH;
-  loc1->y = loc1->grid_y * BOX_HEIGHT;
-  loc2->x = loc2->grid_x * BOX_WIDTH;
-  loc2->y = loc2->grid_y * BOX_HEIGHT;
+	if (gy2 == gy)
+		if (gx2 == mx + 2)		/* east */
+			if (Buddy_wall_north(bi, gx, gy))
+				if (Buddy_wall_south(bi, gx, gy))
+					set_locs(gx, gy, gx, gy + 1)
+					  else
+					set_locs(gx, gy, gx + 1, gy + 1)
+					  else
+					if (Buddy_wall_south(bi, gx, gy))
+						set_locs(gx + 1, gy, gx, gy + 1)
+						  else
+						set_locs(gx + 1, gy, gx + 1, gy + 1)
+						  else	/* west */
+						if (Buddy_wall_north(bi, gx, gy))
+							if (Buddy_wall_south(bi, gx, gy))
+								set_locs(gx + 1, gy, gx + 1, gy + 1)
+								  else
+								set_locs(gx + 1, gy, gx, gy + 1)
+								  else
+								if (Buddy_wall_south(bi, gx, gy))
+									set_locs(gx, gy, gx + 1, gy + 1)
+									  else
+									set_locs(gx, gy, gx, gy + 1)
+									  else
+									if (gx2 == mx + 1)
+										if (gy2 == my + 1)	/* southeast */
+											if (Buddy_wall_north(bi, gx2, gy2))
+												set_locs(gx2, gy2, gx2, gy2 + 1)
+												  else
+												if (Buddy_wall_west(bi, gx2, gy2))
+													set_locs(gx2, gy2, gx2 + 1, gy2)
+													  else
+													set_locs(gx2, gy2 + 1, gx2 + 1, gy2)
+													  else	/* northeast */
+													if (Buddy_wall_south(bi, gx2, gy2))
+														set_locs(gx2, gy2 + 1, gx2, gy2)
+														  else
+														if (Buddy_wall_west(bi, gx2, gy2))
+															set_locs(gx2 + 1, gy2 + 1, gx2, gy2 + 1)
+															  else
+															set_locs(gx2, gy2, gx2 + 1, gy2 + 1)
+															  else
+															if (gx2 == mx)
+																if (gy2 == my + 2)	/* south */
+																	if (Buddy_wall_west(bi, gx, gy))
+																		if (Buddy_wall_east(bi, gx, gy))
+																			set_locs(gx, gy, gx + 1, gy)
+																			  else
+																			set_locs(gx, gy, gx + 1, gy + 1)
+																			  else
+																			if (Buddy_wall_east(bi, gx, gy))
+																				set_locs(gx, gy + 1, gx + 1, gy)
+																				  else
+																				set_locs(gx, gy + 1, gx + 1, gy + 1)
+																				  else	/* north */
+																				if (Buddy_wall_west(bi, gx, gy))
+																					if (Buddy_wall_east(bi, gx, gy))
+																						set_locs(gx, gy + 1, gx + 1, gy + 1)
+																						  else
+																						set_locs(gx, gy + 1, gx + 1, gy)
+																						  else
+																						if (Buddy_wall_east(bi, gx, gy))
+																							set_locs(gx, gy, gx + 1, gy + 1)
+																							  else
+																							set_locs(gx, gy, gx + 1, gy)
+																							  else
+																							if (gx2 == mx - 1)
+																								if (gy2 == my + 1)	/* southwest */
+																									if (Buddy_wall_north(bi, gx2, gy2))
+																										set_locs(gx2 + 1, gy2, gx2 + 1, gy2 + 1)
+																										  else
+																										if (Buddy_wall_east(bi, gx2, gy2))
+																											set_locs(gx2, gy2, gx2 + 1, gy2)
+																											  else
+																											set_locs(gx2, gy2, gx2 + 1, gy2 + 1)
+																											  else	/* northwest */
+																											if (Buddy_wall_south(bi, gx2, gy2))
+																												set_locs(gx2 + 1, gy2, gx2 + 1, gy2 + 1)
+																												  else
+																												if (Buddy_wall_east(bi, gx2, gy2))
+																													set_locs(gx2, gy2 + 1, gx2 + 1, gy2 + 1)
+																													  else
+																													set_locs(gx2, gy2 + 1, gx2 + 1, gy2)
+																													  else {
+																													printf("I give up: <%d %d>  <%d %d>  <%d %d>\n",
+																														   mx, my, gx, gy, gx2, gy2);
+																													return (FALSE);
+																													}
+	/* Fill up the rest of the location structures */
+	loc1->x = loc1->grid_x * BOX_WIDTH;
+	loc1->y = loc1->grid_y * BOX_HEIGHT;
+	loc2->x = loc2->grid_x * BOX_WIDTH;
+	loc2->y = loc2->grid_y * BOX_HEIGHT;
 
 #if 0
-  printf("<%d %d> - <%d %d> - <%d %d>\n",
-	 mx, my, gx, gy, gx2, gy2);
-  printf("throw at: <%d %d> - <%d %d>\n",
-	 loc1->grid_x, loc1->grid_y, loc2->grid_x, loc2->grid_y);
-#endif 0
+	printf("<%d %d> - <%d %d> - <%d %d>\n",
+		   mx, my, gx, gy, gx2, gy2);
+	printf("throw at: <%d %d> - <%d %d>\n",
+		   loc1->grid_x, loc1->grid_y, loc2->grid_x, loc2->grid_y);
+#endif /* 0 */
 
-  return (TRUE);
+	return (TRUE);
 }
 
 /* Buddy_throw_at_loc(bi,loc,speed)
 **
 ** Throws the disc at the location loc with speed speed.
 */
-static
-Buddy_throw_at_loc(bi,loc,spd)
-     Binfo *bi;
-     Location *loc;
-     float spd;
+static Buddy_throw_at_loc(bi, loc, spd)
+Binfo *bi;
+Location *loc;
+float spd;
 {
-  Vehicle_info *me;		/* me */
-  Disc_info *disc;		/* the disc */
-  Angle angle_to_loc;		/* angle from disc to location */
-  Angle angle_to_me;		/* angle from disc to me */
-  Angle disc_angle;		/* angle of disc's current velocity */
-  Angle diff;			/* difference between disc's direction
+	Vehicle_info *me;			/* me */
+	Disc_info *disc;			/* the disc */
+	Angle angle_to_loc;			/* angle from disc to location */
+	Angle angle_to_me;			/* angle from disc to me */
+	Angle disc_angle;			/* angle of disc's current velocity */
+	Angle diff;					/* difference between disc's direction
 				   and direction to the location */
-  Angle new_disc_angle;		/* disc's angle next frame */
-  Angle delta;			/* for updating disc, ripped from xtank */
-  Angle diff2;			/* diff for next frame */
-  int dx,dy;			/* deltas from disc to me */
-  float dist;			/* distance squared from disc to me */
+	Angle new_disc_angle;		/* disc's angle next frame */
+	Angle delta;				/* for updating disc, ripped from xtank */
+	Angle diff2;				/* diff for next frame */
+	int dx, dy;					/* deltas from disc to me */
+	float dist;					/* distance squared from disc to me */
 
-  /* Get some information */
-  me = &(bi->me);
-  disc = &(bi->dinfo[0]);
-  angle_to_me = ATAN2(me->loc.y - disc->loc.y, me->loc.x - disc->loc.x);
-  angle_to_loc = ATAN2(loc->y - disc->loc.y, loc->x - disc->loc.x);
-  disc_angle = ATAN2(disc->yspeed, disc->xspeed);
-  diff = angle_to_loc - disc_angle;
-  if (diff < 0) diff += 2*PI;
+	/* Get some information */
+	me = &(bi->me);
+	disc = &(bi->dinfo[0]);
+	angle_to_me = ATAN2(me->loc.y - disc->loc.y, me->loc.x - disc->loc.x);
+	angle_to_loc = ATAN2(loc->y - disc->loc.y, loc->x - disc->loc.x);
+	disc_angle = ATAN2(disc->yspeed, disc->xspeed);
+	diff = angle_to_loc - disc_angle;
+	if (diff < 0)
+		diff += 2 * PI;
 
 #if 0
-  printf("to me: %.2f   disc: %.2f   to loc: %.2f   diff: %.2f\n",
-	 angle_to_me, disc_angle, angle_to_loc, diff);
+	printf("to me: %.2f   disc: %.2f   to loc: %.2f   diff: %.2f\n",
+		   angle_to_me, disc_angle, angle_to_loc, diff);
 #endif
 
-  /* Throw the disc if disc_angle is close enough to angle_to_loc */
-  if (diff < THROW_THRESH || diff > 2*PI - THROW_THRESH) {
-    throw_discs(spd,FALSE); bi->throwing = FALSE; return;
-  }
-
-  /* Predict the status of the disc next frame.  This code is stolen
+	/* Throw the disc if disc_angle is close enough to angle_to_loc */
+	if (diff < THROW_THRESH || diff > 2 * PI - THROW_THRESH) {
+		throw_discs(spd, FALSE);
+		bi->throwing = FALSE;
+		return;
+	}
+	/* Predict the status of the disc next frame.  This code is stolen
      directly from update_disc in xtank.  So sue me; I figure I should
      be allowed to know the physics of the world. */
-  dx = me->loc.x - disc->loc.x;
-  dy = me->loc.y - disc->loc.y;
-  dist = dx * dx + dy * dy;
-  delta = (dist <= DISC_ORBIT_SQ) ? PI/2 * (2 - (dist / DISC_ORBIT_SQ))
-                                  : PI/2 * (DISC_ORBIT_SQ / dist);
-  new_disc_angle = (bi->spin == COUNTERCLOCKWISE) ? angle_to_me + delta
-                                                    : angle_to_me - delta;
-  diff2 = new_disc_angle - angle_to_loc;
-  fix_angle(diff2);
+	dx = me->loc.x - disc->loc.x;
+	dy = me->loc.y - disc->loc.y;
+	dist = dx * dx + dy * dy;
+	delta = (dist <= DISC_ORBIT_SQ) ? PI / 2 * (2 - (dist / DISC_ORBIT_SQ))
+	  : PI / 2 * (DISC_ORBIT_SQ / dist);
+	new_disc_angle = (bi->spin == COUNTERCLOCKWISE) ? angle_to_me + delta
+	  : angle_to_me - delta;
+	diff2 = new_disc_angle - angle_to_loc;
+	fix_angle(diff2);
 
-#if 0  
-  printf("new disc: %.2f    new diff: %.2f\n", new_disc_angle, diff2);
+#if 0
+	printf("new disc: %.2f    new diff: %.2f\n", new_disc_angle, diff2);
 #endif
 
-  /* If things will be good next frame, throw it then */
-  if (diff2 < THROW_THRESH || diff2 > 2*PI - THROW_THRESH) {
-    throw_discs(spd,TRUE); bi->throwing = FALSE; return;
-  }
-
-  /* Spin the disc towards a better location.  To understand why this
+	/* If things will be good next frame, throw it then */
+	if (diff2 < THROW_THRESH || diff2 > 2 * PI - THROW_THRESH) {
+		throw_discs(spd, TRUE);
+		bi->throwing = FALSE;
+		return;
+	}
+	/* Spin the disc towards a better location.  To understand why this
      code works, draw a couple of sample situations and try it out. */
-  if (diff < PI/2) Buddy_spin_discs(CLOCKWISE);
-  else if (diff < PI) Buddy_spin_discs(COUNTERCLOCKWISE);
-  else if (diff < 3*PI/2) Buddy_spin_discs(CLOCKWISE);
-  else Buddy_spin_discs(COUNTERCLOCKWISE);
+	if (diff < PI / 2)
+		Buddy_spin_discs(CLOCKWISE);
+	else if (diff < PI)
+		Buddy_spin_discs(COUNTERCLOCKWISE);
+	else if (diff < 3 * PI / 2)
+		Buddy_spin_discs(CLOCKWISE);
+	else
+		Buddy_spin_discs(COUNTERCLOCKWISE);
 }
-    
+
 /* Buddy_throw_in_range(bi,loc1,loc2,tricky,spd)
 **
 ** Throws the disc at the specified speed so that it will pass
@@ -763,145 +771,160 @@ Buddy_throw_at_loc(bi,loc,spd)
 ** so I have to be careful that the disc can actually get where I'm
 ** throwing it.
 */
-static
-Buddy_throw_in_range(bi,loc1,loc2,tricky,spd)
-     Binfo *bi;
-     Location *loc1,*loc2;
-     float spd;
+static Buddy_throw_in_range(bi, loc1, loc2, tricky, spd)
+Binfo *bi;
+Location *loc1, *loc2;
+float spd;
 {
-  Vehicle_info *me;		/* me */
-  Disc_info *disc;		/* the disc */
-  Angle angle_to_loc1;		/* angle from disc to loc1 */
-  Angle angle_to_loc2;		/* angle from disc to loc2 */
-  Angle angle_to_me;		/* angle from disc to me */
-  Angle disc_angle;		/* angle of disc's current velocity */
-  Angle tmp_angle;		/* for switching angle_to_loc1&2 */
-  Angle width;			/* angular width of viable throws */
-  Angle new_disc_angle;		/* disc's angle next frame */
-  Angle good_angle;		/* an excellent throw */
-  Angle diff;			/* difference between disc's angle and
+	Vehicle_info *me;			/* me */
+	Disc_info *disc;			/* the disc */
+	Angle angle_to_loc1;		/* angle from disc to loc1 */
+	Angle angle_to_loc2;		/* angle from disc to loc2 */
+	Angle angle_to_me;			/* angle from disc to me */
+	Angle disc_angle;			/* angle of disc's current velocity */
+	Angle tmp_angle;			/* for switching angle_to_loc1&2 */
+	Angle width;				/* angular width of viable throws */
+	Angle new_disc_angle;		/* disc's angle next frame */
+	Angle good_angle;			/* an excellent throw */
+	Angle diff;					/* difference between disc's angle and
 				   ideal angle */
-  Angle delta;			/* for updating disc, ripped from xtank */
-  Location dest;		/* where the disc will go after I releas it */
-  float frac;			/* 0.0 if dest is loc1, 1.0 if dest is loc2,
+	Angle delta;				/* for updating disc, ripped from xtank */
+	Location dest;				/* where the disc will go after I releas it */
+	float frac;					/* 0.0 if dest is loc1, 1.0 if dest is loc2,
 				   .5 if it's halfway between, etc. */
-  int dx,dy;			/* deltas from disc to me */
-  float dist;			/* distance squared from disc to me */
+	int dx, dy;					/* deltas from disc to me */
+	float dist;					/* distance squared from disc to me */
 
-  /* Get some information */
-  me = &(bi->me);
-  disc = &(bi->dinfo[0]);
-  angle_to_me = ATAN2(me->loc.y - disc->loc.y, me->loc.x - disc->loc.x);
-  angle_to_loc1 = ATAN2(loc1->y - disc->loc.y, loc1->x - disc->loc.x);
-  angle_to_loc2 = ATAN2(loc2->y - disc->loc.y, loc2->x - disc->loc.x);
-  disc_angle = ATAN2(disc->yspeed, disc->xspeed);
-  if (disc_angle < 0) disc_angle += 2*PI;
+	/* Get some information */
+	me = &(bi->me);
+	disc = &(bi->dinfo[0]);
+	angle_to_me = ATAN2(me->loc.y - disc->loc.y, me->loc.x - disc->loc.x);
+	angle_to_loc1 = ATAN2(loc1->y - disc->loc.y, loc1->x - disc->loc.x);
+	angle_to_loc2 = ATAN2(loc2->y - disc->loc.y, loc2->x - disc->loc.x);
+	disc_angle = ATAN2(disc->yspeed, disc->xspeed);
+	if (disc_angle < 0)
+		disc_angle += 2 * PI;
 
 #if 0
-  if (tricky) printf ("A tricky situation!\n");
-  printf("disc: <%d %d>  loc1: <%d %d>  loc2: <%d %d>\n",
-	 disc->loc.x, disc->loc.y,
-	 loc1->x, loc1->y, loc2->x, loc2->y);
+	if (tricky)
+		printf("A tricky situation!\n");
+	printf("disc: <%d %d>  loc1: <%d %d>  loc2: <%d %d>\n",
+		   disc->loc.x, disc->loc.y,
+		   loc1->x, loc1->y, loc2->x, loc2->y);
 #endif
 
-  /* Find out how big the range of good throws is.  I assume that
+	/* Find out how big the range of good throws is.  I assume that
      the angle to loc1 is less than the angle to loc2; if it isn't,
      I switch them. */
-  width = angle_to_loc2 - angle_to_loc1;
-  if (width < 0) width += 2*PI;
-  if (width > PI) {
-    tmp_angle = angle_to_loc1;
-    angle_to_loc1 = angle_to_loc2;
-    angle_to_loc2 = tmp_angle;
-    width = 2*PI - width;
-  }
-  if (angle_to_loc1 < 0) angle_to_loc1 += 2*PI;
-  if (angle_to_loc2 < 0) angle_to_loc2 += 2*PI;
+	width = angle_to_loc2 - angle_to_loc1;
+	if (width < 0)
+		width += 2 * PI;
+	if (width > PI) {
+		tmp_angle = angle_to_loc1;
+		angle_to_loc1 = angle_to_loc2;
+		angle_to_loc2 = tmp_angle;
+		width = 2 * PI - width;
+	}
+	if (angle_to_loc1 < 0)
+		angle_to_loc1 += 2 * PI;
+	if (angle_to_loc2 < 0)
+		angle_to_loc2 += 2 * PI;
 
-  /* Force the angle to loc2 to be greater than the angle to loc1,
+	/* Force the angle to loc2 to be greater than the angle to loc1,
      even if it means driving it above 2*PI. */
-  if (angle_to_loc2 < angle_to_loc1) angle_to_loc2 += 2*PI;
+	if (angle_to_loc2 < angle_to_loc1)
+		angle_to_loc2 += 2 * PI;
 
 #if 0
-  printf("angles: disc %.2f    locs %.2f  %.2f     width %.2f\n",
-	 disc_angle, angle_to_loc1, angle_to_loc2, width);
+	printf("angles: disc %.2f    locs %.2f  %.2f     width %.2f\n",
+		   disc_angle, angle_to_loc1, angle_to_loc2, width);
 #endif
 
-  /* Throw the disc if releasing it right now would send it between
+	/* Throw the disc if releasing it right now would send it between
      loc1 and loc2 */
-  if (angle_to_loc1 < disc_angle && disc_angle < angle_to_loc2) {
-    if (!tricky) {
-      /* I don't have to worry about walls */
-      throw_discs(spd,FALSE); bi->throwing = FALSE; return;
-    }
-    frac = (disc_angle - angle_to_loc1) / width;
-    /* Compute dest, the location between loc1 and loc2 that the
+	if (angle_to_loc1 < disc_angle && disc_angle < angle_to_loc2) {
+		if (!tricky) {
+			/* I don't have to worry about walls */
+			throw_discs(spd, FALSE);
+			bi->throwing = FALSE;
+			return;
+		}
+		frac = (disc_angle - angle_to_loc1) / width;
+		/* Compute dest, the location between loc1 and loc2 that the
        disc will go to.  This computation is not exactly correct,
        because it assumes something is linear that isn't, but it's
        a lot faster than the correct computation. */
-    dest.x = (1-frac) * loc1->x + frac * loc2->x;
-    dest.y = (1-frac) * loc1->y + frac * loc2->y;
-    dest.grid_x = dest.x / BOX_WIDTH;
-    dest.grid_y = dest.y / BOX_HEIGHT;
+		dest.x = (1 - frac) * loc1->x + frac * loc2->x;
+		dest.y = (1 - frac) * loc1->y + frac * loc2->y;
+		dest.grid_x = dest.x / BOX_WIDTH;
+		dest.grid_y = dest.y / BOX_HEIGHT;
 
 #if 0
-    printf("frac: %.2f  dest: <%d %d>\n",frac,dest.x,dest.y);
+		printf("frac: %.2f  dest: <%d %d>\n", frac, dest.x, dest.y);
 #endif
 
-    /* If the disc can make it to dest, heave it */
-    if (clear_path(&disc->loc,&dest)) {
-      throw_discs(spd,FALSE); bi->throwing = FALSE; return;
-    }
-  }
-
-  /* Predict where the disc is going.  See Buddy_throw_to_loc. */
-  dx = me->loc.x - disc->loc.x;
-  dy = me->loc.y - disc->loc.y;
-  dist = dx * dx + dy * dy;
-  delta = (dist <= DISC_ORBIT_SQ) ? PI/2 * (2 - (dist / DISC_ORBIT_SQ))
-                                  : PI/2 * (DISC_ORBIT_SQ / dist);
-  new_disc_angle = (bi->spin == COUNTERCLOCKWISE) ? angle_to_me + delta
-                                                    : angle_to_me - delta;
-  fix_angle(new_disc_angle);
+		/* If the disc can make it to dest, heave it */
+		if (clear_path(&disc->loc, &dest)) {
+			throw_discs(spd, FALSE);
+			bi->throwing = FALSE;
+			return;
+		}
+	}
+	/* Predict where the disc is going.  See Buddy_throw_to_loc. */
+	dx = me->loc.x - disc->loc.x;
+	dy = me->loc.y - disc->loc.y;
+	dist = dx * dx + dy * dy;
+	delta = (dist <= DISC_ORBIT_SQ) ? PI / 2 * (2 - (dist / DISC_ORBIT_SQ))
+	  : PI / 2 * (DISC_ORBIT_SQ / dist);
+	new_disc_angle = (bi->spin == COUNTERCLOCKWISE) ? angle_to_me + delta
+	  : angle_to_me - delta;
+	fix_angle(new_disc_angle);
 
 #if 0
-  printf("new disc angle: %.2f  spin:%d \n", new_disc_angle,disc->spin);
+	printf("new disc angle: %.2f  spin:%d \n", new_disc_angle, disc->spin);
 #endif
 
-  /* If throwing next frame will win, do it */
-  if (angle_to_loc1 < new_disc_angle && new_disc_angle < angle_to_loc2) {
-    if (!tricky) {
-      throw_discs(spd,TRUE); bi->throwing = FALSE; return;
-    }
-    frac = (new_disc_angle - angle_to_loc1) / width;
-    dest.x = (1-frac) * loc1->x + frac * loc2->x;
-    dest.y = (1-frac) * loc1->y + frac * loc2->y;
-    dest.grid_x = dest.x / BOX_WIDTH;
-    dest.grid_y = dest.y / BOX_HEIGHT;
+	/* If throwing next frame will win, do it */
+	if (angle_to_loc1 < new_disc_angle && new_disc_angle < angle_to_loc2) {
+		if (!tricky) {
+			throw_discs(spd, TRUE);
+			bi->throwing = FALSE;
+			return;
+		}
+		frac = (new_disc_angle - angle_to_loc1) / width;
+		dest.x = (1 - frac) * loc1->x + frac * loc2->x;
+		dest.y = (1 - frac) * loc1->y + frac * loc2->y;
+		dest.grid_x = dest.x / BOX_WIDTH;
+		dest.grid_y = dest.y / BOX_HEIGHT;
 
 #if 0
-    printf("frac: %.2f  dest: <%d %d>\n",frac,dest.x,dest.y);
+		printf("frac: %.2f  dest: <%d %d>\n", frac, dest.x, dest.y);
 #endif
 
-    if (clear_path(&disc->loc,&dest)) {
-      throw_discs(spd,TRUE); bi->throwing = FALSE; return;
-    }
-  }
-
-  /* No throw in the near future works, so try to maneuver the disc into
+		if (clear_path(&disc->loc, &dest)) {
+			throw_discs(spd, TRUE);
+			bi->throwing = FALSE;
+			return;
+		}
+	}
+	/* No throw in the near future works, so try to maneuver the disc into
      a position where we can throw to the center of the range. */
-  good_angle = (angle_to_loc1 + angle_to_loc2) / 2;
-  diff = good_angle - disc_angle;
-  fix_angle(diff);
+	good_angle = (angle_to_loc1 + angle_to_loc2) / 2;
+	diff = good_angle - disc_angle;
+	fix_angle(diff);
 
 #if 0
-  printf("good angle: %.2f   diff: %.2f\n", good_angle, diff);
+	printf("good angle: %.2f   diff: %.2f\n", good_angle, diff);
 #endif
 
-  if (diff < PI/2) Buddy_spin_discs(CLOCKWISE);
-  else if (diff < PI) Buddy_spin_discs(COUNTERCLOCKWISE);
-  else if (diff < 3*PI/2) Buddy_spin_discs(CLOCKWISE);
-  else Buddy_spin_discs(COUNTERCLOCKWISE);
+	if (diff < PI / 2)
+		Buddy_spin_discs(CLOCKWISE);
+	else if (diff < PI)
+		Buddy_spin_discs(COUNTERCLOCKWISE);
+	else if (diff < 3 * PI / 2)
+		Buddy_spin_discs(CLOCKWISE);
+	else
+		Buddy_spin_discs(COUNTERCLOCKWISE);
 }
 
 /* Buddy_find_the_action(bi)
@@ -910,42 +933,41 @@ Buddy_throw_in_range(bi,loc1,loc2,tricky,spd)
 ** know where it is.  It causes me to move towards the center of
 ** mass of all other vehicles.
 */
-static
-Buddy_find_the_action(bi)
-     Binfo *bi;
+static Buddy_find_the_action(bi)
+Binfo *bi;
 {
-  int i;			/* counter; current blip */
-  int blips;			/* number of blips seen */
-  int x,y;			/* accumulator of blip locations, so that
+	int i;						/* counter; current blip */
+	int blips;					/* number of blips seen */
+	int x, y;					/* accumulator of blip locations, so that
 				   dividing by 'blips' will find the
 				   center of mass */
 
-  get_blips(&bi->numblips,bi->blinfo);
-  if (bi->numblips) {
-    x = 0; y = 0; blips = 0;
+	get_blips(&bi->numblips, bi->blinfo);
+	if (bi->numblips) {
+		x = 0;
+		y = 0;
+		blips = 0;
 
-    for (i=0;i<bi->numblips;++i) {
-      /* only look at ones out of view; the vehicles we can see
+		for (i = 0; i < bi->numblips; ++i) {
+			/* only look at ones out of view; the vehicles we can see
 	 probably don't have a clue of where the action is either. */
-      if (bi->blinfo[i].x < bi->me.loc.grid_x - 2 ||
-	  bi->blinfo[i].x > bi->me.loc.grid_x + 2 ||
-	  bi->blinfo[i].y < bi->me.loc.grid_y - 2 ||
-	  bi->blinfo[i].y > bi->me.loc.grid_y + 2)
-	{
-	  x += bi->blinfo[i].x;
-	  y += bi->blinfo[i].y;
-	  blips++;
-	}
-    }
+			if (bi->blinfo[i].x < bi->me.loc.grid_x - 2 ||
+				bi->blinfo[i].x > bi->me.loc.grid_x + 2 ||
+				bi->blinfo[i].y < bi->me.loc.grid_y - 2 ||
+				bi->blinfo[i].y > bi->me.loc.grid_y + 2) {
+				x += bi->blinfo[i].x;
+				y += bi->blinfo[i].y;
+				blips++;
+			}
+		}
 
-    /* Head for the action */
-    if (blips)
-      Buddy_go_to_box(bi, x/blips, y/blips);
-    else
-      Buddy_wander(bi);
-  }
-  else
-    Buddy_wander(bi);
+		/* Head for the action */
+		if (blips)
+			Buddy_go_to_box(bi, x / blips, y / blips);
+		else
+			Buddy_wander(bi);
+	} else
+		Buddy_wander(bi);
 }
 
 /* Buddy_move_into_box(bi,gx,gy)
@@ -962,53 +984,55 @@ Buddy_find_the_action(bi)
 ** a destination.  It is called repeatedly with successive squares
 ** in the path.
 */
-static
-Buddy_move_into_box(bi,gx,gy)
-     Binfo *bi;
-     int gx,gy;
+static Buddy_move_into_box(bi, gx, gy)
+Binfo *bi;
+int gx, gy;
 {
-  int dx,dy;			/* deltas from me to location */
+	int dx, dy;					/* deltas from me to location */
 
-  /* Initially, assume I'm heading for the center of the box */
-  dx = gx * BOX_WIDTH - bi->me.loc.x + HALF_BOX_WIDTH;
-  dy = gy * BOX_HEIGHT - bi->me.loc.y + HALF_BOX_HEIGHT;
+	/* Initially, assume I'm heading for the center of the box */
+	dx = gx * BOX_WIDTH - bi->me.loc.x + HALF_BOX_WIDTH;
+	dy = gy * BOX_HEIGHT - bi->me.loc.y + HALF_BOX_HEIGHT;
 
-  /* If I'm west of the box, head for its west edge, etc.
+	/* If I'm west of the box, head for its west edge, etc.
      The offset is to keep me safely away from corners. */
-  if (gx > bi->me.loc.grid_x) dx -= HALF_BOX_WIDTH - 20;
-  else if (gx < bi->me.loc.grid_x) dx += HALF_BOX_WIDTH - 20;
+	if (gx > bi->me.loc.grid_x)
+		dx -= HALF_BOX_WIDTH - 20;
+	else if (gx < bi->me.loc.grid_x)
+		dx += HALF_BOX_WIDTH - 20;
 
-  if (gy > bi->me.loc.grid_y) dy -= HALF_BOX_HEIGHT - 20;
-  else if (gy < bi->me.loc.grid_y) dy += HALF_BOX_HEIGHT - 20;
+	if (gy > bi->me.loc.grid_y)
+		dy -= HALF_BOX_HEIGHT - 20;
+	else if (gy < bi->me.loc.grid_y)
+		dy += HALF_BOX_HEIGHT - 20;
 
-  set_rel_drive(9.0);
-  turn_vehicle((Angle)ATAN2(dy,dx));
+	set_rel_drive(9.0);
+	turn_vehicle((Angle) ATAN2(dy, dx));
 }
 
 /* Buddy_go_get_the_disc(bi)
 **
-** Causes me to chase the disc, only if it is unowned or 
+** Causes me to chase the disc, only if it is unowned or
 ** enemy controlled.  Otherwise, I head towards the enemy goal.
 */
-static
-Buddy_go_get_the_disc(bi)
-     Binfo *bi;
+static Buddy_go_get_the_disc(bi)
+Binfo *bi;
 {
-  int dx,dy;			/* deltas to disc location */
-  int distsq;			/* square of distance to disc */
-  int i = 0;			/* counter; frame of lookahead */
-  Location *discloc;		/* location of disc */
-  Disc_info *discinfo;		/* info about disc */
-  ID owner;			/* who owns the disc */
-  
-  owner = bi->dinfo[0].owner;
-  
-  if (owner == NO_OWNER || team(owner) != bi->me.team) {
-    
-    discinfo = &bi->dinfo[0];
-    discloc = &discinfo->loc;
-    
-    /* Predict where the disc is going to go, and cut it off as soon
+	int dx, dy;					/* deltas to disc location */
+	int distsq;					/* square of distance to disc */
+	int i = 0;					/* counter; frame of lookahead */
+	Location *discloc;			/* location of disc */
+	Disc_info *discinfo;		/* info about disc */
+	ID owner;					/* who owns the disc */
+
+	owner = bi->dinfo[0].owner;
+
+	if (owner == NO_OWNER || team(owner) != bi->me.team) {
+
+		discinfo = &bi->dinfo[0];
+		discloc = &discinfo->loc;
+
+		/* Predict where the disc is going to go, and cut it off as soon
        as possible.  For each frame in the future, I update the disc's
        position, checking for bounces off walls.  If I think I can
        reach it by then, I head for that location to cut it off.
@@ -1016,92 +1040,93 @@ Buddy_go_get_the_disc(bi)
        towards where it will be then, hoping to be able to cut it off
        later. */
 
-    while (i++ < DISC_FRAMES) {
-      int oldx, oldy;		/* old grid location of disc */
+		while (i++ < DISC_FRAMES) {
+			int oldx, oldy;		/* old grid location of disc */
 
-      oldx = discloc->x / BOX_WIDTH;
-      oldy = discloc->y / BOX_HEIGHT;
+			oldx = discloc->x / BOX_WIDTH;
+			oldy = discloc->y / BOX_HEIGHT;
 
 #ifdef B_DEBUG
-      printf("%d: <%d %d> [%d %d] with speed %.2f %.2f\n",
-	     i, oldx, oldy,
-	     discloc->x - oldx * BOX_WIDTH,
-	     discloc->y - oldy * BOX_HEIGHT,
-	     discinfo->xspeed, discinfo->yspeed);
-#endif B_DEBUG
+			printf("%d: <%d %d> [%d %d] with speed %.2f %.2f\n",
+				   i, oldx, oldy,
+				   discloc->x - oldx * BOX_WIDTH,
+				   discloc->y - oldy * BOX_HEIGHT,
+				   discinfo->xspeed, discinfo->yspeed);
+#endif /* B_DEBUG */
 
-      /* Update disc's position for this frame */
-      discloc->x += (int) discinfo->xspeed;
-      discloc->y += (int) discinfo->yspeed;
-      discloc->grid_x = discloc->x / BOX_WIDTH;
-      discloc->grid_y = discloc->y / BOX_HEIGHT;
+			/* Update disc's position for this frame */
+			discloc->x += (int) discinfo->xspeed;
+			discloc->y += (int) discinfo->yspeed;
+			discloc->grid_x = discloc->x / BOX_WIDTH;
+			discloc->grid_y = discloc->y / BOX_HEIGHT;
 
-      /* Check to see if it tried to go through a wall, and bounce it
+			/* Check to see if it tried to go through a wall, and bounce it
 	 appropriately if it did.  This code is not perfect.  Yet. */
-      if (oldx == discloc->grid_x - 1) {
-	if (Buddy_wall_east(bi,oldx,oldy)) {
-	  /* Bring disc back to this side of the wall */
-	  discloc->x -= (discloc->x % BOX_WIDTH) * 2;
-	  /* Don't let the disc be right on a wall, or it will
+			if (oldx == discloc->grid_x - 1) {
+				if (Buddy_wall_east(bi, oldx, oldy)) {
+					/* Bring disc back to this side of the wall */
+					discloc->x -= (discloc->x % BOX_WIDTH) * 2;
+					/* Don't let the disc be right on a wall, or it will
 	     seem to bounce twice. */
-	  if (discloc->x % BOX_WIDTH == 0) discloc->x -= 1;
-	  discinfo->xspeed = -discinfo->xspeed;
-	}
-      }
-      else if (oldx == discloc->grid_x + 1) {
-	if (Buddy_wall_west(bi,oldx,oldy)) {
-	  discloc->x += (BOX_WIDTH - (discloc->x % BOX_WIDTH)) * 2;
-	  if (discloc->x % BOX_WIDTH == 0) discloc->x += 1;
-	  discinfo->xspeed = -discinfo->xspeed;
-	}
-      }
-  
-      if (oldy == discloc->grid_y - 1) {
-	if (Buddy_wall_south(bi,oldx,oldy)) {
-	  discloc->y -= (discloc->y % BOX_HEIGHT) * 2;
-	  if (discloc->y % BOX_HEIGHT == 0) discloc->y -= 1;
-	  discinfo->yspeed = -discinfo->yspeed;
-	}
-      }
-      else if (oldy == discloc->grid_y + 1) {
-	if (Buddy_wall_north(bi,oldx,oldy)) {
-	  discloc->y += (BOX_HEIGHT - (discloc->y % BOX_HEIGHT)) * 2;
-	  if (discloc->y % BOX_HEIGHT == 0) discloc->y += 1;
-	  discinfo->yspeed = -discinfo->yspeed;
-	}
-      }
+					if (discloc->x % BOX_WIDTH == 0)
+						discloc->x -= 1;
+					discinfo->xspeed = -discinfo->xspeed;
+				}
+			} else if (oldx == discloc->grid_x + 1) {
+				if (Buddy_wall_west(bi, oldx, oldy)) {
+					discloc->x += (BOX_WIDTH - (discloc->x % BOX_WIDTH)) * 2;
+					if (discloc->x % BOX_WIDTH == 0)
+						discloc->x += 1;
+					discinfo->xspeed = -discinfo->xspeed;
+				}
+			}
+			if (oldy == discloc->grid_y - 1) {
+				if (Buddy_wall_south(bi, oldx, oldy)) {
+					discloc->y -= (discloc->y % BOX_HEIGHT) * 2;
+					if (discloc->y % BOX_HEIGHT == 0)
+						discloc->y -= 1;
+					discinfo->yspeed = -discinfo->yspeed;
+				}
+			} else if (oldy == discloc->grid_y + 1) {
+				if (Buddy_wall_north(bi, oldx, oldy)) {
+					discloc->y += (BOX_HEIGHT - (discloc->y % BOX_HEIGHT)) * 2;
+					if (discloc->y % BOX_HEIGHT == 0)
+						discloc->y += 1;
+					discinfo->yspeed = -discinfo->yspeed;
+				}
+			}
+			discinfo->xspeed *= bi->settings.disc_friction;
+			discinfo->yspeed *= bi->settings.disc_friction;
 
-      discinfo->xspeed *= bi->settings.disc_friction;
-      discinfo->yspeed *= bi->settings.disc_friction;
+			dx = discloc->x - bi->me.loc.x;
+			dy = discloc->y - bi->me.loc.y;
+			distsq = sqr(dx) + sqr(dy);
 
-      dx = discloc->x - bi->me.loc.x;
-      dy = discloc->y - bi->me.loc.y;
-      distsq = sqr(dx) + sqr(dy);
-      
-      /* If I can catch it, fine-tune my speed so I don't overrun it */
-      if (distsq < sqr(((int)bi->maxspeed) * i)) {
-	set_abs_drive((float)(sqrtint(distsq) / i));
-	break;
-      }
-    }
+			/* If I can catch it, fine-tune my speed so I don't overrun it */
+			if (distsq < sqr(((int) bi->maxspeed) * i)) {
+				set_abs_drive((float) (sqrtint(distsq) / i));
+				break;
+			}
+		}
 
-    discloc->grid_x = discloc->x / BOX_WIDTH;
-    discloc->grid_y = discloc->y / BOX_HEIGHT;
-    discloc->box_x = discloc->x % BOX_WIDTH;
-    discloc->box_y = discloc->y % BOX_HEIGHT;
+		discloc->grid_x = discloc->x / BOX_WIDTH;
+		discloc->grid_y = discloc->y / BOX_HEIGHT;
+		discloc->box_x = discloc->x % BOX_WIDTH;
+		discloc->box_y = discloc->y % BOX_HEIGHT;
 
-    bi->desireddir = ATAN2(dy, dx);
-    fix_angle(bi->desireddir);
-    if (i == DISC_FRAMES) set_rel_drive(9.0);
+		bi->desireddir = ATAN2(dy, dx);
+		fix_angle(bi->desireddir);
+		if (i == DISC_FRAMES)
+			set_rel_drive(9.0);
 
-    /* If there's a clear path to it, head for it.  Otherwise, avoid
+		/* If there's a clear path to it, head for it.  Otherwise, avoid
        any intervening obstacles. */
-    if (clear_path(&bi->me.loc,discloc))
-      turn_vehicle(bi->desireddir);
-    else
-      Buddy_go_to_box(bi,discloc->grid_x,discloc->grid_y);
-  } 
-  else Buddy_go_to_goal(bi);	/* my teammate has it, go out for a pass */
+		if (clear_path(&bi->me.loc, discloc))
+			turn_vehicle(bi->desireddir);
+		else
+			Buddy_go_to_box(bi, discloc->grid_x, discloc->grid_y);
+	} else
+		Buddy_go_to_goal(bi);	/* my teammate has it, go out for a pass */
 }
 
 /* Buddy_go_to_box(bi,gx,gy)
@@ -1111,22 +1136,23 @@ Buddy_go_get_the_disc(bi)
 ** to that box, but there's something in the way.
 */
 static Inline
-Buddy_go_to_box(bi,gx,gy)
-     Binfo *bi;
-     int gx,gy;
+  Buddy_go_to_box(bi, gx, gy)
+Binfo *bi;
+int gx, gy;
 {
-  int mx,my;			/* My location */
+	int mx, my;					/* My location */
 
-  mx = bi->me.loc.grid_x;
-  my = bi->me.loc.grid_y;
+	mx = bi->me.loc.grid_x;
+	my = bi->me.loc.grid_y;
 
-  /* Try to find a path to that square.  If there is one, take that path,
+	/* Try to find a path to that square.  If there is one, take that path,
      otherwise complain. */
-  if (Buddy_compute_path_to_square(bi,mx,my,gx,gy))
-    Buddy_move_into_box(bi,
-			bi->scrapmaze[mx][my].nextx,
-			bi->scrapmaze[mx][my].nexty);
-  else printf("No way from <%d %d> to <%d %d>\n",mx,my,gx,gy);
+	if (Buddy_compute_path_to_square(bi, mx, my, gx, gy))
+		Buddy_move_into_box(bi,
+							bi->scrapmaze[mx][my].nextx,
+							bi->scrapmaze[mx][my].nexty);
+	else
+		printf("No way from <%d %d> to <%d %d>\n", mx, my, gx, gy);
 }
 
 /* Buddy_compute_path_to_square(bi,x1,y1,x2,y2)
@@ -1135,33 +1161,32 @@ Buddy_go_to_box(bi,gx,gy)
 ** Puts the information about that path (and all others of that distance
 ** or less) in the scrap maze.
 */
-static
-Buddy_compute_path_to_square(bi,x1,y1,x2,y2)
-     Binfo *bi;
-     int x1,y1,x2,y2;
+static Buddy_compute_path_to_square(bi, x1, y1, x2, y2)
+Binfo *bi;
+int x1, y1, x2, y2;
 {
-  int i,j;			/* counters */
-  
-  /* If the last path I computed was to the same destination, and
+	int i, j;					/* counters */
+
+	/* If the last path I computed was to the same destination, and
      I figured out what the path from this starting location is, use
      that information */
-  if ((x2 == bi->lastfillorigin.x)
-      && (y2 == bi->lastfillorigin.y)
-      && bi->scrapmaze[x1][y1].seen)
-    return(TRUE);
-  else {
-    /* Clear the scrap maze */
-    for (i=0;i<GRID_WIDTH;++i) {
-      for (j=0;j<GRID_HEIGHT;++j) {
-	bi->scrapmaze[i][j].seen = FALSE;
-      }
-    }
-    /* Store the destination so that the next call won't have to
+	if ((x2 == bi->lastfillorigin.x)
+		&& (y2 == bi->lastfillorigin.y)
+		&& bi->scrapmaze[x1][y1].seen)
+		return (TRUE);
+	else {
+		/* Clear the scrap maze */
+		for (i = 0; i < GRID_WIDTH; ++i) {
+			for (j = 0; j < GRID_HEIGHT; ++j) {
+				bi->scrapmaze[i][j].seen = FALSE;
+			}
+		}
+		/* Store the destination so that the next call won't have to
        recompute everything if it's looking for paths to the same place. */
-    bi->lastfillorigin.x = x2;
-    bi->lastfillorigin.y = y2;
-    return (Buddy_compute_path(bi,x1,y1,x2,y2,bi->scrapmaze,MAX_FILL_DEPTH));
-  }
+		bi->lastfillorigin.x = x2;
+		bi->lastfillorigin.y = y2;
+		return (Buddy_compute_path(bi, x1, y1, x2, y2, bi->scrapmaze, MAX_FILL_DEPTH));
+	}
 }
 
 /* Buddy_compute_path(bi,x1,y1,x2,y2,maze,maxdepth)
@@ -1183,96 +1208,99 @@ Buddy_compute_path_to_square(bi,x1,y1,x2,y2)
 ** By tracing these locations, one will eventually end up at the original
 ** square.
 */
-static
-Buddy_compute_path(bi,x1,y1,x2,y2,maze,maxdepth)
-     Binfo *bi;
-     int x1,y1,x2,y2;
-     Mazebox maze[GRID_WIDTH][GRID_HEIGHT];
-     int maxdepth;
+static Buddy_compute_path(bi, x1, y1, x2, y2, maze, maxdepth)
+Binfo *bi;
+int x1, y1, x2, y2;
+Mazebox maze[GRID_WIDTH][GRID_HEIGHT];
+int maxdepth;
 {
-  int num_on_edge = 1;		/* number of squares on the edge of the fill */
-  int next_num_on_edge;		/* number of squares for next iteration */
-  int depth;			/* current depth of fill */
-  Coord *curr_cut;		/* array of squares on edge of fill */
-  Coord *next_cut;		/* array for next iteration */
-  int cx, cy;			/* current square on edge */
-  int i;			/* counter; number of current square
+	int num_on_edge = 1;		/* number of squares on the edge of the fill */
+	int next_num_on_edge;		/* number of squares for next iteration */
+	int depth;					/* current depth of fill */
+	Coord *curr_cut;			/* array of squares on edge of fill */
+	Coord *next_cut;			/* array for next iteration */
+	int cx, cy;					/* current square on edge */
+	int i;						/* counter; number of current square
                                    in curr_cut */
 
-  maze[x2][y2].seen = TRUE;	/* we've seen the destination square */
-  maze[x2][y2].dist = 0;
+	maze[x2][y2].seen = TRUE;	/* we've seen the destination square */
+	maze[x2][y2].dist = 0;
 
-  /* Set the cut arrays to space reserved in bi */
-  curr_cut = bi->cutting_edge;
-  next_cut = bi->cutting_edge2;
+	/* Set the cut arrays to space reserved in bi */
+	curr_cut = bi->cutting_edge;
+	next_cut = bi->cutting_edge2;
 
-  /* The `cutting edge' of the fill is originally simply the first square */
-  curr_cut[0].x = x2;
-  curr_cut[0].y = y2;
+	/* The `cutting edge' of the fill is originally simply the first square */
+	curr_cut[0].x = x2;
+	curr_cut[0].y = y2;
 
-  /* Keep flooding until I've reached maxdepth, or there's nowhere
+	/* Keep flooding until I've reached maxdepth, or there's nowhere
      to flood */
-  for (depth = 0; depth < maxdepth && num_on_edge > 0; ++depth) {
-    next_num_on_edge = 0;
-    for (i = 0; i < num_on_edge; ++i) {
-      cx = curr_cut[i].x;
-      cy = curr_cut[i].y;
-      /* If I've accidentally flooded out of the maze, abort */
-      if (cx < 0 || cy < 0 || cx >= GRID_WIDTH || cy >= GRID_HEIGHT)
-	return(FALSE);
-      /* If there's open space to the north, and I haven't seen that
+	for (depth = 0; depth < maxdepth && num_on_edge > 0; ++depth) {
+		next_num_on_edge = 0;
+		for (i = 0; i < num_on_edge; ++i) {
+			cx = curr_cut[i].x;
+			cy = curr_cut[i].y;
+			/* If I've accidentally flooded out of the maze, abort */
+			if (cx < 0 || cy < 0 || cx >= GRID_WIDTH || cy >= GRID_HEIGHT)
+				return (FALSE);
+			/* If there's open space to the north, and I haven't seen that
 	 square yet, flood into it */
-      if (!Buddy_wall_north(bi,cx,cy) && !maze[cx][cy-1].seen) {
-	maze[cx][cy-1].nextx = cx;
-	maze[cx][cy-1].nexty = cy;
-	maze[cx][cy-1].seen = TRUE;
-	maze[cx][cy-1].dist = depth + 1;
-	/* Return if I've made it to the start square */
-	if ((cx == x1) && (cy-1 == y1)) return(TRUE);
-	/* Update the cut array for the next iteration */
-	next_cut[next_num_on_edge].x = cx;
-	next_cut[next_num_on_edge++].y = cy - 1;
-      }
-      if (!Buddy_wall_south(bi,cx,cy) && !maze[cx][cy+1].seen) {
-	maze[cx][cy+1].nextx = cx;
-	maze[cx][cy+1].nexty = cy;
-	maze[cx][cy+1].seen = TRUE;
-	maze[cx][cy+1].dist = depth + 1;
-	if ((cx == x1) && (cy+1 == y1)) return(TRUE);
-	next_cut[next_num_on_edge].x = cx;
-	next_cut[next_num_on_edge++].y = cy + 1;
-      }
-      if (!Buddy_wall_west(bi,cx,cy) && !maze[cx-1][cy].seen) {
-	maze[cx-1][cy].nextx = cx;
-	maze[cx-1][cy].nexty = cy;
-	maze[cx-1][cy].seen = TRUE;
-	maze[cx-1][cy].dist = depth + 1;
-	if ((cx-1 == x1) && (cy == y1)) return(TRUE);
-	next_cut[next_num_on_edge].x = cx - 1;
-	next_cut[next_num_on_edge++].y = cy;
-      }
-      if (!Buddy_wall_east(bi,cx,cy) && !maze[cx+1][cy].seen) {
-	maze[cx+1][cy].nextx = cx;
-	maze[cx+1][cy].nexty = cy;
-	maze[cx+1][cy].seen = TRUE;
-	maze[cx+1][cy].dist = depth + 1;
-	if ((cx+1 == x1) && (cy == y1)) return(TRUE);
-	next_cut[next_num_on_edge].x = cx + 1;
-	next_cut[next_num_on_edge++].y = cy;
-      }
-    }
-    /* Switch the cut arrays so that the one that I filled up last
+			if (!Buddy_wall_north(bi, cx, cy) && !maze[cx][cy - 1].seen) {
+				maze[cx][cy - 1].nextx = cx;
+				maze[cx][cy - 1].nexty = cy;
+				maze[cx][cy - 1].seen = TRUE;
+				maze[cx][cy - 1].dist = depth + 1;
+				/* Return if I've made it to the start square */
+				if ((cx == x1) && (cy - 1 == y1))
+					return (TRUE);
+				/* Update the cut array for the next iteration */
+				next_cut[next_num_on_edge].x = cx;
+				next_cut[next_num_on_edge++].y = cy - 1;
+			}
+			if (!Buddy_wall_south(bi, cx, cy) && !maze[cx][cy + 1].seen) {
+				maze[cx][cy + 1].nextx = cx;
+				maze[cx][cy + 1].nexty = cy;
+				maze[cx][cy + 1].seen = TRUE;
+				maze[cx][cy + 1].dist = depth + 1;
+				if ((cx == x1) && (cy + 1 == y1))
+					return (TRUE);
+				next_cut[next_num_on_edge].x = cx;
+				next_cut[next_num_on_edge++].y = cy + 1;
+			}
+			if (!Buddy_wall_west(bi, cx, cy) && !maze[cx - 1][cy].seen) {
+				maze[cx - 1][cy].nextx = cx;
+				maze[cx - 1][cy].nexty = cy;
+				maze[cx - 1][cy].seen = TRUE;
+				maze[cx - 1][cy].dist = depth + 1;
+				if ((cx - 1 == x1) && (cy == y1))
+					return (TRUE);
+				next_cut[next_num_on_edge].x = cx - 1;
+				next_cut[next_num_on_edge++].y = cy;
+			}
+			if (!Buddy_wall_east(bi, cx, cy) && !maze[cx + 1][cy].seen) {
+				maze[cx + 1][cy].nextx = cx;
+				maze[cx + 1][cy].nexty = cy;
+				maze[cx + 1][cy].seen = TRUE;
+				maze[cx + 1][cy].dist = depth + 1;
+				if ((cx + 1 == x1) && (cy == y1))
+					return (TRUE);
+				next_cut[next_num_on_edge].x = cx + 1;
+				next_cut[next_num_on_edge++].y = cy;
+			}
+		}
+		/* Switch the cut arrays so that the one that I filled up last
        time is now the primary one, and vice versa. */
-    if (curr_cut == bi->cutting_edge) {
-      curr_cut = bi->cutting_edge2;
-      next_cut = bi->cutting_edge;
-    } else {
-      curr_cut = bi->cutting_edge;
-      next_cut = bi->cutting_edge2;
-    }
-    num_on_edge = next_num_on_edge;
-  }
-  return(FALSE);		/* Couldn't find a path */
+		if (curr_cut == bi->cutting_edge) {
+			curr_cut = bi->cutting_edge2;
+			next_cut = bi->cutting_edge;
+		} else {
+			curr_cut = bi->cutting_edge;
+			next_cut = bi->cutting_edge2;
+		}
+		num_on_edge = next_num_on_edge;
+	}
+	return (FALSE);				/* Couldn't find a path */
 }
 
 /* Buddy_wander(bi)
@@ -1281,48 +1309,59 @@ Buddy_compute_path(bi,x1,y1,x2,y2,maze,maxdepth)
 ** It causes me to continue going in my current direction but to
 ** avoid walls.
 */
-static
-Buddy_wander(bi)
-     Binfo *bi;
+static Buddy_wander(bi)
+Binfo *bi;
 {
-  int mx,my;			/* my location */
-  Angle dir;			/* my heading */
+	int mx, my;					/* my location */
+	Angle dir;					/* my heading */
 
-  mx = bi->me.loc.grid_x;
-  my = bi->me.loc.grid_y;
-  dir = bi->me.heading;
+	mx = bi->me.loc.grid_x;
+	my = bi->me.loc.grid_y;
+	dir = bi->me.heading;
 
-  if (dir > PI/4 && dir < 3*PI/4) {                  /* south */
-    if (Buddy_wall_south(bi,mx,my)) {
-      if (Buddy_wall_west(bi,mx,my)) turn_vehicle(0.0);
-      else if (Buddy_wall_east(bi,mx,my)) turn_vehicle(PI);
-      else if (dir < PI/2) turn_vehicle(0.0);
-      else turn_vehicle(PI);
-    }
-  }
-  else if (dir >= 3*PI/4 && dir < 5*PI/4) {          /* west */
-    if (Buddy_wall_west(bi,mx,my)) {
-      if (Buddy_wall_north(bi,mx,my)) turn_vehicle(PI/2);
-      else if (Buddy_wall_south(bi,mx,my)) turn_vehicle(3*PI/2);
-      else if (dir < PI) turn_vehicle(PI/2);
-      else turn_vehicle(3*PI/2);
-    }
-  }
-  else if (dir >= 5*PI/4 && dir < 7*PI/4) {          /* north */
-    if (Buddy_wall_north(bi,mx,my)) {
-      if (Buddy_wall_east(bi,mx,my)) turn_vehicle(PI);
-      else if (Buddy_wall_west(bi,mx,my)) turn_vehicle(0.0);
-      else if (dir < 3*PI/2) turn_vehicle(PI/2);
-      else turn_vehicle(0.0);
-    }
-  }
-  else if (dir >= 3*PI/4 && dir < 5*PI/4) {          /* east */
-    if (Buddy_wall_east(bi,mx,my)) {
-      if (Buddy_wall_south(bi,mx,my)) turn_vehicle(3*PI/2);
-      else if (Buddy_wall_north(bi,mx,my)) turn_vehicle(PI/2);
-      else if (dir > PI) turn_vehicle(3*PI/2);
-      else turn_vehicle(PI/2);
-    }
-  }
+	if (dir > PI / 4 && dir < 3 * PI / 4) {	/* south */
+		if (Buddy_wall_south(bi, mx, my)) {
+			if (Buddy_wall_west(bi, mx, my))
+				turn_vehicle(0.0);
+			else if (Buddy_wall_east(bi, mx, my))
+				turn_vehicle(PI);
+			else if (dir < PI / 2)
+				turn_vehicle(0.0);
+			else
+				turn_vehicle(PI);
+		}
+	} else if (dir >= 3 * PI / 4 && dir < 5 * PI / 4) {	/* west */
+		if (Buddy_wall_west(bi, mx, my)) {
+			if (Buddy_wall_north(bi, mx, my))
+				turn_vehicle(PI / 2);
+			else if (Buddy_wall_south(bi, mx, my))
+				turn_vehicle(3 * PI / 2);
+			else if (dir < PI)
+				turn_vehicle(PI / 2);
+			else
+				turn_vehicle(3 * PI / 2);
+		}
+	} else if (dir >= 5 * PI / 4 && dir < 7 * PI / 4) {	/* north */
+		if (Buddy_wall_north(bi, mx, my)) {
+			if (Buddy_wall_east(bi, mx, my))
+				turn_vehicle(PI);
+			else if (Buddy_wall_west(bi, mx, my))
+				turn_vehicle(0.0);
+			else if (dir < 3 * PI / 2)
+				turn_vehicle(PI / 2);
+			else
+				turn_vehicle(0.0);
+		}
+	} else if (dir >= 3 * PI / 4 && dir < 5 * PI / 4) {	/* east */
+		if (Buddy_wall_east(bi, mx, my)) {
+			if (Buddy_wall_south(bi, mx, my))
+				turn_vehicle(3 * PI / 2);
+			else if (Buddy_wall_north(bi, mx, my))
+				turn_vehicle(PI / 2);
+			else if (dir > PI)
+				turn_vehicle(3 * PI / 2);
+			else
+				turn_vehicle(PI / 2);
+		}
+	}
 }
-

@@ -1,29 +1,20 @@
 /*
+** Xtank
+**
+** Copyright 1989 by Mike Shanzer
+**
+** Flipper.c
+*/
+
+/*
+$Author: lidl $
+$Id: Flipper.c,v 1.1.1.1 1995/02/01 00:25:46 lidl Exp $
+*/
+
+/*
  * Written 13-Jan-89 (Friday!), 'cause, well, why not.
  * Contact Mike Shanzer
  */
-
-/*
-$Author: rpotter $
-$Id: Flipper.c,v 2.3 1991/02/10 13:49:59 rpotter Exp $
-
-$Log: Flipper.c,v $
- * Revision 2.3  1991/02/10  13:49:59  rpotter
- * bug fixes, display tweaks, non-restart fixes, header reorg.
- *
- * Revision 2.2  91/01/20  09:57:10  rpotter
- * complete rewrite of vehicle death, other tweaks
- * 
- * Revision 2.1  91/01/17  07:10:41  rpotter
- * lint warnings and a fix to update_vector()
- * 
- * Revision 2.0  91/01/17  02:08:53  rpotter
- * small changes
- * 
- * Revision 1.1  90/12/29  21:01:49  aahz
- * Initial revision
- * 
-*/
 
 #include "xtanklib.h"
 #include <math.h>

@@ -1,0 +1,226 @@
+This is documentation for some of my (and others) enhancements to Xtank.  It
+only mentions significant visible changes, not my many internal tweaks and
+swizzles.
+
+Also see the Imakefile.README file.
+
+Comments to nabil@world.net and/or rec.games.xtank.programmer.
+
+Aaron Nabil-Eastlund '93
+
+
+KEYPAD FEATURE -  As if you can't fire fast enough already...
+
+  Fires a weapon by pressing the corresponding keypad number.
+
+  "Top row" numbers are unaffected and have the normal action.
+
+  If the weapon is off, will turn on, fire once, then turn off again.
+
+  VERY HANDY FOR MINES!
+
+
+NO NAME TAGS FEATURE - Anonymity gauranteed.
+
+  Slightly speeds up some systems (That's why I put it in).
+
+  I kinda like the uncluttured look and usually play with it on.
+
+  PROGRAMMER'S NOTES:
+    Should be selectable with resource (but forcable too).
+
+
+FORCE SPECIALS FEATURE - Make everyone play by *your* rules.
+
+  Well, at least it was my *idea*!  (Someone else wrote it as an 
+  extension of my now extinct FORCE_RADAR swicth)
+
+  Lets you selectivly force ON or OFF specials from ALL players vehicles.
+  
+  Under SETTINGS/FORCE SPECIALS.
+
+  PROGRAMMER'S NOTES:
+    Implementer moved code from program.c to vehicle.c, old code still in
+    program.c commented out.
+
+
+HUD (Heads Up Display) SPECIAL - Keeps your eyes on the road.
+
+  Weapon line idea stolen from somebody's HUDbot.  Thanks, whoever you were.  
+
+  Shows the maximum range of online weapons.  Vector is velocity-corrected
+  path of bullet.  Dunno if it is set right for Laser weapons.
+
+  Also display "critical" (red-zone) armor.  Let's you keep "weak" sides
+  away from your enemies.
+
+
+DAMAGE SUBSYSTEM - Die bit by bit.
+
+  Still in development.
+
+  Currently...
+
+  ANY hits...
+
+    On TOP can knock your NEWRADAR offline and/or destroy your old RADAR
+
+  If you are into "red" armor
+
+    On BACK can cripple/destroy your cooling system
+    On FRONT can destroy NEWRADAR or RDF 
+
+  PROGRAMMER'S NOTES:  
+    Some lowlib support via query_special() to check special status.
+
+
+NEWRADAR SPECIAL - Radar for the 1990's!
+
+  There is a slight delay (24 frames) upon activating NR, this is normal.
+
+  The new radar system is similar to a radar system of the 1990's instead
+  of the 1960's.  Big fat vehicles show up better on the radar screen, they
+  have a bigger RCS (Radar Cross Section) and are visible from further
+  away.
+
+  If you have an operating TACLINK, blips on your scope appear "solid",
+  while those acquired over the TACLINK appear as "empty".  If IFF is
+  available, your "friends" will appear as their vehicle ID numbers.  You
+  should be able to get IFF over TACLINK even if you don't have it.  Havn't
+  tested that yet though.
+
+
+  PROGRAMMER'S NOTES:  
+    RCS can be set by other modules to enable stealthy-type action. 
+
+    I intentional put a backward-compatibility translator into get_blips
+    so that you can use the old radar get_blips call to get new radar data.
+    Haven't tried it, but I think it works.
+  
+
+IFF (Identify Friend or Foe) SPECIAL - Know who your friends are!
+
+  Allows you to distinguish friends and enemys (and allies) on the new
+  radar. Works with public-key cryptography, you must have the IFF key of
+  your ally and he must have your key for it to work. You share IFF keys
+  with your teammates automatically.
+
+  NewRadar sets come equipped with a code transponder.  When the vehicle is
+  illuminated by a radar beam, the transponder replies with a coded message 
+  that can identify the vehicle as a friend.  All team-mates share the codes
+  necessary for this to happen automatically.  Non-team allies can share this
+  data by EXCHANGING IFF cryptographic keys with the message subsystem.  If the
+  illuminated vehicle responds with a Friend message, the anonymous blip on the 
+  radar is replaced with a color-coded number of the vehicle ID.
+
+  Note that the Taclink subsystem has similar functionality, however Taclink
+  keeps all of your team mates (and IFF friends) abreast of your location
+  independant of radar operation.  Taclink friends are displayed in the same
+  manner as Radar IFF friends, and the crypto key system is shared both.
+
+  If you want a NON-TEAMATE to have an IFF "friend" designation (ie, they
+  will show up as a number on the NR display and get TACLINK info) you must
+  *EXCHANGE* IFF keys with them.  To exchange an IFF key with someone, send
+  them an IFF message.  They must reply with an IFF message to you.  Be
+  careful, IFF messages can be broadcast to ALL or entire TEAM COLORS.
+
+
+TACLINK (Tactical information Link) SPECIAL - Secrets between friends.
+
+  Taclink is a communcations susbsytem that allows information systems in
+  different vehicles to share information.  Taclink exchanges information
+  with anyone you share a valid IFF crypto key with.  This includes your
+  teamates by default.  Currently only the NewRadar and the RDF subsystems
+  share tactical data, however in future the mapper will also.  Taclink
+  interfaces to the onboard GPS platform, and doesn't require any underlying
+  specials to keep your teamates informed of your current location. 
+
+  HARM's also use taclink to read your radar if they get lost.  They also
+  report their position via TACLINK.
+
+  RDF uses TACLINK also.
+
+
+HARM (Highspeed Anti Radiation Missle) WEAPON - Kicks enemy radar butt.
+
+  HARM's are of a new class of weapon called a "smart"
+  weapon.  Smart weapons (in the context of XTank) have a 
+  "stored coordinate" matained on a per-bullet basis.  Typically,
+  this stored coordinate is used to initially
+  target the smart weapon.  HARM's use the strored coordinate as 
+  the initial seed for their homing mechanism.  HARM's, like seekers, 
+  attempt to lock onto a target by some signature of the
+  target. In the case of HARM's, it is the radar emissions
+  of the target that provide the lock source.  The algor for
+  the HARM's is more complex than that of a seeker, yet the
+  course adjustment algor is identical to that of the seeker. 
+
+  Fire by doing an L-click in the *MAP* window to select a target.
+
+  PROGRAMMER'S NOTES:
+    Seek code seems to be a moving target, and has now been co-opted by
+    others for use in their "weapons".  Seek code was buggy for a while,
+    seems OK now.
+
+    Lowlib support via aim_smart_weapon() call.
+
+
+RDF (Radio Direction Finder) SPECIAL - Makes Colonal Hogan nervous.
+
+  The RDF susbsystem will tell you when you are being illuminated
+  by enemy radar.  It displays a "trace" that indicates the vector
+  along which the emitter lies.  RDF has slightly better range than
+  the typical Radar set, and indicates that you probably haven't been
+  spotted yet by displaying a green instead of the typical red trace
+  on the mapper window.  If you are stealthy, obviously all of your
+  traces should be green.  RDF is able to distinguish "friendly" (which 
+  it ignores) from "un-friendly" radar automatically, and can share tactical
+  info with your teamates if the have a TacLink.  Tactical traces are displayed
+  in yellow.  For RDF to get an accurate fix, the vehicle must be at full stop,
+  and must have it's radars off to prevent interference with the sensitive
+  receivers of the unit.
+
+  Color coded traces...
+    RED means enemy RADAR has a lock on you!  Run!
+    GREEN means they don't.
+    YELLOW means trace was acquired over TACLINK.   Cool, huh?
+
+
+  PROGRAMMER NOTE:  
+    See the sample rdfbot for an example of how to use RDF in a robot.  Very
+    slick interface add bucky bits to a map that indicate RDF traces, as well
+    a AUTOMATIC flagging (I'm so easy) of crossed RDF traces!  Hey, what are
+    you waiting for, add RDF compatibility to your bot today!
+
+    Code that rasterizes rdf data onto grid is from Graphics Gems, BTW.
+
+
+CAMO SPECIAL - voyeurs unite.
+
+  Camo is a special that allows your vehicle, given sufficent time, to blend
+  in with it's surroundings and become effectively invisble.  A camo'd 
+  vehicle is equally invisible to humans and robots.  To "dig in" and
+  become camo'd all you need to do is remain motionless long enough.  How long
+  you have to remain still for is dependant on your vehicle size, small bodies
+  can hide faster.  You "blow your cover" if you turn or move your vehicle or 
+  fire it's weapons.
+
+
+STEALTH SPECIAL - Bomb Iraq.
+
+  Stealth is a materials technology, yet is implemented as a special in
+  Xtank instead of a vehicle design object.  What this means is that any
+  vehicle can be cloaked in a special radar-absorbing material that renders
+  it much less likely to be picked up on radar (though not impossible with
+  NewRadar) if it is assigned the special.  Due to the limitation of weapons
+  technology, the weapons themselves cannot operate when covered by the stealthy
+  sheaths, and if they are online they render the vehicle un-stealthy.  After
+  taking the weapons offline, it takes a finite amount of time for the access
+  ports and mechanisms to re-cover the weapon, and this results in a delay in
+  recovering a stealthy profile.
+
+  The stealth coating is easily damaged and any damage to the vehicle's armor 
+  will render the vehicle un-stealthy.
+
+  The stealth special can not be de-activated, it is always on.
+

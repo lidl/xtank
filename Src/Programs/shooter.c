@@ -7,40 +7,8 @@
 */
 
 /*
-$Author: stripes $
-$Id: shooter.c,v 2.8 1992/09/13 06:51:07 stripes Exp $
-
-$Log: shooter.c,v $
- * Revision 2.8  1992/09/13  06:51:07  stripes
- * Updated to handle 4 turrets.
- *
- * Revision 2.7  1992/08/19  05:19:46  lidl
- * changed to use SQRT instead of sqrt
- *
- * Revision 2.6  1991/12/15  20:22:49  lidl
- * changed all "float" occurances to "FLOAT"
- *
- * Revision 2.5  1991/09/28  23:32:05  aahz
- * no change.
- *
- * Revision 2.4  1991/09/17  17:01:08  lidl
- * caught a non-checked in change for the i860
- *
- * Revision 2.3  91/02/10  13:51:39  rpotter
- * bug fixes, display tweaks, non-restart fixes, header reorg.
- * 
- * Revision 2.2  91/01/20  09:58:58  rpotter
- * complete rewrite of vehicle death, other tweaks
- * 
- * Revision 2.1  91/01/17  07:12:58  rpotter
- * lint warnings and a fix to update_vector()
- * 
- * Revision 2.0  91/01/17  02:10:31  rpotter
- * small changes
- * 
- * Revision 1.1  90/12/29  21:03:05  aahz
- * Initial revision
- * 
+$Author: lidl $
+$Id: shooter.c,v 1.1.1.1 1995/02/01 00:25:47 lidl Exp $
 */
 
 #include <xtanklib.h>
@@ -52,18 +20,13 @@ $Log: shooter.c,v $
 #endif
 #include <math.h>
 
-#if defined(i860)
-/* drem() not available so replace with wrapper around fmod() */
-#define drem(a,b) ((temp_drem = fmod(a,b)) > (b)/2 ? temp_drem-(b) : temp_drem)
-#endif
-
 static void main();
 
 Prog_desc shooter_prog = {
     "shooter",
     "BASE",
     "Sits in one place and fires at the nearest enemy.",
-    "Stripes@eng.umd.edu (orig. Terry Donahue)",
+    "stripes@eng.umd.edu (orig. Terry Donahue)",
     PLAYS_COMBAT | DOES_SHOOT | USES_TEAMS,
     1,
     main
@@ -190,7 +153,7 @@ shooter_shoot(sinfo, myloc, t)
     FLOAT lead_factor, ang;
     FLOAT kludge;
     int i, j, k;
-    WeaponType weap_type;
+    int weap_type;  /* changed to int (HAK 4/93) */
     Weapon_info *wi, *twi;
 
     dx = t->loc.x - myloc->x;

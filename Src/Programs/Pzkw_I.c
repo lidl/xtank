@@ -1,22 +1,14 @@
 /*
-$Author: lidl $
-$Id: Pzkw_I.c,v 1.6 1992/08/19 05:18:46 lidl Exp $
+** Xtank
+**
+** Copyright 1991 by Hans Mejdahl Jeppesen
+**
+** Pzkw_I.c
+*/
 
-$Log: Pzkw_I.c,v $
- * Revision 1.6  1992/08/19  05:18:46  lidl
- * changed to use FLOAT, instead of float
- *
- * Revision 1.5  1992/02/17  09:14:28  lidl
- * now have static variables where they should have before
- *
- * Revision 1.4  1991/09/29  15:40:22  lidl
- * changed all occurances of atan2 to ATAN2, so it uses the correct macro
- *
- * Revision 1.3  1991/09/19  05:19:08  lidl
- * cleaned up code, so it compiles without any warnings.
- * Uses correct flags for what it know about how to use.
- * added RCS expansions to the file
- *
+/*
+$Author: lidl $
+$Id: Pzkw_I.c,v 1.1.1.1 1995/02/01 00:25:46 lidl Exp $
 */
 
 /***********************************************************************/

@@ -8,40 +8,7 @@
 
 /*
 $Author: lidl $
-$Id: vstructs.h,v 2.8 1992/09/13 07:03:02 lidl Exp $
-
-$Log: vstructs.h,v $
- * Revision 2.8  1992/09/13  07:03:02  lidl
- * aaron 1.3e patches
- *
- * Revision 2.7  1992/03/31  21:49:23  lidl
- * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
- *
- * Revision 2.6  1992/02/04  07:27:25  aahz
- * added the size of arrays to the extern statements so sizeof()
- * doesn't get a zero.
- *
- * Revision 2.5  1992/01/29  08:39:11  lidl
- * post aaron patches, seems to mostly work now
- *
- * Revision 2.4  1991/12/10  01:21:04  lidl
- * change all occurances of "float" to "FLOAT"
- *
- * Revision 2.3  1991/02/10  13:52:07  rpotter
- * bug fixes, display tweaks, non-restart fixes, header reorg.
- *
- * Revision 2.2  91/01/20  09:59:26  rpotter
- * complete rewrite of vehicle death, other tweaks
- * 
- * Revision 2.1  91/01/17  07:13:34  rpotter
- * lint warnings and a fix to update_vector()
- * 
- * Revision 2.0  91/01/17  02:10:52  rpotter
- * small changes
- * 
- * Revision 1.1  90/12/29  21:03:20  aahz
- * Initial revision
- * 
+$Id: vstructs.h,v 1.1.1.1 1995/02/01 00:25:44 lidl Exp $
 */
 
 #define MIN_ARMOR        0
@@ -49,93 +16,122 @@ $Log: vstructs.h,v $
 
 #define OVER_WEIGHT      (1<<0)
 #define OVER_SPACE       (1<<1)
-#define BAD_MOUNT        (1<<2)
+#define NO_TURRETS	(1<<2)
 #define MIS_MOUNT        (1<<3)
+#define FRONT_FULL	(1<<4)
+#define BACK_FULL	(1<<5)
+#define LEFT_FULL	(1<<6)
+#define RIGHT_FULL	(1<<7)
+#define TURRET_FULL	(1<<8)
 
-typedef struct
-{
-    char *type;
-    int   defense;
-    int   weight;
-    int   space;
-    int   cost;
-} Armor_stat;
+  typedef struct {
+	  char *type;
+	  int defense;
+	  int weight;
+	  int space;
+	  int cost;
+  }
+Armor_stat;
 
-typedef struct
-{
-    char *type;
-    int   damage;
-    int   range;
-    int   max_ammo;
-    int   reload_time;
-    int   ammo_speed;
-    int   weight;
-    int   space;
-    int   frames;
-    int   heat;
-    int   ammo_cost;
-    int   cost;
-    int   refill_time;
-    int   height;
-} Weapon_stat;
+/* Mount flags */
+#define M_FRONT		(1<<0)
+#define M_BACK		(1<<1)
+#define M_LEFT		(1<<2)
+#define M_RIGHT		(1<<3)
+#define M_TURRET	(1<<4)
+#define M_SIDES		M_FRONT|M_BACK|M_LEFT|M_RIGHT
+#define M_LR		M_LEFT|M_RIGHT
+#define M_ALL		M_SIDES|M_TURRET
 
-typedef struct
-{
-    char *type;
-    int   power;
-    int   weight;
-    int   space;
-    int   fuel_cost;
-    int   fuel_limit;
-    int   cost;
-} Engine_stat;
+  typedef struct {
+	  char *type;
+	  int damage;
+	  int range;
+	  int max_ammo;
+	  int reload_time;
+	  int ammo_speed;
+	  int weight;
+	  int space;
+	  int mount_space;
+	  int frames;
+	  int heat;
+	  int ammo_cost;
+	  int cost;
+	  int refill_time;
+          int safety;
+	  int height;
+	  int num_views;
+	  int mount;	/* which sides the weapon can be mounted on */
+	  unsigned long other_flgs; /* see the Bullet definition (bullet.h) */
+	  unsigned long creat_flgs; /* for a description of these... (HAK)  */
+	  unsigned long disp_flgs;
+	  unsigned long move_flgs;
+	  unsigned long hit_flgs;
+	  void (*creat_func)(void *v, void *bloc, Angle angle);
+	  void (*disp_func)();
+	  void (*upd_func)(void *b);
+	  void (*hit_func)(int whatHit, void *b, int dx, int dy,
+				void *parm1, void *parm2, void *parm3);
+}
+Weapon_stat;
 
-typedef struct
-{
-    char *type;
-    int   size;
-    int   weight;
-    int   weight_limit;
-    int   space;
-    FLOAT drag;
-    int   handling_base;
-    int   turrets;
-    int   cost;
-} Body_stat;
+  typedef struct {
+	  char *type;
+	  int power;
+	  int weight;
+	  int space;
+	  int fuel_cost;
+	  int fuel_limit;
+	  int cost;
+  }
+Engine_stat;
 
-typedef struct
-{
-    char *type;
-    int   handling_adj;
-    int   cost;
-} Suspension_stat;
+  typedef struct {
+	  char *type;
+	  int size;
+	  int weight;
+	  int weight_limit;
+	  int space;
+	  FLOAT drag;
+	  int handling_base;
+	  int turrets;
+	  int cost;
+  }
+Body_stat;
 
-typedef struct
-{
-    char *type;
-    FLOAT friction;
-    int   cost;
-} Tread_stat;
+  typedef struct {
+	  char *type;
+	  int handling_adj;
+	  int cost;
+  }
+Suspension_stat;
 
-typedef struct
-{
-    char *type;
-    FLOAT elasticity;
-    int   cost;
-} Bumper_stat;
+  typedef struct {
+	  char *type;
+	  FLOAT friction;
+	  int cost;
+  }
+Tread_stat;
 
-typedef struct
-{
-    char *type;
-    int   cost;
-} Special_stat;
+  typedef struct {
+	  char *type;
+	  FLOAT elasticity;
+	  int cost;
+  }
+Bumper_stat;
 
-typedef struct
-{
-    int   weight;
-    int   space;
-    int   cost;
-} Heat_sink_stat;
+  typedef struct {
+	  char *type;
+	  int cost;
+  }
+Special_stat;
+
+  typedef struct {
+	  int weight;
+	  int space;
+	  int cost;
+  }
+Heat_sink_stat;
 
 
 

@@ -1,8 +1,0 @@
-#!/bin/csh -f
-setenv XTANK_DIR       ~stripes/xtank
-setenv XTANK_VEHICLES  Vehicles
-setenv XTANK_MAZES     Mazes
-setenv XTANK_PROGRAMS  Programs
-
-echo "Debuggin .xtank.sun"
-ups ${XTANK_DIR}/.xtank.`arch` :${XTANK_DIR}/Src

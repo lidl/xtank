@@ -8,30 +8,7 @@
 
 /*
 $Author: lidl $
-$Id: map.h,v 2.5 1992/03/31 21:49:23 lidl Exp $
-
-$Log: map.h,v $
- * Revision 2.5  1992/03/31  21:49:23  lidl
- * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
- *
- * Revision 2.4  1992/01/29  08:39:11  lidl
- * post aaron patches, seems to mostly work now
- *
- * Revision 2.3  1991/02/10  13:51:10  rpotter
- * bug fixes, display tweaks, non-restart fixes, header reorg.
- *
- * Revision 2.2  91/01/20  09:58:27  rpotter
- * complete rewrite of vehicle death, other tweaks
- * 
- * Revision 2.1  91/01/17  07:12:17  rpotter
- * lint warnings and a fix to update_vector()
- * 
- * Revision 2.0  91/01/17  02:10:01  rpotter
- * small changes
- * 
- * Revision 1.1  90/12/29  21:02:45  aahz
- * Initial revision
- * 
+$Id: map.h,v 1.1.1.1 1995/02/01 00:25:41 lidl Exp $
 */
 
 /* Maximum maze coordinates */

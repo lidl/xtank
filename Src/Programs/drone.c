@@ -4,37 +4,16 @@
 ** Copyright 1988 by Terry Donahue
 **
 ** drone.c
-**
-** This is an xtank program designed to act intelligently without using
-** up much cpu time.
 */
 
 /*
 $Author: lidl $
-$Id: drone.c,v 2.5 1992/08/19 05:18:46 lidl Exp $
+$Id: drone.c,v 1.1.1.1 1995/02/01 00:25:46 lidl Exp $
+*/
 
-$Log: drone.c,v $
- * Revision 2.5  1992/08/19  05:18:46  lidl
- * changed to use FLOAT, instead of float
- *
- * Revision 2.4  1992/08/19  05:15:02  lidl
- * changed sqrt to SQRT
- *
- * Revision 2.3  1991/02/10  13:50:24  rpotter
- * bug fixes, display tweaks, non-restart fixes, header reorg.
- *
- * Revision 2.2  91/01/20  09:57:38  rpotter
- * complete rewrite of vehicle death, other tweaks
- * 
- * Revision 2.1  91/01/17  07:11:16  rpotter
- * lint warnings and a fix to update_vector()
- * 
- * Revision 2.0  91/01/17  02:09:21  rpotter
- * small changes
- * 
- * Revision 1.1  90/12/29  21:02:19  aahz
- * Initial revision
- * 
+/*
+** This is an xtank program designed to act intelligently without using
+** up much cpu time.
 */
 
 #include "malloc.h"

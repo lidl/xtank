@@ -1,9 +1,18 @@
 #!/bin/sh
-XTANK_DIR=/build/lidl/xtank
+#
+# Copyright 1993 by Pix Technologies Corp.
+#
+# $Author: lidl $
+# $Id: xtank,v 1.1.1.2 1995/02/01 00:29:42 lidl Exp $
+#
+XTANK_DIR=/usr/obj/xtank
 XTANK_VEHICLES=Vehicles
 XTANK_MAZES=Mazes
 XTANK_PROGRAMS=Programs
-
+export XTANK_DIR
+export XTANK_VEHICLES
+export XTANK_MAZES
+export XTANK_PROGRAMS
 #
 # rpotter thinks this is a kludge, I think it is funny! (lidl)
 #

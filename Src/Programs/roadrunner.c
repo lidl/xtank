@@ -1,23 +1,14 @@
 /*
-$Author: lidl $
-$Id: roadrunner.c,v 1.7 1992/08/19 05:19:46 lidl Exp $
+** Xtank
+**
+** Copyright 1991 by Hans Mejdahl Jeppesen
+**
+** roadrunner.c
+*/
 
-$Log: roadrunner.c,v $
- * Revision 1.7  1992/08/19  05:19:46  lidl
- * changed to use SQRT instead of sqrt
- *
- * Revision 1.6  1991/12/15  20:56:27  lidl
- * changed all "float" occurances to "FLOAT"
- *
- * Revision 1.5  1991/09/29  15:40:22  lidl
- * changed all occurances of atan2 to ATAN2, so it uses the correct macro
- *
- * Revision 1.4  1991/09/25  05:35:38  lidl
- * added some diagnostic messages if the game isn't RACE and Full_Map isn't on
- *
- * Revision 1.3  1991/09/19  05:31:37  lidl
- * added RCS headers, run through indent, cleaned up compile-time bugs
- *
+/*
+$Author: lidl $
+$Id: roadrunner.c,v 1.1.1.1 1995/02/01 00:25:47 lidl Exp $
 */
 
 /**********************************************************************/

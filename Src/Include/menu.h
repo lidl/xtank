@@ -1,46 +1,26 @@
- /* * Toolkit *
- * Copyright 1988 by Terry Donahue *
- * menu.h */
 
 /*
- I've been waiting all night for someone like you.
- That's . . . . . . . . . . . . . . . you'll have to do
-
-                        - "Run Run Run", The Psychedellic Furs, _Forever Now_
+** Xtank
+**
+** Copyright 1988 by Terry Donahue
+**
+** Comment: Part of the graphics toolkit
+**
+** menu.h
 */
 
 /*
-$Author: aahz $
-$Id: menu.h,v 2.4 1992/09/12 09:40:09 aahz Exp $
-
-$Log: menu.h,v $
- * Revision 2.4  1992/09/12  09:40:09  aahz
- * added support for left justfied menus
- *
- * Revision 2.3  1991/02/10  13:51:21  rpotter
- * bug fixes, display tweaks, non-restart fixes, header reorg.
- *
- * Revision 2.2  91/01/20  09:58:38  rpotter
- * complete rewrite of vehicle death, other tweaks
- * 
- * Revision 2.1  91/01/17  07:12:33  rpotter
- * lint warnings and a fix to update_vector()
- * 
- * Revision 2.0  91/01/17  02:10:12  rpotter
- * small changes
- * 
- * Revision 1.1  90/12/29  21:02:53  aahz
- * Initial revision
- * 
+$Author: lidl $
+$Id: menu.h,v 1.1.1.1 1995/02/01 00:25:41 lidl Exp $
 */
 
 #include "scroll.h"
 
-#define MAXMENU      25	/* Max number of menus allowed in a "system" */
+#define MAXMENU      25			/* Max number of menus allowed in a "system" */
 
-#define MENU_NULL MAXMENU+1	/* A null return code */
+#define MENU_NULL MAXMENU+1		/* A null return code */
 
-#define MENU_DOWN     0	/* Fields of char if_up */
+#define MENU_DOWN     0			/* Fields of char if_up */
 #define MENU_UP       1
  /* Foreground and Background colors, for now */
 #define MENU_FORE     WHITE
@@ -57,38 +37,39 @@ $Log: menu.h,v $
 
 #define MENU_NOSELECT    (-127)
 
-typedef struct
-{  /* Will hold a menu */
-    int   numitem;	/* Number of elements (choices) on menu */
-    char **items;	/* The choices (in text) */
-    char *title;	/* The menu's title */
-	int offset;     /* Number of items offset from item zero CN-K */
-	int frame;      /* Delta withing escher frames */
-    int   xt, yt;	/* Top left coordinates of the Menu */
-    int   width, height;	/* Bottom right coordinates of the Menu */
-    int   font, fh;	/* The font code for the menu and its height */
-    char *hil;	/* Which fields are highlighted now */
-    /* Bitfields (Booleans) */
-    unsigned popup:1;	/* popup menu or not */
-    unsigned migrate:1;	/* migrateable. i.e. relocateable */
-    unsigned border:1;	/* Whether or not the menu has a border */
-    unsigned hold:1;	/* mouse button hold down for selection */
-    unsigned leavhil:1;	/* Can a field be highlighted and left */
-    unsigned titled:1;	/* Title fields? */
-    unsigned onehil:1;	/* Only one highlighted at once */
-    unsigned nwidth:1;	/* A width set, or dynamically determined */
-	unsigned has_bar:1; /* Does the menu have a scroll bar? */
-	unsigned center:1;  /* center text of each entry? */
-	scrollbar sbar;
-} Menu;
+  typedef struct {				/* Will hold a menu */
+	  int numitem;				/* Number of elements (choices) on menu */
+	  char **items;				/* The choices (in text) */
+	  char *title;				/* The menu's title */
+	  int offset;				/* Number of items offset from item zero CN-K */
+	  int frame;				/* Delta withing escher frames */
+	  int xt, yt;				/* Top left coordinates of the Menu */
+	  int width, height;		/* Bottom right coordinates of the Menu */
+	  int font, fh;				/* The font code for the menu and its height */
+	  char *hil;				/* Which fields are highlighted now */
+	  /* Bitfields (Booleans) */
+	  unsigned popup:1;			/* popup menu or not */
+	  unsigned migrate:1;		/* migrateable. i.e. relocateable */
+	  unsigned border:1;		/* Whether or not the menu has a border */
+	  unsigned hold:1;			/* mouse button hold down for selection */
+	  unsigned leavhil:1;		/* Can a field be highlighted and left */
+	  unsigned titled:1;		/* Title fields? */
+	  unsigned onehil:1;		/* Only one highlighted at once */
+	  unsigned nwidth:1;		/* A width set, or dynamically determined */
+	  unsigned has_bar:1;		/* Does the menu have a scroll bar? */
+	  unsigned center:1;		/* center text of each entry? */
+	  scrollbar sbar;
+  }
+Menu;
 
 /* A Menu_Interface object, will hold the "system" of menus */
-typedef struct {
-    int   wdw;			/* Window in which the "system" resides */
-    Menu  menus[MAXMENU];	/* The actual menus */
-    int   nummenus;		/* 1 over the largest menu ID */
-    char  is_up[MAXMENU];	/* Whether menu n is visual or not */
-} Menu_int;
+  typedef struct {
+	  int wdw;					/* Window in which the "system" resides */
+	  Menu menus[MAXMENU];		/* The actual menus */
+	  int nummenus;				/* 1 over the largest menu ID */
+	  char is_up[MAXMENU];		/* Whether menu n is visual or not */
+  }
+Menu_int;
 
 /* Macros for my Menu Code */
 #define MAKE_M  m = &(menuobj->menus[menuid])	/* use this to make things srt
@@ -99,10 +80,10 @@ typedef struct {
 						   "system" m */
 
 #define menu_set_choices(m,mid,dati) /* Makes the char *dati[] the choices */ \
-  ((m)->menus[mid].items = dati)	/* for menu mid of menu system m..... */
+  ((m)->menus[mid].items = dati)/* for menu mid of menu system m..... */
 
 #define menu_set_frame(m,mid,dati)  /* Set the frame (border) width */ \
-  ((m)->menus[mid].frame = (dati)) /* for menu mid of menu system m..... */
+  ((m)->menus[mid].frame = (dati))	/* for menu mid of menu system m..... */
 
 #define menu_complex_make(mo, mi, ti, s, w, x, y, dt, fn, flags) \
     (menu_set_fields(mo, mi, flags), \

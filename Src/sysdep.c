@@ -1,49 +1,51 @@
 /*
+** Xtank
 **
-** sysdep.c -- supplimental functions for lacking systems
+** Copyright 1993 by Pix Technologies Corp
 **
+** Comment: supplemental functions for lacking systems
+**
+** sysdep.c
 */
 
 /*
 $Author: lidl $
-$Id: sysdep.c,v 1.5 1992/09/06 21:15:48 lidl Exp $
-
-$Log: sysdep.c,v $
- * Revision 1.5  1992/09/06  21:15:48  lidl
- * fixed for bobcat machines (hp300 running 4.3BSD)
- *
- * Revision 1.4  1992/04/18  15:35:09  lidl
- * updated to work with sequents
- *
- * Revision 1.3  1992/04/09  04:12:41  lidl
- * remove warning from extra-stupid compilers
- *
- * Revision 1.2  1992/02/19  21:31:00  lidl
- * fixed up to work with ultirx :-)
- *
- * Revision 1.1  1991/12/07  07:00:34  lidl
- * Initial revision
- *
+$Id: sysdep.c,v 1.1.1.2 1995/02/01 00:28:26 lidl Exp $
 */
 
 /* these don't have strdup() in their c library, so here's a function */
-#if defined(ultrix) || defined(sequent) || defined(hp300)
+#if defined(ultrix) || defined(sequent) || defined(hp300) || defined(sparc) || defined(NeXT)
 #include <stdio.h>
 
-char * strdup(s1)
+char *strdup(s1)
 char *s1;
 {
 	char *newstr = NULL;
 
-	newstr = (char *) malloc (strlen (s1) +1);
+	newstr = (char *) malloc(strlen(s1) + 1);
 	if (newstr) {
-		strcpy (newstr, s1);
+		strcpy(newstr, s1);
 		return (newstr);
 	} else {
 		return (NULL);
 	}
 }
 #endif
+
+#if defined(sequent)
+double rint(double x) {
+	if ((double) (x - (int) x) < 0.5) {
+		return((int)x);
+	} else {
+		return((int)x + 1);
+	}
+}
+#endif
+
+/* stop the senseless input parsing */
+int yywrap() {
+	return(1);
+}
 
 int barf_o_rama()
 {

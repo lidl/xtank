@@ -7,33 +7,8 @@
 */
 
 /*
-$Author: aahz $
-$Id: screen.h,v 2.5 1992/09/12 09:40:09 aahz Exp $
-
-$Log: screen.h,v $
- * Revision 2.5  1992/09/12  09:40:09  aahz
- * reordered windows.  Made more important windows closer to
- * the top of the screen so reduced size displays only miss the garbage
- *
- * Revision 2.4  1991/09/15  09:24:51  lidl
- * removed vestiges of config.h file, now all configuration is done in
- * the Imakefile, and propogated via compile-time -D flags
- *
- * Revision 2.3  1991/02/10  13:51:34  rpotter
- * bug fixes, display tweaks, non-restart fixes, header reorg.
- *
- * Revision 2.2  91/01/20  09:58:52  rpotter
- * complete rewrite of vehicle death, other tweaks
- * 
- * Revision 2.1  91/01/17  07:12:50  rpotter
- * lint warnings and a fix to update_vector()
- * 
- * Revision 2.0  91/01/17  02:10:25  rpotter
- * small changes
- * 
- * Revision 1.1  90/12/29  21:03:01  aahz
- * Initial revision
- * 
+$Author: lidl $
+$Id: screen.h,v 1.1.1.1 1995/02/01 00:25:43 lidl Exp $
 */
 
 #ifdef S1024x864

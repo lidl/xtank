@@ -7,40 +7,8 @@
 */
 
 /*
-$Author: aahz $
-$Id: interface.h,v 2.8 1992/09/12 09:40:09 aahz Exp $
-
-$Log: interface.h,v $
- * Revision 2.8  1992/09/12  09:40:09  aahz
- * made a menu for forcing specials
- *
- * Revision 2.7  1992/09/12  00:32:44  aahz
- * removed useless define
- *
- * Revision 2.6  1992/09/12  00:21:16  stripes
- * Added STK
- *
- * Revision 2.5  1992/06/07  02:52:54  lidl
- * Post Adam Bryant patches and a manual merge of the rejects (ugh!)
- *
- * Revision 2.4  1992/05/19  22:56:08  lidl
- * post chris moore patches
- *
- * Revision 2.3  1991/02/10  13:50:54  rpotter
- * bug fixes, display tweaks, non-restart fixes, header reorg.
- *
- * Revision 2.2  91/01/20  09:58:09  rpotter
- * complete rewrite of vehicle death, other tweaks
- * 
- * Revision 2.1  91/01/17  07:11:57  rpotter
- * lint warnings and a fix to update_vector()
- * 
- * Revision 2.0  91/01/17  02:09:46  rpotter
- * small changes
- * 
- * Revision 1.1  90/12/29  21:02:37  aahz
- * Initial revision
- * 
+$Author: lidl $
+$Id: interface.h,v 1.1.1.1 1995/02/01 00:25:40 lidl Exp $
 */
 
 #ifdef S1024x864
@@ -51,11 +19,13 @@ $Log: interface.h,v $
 #define LEV2_X          380
 #define LEV3_X			570
 
+#define DONE_X		30  /*HAK*/
+#define DONE_Y		30
 #define COMBATANTS_X    30
-#define COMBATANTS_Y    30
+#define COMBATANTS_Y    600
 #define GRID_X          110
 #define GRID_Y          30
-#define PLAYERS_X       50
+#define PLAYERS_X       110  /*HAK*/
 #define PLAYERS_Y       90
 #define PROGRAMS_X      170
 #define PROGRAMS_Y      90
@@ -105,15 +75,18 @@ $Log: interface.h,v $
 #define iprint(str,x,y) \
   (display_mesg2(ANIM_WIN,str,x,y,INT_FONT))
 
-#define clear_ask() \
-  (clear_text_rc(ANIM_WIN,ASK_X,ASK_Y,50,4,INT_FONT))
+/* Changed to include args (HAK) 2/93 */
+#define clear_ask(x,y) \
+  (clear_text_rc(ANIM_WIN,(x),(y),50,4,INT_FONT))
 
+/* Why not use an enum here? */
 #define MAIN_MENU	0
 
 #define MACHINE_MENU	(MAIN_MENU+1)
 #define PLAY_MENU	(MACHINE_MENU+1)
 #define SETTINGS_MENU	(PLAY_MENU+1)
-#define COMBATANTS_MENU	(SETTINGS_MENU+1)
+#define DONE_MENU       (SETTINGS_MENU+1)  /*HAK*/
+#define COMBATANTS_MENU	(DONE_MENU+1)
 #define VIEW_MENU	(COMBATANTS_MENU+1)
 #define LOAD_MENU	(VIEW_MENU+1)
 #define DESIGN_MENU	(LOAD_MENU+1)
@@ -122,7 +95,7 @@ $Log: interface.h,v $
 #define MAZES_MENU	(HELP_MENU+1)
 #define SETUPS_MENU	(MAZES_MENU+1)
 #define GAMES_MENU	(SETUPS_MENU+1)
-#define PLAYERS_MENU	(GAMES_MENU+1)		/* must be sequential */
+#define PLAYERS_MENU	(GAMES_MENU+1)	/* must be sequential */
 #define PROGRAMS_MENU	(PLAYERS_MENU+1)	/* must be sequential */
 #define VEHICLES_MENU	(PROGRAMS_MENU+1)	/* must be sequential */
 #define TEAMS_MENU	(VEHICLES_MENU+1)	/* must be sequential */
@@ -143,4 +116,4 @@ $Log: interface.h,v $
 #define SET_DISC_DAMAGE	8
 #define SET_DISC_HEAT	9
 #define SET_DISC_SPEED	10
-
+#define SET_MAD_DISKS	11

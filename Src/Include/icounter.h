@@ -1,3 +1,4 @@
+
 /*
 ** Xtank
 **
@@ -8,28 +9,7 @@
 
 /*
 $Author: lidl $
-$Id: icounter.h,v 2.4 1991/09/15 09:24:51 lidl Exp $
-
-$Log: icounter.h,v $
- * Revision 2.4  1991/09/15  09:24:51  lidl
- * removed vestiges of config.h file, now all configuration is done in
- * the Imakefile, and propogated via compile-time -D flags
- *
- * Revision 2.3  1991/02/10  13:50:46  rpotter
- * bug fixes, display tweaks, non-restart fixes, header reorg.
- *
- * Revision 2.2  91/01/20  09:58:01  rpotter
- * complete rewrite of vehicle death, other tweaks
- * 
- * Revision 2.1  91/01/17  07:11:46  rpotter
- * lint warnings and a fix to update_vector()
- * 
- * Revision 2.0  91/01/17  02:09:38  rpotter
- * small changes
- * 
- * Revision 1.1  90/12/29  21:02:31  aahz
- * Initial revision
- * 
+$Id: icounter.h,v 1.1.1.1 1995/02/01 00:25:40 lidl Exp $
 */
 
 #ifdef UNIX
@@ -39,7 +19,7 @@ extern int elapsed_time;
 #define clear_clock() \
   { elapsed_time = 0; }
 
-#define write_clock(cl,micro) *(cl) = micro; 
+#define write_clock(cl,micro) *(cl) = micro;
 
 #define read_clock(cl) \
   (*(cl))
@@ -58,10 +38,10 @@ extern int elapsed_time;
 #include <hardware/custom.h>
 #include <hardware/intbits.h>
 
-typedef struct
-{
-    int   ticks, vpos;
-} Clock;
+  typedef struct {
+	  int ticks, vpos;
+  }
+Clock;
 
 extern struct Custom *c;
 extern int count;

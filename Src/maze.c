@@ -8,42 +8,15 @@
 
 /*
 $Author: lidl $
-$Id: maze.c,v 2.6 1992/05/19 22:57:19 lidl Exp $
-
-$Log: maze.c,v $
- * Revision 2.6  1992/05/19  22:57:19  lidl
- * post Chris Moore patches, and sqrt to SQRT changes
- *
- * Revision 2.5  1991/12/10  03:41:44  lidl
- * changed float to FLOAT, for portability reasons
- *
- * Revision 2.4  1991/10/24  01:10:08  lidl
- * Thanks to rws@cs.brown.edu (Richard W. Sabourin):
- * The bug where no landmarks showed up in random mazes has been fixed.
- *
- * Revision 2.3  1991/02/10  13:51:13  rpotter
- * bug fixes, display tweaks, non-restart fixes, header reorg.
- *
- * Revision 2.2  91/01/20  09:58:30  rpotter
- * complete rewrite of vehicle death, other tweaks
- * 
- * Revision 2.1  91/01/17  07:12:21  rpotter
- * lint warnings and a fix to update_vector()
- * 
- * Revision 2.0  91/01/17  02:10:04  rpotter
- * small changes
- * 
- * Revision 1.1  90/12/29  21:02:46  aahz
- * Initial revision
- * 
+$Id: maze.c,v 1.1.1.1 1995/02/01 00:25:36 lidl Exp $
 */
 
 #include "malloc.h"
 #include "xtank.h"
+#include "proto.h"
 
 extern Settings settings;
 extern Map real_map;
-
 
 #define CPY(s) (strcpy(malloc((unsigned)strlen(s)+1),s))
 
@@ -53,58 +26,55 @@ extern Map real_map;
 */
 setup_maze()
 {
-    extern Maze maze;
-    extern int num_terminals;
-    FLOAT base_prob;
-    FLOAT prob[SLOW + 1], sum;
-    int i;
+	extern Maze maze;
+	extern int num_terminals;
+	FLOAT base_prob;
+	FLOAT prob[SLOW + 1], sum;
+	int i;
 
-    if (settings.mdesc != (Mdesc *) NULL)
-    {
-	/* Make the maze from the maze description */
-	make_maze(settings.mdesc);
-    }
-    else
-    {
-        /* No maze description so make a random maze of the proper
+	if (settings.mdesc != (Mdesc *) NULL) {
+		/* Make the maze from the maze description */
+		make_maze(settings.mdesc);
+	} else {
+		/* No maze description so make a random maze of the proper
 	   density */
-	make_random_maze_walls();
-	remove_walls(100 - settings.maze_density);
-	make_dest_walls(20);
+		make_random_maze_walls();
+		remove_walls(100 - settings.maze_density);
+		make_dest_walls(20);
 
-	/* Base prob of a flag increases with number of players */
-	base_prob = .007 + .003 * num_terminals;
+		/* Base prob of a flag increases with number of players */
+		base_prob = .007 + .003 * num_terminals;
 
-	/* Set the probs for box flags */
-        prob[(int)FUEL] = base_prob;
-        prob[(int)AMMO] = base_prob;
-        prob[(int)ARMOR] = base_prob;
-        prob[(int)PEACE] = base_prob;
-        prob[(int)GOAL] = (settings.si.game == COMBAT_GAME ||
-			   settings.si.game == WAR_GAME) ?
-			       0 : base_prob;
-        prob[(int)OUTPOST] = base_prob;
-        for (i = (int)SCROLL_N; i <= (int)SCROLL_NW; i++)
-	    prob[i] = base_prob / 2;
-        prob[(int)SLIP] = 2 * base_prob;
-        prob[(int)SLOW] = base_prob;
+		/* Set the probs for box flags */
+		prob[(int) FUEL] = base_prob;
+		prob[(int) AMMO] = base_prob;
+		prob[(int) ARMOR] = base_prob;
+		prob[(int) PEACE] = base_prob;
+		prob[(int) GOAL] = (settings.si.game == COMBAT_GAME ||
+							settings.si.game == WAR_GAME) ?
+		  0 : base_prob;
+		prob[(int) OUTPOST] = base_prob;
+		for (i = (int) SCROLL_N; i <= (int) SCROLL_NW; i++)
+			prob[i] = base_prob / 2;
+		prob[(int) SLIP] = 2 * base_prob;
+		prob[(int) SLOW] = base_prob;
 
-	/* Compute the sum of the probabilities so far */
-        for (sum = 0.0, i = (int)FUEL; i <= (int)SLOW; i++)
-	    sum += prob[i];
+		/* Compute the sum of the probabilities so far */
+		for (sum = 0.0, i = (int) FUEL; i <= (int) SLOW; i++)
+			sum += prob[i];
 
-        prob[(int)NORMAL] = 1 - sum;
+		prob[(int) NORMAL] = 1 - sum;
 
-	set_box_types((int)SLOW + 1, prob);
+		set_box_types((int) SLOW + 1, prob);
 
 
-	/* Clear the starting location array */
-	for (i = 0; i < MAX_TEAMS; i++)
-	    maze.num_starts[i] = 0;
-    }
+		/* Clear the starting location array */
+		for (i = 0; i < MAX_TEAMS; i++)
+			maze.num_starts[i] = 0;
+	}
 
-    /* Set strengths of outposts and find starting locations */
-    process_maze();
+	/* Set strengths of outposts and find starting locations */
+	process_maze();
 }
 
 /*
@@ -113,28 +83,27 @@ setup_maze()
 make_maze(d)
 Mdesc *d;
 {
-    static Box empty_box = {0, NORMAL, 0};
+	static Box empty_box =
+	{0, NORMAL, 0};
 	Box *b;
 	Byte flags, *dptr;
 	int num_empties;
 	int i, j;
 
-    /* For each box there is a byte that contains 8 flags.  If EMPTY_BOXES
+	/* For each box there is a byte that contains 8 flags.  If EMPTY_BOXES
        is set, the remaining 7 bits give the number of empty boxes
        (excluding this one) to make before reading the next byte.
        Otherwise, If TYPE_EXISTS is set, the next byte is the box type.
        Otherwise, the type is 0. If TEAM_EXISTS is set, the next byte is
-       the box team.  Otherwise, the team is 0. */
+       the box team.  Otherwise, the team is NEUTRAL. */
 	num_empties = 0;
 	dptr = d->data;
 	for (i = 0; i < GRID_WIDTH; i++)
-		for (j = 0; j < GRID_HEIGHT; j++)
-		{
+		for (j = 0; j < GRID_HEIGHT; j++) {
 			b = &real_map[i][j];
 
 			/* Are we making empty boxes? */
-			if (num_empties > 0)
-			{
+			if (num_empties > 0) {
 				*b = empty_box;
 				num_empties--;
 				continue;
@@ -142,23 +111,20 @@ Mdesc *d;
 			flags = *(dptr++);
 
 			/* Check for empty box flag */
-			if (flags & EMPTY_BOXES)
-			{
+			if (flags & EMPTY_BOXES) {
 				*b = empty_box;
 				num_empties = (int) (flags & ~EMPTY_BOXES);
-			}
-			else
-			{
+			} else {
 				/* Get the box values */
 				b->flags = flags & MAZE_FLAGS;
-                b->type = (flags & TYPE_EXISTS) ? (LandmarkType) *(dptr++) :
-		                                  NORMAL;
+				b->type = (flags & TYPE_EXISTS) ? (LandmarkType) *(dptr++) :
+				  NORMAL;
 
-		b->teleport_code = (flags & TYPE_EXISTS &&
-				    b->type == TELEPORT) ? (Byte) *(dptr++) :
-							   NORMAL;
+				b->teleport_code = (flags & TYPE_EXISTS &&
+								  b->type == TELEPORT) ? (Byte) * (dptr++) :
+				  NORMAL;
 
-				b->team = (flags & TEAM_EXISTS) ? *(dptr++) : 0;
+				b->team = (flags & TEAM_EXISTS) ? *(dptr++) : NEUTRAL;
 			}
 		}
 }
@@ -177,58 +143,47 @@ char *name, *designer, *desc;
 	int num_empties, num_bytes;
 	int i, j;
 
-    /* Go through the boxes, counting empties if they occur, and adding a byte
+	/* Go through the boxes, counting empties if they occur, and adding a byte
        to temp when they do not.  Once all the boxes have been coded, malloc
        the proper amount of space and copy * the data bytes over. */
 	num_empties = 0;
 	dptr = temp;
 	for (i = 0; i < GRID_WIDTH; i++)
-		for (j = 0; j < GRID_HEIGHT; j++)
-		{
+		for (j = 0; j < GRID_HEIGHT; j++) {
 			b = &real_map[i][j];
 
 			flags = b->flags |
-                ((b->type != NORMAL) ? TYPE_EXISTS : 0) |
-				((b->team != 0) ? TEAM_EXISTS : 0);
+			  ((b->type != NORMAL) ? TYPE_EXISTS : 0) |
+			  ((b->team != NEUTRAL) ? TEAM_EXISTS : 0);
 
 			/* Is this an empty box? */
-			if (flags == 0)
-			{
-				if (num_empties == 0)
-				{
+			if (flags == 0) {
+				if (num_empties == 0) {
 					/* Start an empty box byte and increment number of
 					   empties */
 					*dptr = EMPTY_BOXES;
 					num_empties++;
-				}
-				else if (num_empties == 128)
-				{
+				} else if (num_empties == 128) {
 					/* Last empty box byte is full, so start a new one */
 					*(++dptr) = EMPTY_BOXES;
 					num_empties = 1;
-				}
-				else
-				{
+				} else {
 					/* Add another empty to the current empty box byte */
 					(*dptr)++;
 					num_empties++;
 				}
-			}
-			else
-			{
-				if (num_empties > 0)
-				{
+			} else {
+				if (num_empties > 0) {
 					/* Move on to the next byte and clear num_empties */
 					dptr++;
 					num_empties = 0;
 				}
 				*(dptr++) = flags;
-				if (flags & TYPE_EXISTS)
-				  {
-				    *(dptr++) = (Byte) b->type;
-				    if (b -> type == TELEPORT)
-				      *(dptr++) = b->teleport_code;
-				  }
+				if (flags & TYPE_EXISTS) {
+					*(dptr++) = (Byte) b->type;
+					if (b->type == TELEPORT)
+						*(dptr++) = b->teleport_code;
+				}
 				if (flags & TEAM_EXISTS)
 					*(dptr++) = b->team;
 			}
@@ -240,7 +195,7 @@ char *name, *designer, *desc;
 
 	/* Copy the data, placing a final '\0' at the end */
 	num_bytes = (int) (dptr - temp);
-    d->data = (Byte *) malloc((unsigned)num_bytes + 1);
+	d->data = (Byte *) malloc((unsigned) num_bytes + 1);
 	for (i = 0; i < num_bytes; i++)
 		d->data[i] = temp[i];
 	d->data[num_bytes] = '\0';
@@ -291,24 +246,19 @@ process_maze()
 	strength4 = settings.si.outpost_strength << 2;
 
 	for (i = 0; i < GRID_WIDTH; i++)
-		for (j = 0; j < GRID_HEIGHT; j++)
-		{
+		for (j = 0; j < GRID_HEIGHT; j++) {
 			b = &real_map[i][j];
 
-			if (b->type == START_POS)
-			{
+			if (b->type == START_POS) {
 				/* Add starting location to team array if there is room */
 				num = &maze.num_starts[b->team];
-				if (*num < MAX_TEAMS - 1)
-				{
+				if (*num < MAX_TEAMS - 1) {
 					c = &maze.start[b->team][(*num)++];
 					c->x = i;
 					c->y = j;
 				}
 				b->type = NORMAL;
-			}
-			else if (b->type == OUTPOST)
-			{
+			} else if (b->type == OUTPOST) {
 				if (strength4 == 0)
 					b->type = NORMAL;
 				else
@@ -329,154 +279,149 @@ process_maze()
 */
 make_random_maze_walls()
 {
-    static Box empty_box = {0, NORMAL, 0};
-    static Box north_box = {NORTH_WALL, NORMAL, 0};
-    static Box west_box = {WEST_WALL, NORMAL, 0};
-    static Box both_box = {NORTH_WALL | WEST_WALL, NORMAL, 0};
-    static int dx[4] = {0, 1, 0, -1};
-    static int dy[4] = {-1, 0, 1, 0};
-    Box *b;
-    Byte box_state[GRID_WIDTH][GRID_HEIGHT], *bs;
-    Coord adjacent[MAZE_WIDTH * MAZE_HEIGHT];
-    Coord cell;
-    short int x, y, nx, ny;
-    short int north, south, west, east;
-    short int choice, chosen;
-    int i, j;
-    int indx;
-    int size;
+	static Box empty_box =
+	{0, NORMAL, 0};
+	static Box north_box =
+	{NORTH_WALL, NORMAL, 0};
+	static Box west_box =
+	{WEST_WALL, NORMAL, 0};
+	static Box both_box =
+	{NORTH_WALL | WEST_WALL, NORMAL, 0};
+	static int dx[4] =
+	{0, 1, 0, -1};
+	static int dy[4] =
+	{-1, 0, 1, 0};
+	Box *b;
+	Byte box_state[GRID_WIDTH][GRID_HEIGHT], *bs;
+	Coord adjacent[MAZE_WIDTH * MAZE_HEIGHT];
+	Coord cell;
+	short int x, y, nx, ny;
+	short int north, south, west, east;
+	short int choice, chosen;
+	int i, j;
+	int indx;
+	int size;
 
-    /* initialize boxes and box states */
-    for (i = 0; i < GRID_WIDTH; i++)
-	for (j = 0; j < GRID_HEIGHT; j++)
-	{
-	    b = &real_map[i][j];
-	    bs = &box_state[i][j];
+	/* initialize boxes and box states */
+	for (i = 0; i < GRID_WIDTH; i++)
+		for (j = 0; j < GRID_HEIGHT; j++) {
+			b = &real_map[i][j];
+			bs = &box_state[i][j];
 
-            if (i >= MAZE_LEFT && i <= MAZE_RIGHT && j >= MAZE_TOP &&
-		j <= MAZE_BOTTOM)
-	    {
-		*b = both_box;
-		*bs = UNTOUCHED;
-	    }
-	    else
-	    {
-		if (i == MAZE_RIGHT + 1 && j >= MAZE_TOP && j <= MAZE_BOTTOM)
-		    *b = west_box;
-                else if (j == MAZE_BOTTOM + 1 && i >= MAZE_LEFT &&
-			 i <= MAZE_RIGHT)
-		    *b = north_box;
-		else
-		    *b = empty_box;
-		*bs = OFF_LIMITS;
-	    }
+			if (i >= MAZE_LEFT && i <= MAZE_RIGHT && j >= MAZE_TOP &&
+				j <= MAZE_BOTTOM) {
+				*b = both_box;
+				*bs = UNTOUCHED;
+			} else {
+				if (i == MAZE_RIGHT + 1 && j >= MAZE_TOP && j <= MAZE_BOTTOM)
+					*b = west_box;
+				else if (j == MAZE_BOTTOM + 1 && i >= MAZE_LEFT &&
+						 i <= MAZE_RIGHT)
+					*b = north_box;
+				else
+					*b = empty_box;
+				*bs = OFF_LIMITS;
+			}
+		}
+
+	/* Pick a random cell to start in */
+	cell.x = (x = rnd(MAZE_WIDTH) + MAZE_LEFT);
+	cell.y = (y = rnd(MAZE_HEIGHT) + MAZE_TOP);
+
+	/* Make it part of the maze, and add its neighbors to the adjacent list */
+	size = 0;
+	box_state[x][y] = PART_OF_MAZE;
+	real_map[x][y].flags |= INSIDE_MAZE;
+
+	for (i = 0; i < 4; i++) {
+		nx = x + dx[i];
+		ny = y + dy[i];
+
+		bs = &box_state[nx][ny];
+		if (*bs == UNTOUCHED) {
+			cell.x = nx;
+			cell.y = ny;
+			adjacent[++size] = cell;
+			*bs = NEXT_TO_MAZE;
+		}
 	}
 
-    /* Pick a random cell to start in */
-    cell.x = (x = rnd(MAZE_WIDTH) + MAZE_LEFT);
-    cell.y = (y = rnd(MAZE_HEIGHT) + MAZE_TOP);
-
-    /* Make it part of the maze, and add its neighbors to the adjacent list */
-    size = 0;
-    box_state[x][y] = PART_OF_MAZE;
-    real_map[x][y].flags |= INSIDE_MAZE;
-
-    for (i = 0; i < 4; i++)
-    {
-	nx = x + dx[i];
-	ny = y + dy[i];
-
-	bs = &box_state[nx][ny];
-	if (*bs == UNTOUCHED)
-	{
-	    cell.x = nx;
-	    cell.y = ny;
-	    adjacent[++size] = cell;
-	    *bs = NEXT_TO_MAZE;
-	}
-    }
-
-    /* Now connect the entire maze together using the following algorithm:
+	/* Now connect the entire maze together using the following algorithm:
        Take a random cell off the adjacent list, Make the cell part of the maze
        in the box_state array Add each of its untouched neighbors to the queue
        Pick a random neighbor that is part of the maze remove the wall there Do
        it all again until the adjacent list is empty All box_statees are either
        part of maze or off limits so we're done */
-    while (size)
-    {
-	indx = rnd(size) + 1;	/* pick random cell on the adjacent list */
-	cell = adjacent[indx];
-	adjacent[indx] = adjacent[size--];	/* delete cell from adjacent
+	while (size) {
+		indx = rnd(size) + 1;	/* pick random cell on the adjacent list */
+		cell = adjacent[indx];
+		adjacent[indx] = adjacent[size--];	/* delete cell from adjacent
 						   list */
-	x = cell.x;		/* get the x and y coords of the cell */
-	y = cell.y;
-	box_state[x][y] = PART_OF_MAZE;	/* make the cell part of the maze */
-	real_map[x][y].flags |= INSIDE_MAZE;
-	north = box_state[x][y - 1];	/* get the status of the four neighbors
+		x = cell.x;				/* get the x and y coords of the cell */
+		y = cell.y;
+		box_state[x][y] = PART_OF_MAZE;	/* make the cell part of the maze */
+		real_map[x][y].flags |= INSIDE_MAZE;
+		north = box_state[x][y - 1];	/* get the status of the four neighbors
 					   */
-	south = box_state[x][y + 1];
-	west = box_state[x - 1][y];
-	east = box_state[x + 1][y];
+		south = box_state[x][y + 1];
+		west = box_state[x - 1][y];
+		east = box_state[x + 1][y];
 
-	/* Find the number of neighbors that are part of the maze and choose
+		/* Find the number of neighbors that are part of the maze and choose
 	   one */
-	chosen = rnd((north == PART_OF_MAZE) + (south == PART_OF_MAZE) +
-		     (west == PART_OF_MAZE) + (east == PART_OF_MAZE)) + 1;
-	choice = 0;
+		chosen = rnd((north == PART_OF_MAZE) + (south == PART_OF_MAZE) +
+					 (west == PART_OF_MAZE) + (east == PART_OF_MAZE)) + 1;
+		choice = 0;
 
-	switch (north)
-	{
-	  case PART_OF_MAZE:
-	    if (chosen == ++choice) /* if the chosen direction, remove
+		switch (north) {
+		  case PART_OF_MAZE:
+			  if (chosen == ++choice)	/* if the chosen direction, remove
 				       the wall */
-		real_map[x][y].flags &= ~NORTH_WALL;
-	    break;
-	  case UNTOUCHED:	/* if untouched, put on adjacent list */
-	    box_state[x][y - 1] = NEXT_TO_MAZE;
-	    cell.x = x;
-	    cell.y = y - 1;
-	    adjacent[++size] = cell;
-	}
+				  real_map[x][y].flags &= ~NORTH_WALL;
+			  break;
+		  case UNTOUCHED:		/* if untouched, put on adjacent list */
+			  box_state[x][y - 1] = NEXT_TO_MAZE;
+			  cell.x = x;
+			  cell.y = y - 1;
+			  adjacent[++size] = cell;
+		}
 
-	switch (south)
-	{
-	  case PART_OF_MAZE:
-	    if (chosen == ++choice)
-		real_map[x][y + 1].flags &= ~NORTH_WALL;
-	    break;
-	  case UNTOUCHED:
-	    box_state[x][y + 1] = NEXT_TO_MAZE;
-	    cell.x = x;
-	    cell.y = y + 1;
-	    adjacent[++size] = cell;
-	}
+		switch (south) {
+		  case PART_OF_MAZE:
+			  if (chosen == ++choice)
+				  real_map[x][y + 1].flags &= ~NORTH_WALL;
+			  break;
+		  case UNTOUCHED:
+			  box_state[x][y + 1] = NEXT_TO_MAZE;
+			  cell.x = x;
+			  cell.y = y + 1;
+			  adjacent[++size] = cell;
+		}
 
-	switch (west)
-	{
-	  case PART_OF_MAZE:
-	    if (chosen == ++choice)
-		real_map[x][y].flags &= ~WEST_WALL;
-	    break;
-	  case UNTOUCHED:
-	    box_state[x - 1][y] = NEXT_TO_MAZE;
-	    cell.x = x - 1;
-	    cell.y = y;
-	    adjacent[++size] = cell;
-	}
+		switch (west) {
+		  case PART_OF_MAZE:
+			  if (chosen == ++choice)
+				  real_map[x][y].flags &= ~WEST_WALL;
+			  break;
+		  case UNTOUCHED:
+			  box_state[x - 1][y] = NEXT_TO_MAZE;
+			  cell.x = x - 1;
+			  cell.y = y;
+			  adjacent[++size] = cell;
+		}
 
-	switch (east)
-	{
-	  case PART_OF_MAZE:
-	    if (chosen == ++choice)
-		real_map[x + 1][y].flags &= ~WEST_WALL;
-	    break;
-	  case UNTOUCHED:
-	    box_state[x + 1][y] = NEXT_TO_MAZE;
-	    cell.x = x + 1;
-	    cell.y = y;
-	    adjacent[++size] = cell;
+		switch (east) {
+		  case PART_OF_MAZE:
+			  if (chosen == ++choice)
+				  real_map[x + 1][y].flags &= ~WEST_WALL;
+			  break;
+		  case UNTOUCHED:
+			  box_state[x + 1][y] = NEXT_TO_MAZE;
+			  cell.x = x + 1;
+			  cell.y = y;
+			  adjacent[++size] = cell;
+		}
 	}
-    }
 }
 
 /*
@@ -488,8 +433,7 @@ int percent;
 	int i, j;
 
 	for (i = MAZE_LEFT; i <= MAZE_RIGHT; i++)
-		for (j = MAZE_TOP; j <= MAZE_BOTTOM; j++)
-		{
+		for (j = MAZE_TOP; j <= MAZE_BOTTOM; j++) {
 			if ((rnd(100) < percent) && (j != MAZE_TOP))
 				real_map[i][j].flags &= ~NORTH_WALL;
 			if ((rnd(100) < percent) && (i != MAZE_LEFT))
@@ -507,8 +451,7 @@ int percent;
 	int i, j;
 
 	for (i = MAZE_LEFT; i <= MAZE_RIGHT; i++)
-		for (j = MAZE_TOP; j <= MAZE_BOTTOM; j++)
-		{
+		for (j = MAZE_TOP; j <= MAZE_BOTTOM; j++) {
 			b = &real_map[i][j];
 			if ((rnd(100) < percent) && (j != MAZE_TOP))
 				if (b->flags & NORTH_WALL)
@@ -523,30 +466,27 @@ int percent;
 ** Gives boxes different types, according to the given probability array.
 */
 set_box_types(num_prob, prob)
-    int num_prob;
-    FLOAT prob[];
+int num_prob;
+FLOAT prob[];
 {
-    FLOAT rnd_interval();
-    FLOAT number, pick;
-    LandmarkType type;
-    Box *b;
-    int x, y;
+	FLOAT number, pick;
+	LandmarkType type;
+	Box *b;
+	int x, y;
 
-    /* Assumes that the sum of the probabilities equals 1 */
-    for (x = 0; x < GRID_WIDTH; x++)
-	for (y = 0; y < GRID_HEIGHT; y++)
-	{
-	    b = &real_map[x][y];
+	/* Assumes that the sum of the probabilities equals 1 */
+	for (x = 0; x < GRID_WIDTH; x++)
+		for (y = 0; y < GRID_HEIGHT; y++) {
+			b = &real_map[x][y];
 
-	    if (b->flags & INSIDE_MAZE)
-	    {
-		pick = rnd_interval(0.0, 1.0);
+			if (b->flags & INSIDE_MAZE) {
+				pick = rnd_interval(0.0, 1.0);
 
-		/* Figure out which type is associated with the random pick */
-                for (type = NORMAL, number = prob[(int)type];
-		     number < pick && (int)type < num_prob;
-		     number += prob[++type]);
-		b->type = type;
-	    }
-	}
+				/* Figure out which type is associated with the random pick */
+				for (type = NORMAL, number = prob[(int) type];
+					 number < pick && (int) type < num_prob;
+					 number += prob[++type]) ;
+				b->type = type;
+			}
+		}
 }

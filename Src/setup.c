@@ -8,48 +8,7 @@
 
 /*
 $Author: lidl $
-$Id: setup.c,v 2.11 1992/06/07 02:45:08 lidl Exp $
-
-$Log: setup.c,v $
- * Revision 2.11  1992/06/07  02:45:08  lidl
- * Post Adam Bryant patches and a manual merge of the rejects (ugh!)
- *
- * Revision 2.10  1992/05/19  22:57:19  lidl
- * post Chris Moore patches, and sqrt to SQRT changes
- *
- * Revision 2.9  1992/03/31  04:04:16  lidl
- * pre-aaron patches, post 1.3d release (ie mailing list patches)
- *
- * Revision 2.8  1992/01/30  07:43:15  aahz
- * added init_box_names to avoid a seg fault later.
- *
- * Revision 2.7  1992/01/30  05:25:52  aahz
- * moved the game_running flag lower (into setup.c)
- *
- * Revision 2.6  1991/12/15  22:36:31  aahz
- * used a macro for structure assignment in place_vehicle
- *
- * Revision 2.5  1991/12/10  03:41:44  lidl
- * changed float to FLOAT, for portability reasons
- *
- * Revision 2.4  1991/03/25  00:42:11  stripes
- * RS6K Patches (IBM is a rock sucker)
- *
- * Revision 2.3  1991/02/10  13:51:38  rpotter
- * bug fixes, display tweaks, non-restart fixes, header reorg.
- *
- * Revision 2.2  91/01/20  09:58:56  rpotter
- * complete rewrite of vehicle death, other tweaks
- * 
- * Revision 2.1  91/01/17  07:12:56  rpotter
- * lint warnings and a fix to update_vector()
- * 
- * Revision 2.0  91/01/17  02:10:28  rpotter
- * small changes
- * 
- * Revision 1.1  90/12/29  21:03:04  aahz
- * Initial revision
- * 
+$Id: setup.c,v 1.1.1.1 1995/02/01 00:25:37 lidl Exp $
 */
 
 #include "malloc.h"
@@ -65,6 +24,11 @@ $Log: setup.c,v $
 #include "globals.h"
 #include "assert.h"
 #include "bullet.h"
+#include "proto.h"
+#ifdef SOUND
+#include "sound.h"
+#endif SOUND
+
 
 extern Map real_map;
 extern Boolean game_paused;
@@ -77,6 +41,7 @@ extern Engine_stat engine_stat[];
 
 #if defined(_IBMR2)
 extern long random();
+
 #define rnd(max)  (random() % (max))
 #endif
 
@@ -92,30 +57,28 @@ Boolean game_running = False;
 */
 standard_combatants()
 {
-    Combatant *c;
-    int i;
+	Combatant *c;
+	int i;
 
-    num_combatants = num_terminals + 5 + settings.difficulty / 2;
-    for (i = 0; i < num_combatants; i++)
-    {
-	c = &combatant[i];
-	if (i < num_terminals)
-	{
-	    /* Set up a vehicle for each player */
-	    c->num_players = 1;
-	    c->player[0] = i;
-	    c->num_programs = 0;
-	    c->team = (i + 1) % MAX_TEAMS;
-	    c->vdesc = terminal[i]->vdesc;
-	} else {
-	    /* Set up everyone else as neutral robots */
-	    c->num_players = 0;
-	    c->num_programs = 1;
-	    c->program[0] = choose_program();
-	    c->team = 0;
-	    c->vdesc = 0;
+	num_combatants = num_terminals + 5 + settings.difficulty / 2;
+	for (i = 0; i < num_combatants; i++) {
+		c = &combatant[i];
+		if (i < num_terminals) {
+			/* Set up a vehicle for each player */
+			c->num_players = 1;
+			c->player[0] = i;
+			c->num_programs = 0;
+			c->team = (i + 1) % MAX_TEAMS;
+			c->vdesc = terminal[i]->vdesc;
+		} else {
+			/* Set up everyone else as neutral robots */
+			c->num_players = 0;
+			c->num_programs = 1;
+			c->program[0] = choose_program();
+			c->team = NEUTRAL;
+			c->vdesc = 0;
+		}
 	}
-    }
 }
 
 /*
@@ -135,8 +98,7 @@ robot_combatants()
 	int i;
 
 	num_combatants = 5 + settings.difficulty;
-	for (i = 0; i < num_combatants; i++)
-	{
+	for (i = 0; i < num_combatants; i++) {
 		c = &combatant[i];
 		c->num_players = 0;
 		c->num_programs = 1;
@@ -155,8 +117,7 @@ player_combatants()
 	int i;
 
 	num_combatants = num_terminals;
-	for (i = 0; i < num_combatants; i++)
-	{
+	for (i = 0; i < num_combatants; i++) {
 		c = &combatant[i];
 		c->num_players = 1;
 		c->player[0] = i;
@@ -175,8 +136,7 @@ customized_combatants()
 	int i;
 
 	num_combatants = 0;
-	for (i = 0; i < MAX_VEHICLES; i++)
-	{
+	for (i = 0; i < MAX_VEHICLES; i++) {
 		c = &combatant[num_combatants];
 		if (!make_grid_combatant(c, i))
 			num_combatants++;
@@ -185,17 +145,16 @@ customized_combatants()
 
 init_terms()
 {
-    int i;
-    extern int num_terminals;
-    extern Terminal *terminal[];
+	int i;
+	extern int num_terminals;
+	extern Terminal *terminal[];
 
-    for (i = 0; i < num_terminals; i++)
-    {
-	if (!terminal[i])
-	    continue;
-	terminal[i]->observer = True;
-	terminal[i]->vehicle = NULL;
-    }
+	for (i = 0; i < num_terminals; i++) {
+		if (!terminal[i])
+			continue;
+		terminal[i]->observer = True;
+		terminal[i]->vehicle = NULL;
+	}
 }
 
 /*
@@ -203,59 +162,57 @@ init_terms()
 */
 init_combatants()
 {
-    extern Vdesc *vdesc;
-    extern Prog_desc *prog_desc[];
-    Combatant *c;
-    int max_cost = 0, i;
+	extern Vdesc *vdesc;
+	extern Prog_desc *prog_desc[];
+	Combatant *c;
+	int max_cost = 0, i;
 
-    num_teams = 0;
-    for (i = 0; i < MAX_TEAMS; ++i) {
-	teamdata[i].vehicle_count = 0;
-	teamdata[i].treasury = 0;
-    }
-
-    for (i = 0; i < num_combatants; i++)
-    {
-	c = &combatant[i];
-	/* name combatant after player, or failing that a program */
-	if (c->num_players) {
-	    (void) strncpy(c->name, terminal[c->player[0]]->player_name,
-			   MAX_STRING - 1);
-	    c->mouse_speed = terminal[c->player[0]]->mouse_speed;
-	} else {
-	    assert(c->num_programs > 0);
-	    (void) strncpy(c->name, prog_desc[c->program[0]]->name,
-			   MAX_STRING - 1);
-	    c->mouse_speed = FALSE;
+	num_teams = 0;
+	for (i = 0; i < MAX_TEAMS; ++i) {
+		teamdata[i].vehicle_count = 0;
+		teamdata[i].treasury = 0;
 	}
 
-	max_cost = MAX(max_cost, vdesc[c->vdesc].cost);
-	last_team = MAX(last_team, c->team);
-	if ((teamdata[c->team].vehicle_count)++ == 0) {
-	    ++num_teams;
+	for (i = 0; i < num_combatants; i++) {
+		c = &combatant[i];
+		/* name combatant after player, or failing that a program */
+		if (c->num_players) {
+			(void) strncpy(c->name, terminal[c->player[0]]->player_name,
+						   MAX_STRING - 1);
+			
+		} else {
+			assert(c->num_programs > 0);
+			(void) strncpy(c->name, prog_desc[c->program[0]]->name,
+						   MAX_STRING - 1);
+			
+		}
+
+		max_cost = MAX(max_cost, vdesc[c->vdesc].cost);
+		last_team = MAX(last_team, c->team);
+		if ((teamdata[c->team].vehicle_count)++ == 0) {
+			++num_teams;
+		}
+		c->number = i;
+
+		c->keep_score += c->score;
+		c->keep_kills += c->kills;
+		c->keep_deaths += c->deaths;
+
+		c->score = 0;
+		c->kills = 0;
+		c->deaths = 0;
 	}
-	c->number = i;
 
-	c->keep_score += c -> score;
-	c->keep_kills += c -> kills;
-	c->keep_deaths += c -> deaths;
+	init_terms();
 
-	c->score = 0;
-	c->kills = 0;
-	c->deaths = 0;
-    }
-
-    init_terms();
-
-    /* Give everyone $ 2 * max_cost - cost of their vehicle */
-    for (i = 0; i < num_combatants; i++)
-    {
-	c = &combatant[i];
-	c->money = max_cost * 2;
-	if (!settings.si.pay_to_play)
-	    c->money -= vdesc[c->vdesc].cost;
-	teamdata[c->team].treasury += c->money;
-    }
+	/* Give everyone $ 2 * max_cost - cost of their vehicle */
+	for (i = 0; i < num_combatants; i++) {
+		c = &combatant[i];
+		c->money = max_cost * 2;
+		if (!settings.si.pay_to_play)
+			c->money -= vdesc[c->vdesc].cost;
+		teamdata[c->team].treasury += c->money;
+	}
 }
 
 /*
@@ -264,66 +221,70 @@ init_combatants()
 */
 int play_game()
 {
-    unsigned int status;
-    int i;
-    Boolean newgame;
+	unsigned int status;
+	int i;
+	Boolean newgame;
 
-    if (num_combatants == 0)
-	return GAME_FAILED;
+	if (num_combatants == 0)
+		return GAME_FAILED;
 
-    /* In an ultimate game, only reset at the beginning, since we want don't
+	/* In an ultimate game, only reset at the beginning, since we want don't
        want scores to reset after every goal. */
-    if (settings.si.game == ULTIMATE_GAME)
-    {
-	init_combatants();
-	newgame = TRUE;
-    }
-
-    do {
-	if (settings.si.game != ULTIMATE_GAME)
-	{
-	    init_combatants();
-	    newgame = TRUE;
+	if (settings.si.game == ULTIMATE_GAME) {
+		init_combatants();
+		newgame = TRUE;
 	}
-	if (setup_game(newgame) == GAME_FAILED)
-	    return GAME_FAILED;
-	newgame = FALSE;
-
-#ifdef X11
-	button_up(ANIM_WIN, FALSE);
-	follow_mouse(ANIM_WIN, FALSE);
-#endif
-
-	game_running = True;
-
 	do {
-	    status = animate();
-	} while (status == GAME_RUNNING);
+#ifdef X11
+		button_up(ANIM_WIN, FALSE);
+		follow_mouse(ANIM_WIN, FALSE);
+#endif
+		if (settings.si.game != ULTIMATE_GAME) {
+			init_combatants();
+			newgame = TRUE;
+		}
+		if (setup_game(newgame) == GAME_FAILED)
+			return GAME_FAILED;
+		newgame = FALSE;
 
-	game_running = False;
 
-	status = display_game_stats(status);
+		game_running = True;
 
-	game_cleanup();		/* nuking all the vehicles here is overkill */
-    } while (status == GAME_RESET);
+#ifdef SOUND
+		play_all(START_SOUND);
+#endif SOUND
 
-    /* Unmap battle windows and clear all other windows on all the terminals */
-    for (i = 0; i < num_terminals; i++)
-    {
-	set_terminal(i);
-	unmap_battle_windows();
-	clear_windows();
-    }
+		do {
+			status = animate();
+		} while (status == GAME_RUNNING);
 
-    /* Return to terminal 0 for the user interface */
-    set_terminal(0);
+#ifdef SOUND
+		play_all(END_SOUND);
+#endif SOUND
+
+		game_running = False;
+
+		status = display_game_stats(status);
+
+		game_cleanup();			/* nuking all the vehicles here is overkill */
+	} while (status == GAME_RESET);
+
+	/* Unmap battle windows and clear all other windows on all the terminals */
+	for (i = 0; i < num_terminals; i++) {
+		set_terminal(i);
+		unmap_battle_windows();
+		clear_windows();
+	}
+
+	/* Return to terminal 0 for the user interface */
+	set_terminal(0);
 
 #ifdef X11
-    button_up(ANIM_WIN, TRUE);
-    follow_mouse(ANIM_WIN, TRUE);
+	button_up(ANIM_WIN, TRUE);
+	follow_mouse(ANIM_WIN, TRUE);
 #endif
 
-    return status;
+	return status;
 }
 
 /*
@@ -333,58 +294,58 @@ int play_game()
 setup_game(newgame)
 Boolean newgame;
 {
-    extern void disc_init_history();
-    int i;
+	extern void disc_init_history();
+	int i;
 
-    frame = 0;
+	frame = 0;
 
-    /* Setup maze */
-    setup_maze();
+	/* Setup maze */
+	setup_maze();
 
-    /* Initialize bullets and explosions */
-    init_bset();
-    init_eset();
+	/* Initialize bullets and explosions */
+	init_bset();
+	init_eset();
 
 	/* Initialize box names */
 	init_box_names();
 
-    /* Initialize all terminals to observe vehicle 0 */
-    for (i = 0; i < num_terminals; i++) {
-	setup_terminal(i, &actual_vehicles[0]);
-	terminal[i]->observer = True;
-    }
+	/* Initialize all terminals to observe vehicle 0 */
+	for (i = 0; i < num_terminals; i++) {
+		setup_terminal(i, &actual_vehicles[0]);
+		terminal[i]->observer = True;
+	}
 
-    num_veh = num_veh_alive = num_veh_dead = 0;
+	num_veh = num_veh_alive = num_veh_dead = 0;
 
-    /* Set up combatants */
-    for (i = 0; i < num_combatants; i++)
-	if (setup_combatant(&combatant[i]) == GAME_FAILED)
-	    return GAME_FAILED;
+	/* Set up combatants */
+	for (i = 0; i < num_combatants; i++)
+		if (setup_combatant(&combatant[i]) == GAME_FAILED)
+			return GAME_FAILED;
 
-    /* Initialize message menus for game */
-    init_msg_game();
+	/* Initialize message menus for game */
+	init_msg_game();
 
-    /* Initialize status windows (based on vehicle information) */
-    init_status();
+	/* Initialize status windows (based on vehicle information) */
+	init_status();
 
-    /* Initialize game rules and disc history */
-    disc_init_history();
-    game_rules(TRUE);
+	/* Initialize game rules and disc history */
+	disc_init_history();
+	game_rules(TRUE);
 
-    /* Initialize the commentator */
-    if (settings.commentator)
-	comment(COS_INIT_MOUTH, (int) newgame, (Vehicle *) NULL,
-		(Vehicle *) NULL, (Bullet *) NULL);
+	/* Initialize the commentator */
+	if (settings.commentator)
+		comment(COS_INIT_MOUTH, (int) newgame, (Vehicle *) NULL,
+				(Vehicle *) NULL, (Bullet *) NULL);
 
-    game_paused = FALSE;
+	game_paused = FALSE;
 
-    /* Initialize the game speed */
-    set_game_speed(settings.game_speed);
+	/* Initialize the game speed */
+	set_game_speed(settings.game_speed);
 
-    /* Flush the input */
-    sync_terminals(TRUE);
+	/* Flush the input */
+	sync_terminals(TRUE);
 
-    return GAME_RUNNING;
+	return GAME_RUNNING;
 }
 
 
@@ -394,39 +355,59 @@ Boolean newgame;
 setup_combatant(c)
 Combatant *c;
 {
-    extern Vdesc *vdesc;
-    extern Vehicle *make_vehicle();
-    extern int team_color[];
-    Vehicle *v;
-    int i;
+	extern Vdesc *vdesc;
+	extern Vehicle *make_vehicle();
+	extern int team_color[];
+	Vehicle *v;
+	int i;
 
-    v = make_vehicle(&vdesc[c->vdesc], c);
-    if (v == NULL)
-	return GAME_FAILED;
+	v = make_vehicle(&vdesc[c->vdesc], c);
+	if (v == NULL)
+		return GAME_FAILED;
 
-    c->vehicle = v;
+	c->vehicle = v;
 
-    for (i = 0; i < c->num_players; i++) {
-	terminal[c->player[i]]->observer = False;
-    }
+	for (i = 0; i < c->num_players; i++) {
+		terminal[c->player[i]]->observer = False;
+		terminal[c->player[i]]->teleview = False;
+	}
 
-    return activate_vehicle(v);
+	return activate_vehicle(v);
 }
 
 
 /* sets up the given terminal */
 
 setup_terminal(num, v)
-    int num;
-    Vehicle *v;			/* vehicle it'll control (or NULL) */
+int num;
+Vehicle *v;						/* vehicle it'll control (or NULL) */
 {
-    int i;
+	int i;
 
-    set_terminal(num);
-    term->vehicle = v;
-    for (i = 0; i < MAX_WINDOWS; i++)
-	expose_win(i, TRUE);
-    term->num_lines = 0;
+	set_terminal(num);
+	term->vehicle = v;
+	for (i = 0; i < MAX_WINDOWS; i++)
+		expose_win(i, TRUE);
+	term->num_lines = 0;
+	
+	/* 
+	 * Check whether to setup terminal with mouse_drive active on game
+	 * start up.
+	 */
+	if (term->mouse_drive == 0)
+	  {
+	    follow_mouse(ANIM_WIN, FALSE);
+	    button_up(ANIM_WIN, FALSE);
+	    term->mouse_drive_active = FALSE;
+	  }
+	else
+	  {
+	    term->mouse_drive_active = (term->mouse_drive > 0) ? FALSE : TRUE;
+	    
+	    button_up(ANIM_WIN, TRUE);
+	    follow_mouse(ANIM_WIN, TRUE);
+	  }
+	
 }
 
 /*
@@ -437,88 +418,83 @@ setup_terminal(num, v)
 place_vehicle(v)
 Vehicle *v;
 {
-    extern Maze maze;
-    Vector *vector;
-    int views;
-    Box *b;
-    int num_starts;
-    Coord *start;
-    int grid_x, grid_y;
-    int tries, num, random;
+	extern Maze maze;
+	Vector *vector;
+	int views;
+	Box *b;
+	int num_starts;
+	Coord *start;
+	int grid_x, grid_y;
+	int tries, num, random;
 
-    /* Check if the desired box is in the maze, and unoccupied.  If not,
+	/* Check if the desired box is in the maze, and unoccupied.  If not,
        start picking random boxes until we find one that is.  Once we find a
        "reasonable" box, try to get one that is the same team as the vehicle
        and normal.  If this doesn't seem possible, accept a neutral normal
        box.  If this doesn't seem possible, accept a box of any team that
        isn't an outpost.  If this doesn't seem possible, the vehicle cannot
        be placed. */
-    num_starts = maze.num_starts[v->team];
-    start = maze.start[v->team];
-    tries = 0;
-    num = 0;
-    random = rnd(num_starts);
-    for (;;)
-    {
-	/* Take the next start location, or a random one if there are none */
-	if (num < num_starts)
-	{
-	    grid_x = start[(num + random) % num_starts].x;
-	    grid_y = start[(num + random) % num_starts].y;
-	    num++;
+	num_starts = maze.num_starts[v->team];
+	start = maze.start[v->team];
+	tries = 0;
+	num = 0;
+	random = rnd(num_starts);
+	for (;;) {
+		/* Take the next start location, or a random one if there are none */
+		if (num < num_starts) {
+			grid_x = start[(num + random) % num_starts].x;
+			grid_y = start[(num + random) % num_starts].y;
+			num++;
+		} else {
+			grid_x = rnd(GRID_WIDTH);
+			grid_y = rnd(GRID_HEIGHT);
+		}
+
+		b = &real_map[grid_x][grid_y];
+
+		if (b->flags & INSIDE_MAZE &&
+			!(b->flags & ANY_VEHICLE)) {
+			if (b->team == v->team && b->type == NORMAL)
+				break;
+			else if (tries > 500 && b->team == 0 && b->type == NORMAL)
+				break;
+			else if (tries > 1000 && b->type != OUTPOST)
+				break;
+		}
+		/* Give up after 1500 tries */
+		if (tries++ == 1500)
+			return -1;
 	}
-	else
-	{
-	    grid_x = rnd(GRID_WIDTH);
-	    grid_y = rnd(GRID_HEIGHT);
-	}
 
-	b = &real_map[grid_x][grid_y];
+	/* Put the vehicle in the center of the box */
+	v->loc = &v->loc1;
+	v->old_loc = &v->loc2;
 
-	if (b->flags & INSIDE_MAZE &&
-	    !(b->flags & ANY_VEHICLE))
-	{
-	    if (b->team == v->team && b->type == NORMAL)
-		break;
-	    else if (tries > 500 && b->team == 0 && b->type == NORMAL)
-		break;
-	    else if (tries > 1000 && b->type != OUTPOST)
-		break;
-	}
-	/* Give up after 1500 tries */
-	if (tries++ == 1500)
-	    return -1;
-    }
+	v->loc->grid_x = grid_x;
+	v->loc->grid_y = grid_y;
 
-    /* Put the vehicle in the center of the box */
-    v->loc = &v->loc1;
-    v->old_loc = &v->loc2;
+	v->loc->box_x = BOX_WIDTH / 2;
+	v->loc->box_y = BOX_HEIGHT / 2;
 
-    v->loc->grid_x = grid_x;
-    v->loc->grid_y = grid_y;
-
-    v->loc->box_x = BOX_WIDTH / 2;
-    v->loc->box_y = BOX_HEIGHT / 2;
-
-    v->loc->x = v->loc->grid_x * BOX_WIDTH + v->loc->box_x;
-    v->loc->y = v->loc->grid_y * BOX_HEIGHT + v->loc->box_y;
+	v->loc->x = v->loc->grid_x * BOX_WIDTH + v->loc->box_x;
+	v->loc->y = v->loc->grid_y * BOX_HEIGHT + v->loc->box_y;
 
 	STRUCT_ASSIGN(*v->old_loc, *v->loc, Loc);
 
-    vector = &v->vector;
-    vector->speed = vector->xspeed = vector->yspeed = vector->drive = 0.0;
-    /* orient the vehicle randomly */
-    vector->angle = vector->desired_heading = vector->heading =
-	vector->old_heading = (FLOAT) rnd(100) * (2 * PI) / 100 - PI;
-    views = v->obj->num_pics;
-    vector->old_rot = vector->rot =
-	((int) ((vector->heading) / (2 * PI) * views + views + .5)) % views;
-    vector->heading_flag = NO_SPIN;
+	vector = &v->vector;
+	vector->speed = vector->xspeed = vector->yspeed = vector->drive = 0.0;
+	/* orient the vehicle randomly */
+	vector->angle = vector->desired_heading = vector->heading =
+	  vector->old_heading = (FLOAT) rnd(100) * (2 * PI) / 100 - PI;
+	views = v->obj->num_pics;
+	vector->old_rot = vector->rot =
+	  ((int) ((vector->heading) / (2 * PI) * views + views + .5)) % views;
+	vector->heading_flag = NO_SPIN;
 
-    /* Set flag in box to show that the vehicle is there */
-    real_map[v->loc->grid_x][v->loc->grid_y].flags |= v->flag;
+	/* Set flag in box to show that the vehicle is there */
+	real_map[v->loc->grid_x][v->loc->grid_y].flags |= v->flag;
 
-    return 0;
+	return 0;
 }
 
 
@@ -526,17 +502,17 @@ Vehicle *v;
 
 game_cleanup()
 {
-    extern void inactivate_vehicle();
-    int i;
+	extern void inactivate_vehicle();
+	int i;
 
-    for (i = 0; i < num_veh_alive; ++i) {
-	inactivate_vehicle(live_vehicles[i]);
-	unmake_vehicle(live_vehicles[i]);
-    }
-    for (i = 0; i < num_veh_dead; ++i) {
-	unmake_vehicle(dead_vehicles[i]);
-    }
-    /* permanently dead vehicles have already been freed */
+	for (i = 0; i < num_veh_alive; ++i) {
+		inactivate_vehicle(live_vehicles[i]);
+		unmake_vehicle(live_vehicles[i]);
+	}
+	for (i = 0; i < num_veh_dead; ++i) {
+		unmake_vehicle(dead_vehicles[i]);
+	}
+	/* permanently dead vehicles have already been freed */
 }
 
 
@@ -544,19 +520,17 @@ game_cleanup()
 
 int all_terms(veh, func)
 Vehicle *veh;
-void (*func)();
+void (*func) ();
 {
-    int ctri;
-    extern Terminal *terminal[];
-    extern int num_terminals;
+	int ctri;
+	extern Terminal *terminal[];
+	extern int num_terminals;
 
-    for (ctri = 0; ctri < num_terminals; ctri++)
-    {
-	if (terminal[ctri]->vehicle == veh)
-	{
-	    func(terminal[ctri]);
+	for (ctri = 0; ctri < num_terminals; ctri++) {
+		if (terminal[ctri]->vehicle == veh) {
+			func(terminal[ctri]);
+		}
 	}
-    }
 
-    return (0);
+	return (0);
 }

@@ -1,0 +1,53 @@
+#!/usr/contrib/bin/perl
+
+$| = 1;
+
+foreach $dir (@ARGV) {
+	&check($dir);
+}
+
+###############################################################################
+
+sub check {
+	local($dir) = @_;
+
+	opendir(D, $dir) || die;
+	local(@stuff) = readdir(D);
+	closedir(D);
+
+	# prune .o, .a, .so, core, RCS, ., ..
+	@stuff = grep(!m/.*\.o$/, @stuff);
+	@stuff = grep(!m/.*\.a$/, @stuff);
+	@stuff = grep(!m/.*\.so$/, @stuff);
+	@stuff = grep(!m/^core$/, @stuff);
+	@stuff = grep(!m/^RCS$/, @stuff);
+	@stuff = grep(!m/^.$/, @stuff);
+	@stuff = grep(!m/^..$/, @stuff);
+
+	local(@rcs);
+
+	if (opendir(R, "$dir/RCS")) {
+		@rcs = readdir(R);
+		closedir(R);
+	} else {
+		print "No $dir/RCS\n";
+		@rcs = ();
+	}
+	
+	local(%rcs);
+
+	foreach $_ (@rcs) {
+		s/,v$//;
+		$rcs{$_} = $_;
+	}
+
+	foreach $_ (@stuff) {
+		if (!defined($rcs{$_})) {
+			if (-d "$dir/$_") {
+				&check("$dir/$_");
+			} else {
+				print "Not under RCS $dir/$_\n";
+			}
+		}
+	}
+}

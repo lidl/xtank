@@ -1,10 +1,19 @@
 /*
-** A Vehicle loader that uses LEX to parse things
-** Written by Gordon Smith (aahz@eng.umd.edu)
-** Hacked on a bit by lidl@pix.com
+** Xtank
+**
+** Copyright 1992, 1993 by Pix Technologies Corp.
+**
+** Comment:  A Vehicle loader that uses LEX to parse things
+**           Written by Gordon Smith (aahz@eng.umd.edu)
+**           Hacked on a bit (OK, a lot) by lidl@pix.com
+**
+** vload.l
 */
 
-/* $Id: vload.l,v 1.9 1992/09/12 09:42:26 aahz Exp $ */
+/*
+$Author: lidl $
+$Id: vload.l,v 1.1.1.1 1995/02/01 00:25:38 lidl Exp $
+*/
 
 %{
 #ifdef YY_DECL

@@ -7,49 +7,8 @@
 */
 
 /*
-$Author: aahz $
-$Id: xtank.h,v 2.11 1992/09/12 09:40:09 aahz Exp $
-
-$Log: xtank.h,v $
- * Revision 2.11  1992/09/12  09:40:09  aahz
- * added new defines for forcing specials
- *
- * Revision 2.10  1992/08/31  01:50:45  lidl
- * changed to use tanktypes.h, instead of types.h
- *
- * Revision 2.9  1992/08/18  05:42:39  lidl
- * added tac nuke patches
- *
- * Revision 2.8  1992/03/31  21:49:23  lidl
- * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
- *
- * Revision 2.7  1992/01/29  08:39:11  lidl
- * post aaron patches, seems to mostly work now
- *
- * Revision 2.6  1991/12/03  20:15:57  lidl
- * botched try for prototype support
- *
- * Revision 2.5  1991/11/23  06:31:27  lidl
- * now includes the function prototypes file
- *
- * Revision 2.4  1991/10/27  22:35:15  aahz
- * updated the number of weapons.
- *
- * Revision 2.3  1991/02/10  13:52:15  rpotter
- * bug fixes, display tweaks, non-restart fixes, header reorg.
- *
- * Revision 2.2  91/01/20  09:59:33  rpotter
- * complete rewrite of vehicle death, other tweaks
- * 
- * Revision 2.1  91/01/17  07:13:45  rpotter
- * lint warnings and a fix to update_vector()
- * 
- * Revision 2.0  91/01/17  02:10:59  rpotter
- * small changes
- * 
- * Revision 1.1  90/12/29  21:03:24  aahz
- * Initial revision
- * 
+$Author: lidl $
+$Id: xtank.h,v 1.1.1.1 1995/02/01 00:25:44 lidl Exp $
 */
 
 #ifndef _XTANK_H_
@@ -64,7 +23,9 @@ $Log: xtank.h,v $
 
 #include <math.h>
 #include "screen.h"
-#include "xtanklib.h"		/* many important things here */
+#include "xtanklib.h"			/* many important things here */
+
+/* changed the include for proto.h to be in the individual source files */
 /* #include "proto.h"		/* function prototypes for ANSI compilers */
 
 #ifdef AMIGA
@@ -124,7 +85,7 @@ $Log: xtank.h,v $
 #define DESC_NO_ROOM    4
 
 /*
- * eithier this or use different symbols for do_special, 
+ * eithier this or use different symbols for do_special,
  * ie not SP_xxx
  * this seemed simple enough
  */
@@ -136,8 +97,10 @@ $Log: xtank.h,v $
 #define SP_draw		(4+MAX_SPEC_STATS)
 #define SP_erase	(5+MAX_SPEC_STATS)
 #define SP_redisplay	(6+MAX_SPEC_STATS)
-#define SP_break	(7+MAX_SPEC_STATS)
-#define SP_repair	(8+MAX_SPEC_STATS)
+
+#define SPDF_clear	1
+#define SPDF_break	2
+#define SPDF_fix	3
 
 /* Vehicle, weapon, and program status masks */
 #define VS_functioning		(1<<0)
@@ -170,9 +133,7 @@ $Log: xtank.h,v $
 #define EXP_DAM4      6
 #define EXP_EXHAUST   7
 #define EXP_ELECTRIC  8
-#ifdef TAC_NUKES
 #define EXP_NUKE      9
-#endif
 
 /* Types of descriptions */
 #define VDESC 0

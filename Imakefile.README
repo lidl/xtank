@@ -1,0 +1,324 @@
+/*
+** Xtank
+**
+** Copyright 1993,1994 by Pix Technologies, Corp.
+**
+** Imakefile.README
+** Written by Kurt Lidl (lidl@pix.com)
+**
+** $Id: Imakefile.README,v 1.1.1.2 1995/02/01 00:27:57 lidl Exp $
+*/
+
+This file (Imakefile.README) is provided as documentation to the various
+options that can be set before someone attempts to compile Xtank
+for their system.
+
+That being said, the following are the things that might need
+to be defined, for your installation of xtank.
+========================================================================
+
+-DXTANK_DIR=\"/path/to/some/directory\"
+	Xtank needs to be able to find various files when it starts
+	running.  This define should have an explicit path to the main
+	xtank directory in quotes.  A relative path will not work.  If
+	the directory that is compiled into your Xtank binary doesn't
+	match where Xtank currently lives on your system - Don't
+	panic!  Xtank is smart enough to look through the environment
+	of the user who started the game and look for XTANK_DIR.  If
+	Xtank finds that variable, it will use that value
+	preferentially to the compiled in value for XTANK_DIR.
+
+	If you do need to change this value, it would be a good idea to
+	change the Bourne Shell "xtank" script, that is located in the
+	~xtank/Bin directory.
+
+-DX11
+	Xtank needs to be told what graphics system it is using.
+	Believe it or not, Xtank (a long time ago) used to work under
+	X10 (-DX10) and work was done to try and make it work under
+	AmigaDOS/Intuition (-DAMIGA).  Both the X10 and AMIGA defines
+	will most likely cause the game to blow up if you compile Xtank
+	with those defines set.  So, don't set them.  This note is
+	provided merely as a historical footnote to the game.
+
+-DUNIX
+	The operating system under which the code is compiled.  Like
+	the graphics systems, there is a -DAMIGA flag that will break
+	things if you set it.  So don't.
+
+-DS1024x864
+	The screen size of the display.  There was work done to make
+	this work on an Amiga, so there is also a -DS640x400 flag you
+	can set, if you don't want things to work.  Someday this will
+	most likely change...  But for the here and now, you shouldn't
+	set the -DS640x400 flag.
+
+========================================================================
+
+The next rather long section explains the various things you really can
+change for your installation and might actually have a reason for
+wanting to do so.  Read this section very carefully.
+
+========================================================================
+
+-DSTINGY_REDRAW
+	This flag will enable additional logic in the source code, so
+	Xtank will try to be much smarter about which objects on the
+	display need to be redrawn in each frame of the game.  When
+	this flag is defined during compile time, Xtank will not
+	refresh objects that have not moved from one frame to the
+	next.  However, the new behavior subtly breaks some exposure
+	handlers and events!  This code is now much more robust and
+	better localized than the original Xtank STINGY_REDRAW code.
+	This could probably use some macro-izing or local variables to
+	replace the VS_moved and VS_rotated ideas.  Files affected:
+	display.c  Setting this flag is generally a good idea.
+
+-DBATCH_LINES
+	Caches all draw_lines requests into one big Xdrawsegments()
+	call.  This often has a dramatic increase in speeding up the
+	game.  In addition to speeding up the game in the general case,
+	setting this flag will dramatically reduce the network load
+	that Xtank will generate if many people are playing.  Rather
+	than saturating the network with millions of small packets,
+	Xtank will emit a much smaller number of larger packets.  This
+	flow of traffic, in addition to being smaller, is easier for
+	workstations and routers to handle.  Setting this flag is
+	generally a good idea.  Files affected: display.c x11.c x11.h
+
+-DBATCH_POINTS
+	Caches draw_point requests into one big Xdrawpoints() call.
+	This often has a dramatic increase in speeding up the game.
+	In addition to speeding up the game in the general case,
+	setting this flag will dramatically reduce the network load
+	that Xtank will generate if many people are playing.  Rather
+	than saturating the network with millions of small packets,
+	Xtank will emit a much smaller number of larger packets.  This
+	flow of traffic, in addition to being smaller, is easier for
+	workstations and routers to handle.  Setting this flag is
+	generally a good idea.  Files affected: display.c x11.c x11.h
+
+-DCODE_SIZE=0xNNNNNN
+	This define sets the default amount of space to allocate for
+	dynamically loaded program code objects.  One CODE_SIZE of
+	memory is allocated each time a new program is dynamically
+	loaded.  The program that has been dynamically loaded gets to
+	use CODE_SIZE bytes of memory, minus possibly one pagesize of
+	memory, depending on whether or not malloc() returns memory on
+	a page boundary.
+
+-DSTACK_SIZE=0xNNNNNN
+	Default amount of space to allocate for each thread (Robot
+	Program) in the game.  Increasing this number can drastically
+	change the virtual memory usage of Xtank!
+
+-DFAST_EXPLOS
+	Makes faster, terser explosions by limiting the number of
+	bitmaps displayed.  Files affected: circle.obj double.obj
+	exhaust.obj fiery.obj soft.obj tink.obj
+
+-DKEYPAD_DETECT
+	Enables the keypad routines.  Currently cause weapon "n" to one
+	shot each key press on the numeric keypad. Weapon state
+	(on/off) is restored after firing.  Files affected: input.c
+	x11.c graphics.h
+
+-DLOCK_GAME_CONTROLS
+	Locks out some luser controls (speed, sync...) Strictly a local
+	hack.  Files affected: animate.c input.c
+	This should probably *NOT* be defined.
+
+-DNO_TEXT_CLIP
+	Disables fix that prevents off-window text from being drawn.
+	This is can be a big win, speed wise, as nametags used to be
+	drawn constantly even when they weren't visible, thus
+	generating needless network traffic.  Most sites should leave
+	it undefined, so they will receive the benefits of the code
+	fix.  Files affected: x11.c
+
+-DBATCH_COLOR_LINES
+	Rather memory hungry extensions to cope with colored walls.
+	(Deal with it.)  This has the effect of speeding up the
+	display, since not as many transitions need to be made into the
+	kernel network driver to get all the data.  This define should
+	probably be set.  Files affected: x11.c x11.h
+
+-DNO_NEW_RADAR
+	An attempt was made to merge in the new radar system without
+	crippling the old system.  When integrating the patches with
+	the new console driver, the maintainers decided to ditch the
+	old radar system support as a seperate system.  Thus, you only
+	get the new radar system code.  (The older system is still
+	there, you just can't turn off only the new radar system.)
+	Don't set this flag, because XTank will not compile with it
+	set!
+
+About the new radar system:
+
+The new radar system is similar to a radar system of the 1990's instead
+of the 1960's. Big fat vehicles show up better on the radar screen.
+RCS can be set by other modules to enable stealthy-type action. 
+ 
+IFF (Identify Friend or Foe) subsystem.  Allows you to distinguish
+friends and enemys (and allies) on the new radar. Works with
+public-key cryptography, you must have the IFF key of your ally
+and he must have your key for it to work. You share IFF keys
+with your team-mates automatically.
+
+Tactical link, shares info with team mates. Currently only shares radar
+info, might eventually share mapper info.
+
+HARM's, high speed anti-radiation missles.  Seeking code is still buggy!
+You do a L-click in the map (!) window to select the firing coordinates.
+NB: The weight/cost/ammo stuff is a rough guess for playing, and most
+likely will switch in the next release.
+ 
+-DTEST_TURRETS
+	This is experimental.  Should be left undefined (ie, disabled)
+	for normal sites.  Argh! In fact, this should never be enabled
+	as it stands.  The coder was trying to speed up turret code.
+	Works by computing actual turret vector. Turret lengths set for
+	debugging, not playing.
+
+-DNO_BROKEN_BLIP_FIX
+	A fix to a fix. Seems that my (Aaron) last uninformed patch
+	made is possible to leave a soilitary little dot on the radar
+	if you turned it off in the last life phase. I'm sorry.  Most
+	sites should leave it undefined.  Files affected: radar.c
+
+-DSCROLL_INTO_WALL_BUG
+	Disables a fix that causes vehicles to stick into walls if they
+	are directed into them by a scroll square. This is an old fix,
+	but please leave the ifdef in so people can figgure out why the
+	code appears so funny at that point (and so disbelievers can
+	recreate the bug!) Most sites should leave it undefined.
+
+-DNO_GAME_BALANCE
+	Enables some features that horribly unbalance the game, but can
+	be fun to play around with.  Currently, enables the original
+	firing behavior for Nukes. (HAK)  Sites should probably leave
+	this undefined.
+
+-DNEW_LIMITS
+	Enables new weapon mounting limits.  Max of two weapons per
+	turret, and a limit of how many weapons can be placed on a side
+	(determined by the weapon's mount space).  Also, the weapon
+	mount flags (specified in weapon-defs.h) are used, allowing
+	more specific mount restrictions (front, back, left, right,
+	and/or turret) for a particular weapon. (HAK 4/93)  Most sites
+	should leave it defined, since most vehicles will be
+	invalidated anyway.
+
+-DSLOWER
+	Experimental.  Should be defined (ie, disabled) for normal
+	sites.  Various attempts at speeding up the code, probably very
+	dependant on your CPU. Stay tuned to this channel.  Files
+	affected:  collision.c
+
+-DTAC_NUKES
+	Enables tactical nukes.  They probably are still a little too
+	unbalancing, but they're better than what they were.  A nuke
+	now behaves like a mine.  It will travel a short distance, then
+	stop.  It will detonate after a short time or when a vehicle
+	hits it.  This makes them harder to use.  If you want the
+	original firing style, you can define NO_GAME_BALANCE.  (HAK
+	and MEL 2/93)
+
+-DMORTARS
+	Enables Mortars.  These are fired like HARM's (by clicking in
+	the map) but they don't track.  They fly directly to the
+	location where you clicked and detonate with a nuke explosion.
+	They last about the same amount of time no matter how far they
+	have to go, so they travel faster toward distant targets.  Some
+	things need to be done yet with these... (MEL 2/93)
+
+-DCHECKNET
+	With this flag defined, multiplayer games will be restricted to
+	the same subnet of your network.  Some sites (eg "the
+	University") (and local networking centers) consider running
+	xtank off the local subnet, or over a campus or long-haul
+	network a really *bad thing*.  Xtank can generate a a *lot* of
+	network traffic, so be considerate of others.
+
+========================================================================
+The following flags are very system specific, so you should be
+careful where you define them.  The best place to add
+any flags needed for your particular platform is the
+EXTRA_DEFINES line in the Imakefile.Config file.
+========================================================================
+
+-DDEBUG
+	If you want to see some debugging information in unix.c,
+	add this flag to the appropriate compile line.
+
+-DDYNALOAD
+	If you are not able to get compile_module() to work in unix.c,
+	remove the -DDYNALOAD flag.  You will then not be able to add
+	new robot programs without recompiling Xtank.
+
+-DHAS_SINCOS
+	Define this if your system has a sincos() math library call.
+	Some of the robots are smart enough to be able to use this
+	call, rather than descrete calls to sin() and cos().
+
+-DX11R2FONTS
+	Define this only is your system is using X11R2. (No shit.)
+	This is *NOT* needed for X11R[3456].
+
+-DMULTI_SYNC
+	If you cannot get XMultiSync.c to compile, remove this flag.
+	This will remove the code from the game, at a considerable loss
+	in speed on multi-player games.  Most sites should have this
+	defined.
+
+-DNEED_AUX_FONT
+	Define this if you need to use the auxiliary font.  This should
+	not be necessary unless your are running X11R2!
+	Most sites should not need this defined.
+
+========================================================================
+The following flags are used to tell Xtank what kind of threading to
+use on a given system.  Only *ONE* of the following flags should be
+defined for a given system.  The correct place to put the threading
+flag is on the EXTRA_DEFINES line in the Imakefile.Config file.
+========================================================================
+
+-DTHREAD_SUNLWP
+	This threading package interfaces to the sun LWP library.  This
+	library is unsupported by Sun and will not be supported under
+	the Solaris 2.X OS releases.  You need to have the following in
+	your kernel config to have this work, "options LWP".  If you
+	don't have this, it will not work.  Don't ask the authors or
+	the newsgroups about this -- ask your system administrator to
+	turn this on.
+
+-DTHREAD_SVR4
+	This threading package interfaces to the standard SVR4 system
+	threading calls, getcontext()/swapcontext().  This has been
+	proven to work on an OKIstation 7330.  (It's based on an 40Mhz
+	i860, but never made it to market, really...)  Others have
+	reported getting this working under some of the x86 ports of
+	the SVR4 system.  Sun's Solaris 2.2 will compile OK, but there
+	seems to be a bug in the thread process creation.  Since I have
+	no access to a system that runs Solaris, I cannot debug this
+	problem.
+
+-DTHREAD_POSIX
+	This threading package is written to the POSIX specification
+	for threads.  It has not been tested, and is not known to
+	work.  Feedback would be appreciated.
+
+-DTHREAD_MP
+	This is the original Xtank threading package, which is based on
+	the code done at MIT originally.  This code is a perversion
+	based on setjmp()/longjmp() and works a little too well for its
+	own good.
+
+-DTHREAD_NULL
+	This is the null threading package.  If none of the other
+	threads packages works, define this one.  It is not a real
+	threading package, you won't get robot players.  However, it
+	will still get you Xtank.  If you are porting Xtank to a new
+	(unsupported) system, you probably want to start with this as
+	your threading package.  Some weird fringe conditions might be
+	seen when this code is used.

@@ -8,36 +8,7 @@
 
 /*
 $Author: lidl $
-$Id: x11.h,v 2.7 1992/03/31 21:49:23 lidl Exp $
-
-$Log: x11.h,v $
- * Revision 2.7  1992/03/31  21:49:23  lidl
- * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
- *
- * Revision 2.6  1992/03/31  04:05:52  lidl
- * pre-aaron patches, post 1.3d release (ie mailing list patches)
- *
- * Revision 2.5  1992/01/29  08:39:11  lidl
- * post aaron patches, seems to mostly work now
- *
- * Revision 2.4  1991/09/19  07:41:04  lidl
- * added macros for the USE_BATCHED_LINES and USE_BATCHED_POINTS mods
- *
- * Revision 2.3  1991/02/10  13:52:14  rpotter
- * bug fixes, display tweaks, non-restart fixes, header reorg.
- *
- * Revision 2.2  91/01/20  09:59:32  rpotter
- * complete rewrite of vehicle death, other tweaks
- * 
- * Revision 2.1  91/01/17  07:13:42  rpotter
- * lint warnings and a fix to update_vector()
- * 
- * Revision 2.0  91/01/17  02:10:58  rpotter
- * small changes
- * 
- * Revision 1.1  90/12/29  21:03:23  aahz
- * Initial revision
- * 
+$Id: x11.h,v 1.1.1.1 1995/02/01 00:25:44 lidl Exp $
 */
 
 #ifndef INCLUDED_X11_H
@@ -49,7 +20,13 @@ $Log: x11.h,v $
 
 #ifdef lint
 /* stupid X11/Xlib.h leaves these undefined, which makes lint complain: */
-struct _XrmHashBucketRec {int x;}; struct XKeytrans {int x;};
+  struct _XrmHashBucketRec {
+	  int x;
+  };
+  struct XKeytrans {
+	  int x;
+  };
+
 #endif
 
 
@@ -91,6 +68,7 @@ extern XPoint pointBatch[MAX_COLORS][BATCHPDEPTH];
 extern int pointsBatched[];
 extern int pointBatchFunc;
 extern int pointBatchWin;
+
 #endif
 
 #ifdef USE_BATCHED_POINTS
@@ -142,15 +120,17 @@ extern int pointBatchWin;
 #define BATCHDEPTH 80
 
 #ifdef BATCH_COLOR_LINES
-  extern XSegment lineBatch[MAX_COLORS][BATCHDEPTH];
-  extern int linesBatched[MAX_COLORS];
+extern XSegment lineBatch[MAX_COLORS][BATCHDEPTH];
+extern int linesBatched[MAX_COLORS];
+
 #else /* BATCH_COLOR_LINES */
-  extern XSegment lineBatch[];
-  extern int linesBatched;
-  extern int lineBatchColor;
+extern XSegment lineBatch[];
+extern int linesBatched;
+extern int lineBatchColor;
+
 #endif /* BATCH_COLOR_LINES */
-  extern int lineBatchFunc;
-  extern int lineBatchWin;
+extern int lineBatchFunc;
+extern int lineBatchWin;
 
 #endif
 
@@ -276,45 +256,48 @@ extern int pointBatchWin;
       } \
  }
 
-typedef struct
-{
-    Window id;
-    int   width, height;
-    int   flags;
-}     Win;
+  typedef struct {
+	  Window id;
+	  int width, height;
+	  int flags;
+  }
+Win;
 
-struct Kludge_Defaults {
-	char player_name[MAX_STRING+1];
-	char tank_name[MAX_STRING+1];
-	int wants_keypad;
-	int mouse_speed;
-};
+  struct Kludge_Defaults {
+	  char player_name[MAX_STRING + 1];
+	  char tank_name[MAX_STRING + 1];
+	  int wants_keypad;
+	  int mouse_speed;
+	  int mouse_drive;
+	  int mouse_heat;
+	  char keymap[MAX_STRING +1];
+  };
 
-typedef struct
-{
-    char  display_name[50];
-    Display *dpy;
-    int   planes;
-    long input_mask;
-    Window parent_id;
-    int   num_windows;
-    Win   win[MAX_WINDOWS];
-    GC    graph_gc[MAX_DRAW_FUNCS][MAX_COLORS];
-    GC    text_gc[MAX_FONTS][MAX_DRAW_FUNCS][MAX_COLORS];
-    XFontStruct *fs[MAX_FONTS];
-    int   num_pixids;
-    Pixmap pixid[MAX_PIXMAPS];
-    int   width[MAX_PIXMAPS], height[MAX_PIXMAPS];
-    unsigned long fg, bg, color[MAX_COLORS];
-    Cursor cursor[MAX_CURSORS];
-    int escher_width;
-    int last_expose_frame;
-    unsigned int beep_flag:1;
-    unsigned int display_names_flag:1;
-    struct Kludge_Defaults kludge;
-    int dest_wall;
-    int rdf_green;
-} Video;
+  typedef struct {
+	  char display_name[50];
+	  Display *dpy;
+	  int planes;
+	  long input_mask;
+	  Window parent_id;
+	  int num_windows;
+	  Win win[MAX_WINDOWS];
+	  GC graph_gc[MAX_DRAW_FUNCS][MAX_COLORS];
+	  GC text_gc[MAX_FONTS][MAX_DRAW_FUNCS][MAX_COLORS];
+	  XFontStruct *fs[MAX_FONTS];
+	  int num_pixids;
+	  Pixmap pixid[MAX_PIXMAPS];
+	  int width[MAX_PIXMAPS], height[MAX_PIXMAPS];
+	  unsigned long fg, bg, color[MAX_COLORS];
+	  Cursor cursor[MAX_CURSORS];
+	  int escher_width;
+	  int last_expose_frame;
+	  unsigned int beep_flag:1;
+	  unsigned int display_names_flag:1;
+	  struct Kludge_Defaults kludge;
+	  int dest_wall;
+	  int rdf_green;
+  }
+Video;
 
 /*
  * Pseudo colors, depends on set_video being
@@ -325,4 +308,5 @@ typedef struct
 #define RDF_SAFE vid->rdf_green
 
 extern Video *vid;
+
 #endif

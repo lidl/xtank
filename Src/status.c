@@ -1,4 +1,3 @@
-#include "malloc.h"
 /*
 ** Xtank
 **
@@ -11,36 +10,17 @@
 
 /*
 $Author: lidl $
-$Id: status.c,v 2.4 1991/12/10 03:41:44 lidl Exp $
-
-$Log: status.c,v $
- * Revision 2.4  1991/12/10  03:41:44  lidl
- * changed float to FLOAT, for portability reasons
- *
- * Revision 2.3  1991/02/10  13:51:42  rpotter
- * bug fixes, display tweaks, non-restart fixes, header reorg.
- *
- * Revision 2.2  91/01/20  09:59:01  rpotter
- * complete rewrite of vehicle death, other tweaks
- * 
- * Revision 2.1  91/01/17  07:13:02  rpotter
- * lint warnings and a fix to update_vector()
- * 
- * Revision 2.0  91/01/17  02:10:33  rpotter
- * small changes
- * 
- * Revision 1.1  90/12/29  21:03:07  aahz
- * Initial revision
- * 
+$Id: status.c,v 1.1.1.1 1995/02/01 00:25:37 lidl Exp $
 */
 
+#include "malloc.h"
 #include "xtank.h"
 #include "screen.h"
 #include "graphics.h"
 #include "gr.h"
 #include "vehicle.h"
 #include "globals.h"
-
+#include "proto.h"
 
 #define KILLS     0
 #define ARMOR_BAR 1
@@ -51,15 +31,15 @@ $Log: status.c,v $
 #define BAR_HEIGHT  13
 #define BAR_SPACING 7
 
-typedef struct
-{
-	int kills;
-	int minarmor;
-	int fuel;
-	int ammo;
-	Vehicle *vehicle;
-	Flag dead;
-} Vstatus;
+  typedef struct {
+	  int kills;
+	  int minarmor;
+	  int fuel;
+	  int ammo;
+	  Vehicle *vehicle;
+	  Flag dead;
+  }
+Vstatus;
 
 int num_stati;
 Vstatus vstati[MAX_VEHICLES];	/* indexed by vehicle number */
@@ -74,33 +54,32 @@ FLOAT armor_scale, fuel_scale, ammo_scale;
 */
 init_status()
 {
-    Vstatus *vs;
-    int i;
+	Vstatus *vs;
+	int i;
 
-    /* Compute initial stati for vehicle */
-    for (i = 0; i < num_veh; ++i)
-	init_vehicle_status(&actual_vehicles[i]);
+	/* Compute initial stati for vehicle */
+	for (i = 0; i < num_veh; ++i)
+		init_vehicle_status(&actual_vehicles[i]);
 
-    /* Default values for the maxima to avoid divide by zero errors */
-    maxarmor = 1;
-    maxfuel = 1.0;
-    maxammo = 1;
+	/* Default values for the maxima to avoid divide by zero errors */
+	maxarmor = 1;
+	maxfuel = 1.0;
+	maxammo = 1;
 
-    /* Compute maximum values over all vehicles */
-    for (i = 0; i < num_veh; ++i)
-    {
-	vs = &vstati[i];
-        maxarmor = MAX(maxarmor, vs->minarmor);
-        maxfuel = MAX(maxfuel, vs->fuel);
-        maxammo = MAX(maxammo, vs->ammo);
-    }
+	/* Compute maximum values over all vehicles */
+	for (i = 0; i < num_veh; ++i) {
+		vs = &vstati[i];
+		maxarmor = MAX(maxarmor, vs->minarmor);
+		maxfuel = MAX(maxfuel, vs->fuel);
+		maxammo = MAX(maxammo, vs->ammo);
+	}
 
-    num_stati = num_veh;
+	num_stati = num_veh;
 
-    /* From the maxima, compute scaling factors for each bar graph */
-    armor_scale = (FLOAT) BAR_WIDTH / maxarmor;
-    fuel_scale = (FLOAT) BAR_WIDTH / maxfuel;
-    ammo_scale = (FLOAT) BAR_WIDTH / maxammo;
+	/* From the maxima, compute scaling factors for each bar graph */
+	armor_scale = (FLOAT) BAR_WIDTH / maxarmor;
+	fuel_scale = (FLOAT) BAR_WIDTH / maxfuel;
+	ammo_scale = (FLOAT) BAR_WIDTH / maxammo;
 }
 
 /*
@@ -110,20 +89,20 @@ init_status()
 init_vehicle_status(v)
 Vehicle *v;
 {
-    Vstatus *vs;
-    extern int num_terminals;
+	Vstatus *vs;
+	extern int num_terminals;
 
-    vs = &vstati[v->number];
+	vs = &vstati[v->number];
 
-    vs->kills = 0;
-    vs->minarmor = compute_minarmor(v);
-    vs->fuel = (int) v->fuel;
-    vs->ammo = compute_totammo(v);
-    vs->vehicle = v;
-    vs->dead = FALSE;
-    /* %%% what about multiple players? -RDP */
-    if (v->owner->num_players)	/* num_players s/b num_terms */
-	expose_win(STAT_WIN + v->number, TRUE);
+	vs->kills = 0;
+	vs->minarmor = compute_minarmor(v);
+	vs->fuel = (int) v->fuel;
+	vs->ammo = compute_totammo(v);
+	vs->vehicle = v;
+	vs->dead = FALSE;
+	/* %%% what about multiple players? -RDP */
+	if (v->owner->num_players)	/* num_players s/b num_terms */
+		expose_win(STAT_WIN + v->number, TRUE);
 }
 
 /*
@@ -146,100 +125,94 @@ display_status_win(num, disptype)
 int num;
 unsigned int disptype;
 {
-    int minarmor, totammo;
-    Vstatus *vs;
-    Vehicle *v;
-    int w, i;
+	int minarmor, totammo;
+	Vstatus *vs;
+	Vehicle *v;
+	int w, i;
 
-    /* Figure out which vehicle to display information about (if any) */
-    vs = (Vstatus *) NULL;
-    for (i = 0; i < num_veh_alive; i++)
-    {
-	v = live_vehicles[i];
-	if (v->number == num)
-	{
-	    vs = &vstati[num];
-	    break;
+	/* Figure out which vehicle to display information about (if any) */
+	vs = (Vstatus *) NULL;
+	for (i = 0; i < num_veh_alive; i++) {
+		v = live_vehicles[i];
+		if (v->number == num) {
+			vs = &vstati[num];
+			break;
+		}
 	}
-    }
-    if (vs == (Vstatus *) NULL)
-	return;
+	if (vs == (Vstatus *) NULL)
+		return;
 
-    /* Check for being mapped or exposed */
-    w = STAT_WIN + num;
-    if (!(win_mapped(w)))
-	return;
-    check_expose(w, disptype);
+	/* Check for being mapped or exposed */
+	w = STAT_WIN + num;
+	if (!(win_mapped(w)))
+		return;
+	check_expose(w, disptype);
 
-    if (disptype == ON)
-    {
-	if (num >= num_stati)
-	    clear_window(STAT_WIN + num);
-	else
-	    draw_status_from_scratch(v);
-    }
-    else if (disptype == REDISPLAY)
-    {
-	if (num >= num_stati)
-	    return;
+	if (disptype == ON) {
+		if (num >= num_stati)
+			clear_window(STAT_WIN + num);
+		else
+			draw_status_from_scratch(v);
+	} else if (disptype == REDISPLAY) {
+		if (num >= num_stati)
+			return;
 
-	/* If vehicle just died, put a dead symbol on it */
-	if (!(v->status & VS_is_alive) && (v->status & VS_was_alive))
-	{
-	    draw_dead_symbol(num);
-	    vs->dead = TRUE;
+		/* If vehicle just died, put a dead symbol on it */
+		if (!(v->status & VS_is_alive) && (v->status & VS_was_alive)) {
+			draw_dead_symbol(num);
+			vs->dead = TRUE;
+		}
+		if (vs->kills != v->owner->kills)
+			update(KILLS, (int) v->number, &vs->kills, v->owner->kills, FALSE, v->color);
+
+		minarmor = compute_minarmor(v);
+		if (vs->minarmor != minarmor)
+			update(ARMOR_BAR, (int) v->number, &vs->minarmor, minarmor, FALSE, v->color);
+
+		if (vs->fuel != (int) v->fuel)
+			update(FUEL_BAR, (int) v->number, &vs->fuel, (int) v->fuel,
+				   FALSE, v->color);
+
+		totammo = compute_totammo(v);
+		if (vs->ammo != totammo)
+			update(AMMO_BAR, (int) v->number, &vs->ammo, totammo, FALSE, v->color);
 	}
-	if (vs->kills != v->owner->kills)
-	    update(KILLS, (int) v->number, &vs->kills, v->owner->kills, FALSE, v->color);
-
-	minarmor = compute_minarmor(v);
-	if (vs->minarmor != minarmor)
-	    update(ARMOR_BAR, (int) v->number, &vs->minarmor, minarmor, FALSE, v->color);
-
-	if (vs->fuel != (int) v->fuel)
-	    update(FUEL_BAR, (int) v->number, &vs->fuel, (int) v->fuel,
-		   FALSE, v->color);
-
-	totammo = compute_totammo(v);
-	if (vs->ammo != totammo)
-	    update(AMMO_BAR, (int) v->number, &vs->ammo, totammo, FALSE, v->color);
-    }
 }
 
 draw_status_from_scratch(v)
 Vehicle *v;
 {
-    Vstatus *vs;
-    int vnum;
-    char buffer[20];
+	Vstatus *vs;
+	int vnum;
+	char buffer[20];
 
-    /* Do the bar graph from scratch */
-    vnum = v->number;
-    clear_window(STAT_WIN + vnum);
+	/* Do the bar graph from scratch */
+	vnum = v->number;
+	clear_window(STAT_WIN + vnum);
 
-    /* Draw all the text into the window */
-    (void) sprintf(buffer, "%d", vnum);
-    draw_text(STAT_WIN + vnum, 14, 10, buffer, L_FONT, DRAW_COPY, v->color);
+	/* Draw all the text into the window */
+	(void) sprintf(buffer, "%d", vnum);
+	draw_text(STAT_WIN + vnum, 14, 10, buffer, L_FONT, DRAW_COPY, v->color);
 
-    draw_text(STAT_WIN + vnum, 130, 10, v->owner->name, L_FONT, DRAW_COPY,
-	      v->color);
-    draw_text(STAT_WIN + vnum, 220, 40, "Kills", M_FONT, DRAW_COPY, v->color);
-    draw_text(STAT_WIN + vnum, 25, 39, "Armor", M_FONT, DRAW_COPY, v->color);
-    draw_text(STAT_WIN + vnum, 25, 59, "Fuel", M_FONT, DRAW_COPY, v->color);
-    draw_text(STAT_WIN + vnum, 25, 79, "Ammo", M_FONT, DRAW_COPY, v->color);
+	draw_text(STAT_WIN + vnum, 130, 10, v->owner->name, L_FONT, DRAW_COPY,
+			  v->color);
+	draw_text(STAT_WIN + vnum, 220, 40, "Kills", M_FONT, DRAW_COPY, v->color);
+	draw_text(STAT_WIN + vnum, 25, 39, "Armor", M_FONT, DRAW_COPY, v->color);
+	draw_text(STAT_WIN + vnum, 25, 59, "Fuel", M_FONT, DRAW_COPY, v->color);
+	draw_text(STAT_WIN + vnum, 25, 79, "Ammo", M_FONT, DRAW_COPY, v->color);
 
 
-    /* Draw the values into the window */
-    vs = &vstati[vnum];
+	/* Draw the values into the window */
+	vs = &vstati[vnum];
 
-    update(KILLS, vnum, (int *) NULL, vs->kills, TRUE, v->color);
-    update(ARMOR_BAR, vnum, (int *) NULL, vs->minarmor, TRUE, v->color);
-    update(FUEL_BAR, vnum, (int *) NULL, vs->fuel, TRUE, v->color);
-    update(AMMO_BAR, vnum, (int *) NULL, vs->ammo, TRUE, v->color);
+	update(KILLS, vnum, (int *) NULL, vs->kills, TRUE, v->color);
+	update(ARMOR_BAR, vnum, (int *) NULL, vs->minarmor, TRUE, v->color);
+	update(FUEL_BAR, vnum, (int *) NULL, vs->fuel, TRUE, v->color);
+	update(AMMO_BAR, vnum, (int *) NULL, vs->ammo, TRUE, v->color);
 
-    /* If the vehicle is dead, draw the dead symbol on the window */
-    if (!(v->status & VS_is_alive))
-	draw_dead_symbol(vnum);
+	/* If the vehicle is dead, draw the dead symbol on the window */
+	if (!(v->status & VS_is_alive))
+		draw_dead_symbol(vnum);
 }
 
 #define KILL_X 220
@@ -264,10 +237,8 @@ int color;
 
 	/* Handle the kills section specially, since it is different from the
 	   rest */
-	if (section == KILLS)
-	{
-		if (!fromscratch)
-		{
+	if (section == KILLS) {
+		if (!fromscratch) {
 			/* Erase the old number of kills */
 			(void) sprintf(oldbuf, "%d", *old);
 			draw_text(STAT_WIN + vnum, KILL_X, KILL_Y, oldbuf,
@@ -280,27 +251,23 @@ int color;
 		(void) sprintf(newbuf, "%d", new);
 		draw_text(STAT_WIN + vnum, KILL_X, KILL_Y, newbuf,
 				  XL_FONT, DRAW_XOR, color);
-	}
-	else
-	{
-		switch (section)
-		{
-			case ARMOR_BAR:
-				scale = armor_scale;
-				yoffset = 35;
-				break;
-			case FUEL_BAR:
-				scale = fuel_scale;
-				yoffset = 35 + BAR_HEIGHT + BAR_SPACING;
-				break;
-			case AMMO_BAR:
-				scale = ammo_scale;
-				yoffset = 35 + 2 * (BAR_HEIGHT + BAR_SPACING);
-				break;
+	} else {
+		switch (section) {
+		  case ARMOR_BAR:
+			  scale = armor_scale;
+			  yoffset = 35;
+			  break;
+		  case FUEL_BAR:
+			  scale = fuel_scale;
+			  yoffset = 35 + BAR_HEIGHT + BAR_SPACING;
+			  break;
+		  case AMMO_BAR:
+			  scale = ammo_scale;
+			  yoffset = 35 + 2 * (BAR_HEIGHT + BAR_SPACING);
+			  break;
 		}
 
-		if (!fromscratch)
-		{
+		if (!fromscratch) {
 			/* Compute the old and new displayed values from the values */
 			dispold = (int) (scale * (*old));
 			dispnew = (int) (scale * new);
@@ -310,16 +277,13 @@ int color;
 
 			/* If the displayed value has changed, xor the difference
 			   rectangle */
-            diff = ABS(dispnew - dispold);
-			if (diff > 0)
-			{
-                xoffset = 55 + MIN(dispold, dispnew);
+			diff = ABS(dispnew - dispold);
+			if (diff > 0) {
+				xoffset = 55 + MIN(dispold, dispnew);
 				draw_filled_rect(STAT_WIN + vnum, xoffset, yoffset,
 								 diff, BAR_HEIGHT, DRAW_XOR, color);
 			}
-		}
-		else
-		{
+		} else {
 			xoffset = 55;
 			draw_rect(STAT_WIN + vnum, xoffset - 1, yoffset - 1,
 					  BAR_WIDTH + 1, BAR_HEIGHT + 1, DRAW_COPY, color);

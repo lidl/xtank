@@ -7,38 +7,8 @@
 */
 
 /*
-$Author: senft $
-$Id: animate.c,v 2.7 1992/04/21 05:11:58 senft Exp $
-
-$Log: animate.c,v $
- * Revision 2.7  1992/04/21  05:11:58  senft
- * Added support for no o and no delay options.
- *
- * Revision 2.6  1992/03/31  21:45:50  lidl
- * Post Aaron-3d patches, camo patches, march patches & misc PIX stuff
- *
- * Revision 2.5  1991/10/07  02:13:43  stripes
- * Fixed rpotter bug, no longer core's when you quit a game, but leaves
- * tank in game (removes player Ok, and leaves robots with PLAY_* running).
- *
- * Revision 2.4  1991/09/19  05:27:57  lidl
- * added LOCK_GAME_CONTROLS defines
- *
- * Revision 2.3  1991/02/10  13:50:06  rpotter
- * bug fixes, display tweaks, non-restart fixes, header reorg.
- *
- * Revision 2.2  91/01/20  09:57:19  rpotter
- * complete rewrite of vehicle death, other tweaks
- * 
- * Revision 2.1  91/01/17  07:10:54  rpotter
- * lint warnings and a fix to update_vector()
- * 
- * Revision 2.0  91/01/17  02:09:00  rpotter
- * small changes
- * 
- * Revision 1.1  90/12/29  21:01:53  aahz
- * Initial revision
- * 
+$Author: lidl $
+$Id: animate.c,v 1.1.1.1 1995/02/01 00:25:33 lidl Exp $
 */
 
 #include "malloc.h"
@@ -46,15 +16,20 @@ $Log: animate.c,v $
 #include "terminal.h"
 #include "globals.h"
 #include "clfkr.h"
+#include "proto.h"
 
 extern int frame;
 extern struct CLFkr command_options;
+extern int num_combatants;
+extern Combatant combatant[MAX_VEHICLES];
 
 /* # frames between display synchronizations */
 #ifndef LOCK_GAME_CONTROLS
 int sync_rate = 1;
+
 #else
 int sync_rate = 16;
+
 #endif
 
 /*
@@ -65,165 +40,176 @@ int sync_rate = 16;
 */
 animate()
 {
-    extern int num_terminals;
-    extern Terminal *terminal[];
-    Vehicle *v;
-    unsigned int retval;
-    int i;
-    static int quit_frame;	/* frame that game ends */
+	extern int num_terminals;
+	extern Terminal *terminal[];
+	Vehicle *v;
+	unsigned int retval;
+	int i;
+	static int quit_frame;		/* frame that game ends */
 
-    /* Check for paused or slowed game */
-    check_game_speed();
+	/* Check for paused or slowed game */
+	check_game_speed();
 
-    /* Increment frame counter */
-    ++frame;
+	/* Increment frame counter */
+	++frame;
 
-    /* Reset quit frame if we are starting a new game */
-    if (frame <= 1)
-	quit_frame = frame - 1;
+	/* Reset quit frame if we are starting a new game */
+	if (frame <= 1)
+		quit_frame = frame - 1;
 
-    /* Check for internal end-of-game */
-    if (frame == quit_frame)
-	return GAME_OVER;
-
-    /* check living vehicles */
-    for (i = 0; i < num_veh_alive; ++i) {
-	v = live_vehicles[i];
-
-	if (tstflag(v->status, VS_is_alive)) {
-	    setflag(v->status, VS_was_alive);
-	} else {
-	    if (tstflag(v->status, VS_permanently_dead)) {
-		if (--(teamdata[v->team].vehicle_count) == 0) {
-		    --num_teams;
-		}
-		/* everybody left on the same side? */
-		if (num_teams < 2 && teamdata[NEUTRAL].vehicle_count < 2) {
-		    quit_frame = frame + QUIT_DELAY;
-		}
-		unmake_vehicle(v);
-	    } else {
-		v->death_timer = DEATH_DELAY;
-		/* put vehicle on dead list */
-		dead_vehicles[num_veh_dead++] = v;
-	    }
-	    /* remove vehicle from live list */
-	    live_vehicles[i] = live_vehicles[--num_veh_alive];
-	    --i;		/* new vehicle fell into this slot */
-	}
-    }
-
-    /* check dead vehicles */
-    for (i = 0; i < num_veh_dead; ++i) {
-	v = dead_vehicles[i];
-
-	/* time to resurrect yet? */
-	if (--(v->death_timer) <= 0) {
-	    if (activate_vehicle(v) == GAME_OVER) {
-		printf("animate(): couldn't resurrect_vehicle()\n");
+	/* Check for internal end-of-game */
+	if (frame == quit_frame)
 		return GAME_OVER;
-	    }
-	    /* remove vehicle from dead list */
-	    dead_vehicles[i] = dead_vehicles[--num_veh_dead];
-	    --i;		/* new dead vehicle fell into this slot */
+
+	/* check living vehicles */
+	for (i = 0; i < num_veh_alive; ++i) {
+		v = live_vehicles[i];
+
+		if (tstflag(v->status, VS_is_alive)) {
+			setflag(v->status, VS_was_alive);
+		} else {
+			if (tstflag(v->status, VS_permanently_dead)) {
+				if (--(teamdata[v->team].vehicle_count) == 0) {
+					--num_teams;
+				}
+				/* everybody left on the same side? */
+				if (num_teams < 2 && teamdata[NEUTRAL].vehicle_count < 2) {
+					quit_frame = frame + QUIT_DELAY;
+				}
+				unmake_vehicle(v);
+			} else {
+				v->death_timer = DEATH_DELAY;
+				/* put vehicle on dead list */
+				dead_vehicles[num_veh_dead++] = v;
+			}
+			/* remove vehicle from live list */
+			live_vehicles[i] = live_vehicles[--num_veh_alive];
+			--i;				/* new vehicle fell into this slot */
+		}
 	}
-    }
 
-    /* Initialize the changed boxes in the maze */
-    init_changed_boxes();
+	/* check dead vehicles */
+	for (i = 0; i < num_veh_dead; ++i) {
+		v = dead_vehicles[i];
 
-    /* Update the old screen locations for all the terminals */
-    for (i = 0; i < num_terminals; i++)
-	terminal[i]->old_loc = terminal[i]->loc;
+		/* time to resurrect yet? */
+		if (--(v->death_timer) <= 0) {
+			if (activate_vehicle(v) == GAME_OVER) {
+				printf("animate(): couldn't resurrect_vehicle()\n");
+				return GAME_OVER;
+			}
+			/* remove vehicle from dead list */
+			dead_vehicles[i] = dead_vehicles[--num_veh_dead];
+			--i;				/* new dead vehicle fell into this slot */
+		}
+	}
 
-    /* Clear the number of new messages for all the vehicles */
-    for (i = 0; i < num_veh_alive; i++)
-	live_vehicles[i]->new_messages = 0;
+	/* Initialize the changed boxes in the maze */
+	init_changed_boxes();
 
-    /* Process input from all the programs */
-    run_all_programs();
+	/* Update the old screen locations for all the terminals */
+	for (i = 0; i < num_terminals; i++)
+		terminal[i]->old_loc = terminal[i]->loc;
 
-    /* Process input from all the terminals */
-    for (i = 0; i < num_terminals; i++)
-    {
-	set_terminal(i);
-	if (get_input() == GAME_QUIT) {
-	    if (i == 0) return GAME_QUIT;	    /* game god quit? */
+	/* Clear the number of new messages for all the vehicles */
+	for (i = 0; i < num_veh_alive; i++)
+		live_vehicles[i]->new_messages = 0;
 
-	    /* %%% I don't think this is complete enough -RDP */
+	/* Process input from all the programs */
+	run_all_programs();
 
-		if (--terminal[i]->vehicle->owner->num_players <= 0) {
-			int j;
-			int flags = 0;
-			int need = PLAYS_COMBAT | PLAYS_WAR | PLAYS_ULTIMATE |
+	/* Process input from all the terminals */
+	for (i = 0; i < num_terminals; i++) {
+		set_terminal(i);
+		if (get_input() == GAME_QUIT) {
+			if (i == 0)
+				return GAME_QUIT;	/* game god quit? */
+
+			/* %%% I don't think this is complete enough -RDP */
+
+			if (--terminal[i]->vehicle->owner->num_players <= 0) {
+				int j;
+				int flags = 0;
+				int need = PLAYS_COMBAT | PLAYS_WAR | PLAYS_ULTIMATE |
 				PLAYS_CAPTURE | PLAYS_RACE;
 
-			for(j = 0; j < terminal[i]->vehicle->num_programs; j++) {
-				flags |= terminal[i]->vehicle->program[j].desc->abilities;
-				if (need & flags) break;
-			}
+				for (j = 0; j < terminal[i]->vehicle->num_programs; j++) {
+					flags |= terminal[i]->vehicle->program[j].desc->abilities;
+					if (need & flags)
+						break;
+				}
 
-			if (!(need & flags)) {
-				kill_vehicle(terminal[i]->vehicle, (Vehicle *) NULL);
+				if (!(need & flags)) {   /* HAK 2/93 */
+					Vehicle *temp;
+
+					/* save the vehicle addr, since kill_vehicle */
+					/* will set terminal[i]->vehicle to NULL */
+					temp = terminal[i]->vehicle;
+
+					kill_vehicle(terminal[i]->vehicle, (Vehicle *) NULL);
+
+					/* he ain't comin' back */
+					setflag(temp->status, VS_permanently_dead);
+					if (i != num_combatants - 1)
+						combatant[i] = combatant[num_combatants - 1];
+				}
 			}
+			/*
+			terminal[i]->vehicle->owner->num_players--;
+			*/
+			remove_player(i);	/* close the terminal */
+			i--;		/* new terminal has been moved in */
 		}
-	    terminal[i]->vehicle->owner->num_players--;
-	    remove_player(i);		/* Really compacts the terminal[]... */
-	    i--;		/* new terminal has been moved in */
 	}
-    }
 
-    /* Update locations and vectors of all vehicles, and bullets */
-    for (i = 0; i < num_veh_alive; i++)
-	update_vehicle(live_vehicles[i]);
-    update_bullets();
+	/* Update locations and vectors of all vehicles, and bullets */
+	for (i = 0; i < num_veh_alive; i++)
+		update_vehicle(live_vehicles[i]);
+	update_bullets();
 
-    /* Check for collisions between all vehicles */
-    coll_vehicles_vehicles();
+	/* Check for collisions between all vehicles */
+	coll_vehicles_vehicles();
 
-    /* Check for collisions between each vehicle and the walls */
-    for (i = 0; i < num_veh_alive; i++)
-	coll_vehicle_walls(live_vehicles[i]);
+	/* Check for collisions between each vehicle and the walls */
+	for (i = 0; i < num_veh_alive; i++)
+		coll_vehicle_walls(live_vehicles[i]);
 
-    /* Check for bullet collisions against the maze and vehicles */
-    coll_bullets_maze();
-    coll_bullets_vehicles();
+	/* Check for bullet collisions against the maze and vehicles */
+	coll_bullets_maze();
+	coll_bullets_vehicles();
 
-    /* Update vehicle rotations after collisions */
-    for (i = 0; i < num_veh_alive; i++)
-	update_rotation(live_vehicles[i]);
+	/* Update vehicle rotations after collisions */
+	for (i = 0; i < num_veh_alive; i++)
+		update_rotation(live_vehicles[i]);
 
-    /* Update explosions after bullet colls, since they might create some */
-    update_explosions();
+	/* Update explosions after bullet colls, since they might create some */
+	update_explosions();
 
-    /* Update maze flags after vehicle colls, to get new vehicle positions */
-    update_maze_flags();
+	/* Update maze flags after vehicle colls, to get new vehicle positions */
+	update_maze_flags();
 
-    /* Update specials after maze flags, since some specials use them */
-    update_specials();
+	/* Update specials after maze flags, since some specials use them */
+	update_specials();
 
-    /* Apply rules of the current game */
-    if ((retval = game_rules(FALSE)) != GAME_RUNNING)
-	return retval;
+	/* Apply rules of the current game */
+	if ((retval = game_rules(FALSE)) != GAME_RUNNING)
+		return retval;
 
-    if (!command_options.NoIO)
-	{
-    /* Update screen locations, and display everything on each terminal */
-    for (i = 0; i < num_terminals; i++)
-    {
-	set_terminal(i);
-	update_screen_locs();
-	display_terminal(REDISPLAY, i == num_terminals - 1);
-    }
-    }
-
+	if (!command_options.NoIO) {
+		/* Update screen locations, and display everything on each terminal */
+		for (i = 0; i < num_terminals; i++) {
+			set_terminal(i);
+			update_screen_locs();
+			display_terminal(REDISPLAY, i == num_terminals - 1);
+		}
+	}
 #ifndef NO_CAMO
 /*
  * kind of a funny place, eh?  It's because old_camod actually
  * refers to if it has been drawn as a "camod" vehicle yet by
  * display.c; I must have been up too late when I thought of
  * this scheme.
- * 
+ *
  * This could be moved to update_vehicle(), but it would require that
  * the update_vehicle be called after display_terminal, not before.
  *
@@ -234,19 +220,19 @@ animate()
  * to risk a screwup if you blew up a camo'd tank.  Feel free to try
  * it with live_vehicles.
  *
- * I'm welcome to suggestions for alternate hacks, several occured 
+ * I'm welcome to suggestions for alternate hacks, several occured
  * to me, but this was by far the simplest, though it is a bit
  * "ugly" on the surface.   --ane
  *
  */
-    for (i = 0; i < MAX_VEHICLES; i++)
-	actual_vehicles[i].old_camod = actual_vehicles[i].camod;
+	for (i = 0; i < MAX_VEHICLES; i++)
+		actual_vehicles[i].old_camod = actual_vehicles[i].camod;
 
 #endif /* !NO_CAMO */
 
-    /* Synchronize all terminals every sync_rate frames */
-    if ((frame % sync_rate) == 0)
-	sync_terminals(FALSE);
+	/* Synchronize all terminals every sync_rate frames */
+	if ((frame % sync_rate) == 0)
+		sync_terminals(FALSE);
 
-    return GAME_RUNNING;
+	return GAME_RUNNING;
 }

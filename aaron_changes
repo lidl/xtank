@@ -1,0 +1,87 @@
+# 3d changes
+#  Added camo.c file
+#  removed most NO_NEW_RADAR ifdef, support for define broken at UMD
+#  hacked console.c to support new specials (took all of 10 minutes)
+#  changed fire_all_weapons not to fire harms
+#  fixed map_click to fire all harms if on
+#  re-added hit.c patches for height info in bullet loc
+#  fixed a missing initailizer in message.c
+#  NEUTRAL players are on their own teams for my specials now
+#  fixed wierd nr_number struct/pointer thing
+#  moved UPDATE_INTERVALS to special.h
+#  upgraded HARM seek algors
+#  unbound tac memory from radar memory, what a masturbatory excercise!
+#  took "new" out of blip_info
+#  removed STINGY_REDRAW ifdef's from display.c, was too much of a mess
+#  specials can now return a status if they activate ok
+#  call do_special from a special was a no-no, hacked out
+#  hacked on repair.c a bit
+#  hacked lowlib entry for target_smart, passing structures bad idea
+#  
+#late 3d changes
+#    added un_stingy boolean for debugging
+#    re-did weapon state stuff in console.c
+#    supplied hud special, about 10^23 times more efficient than hud3
+#    added timed refill extensions (experimental)
+#    added rdf tactical support (needs improvment, no colinear support yet)
+#    destroy any bullet straying past grid, instead of just flying
+#    added mono support
+#    added initial support to remove "range" from weapon info
+#    added a comment for where to put code for forcing specials
+#    limited HARMS to 1 per side
+#    added cbrt comment
+#
+# 3e changes
+#
+#added "height" as weapon parameter
+#removed NO_CAMO ifdef's
+#removed NO_TIMED_REFIL ifdef's (was no longer deifinable out)
+#supplied sample rdfbot
+#added some extra stealth/camo conditions
+#fixed HUD updates if vehicle dies
+#addded damage & R2D2
+#RDF rasterizer working
+#masked off some flags in mapper robots shouldn't be able to see
+#local prerference changes to newconsole
+#HARM tracking via taclink
+#another stab at HARMS (maybe better, probably worse...)
+#a few casts here and there
+#Robots can no longer cheat by getting NR updates as fast as they
+#  want, there is a RAD_UPDATE_INTERVAL/2 delay before they get
+#  their first upon activation.
+#Harms no longer have a boost phase, they shoot striaght up.
+#Harms are helped by shooter's taclink.
+#fixed some ineficencies in NR
+#fixed taclink/no nr bug
+#
+#
+# 4c changes
+#
+#Got rid of DEL_CHAR hack, now takes both as valid backup char
+# Imakefile.Config Imakefile.README input.c message.c x11.c
+#got rid of call to init_box_names in draw_obj! (Aaron 1 Terry 0)
+# display.c message.c
+#Fixed message opcode menu which was too long
+# message.c message.h
+#Got rid of DISABLE RADAR, superflous with force specials
+# setups.l interface.c file.c init.c program.c setups.c Include/settings.h
+#Added some comments about zap_specials
+# program.c
+#Vdesc array being re-alloced
+# interface.c (patch from KNG)
+#Maze load failure doesn't alloc useless space
+# actions.c (patch from KNG)
+#Applied theory of above to load_vdesc too
+# actions.c (patch cloned from KNG code above)
+#MAX_EXP_OBJS too low 
+#  tanklimits.h
+#sigprocmask called with wrong type arguments
+#  thread.c
+#Copyright on hud.c
+#Broke newradar.c out
+#p_menuid should be the output menuid and has no effect on input
+# menu.c  spl@houston.geoquest.slb.com
+#cp change was to keep from skipping over a character (especially the null).
+# newconsole.c spl@houston.geoquest.slb.com
+#part of the weapon menu was being erased when it shouldn't have been
+# vdesign.c spl@houston.geoquest.slb.com

@@ -4,29 +4,8 @@
 
 /*
 $Author: lidl $
-$Id: escher.c,v 2.4 1991/12/10 03:41:44 lidl Exp $
-
-$Log: escher.c,v $
- * Revision 2.4  1991/12/10  03:41:44  lidl
- * changed float to FLOAT, for portability reasons
- *
- * Revision 2.3  1991/02/10  13:50:26  rpotter
- * bug fixes, display tweaks, non-restart fixes, header reorg.
- *
- * Revision 2.2  91/01/20  09:57:42  rpotter
- * complete rewrite of vehicle death, other tweaks
- * 
- * Revision 2.1  91/01/17  07:11:19  rpotter
- * lint warnings and a fix to update_vector()
- * 
- * Revision 2.0  91/01/17  02:09:23  rpotter
- * small changes
- * 
- * Revision 1.1  90/12/29  21:02:20  aahz
- * Initial revision
- * 
+$Id: escher.c,v 1.1.1.1 1995/02/01 00:25:34 lidl Exp $
 */
-
 
 /*
  * escher.c version started Thu d.07.12.1989
@@ -34,6 +13,8 @@ $Log: escher.c,v $
 
 #include "sysdep.h"
 #include "graphics.h"
+#include "proto.h"
+
 
 /*
  * corners (corner one is near the visual origin)
@@ -42,8 +23,18 @@ $Log: escher.c,v $
  */
 
 /* M.C.Escher impossible frame data */
-int ex[4][4] = {{0, 0, 1, 2}, {0, 1, 2, 1}, {0, 0, -1, -2}, {0, -1, -2, -1}};
-int ey[4][4] = {{0, 1, 2, 1}, {0, 0, -1, -2}, {0, -1, -2, -1}, {0, 0, 1, 2}};
+int ex[4][4] =
+{
+	{0, 0, 1, 2},
+	{0, 1, 2, 1},
+	{0, 0, -1, -2},
+	{0, -1, -2, -1}};
+int ey[4][4] =
+{
+	{0, 1, 2, 1},
+	{0, 0, -1, -2},
+	{0, -1, -2, -1},
+	{0, 0, 1, 2}};
 
 menu_frame(win, x, y, w, h, func, color, frame)
 int win, x, y, w, h, func, color, frame;
@@ -68,9 +59,8 @@ int win, x, y, w, h, func, color, frame;
 	px[3] = x;
 	py[3] = y + h;
 
-	for (c = 0; c < 4; c++)		/* connect each corner to itself and next
+	for (c = 0; c < 4; c++) {	/* connect each corner to itself and next
 								   corner */
-	{
 		int n;					/* next corner */
 
 		n = (c == 3 ? 0 : c + 1);
