@@ -432,9 +432,13 @@ void (*func)();
 	pthread_attr_t prog_attr;
 	int status;
 
-	pthread_attr_create(&prog_attr);
+	status = pthread_attr_init(&prog_attr);
+	if (status != 0) {
+		perror("pthread_attr_init");
+		exit(17);
+	}
 	pthread_attr_setinheritsched(&prog_attr,PTHREAD_EXPLICIT_SCHED);
-	pthread_attr_setsched(&prog_attr,SCHED_FIFO);
+	pthread_attr_setschedpolicy(&prog_attr,SCHED_RR);
 #if 0
 	pthread_attr_setprio(&prog_attr,PRI_FIFO_MIN);
 #endif
