@@ -2,10 +2,28 @@
  * Copyright (c) 1989 Christoph. Alex. North-Keys
  */
 
-#ifndef lint
-static char Version[] = "@(#)escher.c Thu d.07.12.1989 C. North-Keys";
+/*
+$Author: rpotter $
+$Id: escher.c,v 2.3 1991/02/10 13:50:26 rpotter Exp $
 
-#endif
+$Log: escher.c,v $
+ * Revision 2.3  1991/02/10  13:50:26  rpotter
+ * bug fixes, display tweaks, non-restart fixes, header reorg.
+ *
+ * Revision 2.2  91/01/20  09:57:42  rpotter
+ * complete rewrite of vehicle death, other tweaks
+ * 
+ * Revision 2.1  91/01/17  07:11:19  rpotter
+ * lint warnings and a fix to update_vector()
+ * 
+ * Revision 2.0  91/01/17  02:09:23  rpotter
+ * small changes
+ * 
+ * Revision 1.1  90/12/29  21:02:20  aahz
+ * Initial revision
+ * 
+*/
+
 
 /*
  * escher.c version started Thu d.07.12.1989

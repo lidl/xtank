@@ -1,4 +1,3 @@
-#include "malloc.h"
 /*
 ** Xtank
 **
@@ -7,6 +6,29 @@
 ** actions.c
 */
 
+/*
+$Author: rpotter $
+$Id: actions.c,v 2.3 1991/02/10 13:50:05 rpotter Exp $
+
+$Log: actions.c,v $
+ * Revision 2.3  1991/02/10  13:50:05  rpotter
+ * bug fixes, display tweaks, non-restart fixes, header reorg.
+ *
+ * Revision 2.2  91/01/20  09:57:17  rpotter
+ * complete rewrite of vehicle death, other tweaks
+ * 
+ * Revision 2.1  91/01/17  07:10:51  rpotter
+ * lint warnings and a fix to update_vector()
+ * 
+ * Revision 2.0  91/01/17  02:08:58  rpotter
+ * small changes
+ * 
+ * Revision 1.1  90/12/29  21:01:52  aahz
+ * Initial revision
+ * 
+*/
+
+#include "malloc.h"
 #include "xtank.h"
 #include "disc.h"
 #include "screen.h"
@@ -16,6 +38,8 @@
 #include "bullet.h"
 #include "terminal.h"
 #include "cosell.h"
+#include "globals.h"
+#include "assert.h"
 
 
 extern Terminal *term;
@@ -71,37 +95,37 @@ Loc *loc;
 WeaponType type;
 Angle angle;
 {
-	Weapon_stat *ws;
-	extern Bset *bset;
-	Bullet *b;
+    Weapon_stat *ws;
+    extern Bset *bset;
+    Bullet *b;
 
-	if (bset->number >= MAX_BULLETS)
-		return;					/* too many bullets */
+    if (bset->number >= MAX_BULLETS)
+	return;			/* too many bullets */
 
-	/* Initialize the bullet's owner and location */
-	b = bset->list[bset->number++];
-	b->owner = v;
-	b->thrower = -1;
-	b->loc1 = b->loc2 = *loc;
-	b->loc = &b->loc1;
-	b->old_loc = &b->loc2;
+    /* Initialize the bullet's owner and location */
+    b = bset->list[bset->number++];
+    b->owner = v;
+    b->thrower = -1;
+    b->loc1 = b->loc2 = *loc;
+    b->loc = &b->loc1;
+    b->old_loc = &b->loc2;
 
-	/* Find the weapon_stat structure */
+    /* Find the weapon_stat structure */
     ws = &weapon_stat[(int)type];
 
-	/* Compute the x and y components of the bullet's speed */
-	b->xspeed = (float) ws->ammo_speed * cos(angle);
-	b->yspeed = (float) ws->ammo_speed * sin(angle);
+    /* Compute the x and y components of the bullet's speed */
+    b->xspeed = (float) ws->ammo_speed * cos(angle);
+    b->yspeed = (float) ws->ammo_speed * sin(angle);
 
-	/* Add the motion of the owner (if necessary) */
-	if (settings.si.rel_shoot == TRUE && v != NULL)
-	{
-		b->xspeed += v->vector.xspeed;
-		b->yspeed += v->vector.yspeed;
-	}
-	b->type = type;
-	b->life = ws->frames;
-	b->hurt_owner = FALSE;
+    /* Add the motion of the owner (if necessary) */
+    if (settings.si.rel_shoot == TRUE && v != NULL)
+    {
+	b->xspeed += v->vector.xspeed;
+	b->yspeed += v->vector.yspeed;
+    }
+    b->type = type;
+    b->life = ws->frames;
+    b->hurt_owner = FALSE;
 }
 
 /*
@@ -112,48 +136,19 @@ explode(b, damage)
 Bullet *b;
 int damage;
 {
-	unsigned int type;
+    unsigned int type;
 
-	/* Determine type of explosion from the amount of damage the bullet did */
-	type = (damage <= 4) ? (EXP_DAM0 + damage) : EXP_DAM4;
-	make_explosion(b->loc, type);
+    /* Determine type of explosion from the amount of damage the bullet did */
+    type = (damage <= 4) ? (EXP_DAM0 + damage) : EXP_DAM4;
+    make_explosion(b->loc, type);
 
-	/* * I think this makes bullets that explode before they are displayed
-	   not * not get erased, but I'm not sure... (sigh) */
+    /* I think this makes bullets that explode before they are displayed not
+       not get erased, but I'm not sure... (sigh) */
 
     if (b->life == weapon_stat[(int)b->type].frames - 1)
-		b->life = -2;			/* undisplayed bullet */
-	else
-		b->life = -1;
-}
-
-/*
-** Creates an explosion of the specified type at the specified location.
-*/
-make_explosion(loc, type)
-Loc *loc;
-unsigned int type;
-{
-	extern int num_terminals;
-	extern Object *exp_obj[];
-	extern Eset *eset;
-	Exp *e;
-	int tnum;
-
-	if (eset->number >= MAX_EXPS)
-		return;
-	e = eset->list[eset->number++];
-	e->x = (int) loc->x;
-	e->y = (int) loc->y;
-	e->z = (int) loc->z;
-	for (tnum = 0; tnum < num_terminals; tnum++)
-	{
-		e->old_screen_x[tnum] = e->screen_x[tnum] = loc->screen_x[tnum];
-		e->old_screen_y[tnum] = e->screen_y[tnum] = loc->screen_y[tnum];
-	}
-	e->obj = exp_obj[type];
-	e->life = e->obj->num_pics + 1;
-	e->color = CUR_COLOR;
+	b->life = -2;		/* undisplayed bullet */
+    else
+	b->life = -1;
 }
 
 /*
@@ -165,74 +160,74 @@ Vehicle *v;
 SpecialType special_num;
 unsigned int action;
 {
-	Special *s;
+    Special *s;
 
-	if (special_num == REPAIR)
+    if (special_num == REPAIR)
     {
         if (v->special[(int)REPAIR].status == SP_nonexistent)
-			return;
-		if (settings.si.no_wear)/* GHS */
-			return;				/* GHS */
-		if (v->vector.speed != 0.0)		/* GHS */
-			return;				/* GHS */
-	}							/* GHS */
-	/* First make sure the special is really there */
+	    return;
+	if (settings.si.no_wear) /* GHS */
+	    return;		/* GHS */
+	if (v->vector.speed != 0.0) /* GHS */
+	    return;		/* GHS */
+    }				/* GHS */
+    /* First make sure the special is really there */
     s = &v->special[(int)special_num];
-	if (s->status == SP_nonexistent)
-		return;
+    if (s->status == SP_nonexistent)
+	return;
 
-	switch (action)
+    switch (action)
+    {
+      case SP_update:
+      case SP_redisplay:
+      case SP_draw:
+      case SP_erase:
+	if (s->status == SP_on)
+	    (*s->proc) (v, s->record, action);
+	break;
+      case SP_activate:
+	if (s->status == SP_off)	/* why this test? -RDP */
 	{
-		case SP_update:
-		case SP_redisplay:
-		case SP_draw:
-		case SP_erase:
-			if (s->status == SP_on)
-				(*s->proc) (v, s->record, action);
-			break;
-		case SP_activate:
-			if (s->status == SP_off)
-			{
-				s->status = SP_on;
-				(*s->proc) (v, s->record, SP_activate);
-			}
-			break;
-		case SP_deactivate:
-			if (s->status == SP_on)
-			{
-				s->status = SP_off;
-				(*s->proc) (v, s->record, SP_deactivate);
-			}
-			break;
-		case SP_toggle:
-			if (s->status == SP_off)
-			{
-				s->status = SP_on;
-				(*s->proc) (v, s->record, SP_activate);
-				(*s->proc) (v, s->record, SP_draw);
-			}
-			else if (s->status == SP_on)
-			{
-				s->status = SP_off;
-				(*s->proc) (v, s->record, SP_deactivate);
-				(*s->proc) (v, s->record, SP_erase);
-			}
-			break;
-		case SP_break:
-			if (s->status == SP_on)
-			{
-				s->status = SP_off;
-				(*s->proc) (v, s->record, SP_deactivate);
-				(*s->proc) (v, s->record, SP_erase);
-			}
-			s->status = SP_broken;
-			break;
-		case SP_repair:
-			s->status = SP_on;
-			(*s->proc) (v, s->record, SP_activate);
-			(*s->proc) (v, s->record, SP_draw);
-			break;
+	    s->status = SP_on;
+	    (*s->proc) (v, s->record, SP_activate);
 	}
+	break;
+      case SP_deactivate:
+	if (s->status == SP_on)
+	{
+	    s->status = SP_off;
+	    (*s->proc) (v, s->record, SP_deactivate);
+	}
+	break;
+      case SP_toggle:
+	if (s->status == SP_off)
+	{
+	    s->status = SP_on;
+	    (*s->proc) (v, s->record, SP_activate);
+	    (*s->proc) (v, s->record, SP_draw);
+	}
+	else if (s->status == SP_on)
+	{
+	    s->status = SP_off;
+	    (*s->proc) (v, s->record, SP_deactivate);
+	    (*s->proc) (v, s->record, SP_erase);
+	}
+	break;
+      case SP_break:
+	if (s->status == SP_on)
+	{
+	    s->status = SP_off;
+	    (*s->proc) (v, s->record, SP_deactivate);
+	    (*s->proc) (v, s->record, SP_erase);
+	}
+	s->status = SP_broken;
+	break;
+      case SP_repair:
+	s->status = SP_on;
+	(*s->proc) (v, s->record, SP_activate);
+	(*s->proc) (v, s->record, SP_draw);
+	break;
+    }
 }
 
 /*
@@ -242,92 +237,74 @@ unsigned int action;
 move_view(dx, dy)
 int dx, dy;
 {
-	Intloc new;
+    Intloc new;
 
-	/* switch view to a non-existent person */
-	switch_view(-1);
+    /* switch view to a non-existent vehicle */
+    switch_view(-1);
 
-	/* compute the new viewing location */
-	new.x = term->loc.x + dx;
-	new.y = term->loc.y + dy;
+    /* compute the new viewing location */
+    new.x = term->loc.x + dx;
+    new.y = term->loc.y + dy;
 
-	new.grid_x = new.x / BOX_WIDTH;
-	new.grid_y = new.y / BOX_HEIGHT;
+    new.grid_x = new.x / BOX_WIDTH;
+    new.grid_y = new.y / BOX_HEIGHT;
 
-	/* If the new location is in the grid, move the view there */
-	if (new.grid_x >= 0 && new.grid_x < GRID_WIDTH - 4 &&
-			new.grid_y >= 0 && new.grid_y < GRID_HEIGHT - 4)
-		term->loc = new;
+    /* If the new location is in the grid, move the view there */
+    if (new.grid_x >= 0 && new.grid_x < GRID_WIDTH - 4 &&
+	new.grid_y >= 0 && new.grid_y < GRID_HEIGHT - 4)
+	term->loc = new;
 }
 
 /*
 ** Switches the view on the current terminal to the perspective of
 ** the vehicle numbered num.  If num is not a legal vehicle number,
 ** the terminal stops tracking.
-**
-** Should check for access_on flag before allowing the switch.
 */
+
 switch_view(num)
-int num;
+    int num;
 {
-	extern int num_vehicles;
-	extern Vehicle *vehicle[];
-	extern int end_boundry;
-	extern int num_terminals;
-	extern Terminal *terminal[];
-	Vehicle *old_vehicle;
-	int i;
+    extern int num_terminals;
+    extern Terminal *terminal[];
+    Vehicle *old_vehicle;
+    int i;
 
-	if (num >= 0)
-	{
-		/* remember who we were tracking */
-		old_vehicle = term->vehicle;
+    if (num >= 0)
+    {
+	/* remember who we were tracking */
+	old_vehicle = term->vehicle;
 
-		/* find the owner of the vehicle with that number */
-		for (i = 0; i < num_vehicles; i++)
-		{
-			if (vehicle[i]->number == num)
-			{
-				if (vehicle[i]->is_dead)
-					return;
-				term->vehicle = vehicle[i];
-				break;
-			}
-		}
-
-		/* If we didn't find the vehicle number, or found the one that we
-		   used to be tracking, don't expose the windows */
-		if (old_vehicle == term->vehicle)
-			return;
-		if (old_vehicle)
-			old_vehicle->owner->num_players--;
-		for (i = 0; i < num_terminals; i++)
-			if (terminal[i] == term)
-				break;
-		assert(i != num_terminals);
-		term->vehicle->owner->player[term->vehicle->owner->num_players] = i;
-		term->vehicle->owner->num_players++;
-	}
-	else
-	{
-		if (term->vehicle != NULL)
-		{						/* were we tracking? */
-			term->vehicle->owner->num_players--;
-		}
-		term->vehicle = (Vehicle *) NULL;		/* stop tracking */
+	/* find the owner of the vehicle with that number */
+	for (i = 0; i < num_veh_alive; i++) {
+	    if (live_vehicles[i]->number == num) {
+		term->vehicle = live_vehicles[i];
+		break;
+	    }
 	}
 
-	/* Expose all the windows which need to be redisplayed after the switch */
-	expose_win(ANIM_WIN, TRUE);
-	expose_win(CONS_WIN, TRUE);
+	/* If we didn't find the vehicle number, or found the one that we
+	   used to be tracking, don't expose the windows */
+	if (old_vehicle == term->vehicle)
+	    return;
 
-#ifdef WHY
-	if (settings.mode != BATTLE_MODE &&
-			settings.mode != DEMO_MODE &&
-			settings.mode != DEAD_MODE)
-#endif
+	if (old_vehicle)
+	    old_vehicle->owner->num_players--;
+	for (i = 0; i < num_terminals && terminal[i] != term; i++)
+	    ;
+	assert(i != num_terminals);
+	term->vehicle->owner->player[term->vehicle->owner->num_players++] = i;
+    }
+    else
+    {
+	if (term->vehicle != NULL)
+	    term->vehicle->owner->num_players--;
+	term->vehicle = NULL;	/* stop tracking */
+    }
 
-		expose_win(MAP_WIN, TRUE);
+    /* Expose all the windows which need to be redisplayed after the switch */
+    expose_win(ANIM_WIN, TRUE);
+    expose_win(CONS_WIN, TRUE);
+    expose_win(MAP_WIN, TRUE);
 }
 
 /*
@@ -344,38 +321,38 @@ Vehicle *v;
 float dspeed;
 Boolean delay;
 {
-	extern Bset *bset;
-	Bullet *b;
-	float ratio;
-	float curspeed;
-	int i;
+    extern Bset *bset;
+    Bullet *b;
+    float ratio;
+    float curspeed;
+    int i;
 
-	if (v->num_discs > 0)
+    if (v->num_discs > 0)
+    {
+	for (i = 0; i < bset->number; i++)
 	{
-		for (i = 0; i < bset->number; i++)
-		{
-			b = bset->list[i];
-			if (b->type == DISC && b->owner == v)
-			{
-				if (delay)
-					update_disc(b);
-				curspeed = sqrt(b->xspeed * b->xspeed + b->yspeed * b->yspeed);
+	    b = bset->list[i];
+	    if (b->type == DISC && b->owner == v)
+	    {
+		if (delay)
+		    update_disc(b);
+		curspeed = sqrt(b->xspeed * b->xspeed + b->yspeed * b->yspeed);
                 ratio = dspeed / curspeed;
-				b->xspeed *= ratio;
-				b->yspeed *= ratio;
-				/* display_bullets(ON); */
-				b->owner = (Vehicle *) NULL;
-				b->thrower = v->color;
-				/* display_bullets(ON); */
+		b->xspeed *= ratio;
+		b->yspeed *= ratio;
+		/* display_bullets(ON); */
+		b->owner = (Vehicle *) NULL;
+		b->thrower = v->color;
+		/* display_bullets(ON); */
 
-				/* Inform the commentator about the throw */
-				if (settings.commentator)
-					comment(COS_OWNER_CHANGE, COS_IGNORE, (Vehicle *) NULL,
-							(Vehicle *) NULL);
-			}
-		}
-		v->num_discs = 0;
+		/* Inform the commentator about the throw */
+		if (settings.commentator)
+		    comment(COS_OWNER_CHANGE, COS_IGNORE, (Vehicle *) NULL,
+			    (Vehicle *) NULL);
+	    }
 	}
+	v->num_discs = 0;
+    }
 }
 
 /*
@@ -438,9 +415,9 @@ Vehicle *v;
 */
 display_pause_message()
 {
-	draw_text(ANIM_WIN, PAUSE_X, PAUSE_Y,
-			  "Game paused -- RETURN to unpause  SPACE to single step",
-			  M_FONT, DRAW_XOR, WHITE);
+    draw_text(ANIM_WIN, PAUSE_X, PAUSE_Y,
+	      "Game paused -- RETURN to unpause  SPACE to single step",
+	      M_FONT, DRAW_XOR, WHITE);
 }
 
 /*
@@ -448,29 +425,26 @@ display_pause_message()
 ** If state is FALSE, restores game_speed to old value.
 */
 pause_game(state)
-Boolean state;
+    Boolean state;
 {
-	if (settings.mode != DEAD_MODE)
+    if (state == TRUE)
+    {
+	/* If not already paused, set game_speed to 0 */
+	if (!game_paused)
 	{
-		if (state == TRUE)
-		{
-			/* If not already paused, set game_speed to 0 */
-			if (!game_paused)
-			{
-				display_pause_message();
-				game_paused = TRUE;
-			}
-		}
-		else
-		{
-			/* If paused, restore old game_speed */
-			if (game_paused)
-			{
-				display_pause_message();
-				game_paused = FALSE;
-			}
-		}
+	    display_pause_message();
+	    game_paused = TRUE;
 	}
+    }
+    else
+    {
+	/* If paused, restore old game_speed */
+	if (game_paused)
+	{
+	    display_pause_message();
+	    game_paused = FALSE;
+	}
+    }
 }
 
 /*

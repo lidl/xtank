@@ -6,16 +6,39 @@
 ** box.c
 */
 
+/*
+$Author: rpotter $
+$Id: box.c,v 2.3 1991/02/10 13:50:09 rpotter Exp $
+
+$Log: box.c,v $
+ * Revision 2.3  1991/02/10  13:50:09  rpotter
+ * bug fixes, display tweaks, non-restart fixes, header reorg.
+ *
+ * Revision 2.2  91/01/20  09:57:22  rpotter
+ * complete rewrite of vehicle death, other tweaks
+ * 
+ * Revision 2.1  91/01/17  07:10:58  rpotter
+ * lint warnings and a fix to update_vector()
+ * 
+ * Revision 2.0  91/01/17  02:09:03  rpotter
+ * small changes
+ * 
+ * Revision 1.1  90/12/29  21:01:57  aahz
+ * Initial revision
+ * 
+*/
+
 #include "malloc.h"
 #include "xtank.h"
 #include "vstructs.h"
 #include "sysdep.h"
 #include "vehicle.h"
-#include "box.h"
+#include "outpost.h"
+#include "globals.h"
 
 extern Boolean intersect_wall();
 
-extern Map box;
+extern Map real_map;
 extern int frame;
 extern Settings settings;
 
@@ -134,7 +157,7 @@ float *xadj, *yadj;
 	for (x = v->loc->grid_x - 2; x <= v->loc->grid_x + 2; x++)
 		for (y = v->loc->grid_y - 2; y <= v->loc->grid_y + 2; y++)
 		{
-			b = &box[x][y];
+			b = &real_map[x][y];
 			if (b->type == OUTPOST)
 				box_outpost(v, b, x, y);
 		}
@@ -275,34 +298,31 @@ closest_vehicle(loc, target)
 Loc *loc;
 Vehicle *target;
 {
-	extern int num_vehicles;
-	extern Vehicle *vehicle[];
-	Vehicle *v;
-	int i, dx, dy, dist;
+    Vehicle *v;
+    int i, dx, dy, dist;
 
-	dx = (int) target->loc->x - (int) loc->x;
-	dy = (int) target->loc->y - (int) loc->y;
-	dist = dx * dx + dy * dy;
+    dx = (int) target->loc->x - (int) loc->x;
+    dy = (int) target->loc->y - (int) loc->y;
+    dist = dx * dx + dy * dy;
 
-	/* Check all vehicles near outpost and determine distances */
-	for (i = 0; i < num_vehicles; i++)
-	{
-		v = vehicle[i];
-		if (v == target)
-			continue;
-		dx = v->loc->grid_x - loc->grid_x;
-		if (dx < -2 || dx > 2)
-			continue;
-		dy = v->loc->grid_y - loc->grid_y;
-		if (dy < -2 || dy > 2)
-			continue;
+    /* Check all vehicles near outpost and determine distances */
+    for (i = 0; i < num_veh_alive; i++) {
+	v = live_vehicles[i];
+	if (v == target)
+	    continue;
+	dx = v->loc->grid_x - loc->grid_x;
+	if (dx < -2 || dx > 2)
+	    continue;
+	dy = v->loc->grid_y - loc->grid_y;
+	if (dy < -2 || dy > 2)
+	    continue;
 
-		dx = (int) v->loc->x - (int) loc->x;
-		dy = (int) v->loc->y - (int) loc->y;
-		if (dx * dx + dy * dy < dist)
-			return FALSE;
-	}
-	return TRUE;
+	dx = (int) v->loc->x - (int) loc->x;
+	dy = (int) v->loc->y - (int) loc->y;
+	if (dx * dx + dy * dy < dist)
+	    return FALSE;
+    }
+    return TRUE;
 }
 
 /*
@@ -436,7 +456,7 @@ static int num_changed_boxes = 0;
 */
 init_changed_boxes()
 {
-	Box box[GRID_WIDTH][GRID_HEIGHT];
+	extern Map real_map;
 	Changed_box *cb;
 	int i;
 
@@ -444,7 +464,7 @@ init_changed_boxes()
 	for (i = 0; i < num_changed_boxes; i++)
 	{
 		cb = &changed_box[i];
-		box[cb->x][cb->y].flags &= ~BOX_CHANGED;
+		real_map[cb->x][cb->y].flags &= ~BOX_CHANGED;
 	}
 
 	/* Set the size of the changed_box array to 0 */
@@ -457,27 +477,27 @@ init_changed_boxes()
 ** Returns 1 if successful, 0 if unsuccessful.
 */
 change_box(b, x, y)
-Box *b;
-int x, y;
+    Box *b;
+    int x, y;
 {
-	Changed_box *cb;
+    Changed_box *cb;
 
-	/* See if we have room to store the old box */
+    /* See if we have room to store the old box */
     if (num_changed_boxes >= MAX_CHANGED_BOXES) {
 	fprintf(stderr, "warning: changed_box[] is full...n\n");
-		return 0;
+	return 0;
     }
 
-	/* Store the box in the changed_box array */
-	cb = &changed_box[num_changed_boxes++];
-	cb->box = *b;
-	cb->x = (Byte) x;
-	cb->y = (Byte) y;
+    /* Store the box in the changed_box array */
+    cb = &changed_box[num_changed_boxes++];
+    cb->box = *b;
+    cb->x = (Byte) x;
+    cb->y = (Byte) y;
 
-	/* Mark the box as being changed */
-	b->flags |= BOX_CHANGED;
+    /* Mark the box as being changed */
+    b->flags |= BOX_CHANGED;
 
-	return 1;
+    return 1;
 }
 
 /*

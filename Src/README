@@ -1,108 +1,35 @@
 This is the main source directory for Xtank.  Subdirectories include:
 
-Fixed		fixed point arithmetic library, not currently used.
-Objects		Files describing all pictures in the game
+Fixed-Point	Fixed Point arithmetic library, not currently used.
+Include		Various header files that everything needs.
+Objects		Files describing all pictures in the game.
+Old		Things that no are used, but might still be of interest.
+Robots		The compiled in robot programs.
 
 Files of interest:
 
+Imakefile	Xtank Makefile and configuration all rolled into one!
 XMultiSync.c	Implementation of parallel XSync call to multiple terminals
-bugs		list of numerous bugs and suggested improvements (some done)
-config.h	Place to configure the game to your machine
 sysdep.h	any system dependent #defines go here
 thread.c	multi-threading package
-CHANGES		Changes made to code since first release on expo
+ChangeLog	Changes made to code since first release on expo
 
 Currently runs on:
 
 IBM RT
 DEC VAX
-Sun (SunOS 3.5, 4.0.1, 4.0.3, on Sun-3 and Sun-4, most likely...)
+Sun (SunOS 3.5, 4.0.1, 4.0.3, on Sun-3 and Sun-4)
 HP9000 series 800
+RS6000
+DECstation 3100/5000
+Various flavors of Motorola SYSV boxes (68K and 88K) ??
 
-Thanks to Steve Jankowski, Christos S. Zoulas, Hal Peterson,
-Christopher North-Keys, Robert Potter, Bill Bolosky, and Tor
-Lillqvist for their improvements. 
+To compile for one of the machines above, edit the Imakefile and do this:
 
-To compile for one of the machines above, goto config.h and do what it says.
+% xmkmf
+% make Makefiles
+% make
 
-
-Desired improvements:
-
-1.  Get it running on other hardware.  (HP9000 series 300, Apollo, Dec 3100's)
-
-This requires porting the multi-threading code, which is used to run
-multiple robot programs concurrently to control the enemy vehicles in
-the game.  For most machines, this requires a change to thread.c
-around line 58, where the stack pointer register is initialized.
-Or you can substitute a different threads package if one is available
-on your machine.
-
-This also requires porting the dynamic linking code, which is
-used to load object code for robot programs into the running
-executable.  The current implementation in unix.c should work on most
-Unixes.  Never strip an xtank executable since that makes it
-impossible to dynamically link.  If you can't get the dynamic linking
-code working, just remove the #define DYNALOAD in config.h.
-You will then not be able to add new robot programs without recompiling.
-
-If you are not running X11R3, you may have to modify the graphics code. 
-All the X specific code is in x11.c.  Scattered about the
-code you will find #ifdef AMIGA and #ifdef 640x200.  They don't work.
-Neither does the Amiga version.
-
-2.  Make multi-player games easier to start.  This can be done by
-having xtank listen to some port (or a zephyr message class for
-those who have it) for messages from other machines that want to join
-the game.  Also, when someone starts a game of xtank, xtank would
-call out to the network (on the known port) to find out if there
-are any other machines currently running xtank.  If so, the player
-would be asked if he wants to join that game (perhaps with some
-information about the number of people currently playing, what game,
-etc.).  The player should also have the option of not allowing
-other players join the game, if he just wants to play alone.
-
-3.  More conformance to X application standards (support for more
-XResources, a man page, correct command line option handling).
-Perhaps use of a toolkit (although I don't like the thought of the
-executable doubling in size...).  
-
-4.  A better language for writing robot programs (along with a fast
-interpreter/compiler for the language).  This seems like a big
-project to me, but I know many programmers who are better at writing
-compilers than me!
-
-5.  Better color support.  Currently I'm not sure if it even works
-correctly on a color machine...
-
-6.  More dynamic listings of vehicles and mazes that are available.
-I'd really like to see a list of all the mazes in the Mazes directory
-and browse through them quickly.
-
-7.  Difficulty levels (currently the difficulty level does very
-little).  This is pretty easy to do, since you just need to pick
-a set of vehicles and robot programs from the set available.  To
-facilitate this, it may be useful to write robot programs which
-look at the difficulty level of the game to decide how well to play.
-
-8. Implementing new games.  Let your imagination run wild.  Xtank was
-designed to maximize player creativity.
-
-For more suggestions, see the Todo directory.
-
-If you do make any worthwhile change, send me some context
-diffs, or the new source files so everyone can take advantage of it.
-If you design any killer mazes, be sure to send them along too.
-
-I heartily recommend 2-on-2 Ultimate with commentator and no-wear set,
-2-on-2, in moosemaze with everyone in Ultimate vehicles.  It has the
-pace and feel of ice hockey.
-
-
-				Terry Donahue
-
-Note slightly       -->		tmdonahu@athena.mit.edu	(once a week)
-different usernames -->		tdonahue@next.com	(every day)
-
-Code currently being maintained by stripes@eng.umd.edu, and aahz@eng.umd.edu.
-There is also a mailing list for code writers: xtank@eng.umd.edu, the request
-address is xtank-request@eng.umd.edu.
+Some places in the code that need further work are marked with "%%%" in a
+comment.  Others produce a core file -- this means that it also needs more
+work on the code.

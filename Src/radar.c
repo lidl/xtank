@@ -7,14 +7,39 @@
 ** radar.c
 */
 
+/*
+$Author: lidl $
+$Id: radar.c,v 2.4 1991/09/24 14:07:28 lidl Exp $
+
+$Log: radar.c,v $
+ * Revision 2.4  1991/09/24  14:07:28  lidl
+ * fix from arrone@sail.labs.tek.com, makes fading blips correct
+ *
+ * Revision 2.3  1991/02/10  13:51:31  rpotter
+ * bug fixes, display tweaks, non-restart fixes, header reorg.
+ *
+ * Revision 2.2  91/01/20  09:58:49  rpotter
+ * complete rewrite of vehicle death, other tweaks
+ * 
+ * Revision 2.1  91/01/17  07:12:47  rpotter
+ * lint warnings and a fix to update_vector()
+ * 
+ * Revision 2.0  91/01/17  02:10:22  rpotter
+ * small changes
+ * 
+ * Revision 1.1  90/12/29  21:03:00  aahz
+ * Initial revision
+ * 
+*/
+
 #include "xtank.h"
 #include "graphics.h"
 #include "gr.h"
 #include "map.h"
 #include "vehicle.h"
+#include "globals.h"
 
-
-extern Map box;
+extern Map real_map;
 
 
 /* Names for radar blip life numbers */
@@ -79,139 +104,139 @@ Vehicle *v;
 char *record;
 unsigned int action;
 {
-	Radar *r;
-	Blip *b;
-	Coord *offset;
-	unsigned int vehicle_flags;
-	int init_x, init_y;
-	int x, y;
-	int i;
+    Radar *r;
+    Blip *b;
+    Coord *offset;
+    unsigned int vehicle_flags;
+    int init_x, init_y;
+    int x, y;
+    int i;
 
-	r = (Radar *) record;
+    r = (Radar *) record;
 
-	switch (action)
+    switch (action)
+    {
+      case SP_update:
+	/* If there are any blips, decrement their lives and remove the
+	   dead */
+	i = 0;
+	while (i < r->num_blips)
 	{
-		case SP_update:
-			/* If there are any blips, decrement their lives and remove the
-			   dead */
-			i = 0;
-			while (i < r->num_blips)
-			{
-				b = &r->blip[i];
-				b->old_view = b->view;
-				switch (--b->life)
-				{
-					case RADAR_size5:
-					case RADAR_size4:
-					case RADAR_size3:
-					case RADAR_size2:
-					case RADAR_size1:
-						b->view++;
-						break;
-					case RADAR_dead:
-						if (i < r->num_blips - 1)
-							*b = r->blip[r->num_blips - 1];
-						r->num_blips--;
-						i--;
-						break;
-				}
-				i++;
-			}
-
-			/* Check the swept boxes for any vehicles */
-			init_x = v->loc->grid_x;
-			init_y = v->loc->grid_y;
-			offset = radar_swept[r->pos];
-
-			for (i = 0; i < radar_num_swept[r->pos]; i++)
-			{
-				/* Make sure blip is inside the grid */
-				x = init_x + offset[i].x;
-				if (x < 0 || x >= GRID_WIDTH)
-					continue;
-				y = init_y + offset[i].y;
-				if (y < 0 || y >= GRID_HEIGHT)
-					continue;
-
-				vehicle_flags = box[x][y].flags & ANY_VEHICLE;
-
-				/* If there is a vehicle in this box, make a blip */
-				if (vehicle_flags)
-				{
-					b = &r->blip[r->num_blips++];
-					b->x = grid2map(x) + MAP_BOX_SIZE / 4;
-					b->y = grid2map(y) + MAP_BOX_SIZE / 4;
-					b->life = RADAR_born;
-					b->view = 0;
-					b->flags = vehicle_flags;
-				}
-			}
-
-			/* Increment the position counter modulo 24 */
-			if (++r->pos == 24)
-				r->pos = 0;
-
-			/* Save the old sweeper position, and compute the new one */
-			r->old_start_x = r->start_x;
-			r->old_start_y = r->start_y;
-			r->old_end_x = r->end_x;
-			r->old_end_y = r->end_y;
-			r->start_x = grid2map(v->loc->grid_x) + MAP_BOX_SIZE / 2;
-			r->start_y = grid2map(v->loc->grid_y) + MAP_BOX_SIZE / 2;
-			r->end_x = r->start_x + radar_sweeper[r->pos].x;
-			r->end_y = r->start_y + radar_sweeper[r->pos].y;
-			break;
-		case SP_redisplay:
-			/* redraw the sweeper line */
-			draw_line(MAP_WIN, r->old_start_x, r->old_start_y,
-					  r->old_end_x, r->old_end_y, DRAW_XOR, GREEN);
-			draw_line(MAP_WIN, r->start_x, r->start_y,
-					  r->end_x, r->end_y, DRAW_XOR, GREEN);
-
-			/* redraw the blips that have changed size */
-			for (i = 0; i < r->num_blips; i++)
-			{
-				b = &r->blip[i];
-
-				/* Erase old view */
-				if (b->life < RADAR_born)
-					draw_filled_square(MAP_WIN, b->x, b->y, 6 - b->old_view,
-									   DRAW_XOR, GREEN);
-
-				/* Draw new view */
-				if (b->life > RADAR_size1)
-					draw_filled_square(MAP_WIN, b->x, b->y, 6 - b->view,
-									   DRAW_XOR, GREEN);
-			}
-			break;
-		case SP_draw:
-		case SP_erase:
-			/* draw/erase the sweeper line */
-			draw_line(MAP_WIN, r->start_x, r->start_y,
-					  r->end_x, r->end_y, DRAW_XOR, GREEN);
-
-			/* draw/erase the blips */
-			for (i = 0; i < r->num_blips; i++)
-			{
-				b = &r->blip[i];
-				if (b->view < 5)
-					draw_filled_square(MAP_WIN, b->x, b->y, 6 - b->view,
-									   DRAW_XOR, GREEN);
-			}
-			break;
-		case SP_activate:
-			/* clear the blips left over from before */
-			r->num_blips = 0;
-
-			/* compute the starting location of the sweeper */
-			r->start_x = grid2map(v->loc->grid_x) + (int) MAP_BOX_SIZE / 2;
-			r->start_y = grid2map(v->loc->grid_y) + (int) MAP_BOX_SIZE / 2;
-			r->end_x = r->start_x + radar_sweeper[r->pos].x;
-			r->end_y = r->start_y + radar_sweeper[r->pos].y;
-			break;
-		case SP_deactivate:
-			break;
+	    b = &r->blip[i];
+	    b->old_view = b->view;
+	    switch (--b->life)
+	    {
+	      case RADAR_size5:
+	      case RADAR_size4:
+	      case RADAR_size3:
+	      case RADAR_size2:
+	      case RADAR_size1:
+		b->view++;
+		break;
+	      case RADAR_dead:
+		if (i < r->num_blips - 1)
+		    *b = r->blip[r->num_blips - 1];
+		r->num_blips--;
+		i--;
+		break;
+	    }
+	    i++;
 	}
+
+	/* Check the swept boxes for any vehicles */
+	init_x = v->loc->grid_x;
+	init_y = v->loc->grid_y;
+	offset = radar_swept[r->pos];
+
+	for (i = 0; i < radar_num_swept[r->pos]; i++)
+	{
+	    /* Make sure blip is inside the grid */
+	    x = init_x + offset[i].x;
+	    if (x < 0 || x >= GRID_WIDTH)
+		continue;
+	    y = init_y + offset[i].y;
+	    if (y < 0 || y >= GRID_HEIGHT)
+		continue;
+
+	    vehicle_flags = real_map[x][y].flags & ANY_VEHICLE;
+
+	    /* If there is a vehicle in this box, make a blip */
+	    if (vehicle_flags)
+	    {
+		b = &r->blip[r->num_blips++];
+		b->x = grid2map(x) + MAP_BOX_SIZE / 4;
+		b->y = grid2map(y) + MAP_BOX_SIZE / 4;
+		b->life = RADAR_born;
+		b->view = 0;
+		b->flags = vehicle_flags;
+	    }
+	}
+
+	/* Increment the position counter modulo 24 */
+	if (++r->pos == 24)
+	    r->pos = 0;
+
+	/* Save the old sweeper position, and compute the new one */
+	r->old_start_x = r->start_x;
+	r->old_start_y = r->start_y;
+	r->old_end_x = r->end_x;
+	r->old_end_y = r->end_y;
+	r->start_x = grid2map(v->loc->grid_x) + MAP_BOX_SIZE / 2;
+	r->start_y = grid2map(v->loc->grid_y) + MAP_BOX_SIZE / 2;
+	r->end_x = r->start_x + radar_sweeper[r->pos].x;
+	r->end_y = r->start_y + radar_sweeper[r->pos].y;
+	break;
+      case SP_redisplay:
+	/* redraw the sweeper line */
+	draw_line(MAP_WIN, r->old_start_x, r->old_start_y,
+		  r->old_end_x, r->old_end_y, DRAW_XOR, CUR_COLOR);
+	draw_line(MAP_WIN, r->start_x, r->start_y,
+		  r->end_x, r->end_y, DRAW_XOR, CUR_COLOR);
+
+	/* redraw the blips that have changed size */
+	for (i = 0; i < r->num_blips; i++)
+	{
+	    b = &r->blip[i];
+
+	    /* Erase old view */
+	    if (b->life < RADAR_born)
+		draw_filled_square(MAP_WIN, b->x, b->y, 6 - b->old_view,
+				   DRAW_XOR, CUR_COLOR);
+
+	    /* Draw new view */
+	    if (b->life > RADAR_dead + 1)
+		draw_filled_square(MAP_WIN, b->x, b->y, 6 - b->view,
+				   DRAW_XOR, CUR_COLOR);
+	}
+	break;
+      case SP_draw:
+      case SP_erase:
+	/* draw/erase the sweeper line */
+	draw_line(MAP_WIN, r->start_x, r->start_y,
+		  r->end_x, r->end_y, DRAW_XOR, CUR_COLOR);
+
+	/* draw/erase the blips */
+	for (i = 0; i < r->num_blips; i++)
+	{
+	    b = &r->blip[i];
+	    if (b->view < 5)
+		draw_filled_square(MAP_WIN, b->x, b->y, 6 - b->view,
+				   DRAW_XOR, CUR_COLOR);
+	}
+	break;
+      case SP_activate:
+	/* clear the blips left over from before */
+	r->num_blips = 0;
+
+	/* compute the starting location of the sweeper */
+	r->start_x = grid2map(v->loc->grid_x) + (int) MAP_BOX_SIZE / 2;
+	r->start_y = grid2map(v->loc->grid_y) + (int) MAP_BOX_SIZE / 2;
+	r->end_x = r->start_x + radar_sweeper[r->pos].x;
+	r->end_y = r->start_y + radar_sweeper[r->pos].y;
+	break;
+      case SP_deactivate:
+	break;
+    }
 }
 
 /*
@@ -220,38 +245,33 @@ unsigned int action;
 full_radar(status)
 unsigned int status;
 {
-	extern int num_vehicles;
-	extern Vehicle *vehicle[];
-	Vehicle *v;
-	int i;
+    Vehicle *v;
+    int i;
 
-	if (status == ON)
-	{
-		for (i = 0; i < num_vehicles; i++)
-		{
-			v = vehicle[i];
-			draw_number(v, v->loc);
-		}
+    if (status == ON)
+    {
+	for (i = 0; i < num_veh_alive; i++) {
+	    v = live_vehicles[i];
+	    draw_number(v, v->loc);
 	}
-	else if (status == REDISPLAY)
-	{
-		for (i = 0; i < num_vehicles; i++)
-		{
-			v = vehicle[i];
+    }
+    else if (status == REDISPLAY)
+    {
+	for (i = 0; i < num_veh_alive; i++) {
+	    v = live_vehicles[i];
 
-			/* Only draw the new number location if he is alive */
-			if (v->status & VS_is_alive)
-			{
-				if (!(grid_equal(v->loc, v->old_loc)))
-				{
-					draw_number(v, v->old_loc);
-					draw_number(v, v->loc);
-				}
-			}
-			else
-				draw_number(v, v->old_loc);
+	    /* Only draw the new number location if he is alive */
+	    if (tstflag(v->status, VS_is_alive)) {
+		if (!(grid_equal(v->loc, v->old_loc)))
+		{
+		    draw_number(v, v->old_loc);
+		    draw_number(v, v->loc);
 		}
+	    }
+	    else
+		draw_number(v, v->old_loc);
 	}
+    }
 }
 
 /*

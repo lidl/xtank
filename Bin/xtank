@@ -1,0 +1,41 @@
+#!/bin/sh
+XTANK_DIR=/homes/lidl/x/xtank
+XTANK_VEHICLES=Vehicles
+XTANK_MAZES=Mazes
+XTANK_PROGRAMS=Programs
+
+#
+# rpotter thinks this is a kludge, I think it is funny! (lidl)
+#
+#FAKEIT=emacs				# should we disguise ourselves as $FAKEIT ??
+
+if [ -f /usr/bin/arch ]; then		# a sun3/4 running SunOS 4.X
+	arch=`/usr/bin/arch`
+elif [ -f /bin/arch ]; then		# a sun running 3.5, or an Ultrix Box
+	arch=`/bin/arch`
+elif [ -f /bin/machine ]; then		# a mac or ultrix machine
+	arch=`/bin/machine`
+elif [ -f /usr/bin/machine ]; then	# a BSD 4.3 machine
+	arch=`/usr/bin/machine`
+elif [ -d /usr/alliant ]; then		# an alliant FX/8 machine
+	arch="alliant"
+elif [ -e /dev/speaker ]; then		# An IBM RT
+	arch="rt"
+elif [ -d /NextApps ]; then		# A NeXT machine
+	arch="next"
+else
+	echo "I don't know what kind of machine I'm on, teach me!"
+	exit 1
+fi
+
+if [ "X$FAKEIT" = "X" ]; then
+	echo "Running xtank.$arch"
+	${XTANK_DIR}/xtank.$arch $*
+else
+	ln -s ${XTANK_DIR}/Src/xtank.$arch ./$FAKEIT
+	echo "Running $FAKEIT..."
+	PATH=.:$PATH
+	$FAKEIT $* &
+	sleep 1
+	/bin/rm -f $FAKEIT
+fi

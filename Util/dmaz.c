@@ -34,58 +34,56 @@
 typedef unsigned char Byte;
 
 typedef struct {
-  Byte type;
-  char *name;
-  char *designer;
-  char *desc;
-  Byte *data;
+    Byte type;
+    char *name;
+    char *designer;
+    char *desc;
+    Byte *data;
 } Mdesc;
 
 char *mtypes[] = {
-  "Combat",
-  "War",
-  "Ultimate",
-  "Capture",
-  "Race",
+    "Combat",
+    "War",
+    "Ultimate",
+    "Capture",
+    "Race",
 };
 
 char *derrs[] = {
-  "none",
-  "saved???",
-  "Maze not found",
-  "Maze bad format",
-  "No room to store maze",
+    "none",
+    "saved???",
+    "Maze not found",
+    "Maze bad format",
+    "No room to store maze",
 };
 
-main (argc, argv)
-	int argc;
-	char **argv;
+main(argc, argv)
+    int argc;
+    char **argv;
 {
-  Mdesc d;
-  int er;
-  char *ri, *rindex();
-  
-  if(ri = rindex(argv[1],'.'))
-    *ri = '\0';
-  
-  if(er = load_mdesc(&d, argv[1]))
-    {
-      fputs("dmaz: ",stderr);
-      fputs(derrs[er], stderr);
-      putc('\n', stderr);
-      exit(1);
-    }
+    Mdesc d;
+    int er;
+    char *ri, *rindex();
 
-  fputs("Maze name: ",stdout);
-  puts(d.name);
-  fputs("Maze type: ",stdout);
-  puts(mtypes[d.type]);
-  fputs("Designer: ",stdout);
-  puts(d.designer);
-  fputs("Description: ",stdout);
-  puts(d.desc);
-  dumpmaze(&d);
-  return 0;
+    if (ri = rindex(argv[1], '.'))
+	*ri = '\0';
+
+    if (er = load_mdesc(&d, argv[1])) {
+	fputs("dmaz: ", stderr);
+	fputs(derrs[er], stderr);
+	putc('\n', stderr);
+	exit(1);
+    }
+    fputs("Maze name: ", stdout);
+    puts(d.name);
+    fputs("Maze type: ", stdout);
+    puts(mtypes[d.type]);
+    fputs("Designer: ", stdout);
+    puts(d.designer);
+    fputs("Description: ", stdout);
+    puts(d.desc);
+    dumpmaze(&d);
+    return 0;
 }
 
 /*
@@ -104,95 +102,85 @@ main (argc, argv)
 
 char pics[17][4] =
 {
-  "    ",
-  "FUEL",
-  "AMMO",
-  "ARMR",
-  "GOAL",
-  "OUCH",
-  "/\\||",
-  "-+/|",
-  "->->",
-  "\\|-+",
-  "||\\/",
-  "|/+-",
-  "<-<-",
-  "+-|\\",
-  "SLIP",
-  "SLOW",
-  "\\//\\",
+    "    ",
+    "FUEL",
+    "AMMO",
+    "ARMR",
+    "GOAL",
+    "OUCH",
+    "/\\||",
+    "-+/|",
+    "->->",
+    "\\|-+",
+    "||\\/",
+    "|/+-",
+    "<-<-",
+    "+-|\\",
+    "SLIP",
+    "SLOW",
+    "\\//\\",
 };
 
 
 typedef unsigned int Flag;
 
 typedef struct {
-  Flag flags;			/* bits for walls, inside maze */
-  Byte type;			/* landmark, scroll, goal, outpost, etc. */
-  Byte team;			/* number of team that owns the box */
+    Flag flags;			/* bits for walls, inside maze */
+    Byte type;			/* landmark, scroll, goal, outpost, etc. */
+    Byte team;			/* number of team that owns the box */
 } Box;
 
 extern Box box[GRID_WIDTH][GRID_HEIGHT];
-    
+
 
 dumpmaze(md)
-     Mdesc *md;
+    Mdesc *md;
 {
-  int i, j, k;
-  Box bp;
+    int i, j, k;
+    Box bp;
 
-  make_maze(md);
-  
-  for(i=MAZE_TOP; i<=MAZE_BOTTOM+1; i++)
-    {
-      for(j=MAZE_LEFT; j<=MAZE_RIGHT; j++)
-	{
-	  int bpt = (box[j][i].flags&WEST_WALL)
-	    ||(box[j-1][i].flags&NORTH_WALL);
-	  bp = box[j][i];
-	  if(bp.flags & NORTH_WALL)
-	    {
-	      if(bp.flags & NORTH_DEST)
-		{
-		  putchar(bpt?'+':'-');
-		  putchar('-');
-		  putchar('-');
-		}		  
-	      else
-		{
-		  putchar(bpt?'#':'=');
-		  putchar('=');
-		  putchar('=');
-		}		  
-	    }
-	  else
-	    {
-	      putchar(bpt?'#':' ');
-	      putchar(' ');
-	      putchar(' ');
-	    }	      
-	}
-      putchar('\n');
-      
-      if(i<= MAZE_BOTTOM) for(k=0;k<4;k+=2)
-	{
-	  for(j=MAZE_LEFT; j<=MAZE_RIGHT; j++)
-	    {
-	      bp = box[j][i];
-	      if(bp.flags & WEST_WALL)
-		{
-		  if(bp.flags & WEST_DEST)
-		    putchar('|');
-		  else
-		    putchar('#');
+    make_maze(md);
+
+    for (i = MAZE_TOP; i <= MAZE_BOTTOM + 1; i++) {
+	for (j = MAZE_LEFT; j <= MAZE_RIGHT; j++) {
+	    int bpt = (box[j][i].flags & WEST_WALL)
+	    || (box[j - 1][i].flags & NORTH_WALL);
+
+	    bp = box[j][i];
+	    if (bp.flags & NORTH_WALL) {
+		if (bp.flags & NORTH_DEST) {
+		    putchar(bpt ? '+' : '-');
+		    putchar('-');
+		    putchar('-');
+		} else {
+		    putchar(bpt ? '#' : '=');
+		    putchar('=');
+		    putchar('=');
 		}
-	      else
+	    } else {
+		putchar(bpt ? '#' : ' ');
 		putchar(' ');
-
-	      putchar(pics[bp.type][k]);
-	      putchar(pics[bp.type][k+1]);
+		putchar(' ');
 	    }
-	  putchar('\n');
 	}
+	putchar('\n');
+
+	if (i <= MAZE_BOTTOM)
+	    for (k = 0; k < 4; k += 2) {
+		for (j = MAZE_LEFT; j <= MAZE_RIGHT; j++) {
+		    bp = box[j][i];
+		    if (bp.flags & WEST_WALL) {
+			if (bp.flags & WEST_DEST)
+			    putchar('|');
+			else
+			    putchar('#');
+		    } else
+			putchar(' ');
+
+		    putchar(pics[bp.type][k]);
+		    putchar(pics[bp.type][k + 1]);
+		}
+		putchar('\n');
+	    }
     }
 }

@@ -2,18 +2,26 @@
 ** This is the object file for the circlular bullet explosion
 */
 
-#define circle_views 9
+#ifndef FAST_EXPLOS
+# define circle_views 9
+#else
+# define circle_views 1
+#endif
 
 static Picture circle_pic[circle_views] = {
+#ifndef FAST_EXPLOS
       { 5, 5, 2, 3 },
       { 9, 9, 4, 5 },
       { 13, 13, 6, 7 },
       { 17, 17, 8, 9 },
       { 21, 21, 10, 11 },
+#endif
       { 25, 25, 12, 12 },
+#ifndef FAST_EXPLOS
       { 29, 29, 14, 14 },
       { 31, 31, 15, 15 },
       { 31, 31, 15, 15 } 
+#endif
 };
 
 static Object circle_obj = {
@@ -22,6 +30,7 @@ static Object circle_obj = {
 	circle_pic
 };
 
+#ifndef FAST_EXPLOS
 static unsigned char circle_bits0[] = {
     0x0e, 0x1f, 0x1f, 0x1f, 0x0e};
 
@@ -54,6 +63,7 @@ static unsigned char circle_bits4[] = {
     0x00, 0x1e, 0x0e, 0x00, 0x0e, 0x1e, 0x00, 0x0f, 
     0x3c, 0x80, 0x07, 0xf8, 0xe0, 0x03, 0xf0, 0xff, 
     0x01, 0xe0, 0xff, 0x00, 0x80, 0x3f, 0x00};
+#endif
 
 static unsigned char circle_bits5[] = {
     0x00, 0xfe, 0x00, 0x00, 0x80, 0xff, 0x03, 0x00, 
@@ -70,6 +80,7 @@ static unsigned char circle_bits5[] = {
     0xe0, 0x01, 0x0f, 0x00, 0x80, 0xff, 0x03, 0x00, 
     0x00, 0xfe, 0x00, 0x00};
 
+#ifndef FAST_EXPLOS
 static unsigned char circle_bits6[] = {
     0x00, 0xf8, 0x03, 0x00, 0x00, 0x07, 0x1c, 0x00, 
     0xc0, 0x00, 0x60, 0x00, 0x60, 0x00, 0xc0, 0x00, 
@@ -122,15 +133,20 @@ static unsigned char circle_bits8[] = {
     0x20, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 
     0x80, 0x00, 0x80, 0x00, 0x00, 0x0a, 0x28, 0x00, 
     0x00, 0xa0, 0x02, 0x00};
+#endif
 
 static unsigned char *circle_bitmap[circle_views] = {
+#ifndef FAST_EXPLOS
 	circle_bits0,
 	circle_bits1,
 	circle_bits2,
 	circle_bits3,
 	circle_bits4,
+#endif
 	circle_bits5,
+#ifndef FAST_EXPLOS
 	circle_bits6,
 	circle_bits7,
 	circle_bits8
+#endif
 };

@@ -1,3 +1,30 @@
+The thing that at the top of my wish list for xtank right now is
+keyboard controls for my tank.  It's just too hard to steer and fire at
+the same time with one control.
+
+I can see a couple of ways to implement this:
+
+        1) Provide direction keys.  Pressing one turns the tank to
+           point in that direction.  Probably a square of eight keys
+           would be good for this, with the middle to stop.
+
+        2) Keys to turn left or right some number of degrees.  30 seems
+           like a good number.  45 is probably too much.  Other keys to
+           turn 90 degrees and 180 might be good too.
+
+        3) The keys would allow you to specify a turn rate.  Hit once
+           and you start to turn, again to turn faster, etc.
+
+Of these, I like 2 the best and 3 the least.  Something else to note is
+that you could use these to turn the tank, the turrets, or both.  If you
+do both, you wouldn't have to worry about extra speed controls, since
+the number keys are right there at your finger tips.
+
+It would also be nice to be able to use the Xt translations mechanism to
+allow anyone to customize their controls any way they like.
+
+###############################################################################
+
 These are some ideas from kahuna about how a player should be able
 to control a vehicle:
 
@@ -42,12 +69,13 @@ back tough.  Perhaps something like:
 
 	You would still activate and deactivate weapons the some way,
 you would just do it less often - i.e. only to conserve ammo or save
-heat.  This way what your fire is controlled by what you press not what's activated.
+heat.  This way what your fire is controlled by what you press not
+what's activated.
 	The mortar is assumed to be aimed like the turret but with the
 targeting cursor marking the impact zone.  Since one would rarely want
 to fire both mortars and direct fire weapons (the turret weapons) they
-should have separate buttons.
-If the tank doesn't have a mortar the button is a "nothing".
+should have separate buttons.  If the tank doesn't have a mortar the
+button is a "nothing".
 	The directions buttons are obvious.  This would allow VERY
 usefull items like side mounted flame throwers to be used effectivly.
 	The speed controls shouls still exist on the numeric row but
@@ -76,8 +104,8 @@ for mortars and mines:
 		Damage		-	obvious
  		Visibility	_	The cheapest mines might be visible
 					without a mine detector.
-		Charges		-	Expensive ones might be able to do damage
-					more than once.
+		Charges		-	Expensive ones might be able to do 
+					damage more than once.
 
 
 
@@ -119,9 +147,6 @@ actually program.  Keep it up.
 
 
 					Kahuna
-
-
-
 
 
 

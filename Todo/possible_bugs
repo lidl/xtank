@@ -1,0 +1,14 @@
+Bugs noticed but _not_ fixed:
+
+        peace symbol used in maze design is inverted
+
+        when escher_width is 0, junk gets left on screen
+
+        MAX_WEAPONS and VMAX_WEAPONS should swap names.  This would probably
+        introduce hard-to-find bugs, tho.
+
+        We should just clean out the vehicles directory and start from scratch.
+        Way too much cruft there.
+
+        Somebody should go through /Help and bring it up to date.
+

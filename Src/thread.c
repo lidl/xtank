@@ -1,4 +1,3 @@
-#include "malloc.h"
 /*
 ** Xtank
 **
@@ -7,10 +6,45 @@
 ** thread.c
 */
 
+/*
+$Author: lidl $
+$Id: thread.c,v 2.8 1991/09/19 05:37:24 lidl Exp $
+
+$Log: thread.c,v $
+ * Revision 2.8  1991/09/19  05:37:24  lidl
+ * ifdef'ed out the inclusion of the copyright file
+ *
+ * Revision 2.7  1991/09/15  07:02:03  lidl
+ * added mips support via patches contributed
+ *
+ * Revision 2.6  1991/05/01  18:30:41  lidl
+ * added code for Motorola's 68k based UNIX (R3V6)
+ *
+ * Revision 2.5  1991/04/26  22:47:29  lidl
+ * added Motorola 88K fragment to make it work on the 88K running R32V2 UNIX
+ *
+ * Revision 2.4  1991/03/25  00:42:11  stripes
+ * RS6K Patches (IBM is a rock sucker)
+ *
+ * Revision 2.3  1991/02/10  13:51:49  rpotter
+ * bug fixes, display tweaks, non-restart fixes, header reorg.
+ *
+ * Revision 2.2  91/01/20  09:59:08  rpotter
+ * complete rewrite of vehicle death, other tweaks
+ * 
+ * Revision 2.1  91/01/17  07:13:11  rpotter
+ * lint warnings and a fix to update_vector()
+ * 
+ * Revision 2.0  91/01/17  02:13:02  rpotter
+ * small changes
+ * 
+ * Revision 1.1  90/12/29  21:03:11  aahz
+ * Initial revision
+ * 
+*/
+
+#include "malloc.h"
 #include "thread.h"
-
-extern char *malloc();
-
 
 /* The current thread that is executing */
 Thread *curthd;
@@ -23,8 +57,12 @@ Thread *curthd;
 (c) Copyright 1987 by Michael Benjamin Parker           (USA SS# 557-49-4130)
 
 All Rights Reserved unless specified in the following include files: */
-#include "thread.cpy"			/* DO NOT REMOVE OR ALTER THIS NOTICE AND ITS
-								   PROVISIONS. ************************************************************************** */
+#if 0
+#include "thread.cpy"
+#endif
+/****************************************************************************/
+/* DO NOT REMOVE OR ALTER THIS NOTICE AND ITS PROVISIONS.		    */
+/****************************************************************************/
 
 
 Thread *thread_setup()
@@ -34,7 +72,7 @@ Thread *thread_setup()
 
 	/* Initialize thread for the main program */
 	curthd = mainthd;
-	return thread_init(curthd, 10 * sizeof(Thread), main);
+	return thread_init((char *)curthd, 10 * sizeof(Thread), main);
 }
 
 Thread *thread_init(buf, bufsize, func)
@@ -76,6 +114,15 @@ Thread *(*func) ();
 	   stack pointer should start at the beginning or end of the empty space
 	   after the thread structure. */
 
+#if (defined(_IBMR2))
+	bufend = (bufend - 7) & ~7;
+	thd->state[3] = bufend;
+#endif
+
+#if defined(mips) && defined(ultrix)
+	thd->state[32] = ((unsigned) (bufend)) & ~3;
+#endif
+
 #ifdef vax						/* Vaxen */
 	bufend -= sizeof(Thread);
 	thd->state[0] = ((unsigned) (bufend)) & ~3;
@@ -102,9 +149,19 @@ Thread *(*func) ();
 #endif
 
 #ifdef hp9000s800
+#ifdef OLDCODE
 	/* Stack grows upwards, SP in state[1]. 48 is stack frame size, align to
 	   doubleword boundary */
 	thd->state[1] = ((unsigned) (thd + 1) + 48 + 7) & ~7;
+#else
+	/* Stack grows upwards, SP in state[1]. Align to doubleword boundary */
+	/* This is rather ad-hoc... but seems to work. */
+	thd->state[1] = ((unsigned) (thd + 2) + 100) & ~7;
+#endif
+#endif
+
+#ifdef hp9000s300
+	thd->state[12] = ((unsigned) bufend) & ~3;
 #endif
 
 #ifdef apollo
@@ -128,6 +185,22 @@ Thread *(*func) ();
 	thd->state[4] = ((unsigned (bufend)) &~3;
 #endif
 
+#if defined(MOTOROLA) && defined(m88k)
+	/* Motorola 88k system running their R32V2 UNIX */
+	/* The stack grows downwards.
+	   R31 is used as the stack pointer, it is the 2nd word
+	   of the jmp_buf (state). Doubleword aligned. PEK'90 */
+	thd->state[1] = ((unsigned) (bufend)) & ~7;
+#endif
+
+#if defined(MOTOROLA) && defined(m68k)
+	/* Motorola's 68k based UNIX (R3V6) */
+	/* The stack grows downwards.
+	   The stack pointer is in the 13th word of the jmp_buf.
+	   Aligned to longword boundary. PEK '90 */
+	thd->state[12] = ((unsigned) (bufend)) & ~3;
+#endif
+
 	return thd;
 }
 
@@ -147,7 +220,11 @@ Thread *newthd;
 		{
 			newthd->oldthd = curthd;
 			curthd = newthd;
+#if defined(_IBMR2)
+			mylongjmp(curthd->state, 1);
+#else
 			longjmp(curthd->state, 1);
+#endif
 		}
 		newthd = curthd->oldthd;
 		sigsetmask(sigstate);
@@ -186,7 +263,7 @@ Thread *(*func)();
 {
 	/* remember to give pointer to _top_ of stack */
 	lwp_create((thread_t *) buf, func, MINPRIO, LWPNOLASTRITES,
-			   (stkalign_t *) (((char *) buf) + bufsize), 0);
+			   (stkalign_t *) (buf + bufsize), 0);
 	return (Thread *) buf;
 }
 

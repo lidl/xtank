@@ -1,69 +1,23 @@
-docs for map_* macros
-scoring should be game dependent (i.e. #goals for race, etc.)
-money() is missing from xtanklib
-team field missing from landmarkInfo structure in docs
 message menu not reset when vehicle dies even though message type is reset
 
-
 in robot mode, the names given by the commentator lack the playername
+
 other player hitting q when 1st player is in menu mode crashes xtank
 
 I had a hexo who got stuck on the intersection between two right-
 angled walls. 
 
-When loading a program, if there is already a default, (/mit/games/
-src/vax/xtank/Programs/Blazee.o) sometimes the name is
-long enough that when you type in the name of a second program (/mit/
-games/src/vax/xtank/Programs/Blaga.o) will dissapear off the edge of
-the screen as you type.
+When loading a program, if there is already a default,
+(/mit/games/src/vax/xtank/Programs/Blazee.o) sometimes the name is long enough
+that when you type in the name of a second program
+(/mit/games/src/vax/xtank/Programs/Blaga.o) will dissapear off the edge of the
+screen as you type.
 
-A icon in design (maze + design) to automatically save would be nice. (minor)
-
-When a vehicle is saved in design, it should automatically be
-loaded/reloaded for the main program so the user can immediately
-use it without manually loading it from the main menu.
-
-Have weapon on/off toggles be actuated by clicking on the weapon as
-well as using the shifted keys.
-
-
-It would be nice if, when in battle mode, you get to see the messages
-sent to the vehicle you are tracking.  Right now, the only way to
-see debugging messages is to send them to RECIPIENT_ALL, so it's
-impossible to debug a specific vehicle when lots are playing  (I
-need to have at least a 2 on 2 for the problem I'm having to show
-up).  If that feature were in, vehicles could send debugging messages
-to themselves, and I could switch back and forth and see what they
-were saying.
-
-Twice I have designed mazes without erasing what was left over from
-the playing maze, only to find that the maze would not load properly
-after being saved.  I have left those bad mazes under the names Error
-and Error2.  Each was an attempt at making a maze like Crossover,
-which I was able to save properly because I started from a clean grid.
-
-
-I don't know if you realize this or not, but when I fight against
-warrior with a tank with max spd > 25, it dies often.
-the error is: Floating exception.
-Just thought you might want to know.
-
-
-I am in the process of writing an xtank program.  However, there is one (very)
-slow routine.  It is slow because it has to make about 3600 xtanklib calls to
-acheive it's purpose, namely, requesting everything it knows about the walls in
-a given maze.  Is it possible to request the entire data structure xtank uses
-to store the mapper?  Is there another, faster way to do this that I'm not
-thinking of?
 Funny, a buddy-tank just went right through one of the walls--not two
 connected walls, one wall.  The ball went through the corner, and he
 got it and proceeded to try throwing it at his teammate (signs of
 intelligence?).  Now I have 6 buddies trying to break through the
 walls, and one somewhere out there with the disc (he lost it).
-
-Want to have a lot of fun playing >4 Ultimate.  Try Ultimate_4 for
-your maze.  It's got slicks and is hilarious (try it with 7 buddies).
-Should be readable/xecutable.  And doesn't crash.  
 
 However, Terry, I saw one of the buddies slip between the walls.  
 Need explaining?  ok, the walls are like this:
@@ -77,22 +31,6 @@ problem yet?
 
 
 
-Additions
----------
-speed of game controls
-setups, loading, saving, use?
-sets?
-
-Bugs
-----
 Check for duplicate terminals or the lack of a terminal in combatants list
 
-change settings defaults
-make difficulty reflect difficulty
 make terminal status reset at the beginning of each game
-side mounted weapons firing in 90 degree arc
-serparate keys for firing different types of weapons
-fire_weapons(flags)
-fire_mines
-fire_slicks
-both take x,y

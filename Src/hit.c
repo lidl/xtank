@@ -6,6 +6,31 @@
 ** hit.c
 */
 
+/*
+$Author: aahz $
+$Id: hit.c,v 2.4 1991/08/22 03:30:51 aahz Exp $
+
+$Log: hit.c,v $
+ * Revision 2.4  1991/08/22  03:30:51  aahz
+ * avoid warning for the i860.
+ *
+ * Revision 2.3  1991/02/10  13:50:41  rpotter
+ * bug fixes, display tweaks, non-restart fixes, header reorg.
+ *
+ * Revision 2.2  91/01/20  09:57:56  rpotter
+ * complete rewrite of vehicle death, other tweaks
+ * 
+ * Revision 2.1  91/01/17  07:11:38  rpotter
+ * lint warnings and a fix to update_vector()
+ * 
+ * Revision 2.0  91/01/17  02:09:34  rpotter
+ * small changes
+ * 
+ * Revision 1.1  90/12/29  21:02:28  aahz
+ * Initial revision
+ * 
+*/
+
 #include "malloc.h"
 #include <stdio.h>
 #include "xtank.h"
@@ -17,13 +42,10 @@
 #include "bullet.h"
 #include "terminal.h"
 #include "cosell.h"
+#include "globals.h"
 
 
-extern Bumper_stat bumper_stat[];
-extern Body_stat body_stat[];
-extern Weapon_stat weapon_stat[];
-extern Engine_stat engine_stat[];
-extern Map box;
+extern Map real_map;
 extern Settings settings;
 
 
@@ -61,32 +83,32 @@ float angle;
 vehicle_hit_vehicle(v1, v2)
 Vehicle *v1, *v2;
 {
-	float ang, bump1, bump2, elast;
-	int dx, dy, damage;
-	int damage1, damage2;
+    float ang, bump1, bump2, elast;
+    int dx, dy, damage;
+    int damage1, damage2;
     Side side;
-	int has_ramplate1, has_ramplate2;
+    int has_ramplate1, has_ramplate2;
 
 #ifdef GDEBUG
-	int itemp1, itemp2;
-	static FILE *statfile = NULL;
+    int itemp1, itemp2;
+    static FILE *statfile = NULL;
 
+    if (!statfile)
+    {
+	statfile = fopen("/tmp/xtank.stats", "w");
 	if (!statfile)
-	{
-		statfile = fopen("/tmp/xtank.stats", "w");
-		if (!statfile)
-			rorre("cant open statfile");
-	}
+	    rorre("cant open statfile");
+    }
 #endif
 
-	/* Compute delta position */
-	dx = v2->loc->x - v1->loc->x;
-	dy = v2->loc->y - v1->loc->y;
+    /* Compute delta position */
+    dx = v2->loc->x - v1->loc->x;
+    dy = v2->loc->y - v1->loc->y;
     ang = ATAN2(dy, dx);
 
-	/* Compute the elasticity of the collision, based on bumpers */
-	bump1 = bumper_stat[v1->vdesc->bumpers].elasticity;
-	bump2 = bumper_stat[v2->vdesc->bumpers].elasticity;
+    /* Compute the elasticity of the collision, based on bumpers */
+    bump1 = bumper_stat[v1->vdesc->bumpers].elasticity;
+    bump2 = bumper_stat[v2->vdesc->bumpers].elasticity;
 
     /* Check to see if their are ram_plates */
     has_ramplate1 = FALSE;      
@@ -94,7 +116,7 @@ Vehicle *v1, *v2;
     if (v1->special[(int)RAMPLATE].status != SP_nonexistent)
     {                           
         side = find_affected_side(v1, ang);     
-		if (side == FRONT)
+	if (side == FRONT)
         {                       
             has_ramplate1 = TRUE;       
             bump1 = -0.15;      /* ram plate is not flexible  */
@@ -104,27 +126,27 @@ Vehicle *v1, *v2;
     if (v2->special[(int)RAMPLATE].status != SP_nonexistent)
     {                           
         side = find_affected_side(v2, PI - ang);        
-		if (side == FRONT)
+	if (side == FRONT)
         {                       
             has_ramplate2 = TRUE;       
             bump2 = -0.15;      /* ram plate is not flexible */
         }                       
     }                           
-	elast = .5 + bump1 + bump2;
+    elast = .5 + bump1 + bump2;
 
-	/* Bounce the vehicles off each other */
-	bounce_vehicles(v1, v2, dx, dy, elast);
+    /* Bounce the vehicles off each other */
+    bounce_vehicles(v1, v2, dx, dy, elast);
 
-	/* Damage vehicle on the side (height = 0) */
-	damage = bounce_damage(v1->vector.xspeed - v2->vector.xspeed,
-						   v1->vector.yspeed - v2->vector.yspeed, elast);
+    /* Damage vehicle on the side (height = 0) */
+    damage = bounce_damage(v1->vector.xspeed - v2->vector.xspeed,
+			   v1->vector.yspeed - v2->vector.yspeed, elast);
     damage1 = damage2 = damage; 
-	if (has_ramplate1)
+    if (has_ramplate1)
     {                           
         damage1 /= 2;           
         damage2 *= 2;           
     }                           
-	if (has_ramplate2)
+    if (has_ramplate2)
     {                           
         damage2 /= 2;           
         damage1 *= 2;           
@@ -133,21 +155,21 @@ Vehicle *v1, *v2;
     damage2 *= (1 - bump2);     
 
 #ifdef GDEBUG
-	if (statfile)
-	{
-		itemp1 = damage * (1 - bump1);
-		itemp2 = damage * (1 - bump2);
+    if (statfile)
+    {
+	itemp1 = damage * (1 - bump1);
+	itemp2 = damage * (1 - bump2);
 
-		fprintf(statfile, "\n\nVechicle #1:  '%s'  has_ramplate = %d  damage oldway - %d, damage newway - %d", v1->name, has_ramplate1, itemp1, damage1);
-		fprintf(statfile, "\nVechicle #2:  '%s'  has_ramplate = %d  damage oldway - %d, damage newway - %d", v2->name, has_ramplate2, itemp2, damage2);
-	}
+	fprintf(statfile, "\n\nVechicle #1:  '%s'  has_ramplate = %d  damage oldway - %d, damage newway - %d", v1->name, has_ramplate1, itemp1, damage1);
+	fprintf(statfile, "\nVechicle #2:  '%s'  has_ramplate = %d  damage oldway - %d, damage newway - %d", v2->name, has_ramplate2, itemp2, damage2);
+    }
 #endif
 
     damage_vehicle(v1, v2, damage1, ang, 0);    
     damage_vehicle(v2, v1, damage2, PI - ang, 0);       
 
-	if (settings.commentator)
-		comment(COS_BIG_SMASH, damage * 3, v1, v2);
+    if (settings.commentator)
+	comment(COS_BIG_SMASH, damage * 3, v1, v2);
 }
 
 /*
@@ -273,83 +295,83 @@ Vehicle *v;
 Bullet *b;
 int dx, dy;
 {
-	float angle;
-	int damage, height;
+    float angle;
+    int damage, height;
 
-	switch (b->type)
+    switch (b->type)
+    {
+      case DISC:
+	set_disc_owner(b, v);
+	if (settings.commentator)
+	    comment(COS_OWNER_CHANGE, COS_IGNORE, v, (Vehicle *) NULL);
+	break;
+      case SLICK:
+	if (v->vdesc->treads != HOVER_TREAD)
 	{
-		case DISC:
-			set_disc_owner(b, v);
-			if (settings.commentator)
-				comment(COS_OWNER_CHANGE, COS_IGNORE, v, (Vehicle *) NULL);
-			break;
-		case SLICK:
-			if (v->vdesc->treads != 4)	/* HOVER */
-			{
-				v->status |= VS_sliding;
-				v->slide_count = 16;
-				if (settings.commentator)
-					comment(COS_BEEN_SLICKED, 0, v, (Vehicle *) NULL);
-			}
-			break;
-		default:
-			/* Determine height of damage */
-			if (b->type == MINE)
-			{
-				height = -1;
-				if (v->vdesc->treads == 4)		/* HOVER */
-					--height;
-			}
-			else if (b->type == SEEKER)
-				height = 1;
-			else
-				height = 0;
-
-			if (height > -2)
-			{
-				Box *bx;
-				int ShouldDamageVehicle = 1;
-				Loc *loc = v->loc;
-
-				bx = &box[loc->grid_x][loc->grid_y];
-				if (bx->type == PEACE)
-				{
-					/* if the vehicle is close enough */
-					if (! (loc->box_x < BOX_WIDTH / 2 - LANDMARK_WIDTH / 2 ||
-						loc->box_x > BOX_WIDTH / 2 + LANDMARK_WIDTH / 2 ||
-						loc->box_y < BOX_HEIGHT / 2 - LANDMARK_HEIGHT / 2 ||
-						loc->box_y > BOX_HEIGHT / 2 + LANDMARK_HEIGHT / 2))
-					{
-						/* if the peace square is for YOUR team */
-						if (bx->team == v->team || bx->team == NEUTRAL)
-						{
-							ShouldDamageVehicle = 0;
-						}
-					}
-				}
-
-				if (ShouldDamageVehicle)
-				{
-					/* Compute angle from center of vehicle that */
-					/* the bullet hits 							 */
-					angle = ATAN2(dy, dx);
-
-					/* Damage the vehicle, finding out how much */
-					/* damage was done  						*/
-					damage = damage_vehicle(v, b->owner,
-                                        weapon_stat[(int)b->type].damage,
-										angle, height);
-				}
-				else
-				{
-					damage = 0;
-				}
-
-				/* Make an explosion of the appropriate type */
-				/* for the damage 							 */
-				explode(b, damage);
-			}
+	    v->status |= VS_sliding;
+	    v->slide_count = 16;
+	    if (settings.commentator)
+		comment(COS_BEEN_SLICKED, 0, v, (Vehicle *) NULL);
 	}
+	break;
+      default:
+	/* Determine height of damage */
+	if (b->type == MINE)
+	{
+	    height = -1;
+	    if (v->vdesc->treads == HOVER_TREAD)
+		--height;
+	}
+	else if (b->type == SEEKER)
+	    height = 1;
+	else
+	    height = 0;
+
+	if (height > -2)
+	{
+	    Box *bx;
+	    int ShouldDamageVehicle = 1;
+	    Loc *loc = v->loc;
+
+	    bx = &real_map[loc->grid_x][loc->grid_y];
+	    if (bx->type == PEACE)
+	    {
+		/* if the vehicle is close enough */
+		if (! (loc->box_x < BOX_WIDTH / 2 - LANDMARK_WIDTH / 2 ||
+		       loc->box_x > BOX_WIDTH / 2 + LANDMARK_WIDTH / 2 ||
+		       loc->box_y < BOX_HEIGHT / 2 - LANDMARK_HEIGHT / 2 ||
+		       loc->box_y > BOX_HEIGHT / 2 + LANDMARK_HEIGHT / 2))
+		{
+		    /* if the peace square is for YOUR team */
+		    if (bx->team == v->team || bx->team == NEUTRAL)
+		    {
+			ShouldDamageVehicle = 0;
+		    }
+		}
+	    }
+
+	    if (ShouldDamageVehicle)
+	    {
+		/* Compute angle from center of vehicle that */
+		/* the bullet hits */
+		angle = ATAN2(dy, dx);
+
+		/* Damage the vehicle, finding out how much */
+		/* damage was done */
+		damage = damage_vehicle(v, b->owner,
+                                        weapon_stat[(int)b->type].damage,
+					angle, height);
+	    }
+	    else
+	    {
+		damage = 0;
+	    }
+
+	    /* Make an explosion of the appropriate type */
+	    /* for the damage */
+	    explode(b, damage);
+	}
+    }
 }
 
 /*
@@ -380,8 +402,10 @@ int grid_x, grid_y;
 		if (damage > 0 && change_box(bbox, grid_x, grid_y))
 		{
 			/* Decrease the outpost's strength;  If it runs out, blow it up */
-			if (bbox->strength > damage)
+			if ((int)bbox->strength > damage)
+            {
 				bbox->strength -= damage;
+            }
 			else
 			{
 				bbox->type = NORMAL;
@@ -401,69 +425,70 @@ int grid_x, grid_y;
 ** now returns TRUE if the bullet still exists, else false
 */
 bul_hit_wall(b, grid_x, grid_y, dir)
-Bullet *b;
-int grid_x, grid_y;				/* coordinates of box containing wall flag */
-WallSide dir;			/* direction bullet hit wall */
+    Bullet *b;
+    int grid_x, grid_y;		/* coordinates of box containing wall flag */
+    WallSide dir;		/* direction bullet hit wall */
 {
-	float dx, dy;
-	int dam;
+    float dx, dy;
+    int dam;
 
-	/* Compute x and y distances from current location to point of contact */
-	switch (dir)
-	{
-		case NORTH:
-			dy = (BOX_HEIGHT - b->loc->box_y) + WALL_THICKNESS;
-			dx = dy * b->xspeed / b->yspeed;
-			break;
-		case SOUTH:
-			dy = -(b->loc->box_y + WALL_THICKNESS);
-			dx = dy * b->xspeed / b->yspeed;
-			break;
-		case WEST:
-			dx = (BOX_WIDTH - b->loc->box_x) + WALL_THICKNESS;
-			dy = dx * b->yspeed / b->xspeed;
-			break;
-		case EAST:
-			dx = -(b->loc->box_x + WALL_THICKNESS);
-			dy = dx * b->yspeed / b->xspeed;
-			break;
-	}
+    /* Compute x and y distances from current location to point of contact */
+    switch (dir)
+    {
+      case NORTH:
+	dy = (BOX_HEIGHT - b->loc->box_y) + WALL_THICKNESS;
+	dx = dy * b->xspeed / b->yspeed;
+	break;
+      case SOUTH:
+	dy = -(b->loc->box_y + WALL_THICKNESS);
+	dx = dy * b->xspeed / b->yspeed;
+	break;
+      case WEST:
+	dx = (BOX_WIDTH - b->loc->box_x) + WALL_THICKNESS;
+	dy = dx * b->yspeed / b->xspeed;
+	break;
+      case EAST:
+	dx = -(b->loc->box_x + WALL_THICKNESS);
+	dy = dx * b->yspeed / b->xspeed;
+	break;
+    }
 
-	/* Change the bullet's location to the point of contact with the wall */
-	update_loc(b->loc, b->loc, dx, dy);
+    /* Change the bullet's location to the point of contact with the wall */
+    update_loc(b->loc, b->loc, dx, dy);
 
-	/* When a disc hits a wall, it stops orbiting its owner */
-	if (b->type == DISC)
-	{
-		/* Notify the commentator if a vehicle lost the disc on a wall */
-		if (settings.commentator && b->owner != (Vehicle *) NULL)
-			comment(COS_OWNER_CHANGE, COS_WALL_HIT, (Vehicle *) NULL, (Vehicle *) NULL);
-		if (b->owner != (Vehicle *) NULL)
-			b->thrower = b->owner->color;
-		set_disc_owner(b, (Vehicle *) NULL);
-	}
+    /* When a disc hits a wall, it stops orbiting its owner */
+    if (b->type == DISC)
+    {
+	/* Notify the commentator if a vehicle lost the disc on a wall */
+	if (settings.commentator && b->owner != (Vehicle *) NULL)
+	    comment(COS_OWNER_CHANGE, COS_WALL_HIT, (Vehicle *) NULL,
+		    (Vehicle *) NULL);
+	if (b->owner != (Vehicle *) NULL)
+	    b->thrower = b->owner->color;
+	set_disc_owner(b, (Vehicle *) NULL);
+    }
     /* If bullet is a disc, bounce the bullet. If wall isn't damaged by bullet,
        and ricochet is on, bounce the bullet, otherwise explode the bullet. */
-	if (b->type == DISC)
+    if (b->type == DISC)
+    {
+	bounce_bullet(b, dir, dx, dy);
+	return TRUE;
+    }
+    else
+    {
+        dam = damage_wall(grid_x, grid_y, dir,
+			  weapon_stat[(int)b->type].damage);
+	if (dam == 0 && settings.si.ricochet == TRUE)
 	{
-		bounce_bullet(b, dir, dx, dy);
-		return TRUE;
+	    bounce_bullet(b, dir, dx, dy);
+	    return TRUE;
 	}
 	else
 	{
-        dam = damage_wall(grid_x, grid_y, dir,
-			  weapon_stat[(int)b->type].damage);
-		if (dam == 0 && settings.si.ricochet == TRUE)
-		{
-			bounce_bullet(b, dir, dx, dy);
-			return TRUE;
-		}
-		else
-		{
-			explode(b, dam);
-			return FALSE;
-		}
+	    explode(b, dam);
+	    return FALSE;
 	}
+    }
 }
 
 /*
@@ -499,39 +524,41 @@ float dx, dy;
 ** Returns amount of damage done to wall.
 */
 damage_wall(x, y, dir, damage)
-int x, y;
-WallSide dir;
-int damage;
+    int x, y;
+    WallSide dir;
+    int damage;
 {
-	Box *b;
-	int dest, wall;
+    Box *b;
+    int dest, wl;
 
-	b = &box[x][y];
+    b = &real_map[x][y];
 
-	/* See if it is a destructible wall */
-	switch (dir)
-	{
-		case NORTH:
-		case SOUTH:
-			dest = b->flags & NORTH_DEST;
-			if (dest == 0)
-				return 0;
-			wall = NORTH_WALL | NORTH_DEST;
-			break;
-		case WEST:
-		case EAST:
-			dest = b->flags & WEST_DEST;
-			if (dest == 0)
-				return 0;
-			wall = WEST_WALL | WEST_DEST;
-	}
+    /* See if it is a destructible wall */
+    switch (dir)
+    {
+      case NORTH:
+      case SOUTH:
+	dest = b->flags & NORTH_DEST;
+	if (dest == 0)
+	    return 0;
+	wl = NORTH_WALL;
+	break;
+      case WEST:
+      case EAST:
+	dest = b->flags & WEST_DEST;
+	if (dest == 0)
+	    return 0;
+	wl = WEST_WALL;
+    }
 
-	/* Percent chance of destruction equals twice the damage */
-	if (rnd(100) < damage << 1)
-		if (change_box(b, x, y))
-			b->flags &= ~wall;
+    /* Percent chance of destruction equals twice the damage */
+    if (rnd(50) < damage && change_box(b, x, y)) {
+	/* note: we do _not_ clear the destructible bit; it is needed to
+	   correctly update the screen */
+	b->flags &= ~wl;
+    }
 
-	return damage;
+    return damage;
 }
 
 /*
@@ -551,214 +578,49 @@ int damage;
 float angle;
 int height;
 {
-	static int hits_off[7] = {0, 0, 1, 1, 2, 2, 3};
-	int *side;
+    static int hits_off[7] = {0, 0, 1, 1, 2, 2, 3};
+    int *side;
     Side s;
 
-	/* Vehicles don't take damage if no_wear is set */
-	if (settings.si.no_wear)
-		return 0;
+    /* Vehicles don't take damage if no_wear is set */
+    if (settings.si.no_wear)
+	return 0;
 
-	side = v->armor.side;
-	/* Find out which side the damage affects */
-	switch (height)
-	{
-		case 0:
-			/* Damage hit either FRONT, BACK, LEFT, or RIGHT side of vehicle */
-            s = find_affected_side(v, angle);   
-			break;
-		case -1:
-			/* Damage hit BOTTOM side of vehicle */
-			s = BOTTOM;
-			break;
-		case 1:
-			/* Damage hit TOP side of vehicle */
-			s = TOP;
-			break;
-	}
+    side = v->armor.side;
+    /* Find out which side the damage affects */
+    switch (height)
+    {
+      case 0:
+	/* Damage hit either FRONT, BACK, LEFT, or RIGHT side of vehicle */
+	s = find_affected_side(v, angle);   
+	break;
+      case -1:
+	/* Damage hit BOTTOM side of vehicle */
+	s = BOTTOM;
+	break;
+      case 1:
+	/* Damage hit TOP side of vehicle */
+	s = TOP;
+	break;
+    }
 
-	/* Subtract the hits off of the armor, and apply the damage */
+    /* Subtract the hits off of the armor, and apply the damage */
     damage = MAX(0, damage - hits_off[v->armor.type]);
-	if (damage > 0)
-	{
+    if (damage > 0)
+    {
         side[(int)s] -= damage;
 
-		/* See if the armor is pierced */
+	/* See if the armor is pierced */
         if (side[(int)s] < 0)
-		{
+	{
             side[(int)s] = 0;
-			kill_vehicle(v, damager);
-		}
+	    kill_vehicle(v, damager);
 	}
-	/* Return the number of points of damage done to the vehicle */
-	return damage;
+    }
+    /* Return the number of points of damage done to the vehicle */
+    return damage;
 }
 
-/*
-** Destroys the victim, giving points to the owner of the killer vehicle.
-** Creates explosions and shrapnel.
-*/
-kill_vehicle(victim, killer)
-Vehicle *victim, *killer;
-{
-	extern float rnd_interval();
-	extern Terminal *terminal[];
-	extern int num_terminals;
-	float points;
-
-	/* If vehicle isn't alive, don't kill him again! */
-	if (!(victim->status & VS_is_alive))
-	{
-		return;
-	}
-	/* * Give a kill, some points and some money to the killer * if one
-	   exists, he is not the victim, and he is either neutral, * or on a
-	   different team from the victim. */
-	if (killer != (Vehicle *) NULL && killer != victim &&
-			(killer->team == 0 || killer->team != victim->team))
-	{
-		killer->owner->kills++;
-		points = 1000 * (float) victim->vdesc->cost / (float) killer->vdesc->cost;
-		killer->owner->score += (int) points;
-		killer->owner->money += (int) points << 3;
-	}
-	/* Kill victim */
-	victim->status &= ~VS_is_alive;
-	victim->death_timer = 17;
-	/* have to do this outer check, because the terminal array only holds the
-	   players. # players + # robots = potential "number" terminal array is
-	   only defined as # players */
-
-	/* Make a tank explosion around the victim */
-	explode_location(victim->loc, 1, EXP_TANK);
-
-	blow_up_vehicle(victim);	/* Make shower of bullets */
-
-	/* Release at fast speed any discs the victim owned */
-	release_discs(victim, DISC_FAST_SPEED, TRUE);
-
-	/* Remove victim's flag from the maze */
-	box[victim->old_loc->grid_x][victim->old_loc->grid_y].flags &= ~victim->flag;
-
-	/* Send out a message about the victim's death */
-	send_death_message(victim, killer);
-}
-
-
-/* create a bunch of bullets from the explosion of the given vehicle */
-
-blow_up_vehicle(victim)
-Vehicle *victim;
-{
-	extern float rnd_interval();
-	Loc *loc = victim->loc;
-	Vdesc *vdesc = victim->vdesc;
-	int engine = vdesc->engine;
-	int body = vdesc->body;
-	int dam;
-	int i;
-    WeaponType wt;
-
-	/* blow up the body and its contents, producing shrapnel based on weight */
-    for (dam = vdesc->weight / 500;
-	 dam > 0;
-	 dam -= weapon_stat[(int)wt].damage)
-	{
-        wt = (WeaponType) rnd(HCANNON + 1);   /* pick a bullet */
-        make_bullet((Vehicle *) NULL, loc, wt,
-		    (Angle) rnd_interval(-PI, PI));
-	}
-	/* maybe spill some lubricants */
-	for (i = rnd(body_stat[body].size / 2 + 1); i-- > 0;)
-		make_bullet((Vehicle *) NULL, loc, SLICK, rnd_interval(-PI, PI));
-
-	/* blow up the ammo (some of it goes off) */
-	for (i = victim->num_weapons; i-- > 0;)
-	{
-		Weapon *w;
-		int j;
-
-		w = &victim->weapon[i];
-		for (j = rnd(w->ammo / 30 + 1); j-- > 0;)
-			make_bullet((Vehicle *) NULL, loc, w->type, rnd_interval(-PI, PI));
-		/* perhaps we should have turned some SLICK into FLAME? */
-	}
-
-	/* blow up the fuel */
-	switch (engine)
-	{
-		case 0:
-		case 1:
-		case 2:
-		case 3:				/* electric */
-			/* battery acid (not dependent on how much "fuel" they had left) */
-			for (i = victim->max_fuel / 200; i-- > 0;)
-				make_bullet((Vehicle *) NULL, loc, ACID, rnd_interval(-PI, PI));
-			break;
-		case 12:				/* fuel cell */
-		case 8:
-		case 9:
-		case 10:
-		case 11:				/* turbine */
-			/* don't bother with fusion, the amount of deuterium it
-			   represents is insignificant when burnt */
-		case 4:
-		case 5:
-		case 6:
-		case 7:				/* combustion */
-			for (i = victim->fuel / 50; i-- > 0;)
-				make_bullet((Vehicle *) NULL, loc, FLAME, rnd_interval(-PI, PI));
-			break;
-	}
-
-	/* blow up the engine */
-	switch (engine)
-	{
-		case 8:
-		case 9:
-		case 10:
-		case 11:				/* turbine */
-			/* flying turbine blades */
-			for (i = engine_stat[engine].power / 200; i-- > 0;)
-				make_bullet((Vehicle *) NULL, loc, HRIFLE, rnd_interval(-PI, PI));
-			break;
-		case 15:				/* fusion */
-			/* plasma */
-			for (i = 10; i-- > 0;)
-				make_bullet((Vehicle *) NULL, loc, FLAME, rnd_interval(-PI, PI));
-			break;
-		case 13:
-		case 14:				/* fission */
-			/* depleted uranium bullets ?!? */
-			for (i = engine_stat[engine].power / 300; i-- > 0;)
-				make_bullet((Vehicle *) NULL, loc, HMG, rnd_interval(-PI, PI));
-			break;
-	}
-}
-
-
-#define EXP_SPREAD 15
-
-/*
-** Makes the given number of explosions of the given type around the location.
-*/
-explode_location(loc, num, type)
-Loc *loc;
-int num, type;
-{
-	Loc exp_loc;
-	int exp_dx, exp_dy;
-	int i;
-
-	for (i = 0; i < num; i++)
-	{
-		exp_loc = *loc;
-		exp_dx = rnd(EXP_SPREAD << 1) - EXP_SPREAD;
-		exp_dy = rnd(EXP_SPREAD << 1) - EXP_SPREAD;
-		update_loc(&exp_loc, &exp_loc, exp_dx, exp_dy);
-		make_explosion(&exp_loc, (unsigned int) type);
-	}
-}
 
 /*
 ** Computes new velocities for the vehicles after a collision with
@@ -846,6 +708,6 @@ float xsp, ysp;
 {
 	vec->xspeed = xsp;
 	vec->yspeed = ysp;
-	vec->speed = sqrt(xsp * xsp + ysp * ysp);
+	vec->speed = hypot(ysp, xsp);
 	vec->angle = ATAN2(ysp, xsp);
 }

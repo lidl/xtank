@@ -2,15 +2,23 @@
 ** This is the object file for the tink bullet explosion
 */
 
-#define tink_views 6
+#ifndef FAST_EXPLOS
+# define tink_views 6
+#else
+# define tink_views 1
+#endif
 
 static Picture tink_pic[tink_views] = {
+#ifndef FAST_EXPLOS
       { 7, 3, 3, 1 },
       { 13, 3, 6, 1 },
       { 21, 13, 10, 6 },
+#endif
       { 21, 15, 10, 7 },
+#ifndef FAST_EXPLOS
       { 17, 5, 8, 2 },
       { 17, 5, 8, 2 } 
+#endif
 };
 
 static Object tink_obj = {
@@ -19,6 +27,7 @@ static Object tink_obj = {
 	tink_pic
 };
 
+#ifndef FAST_EXPLOS
 static unsigned char tink_bits0[] = {
     0x3e, 0x7f, 0x3e};
 
@@ -31,6 +40,7 @@ static unsigned char tink_bits2[] = {
     0x55, 0x01, 0x27, 0xdd, 0x1c, 0x20, 0x55, 0x01, 
     0x00, 0x00, 0x00, 0x88, 0x24, 0x02, 0x44, 0x44, 
     0x04, 0x40, 0x44, 0x00, 0x20, 0x84, 0x00};
+#endif
 
 static unsigned char tink_bits3[] = {
     0x00, 0x04, 0x00, 0x20, 0x84, 0x00, 0x42, 0x44, 
@@ -40,6 +50,7 @@ static unsigned char tink_bits3[] = {
     0x00, 0x44, 0x44, 0x04, 0x42, 0x44, 0x08, 0x20, 
     0x84, 0x00, 0x00, 0x04, 0x00};
 
+#ifndef FAST_EXPLOS
 static unsigned char tink_bits4[] = {
     0x5f, 0x29, 0x01, 0x44, 0xab, 0x00, 0x44, 0x6d, 
     0x00, 0x44, 0xa9, 0x00, 0x44, 0x29, 0x01};
@@ -47,12 +58,17 @@ static unsigned char tink_bits4[] = {
 static unsigned char tink_bits5[] = {
     0x55, 0x29, 0x01, 0x00, 0x82, 0x00, 0x44, 0x29, 
     0x00, 0x00, 0x80, 0x00, 0x44, 0x29, 0x01};
+#endif
 
 static unsigned char *tink_bitmap[tink_views] = {
+#ifndef FAST_EXPLOS
 	tink_bits0,
 	tink_bits1,
 	tink_bits2,
+#endif
 	tink_bits3,
+#ifndef FAST_EXPLOS
 	tink_bits4,
 	tink_bits5
+#endif
 };

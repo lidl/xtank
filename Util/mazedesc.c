@@ -8,7 +8,7 @@
 char pathname[] = "/mit/games/src/vax/xtank/";
 char mazesdir[] = "Mazes/";
 
-  
+
 /* Return values for description loading */
 #define DESC_LOADED     0
 #define DESC_SAVED	1
@@ -41,7 +41,7 @@ char mazesdir[] = "Mazes/";
 #define VEHICLE_0	(1<<8)
 #define ANY_VEHICLE	0x0fffff00
 
-/* Types of boxes */  
+/* Types of boxes */
 #define NORMAL		0
 #define FUEL		1
 #define AMMO		2
@@ -63,19 +63,19 @@ char mazesdir[] = "Mazes/";
 typedef unsigned char Byte;
 
 typedef struct {
-  Byte type;
-  char *name;
-  char *designer;
-  char *desc;
-  Byte *data;
+    Byte type;
+    char *name;
+    char *designer;
+    char *desc;
+    Byte *data;
 } Mdesc;
 
 typedef unsigned int Flag;
 
 typedef struct {
-  Flag flags;			/* bits for walls, inside maze */
-  Byte type;			/* landmark, scroll, goal, outpost, etc. */
-  Byte team;			/* number of team that owns the box */
+    Flag flags;			/* bits for walls, inside maze */
+    Byte type;			/* landmark, scroll, goal, outpost, etc. */
+    Byte team;			/* number of team that owns the box */
 } Box;
 
 Box box[GRID_WIDTH][GRID_HEIGHT];
@@ -84,36 +84,41 @@ Box box[GRID_WIDTH][GRID_HEIGHT];
 ** Loads the maze description from the file "[mazesdir]/[name].m".
 ** Returns one of DESC_LOADED, DESC_NOT_FOUND, DESC_BAD_FORMAT.
 */
-load_mdesc(d,name)
-     Mdesc *d;
-     char *name;
+load_mdesc(d, name)
+    Mdesc *d;
+    char *name;
 {
-  FILE *file;
-  char filename[80];
-  int temp;
+    FILE *file;
+    char filename[80];
+    int temp;
 
 #ifdef UNIX
-  (void) strcpy(filename,pathname);
-  (void) strcat(filename,mazesdir);
-#endif UNIX
+    (void) strcpy(filename, pathname);
+    (void) strcat(filename, mazesdir);
+#endif	/* UNIX */
 #ifdef AMIGA
-   (void) strcpy(filename,"XVDIR:");
-#endif AMIGA
-  (void) strcat(filename,name);
-  (void) strcat(filename,".m");
-  if((file = fopen(filename,"r")) == NULL) return DESC_NOT_FOUND;
+    (void) strcpy(filename, "XVDIR:");
+#endif	/* AMIGA */
+    (void) strcat(filename, name);
+    (void) strcat(filename, ".m");
+    if ((file = fopen(filename, "r")) == NULL)
+	return DESC_NOT_FOUND;
 
-  if((temp = getc(file)) == EOF) return DESC_BAD_FORMAT;
-  d->type = (Byte) temp;
-  if(alloc_str(file,&d->name) == DESC_BAD_FORMAT) return DESC_BAD_FORMAT;
-  if(alloc_str(file,&d->designer) == DESC_BAD_FORMAT) return DESC_BAD_FORMAT;
-  if(alloc_str(file,&d->desc) == DESC_BAD_FORMAT) return DESC_BAD_FORMAT;
-  if(alloc_str(file,(char **) &d->data) == DESC_BAD_FORMAT)
-     return DESC_BAD_FORMAT;
-  
-  (void) fclose(file);
+    if ((temp = getc(file)) == EOF)
+	return DESC_BAD_FORMAT;
+    d->type = (Byte) temp;
+    if (alloc_str(file, &d->name) == DESC_BAD_FORMAT)
+	return DESC_BAD_FORMAT;
+    if (alloc_str(file, &d->designer) == DESC_BAD_FORMAT)
+	return DESC_BAD_FORMAT;
+    if (alloc_str(file, &d->desc) == DESC_BAD_FORMAT)
+	return DESC_BAD_FORMAT;
+    if (alloc_str(file, (char **) &d->data) == DESC_BAD_FORMAT)
+	return DESC_BAD_FORMAT;
 
-  return DESC_LOADED;
+    (void) fclose(file);
+
+    return DESC_LOADED;
 }
 
 /* At most 3 bytes per box in the grid for a maze description */
@@ -125,79 +130,74 @@ load_mdesc(d,name)
 ** Returns DESC_BAD_FORMAT if string is too long or EOF is reached.
 ** Otherwise, returns DESC_LOADED.
 */
-alloc_str(file,strp)
-     FILE *file;
-     char **strp;
+alloc_str(file, strp)
+    FILE *file;
+    char **strp;
 {
-  extern char *malloc();
-  int ret;
-  char temp[MAX_DATA_BYTES];
-  unsigned int len;
+    extern char *malloc();
+    int ret;
+    char temp[MAX_DATA_BYTES];
+    unsigned int len;
 
-  /* Read chars from file into temp up to and including the first '\0' */
-  len = 0;
-  do {
-    if((ret = getc(file)) == EOF || len >= MAX_DATA_BYTES)
-      return DESC_BAD_FORMAT;
-    temp[len++] = (char) ret;
-  } while((char) ret != '\0');
+    /* Read chars from file into temp up to and including the first '\0' */
+    len = 0;
+    do {
+	if ((ret = getc(file)) == EOF || len >= MAX_DATA_BYTES)
+	    return DESC_BAD_FORMAT;
+	temp[len++] = (char) ret;
+    } while ((char) ret != '\0');
 
-  *strp = malloc(len);
-  (void) strcpy(*strp,temp);
+    *strp = malloc(len);
+    (void) strcpy(*strp, temp);
 
-  return DESC_LOADED;
+    return DESC_LOADED;
 }
 
 /*
 ** Makes a maze structure from the specified maze description.
 */
 make_maze(d)
-     Mdesc *d;
+    Mdesc *d;
 {
-  static Box empty_box = {0, 0, 0};
-  Box *b;
-  Byte flags,*dptr;
-  int num_empties;
-  int i,j;
+    static Box empty_box = {0, 0, 0};
+    Box *b;
+    Byte flags, *dptr;
+    int num_empties;
+    int i, j;
 
-  /*
-  ** For each box there is a byte that contains 8 flags.
-  **
-  ** If EMPTY_BOXES is set, the remaining 7 bits give the number of
-  ** empty boxes (excluding this one) to make before reading the next byte.
-  **
-  ** Otherwise,
-  **   If TYPE_EXISTS is set, the next byte is the box type.
-  **   Otherwise, the type is 0.
-  **
-  **   If TEAM_EXISTS is set, the next byte is the box team.
-  **   Otherwise, the team is 0.
-  */
-  num_empties = 0;
-  dptr = d->data;
-  for (i = 0 ; i < GRID_WIDTH ; i++)
-    for (j = 0 ; j < GRID_HEIGHT ; j++) {
-      b = &box[i][j];
+    /* * For each box there is a byte that contains 8 flags. *
+    
+    * If EMPTY_BOXES is set, the remaining 7 bits give the number of * empty
+       boxes (excluding this one) to make before reading the next byte. *
+    
+    * Otherwise, *   If TYPE_EXISTS is set, the next byte is the box type. *
+       Otherwise, the type is 0. *
+    
+    *   If TEAM_EXISTS is set, the next byte is the box team. *   Otherwise,
+       the team is 0. */
+    num_empties = 0;
+    dptr = d->data;
+    for (i = 0; i < GRID_WIDTH; i++)
+	for (j = 0; j < GRID_HEIGHT; j++) {
+	    b = &box[i][j];
 
-      /* Are we making empty boxes? */
-      if(num_empties > 0) {
-	*b = empty_box;
-	num_empties--;
-	continue;
-      }
+	    /* Are we making empty boxes? */
+	    if (num_empties > 0) {
+		*b = empty_box;
+		num_empties--;
+		continue;
+	    }
+	    flags = *(dptr++);
 
-      flags = *(dptr++);
-
-      /* Check for empty box flag */
-      if(flags & EMPTY_BOXES) {
-	*b = empty_box;
-	num_empties = (int) (flags & ~EMPTY_BOXES);
-      }
-      else {
-	/* Get the box values */
-	b->flags = flags & MAZE_FLAGS;
-	b->type = (flags & TYPE_EXISTS) ? *(dptr++) : 0;
-	b->team = (flags & TEAM_EXISTS) ? *(dptr++) : 0;
-      }
-    }
+	    /* Check for empty box flag */
+	    if (flags & EMPTY_BOXES) {
+		*b = empty_box;
+		num_empties = (int) (flags & ~EMPTY_BOXES);
+	    } else {
+		/* Get the box values */
+		b->flags = flags & MAZE_FLAGS;
+		b->type = (flags & TYPE_EXISTS) ? *(dptr++) : 0;
+		b->team = (flags & TEAM_EXISTS) ? *(dptr++) : 0;
+	    }
+	}
 }

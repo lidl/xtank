@@ -1,25 +1,47 @@
-Beta test notes.
+Beta Test Notes.
 
-We need you to:
-  * Tell us what your set-up is (Hardware, OS, config.h).
-  * Tell us if it works.
-  * Tell us if it doesn't work.
-  * Tell us if it doesn't work, and you know why it doesn't
-  * Tell us if it almost works.
-  * Tell us if you like it.
-  * Tell us if you don't like it.
-  * Tell us if it improves your sex life.
+We need you to tell us:
+  * What your setup is (Hardware, OS version, Imakefile.Config -D flags).
+  * If it works.
+  * If it doesn't work.
+  * If it doesn't work, and you know why it doesn't
+  * If it almost works.
+  * If you like it.
+  * If you don't like it.
+  * If it improves your sex life.
 
-The "us" is skeeve@eng.umd.edu and stripes@eng.umd.edu.  Or if you like
-"xtank@eng.umd.edu".  To be added to the "xtank@eng.umd.edu" list send
-the above info to xtank-request@eng.umd.edu along with a request to be
-added to the list.
+The "us" is stripes@eng.umd.edu and lidl@eng.umd.edu.  (With some
+sometimes help from aahz@eng.umd.edu.)  Or if you like
+"xtank@eng.umd.edu" -- this is the list of people who are interested
+enough in xtank to want to hear all about it.  Be forwarned -- this
+list is not for casual game-play comments -- if you are serious about
+working on X-Tank, or want to know what is being considered for
+future releases, this is the correct list.  Normally the list is
+fairly quiet, but after a new release, it may get upwards of 40
+messages a day.  To be added to the "xtank@eng.umd.edu" list send the
+above "Beta Test Notes" info to xtank-request@eng.umd.edu along with
+a request to be added to the list.
 
-Our set-up: sun3's & sun4's SUN_LWP.
+Note: requests to be added that are directed to the main mailing list
+are most likely to be ignored.
 
-By the way, 1.2 used machtype or it's ilk to figure out if it was a VAX or
-a Sun, or whatever.  Since we don't have that, but do have arch, and arch
-is standard in SunOS and BSD4.4 we use it.  If you don't have one, just
-make a shell script that echos the machene type.
+Our set-ups (where we test the release before shipping it):
+    Sun3's running SunOS 4.1 and 4.1.1, using SUN_LWP, sun's cc
+    Sun4's, running SunOS 4.1.1, using SUN_LWP, sun's cc
+    DECstation 3100's, running Ultrix 4.1, using THREAD_MP, gcc 1.37
+    DECstation 5000's, running Ultrix 4.2, using THREAD_MP, gcc 1.37
 
-						- stripes & skeeve
+By the way, previous versions (before 1.2e) used "machtype" or it's
+ilk to figure out if it was a VAX or a Sun, or whatever.  Since that
+wasn't very portable for a while we used "arch", since that was
+"standard" on in SunOS and BSD4.4 we used to use that.  But no
+longer!
+
+Now that we use a real Imakefile, we use the symbol that is defined
+in the X11R4 source tree from MIT.  This is large and ugly, and it
+shows in the Imakefile.  However, it is extremely portable across
+*lots* of architectures.  After all, if you have X, you ought to have
+xtank.  (The only thing that still requires some machine intelligence
+is the Bin/xtank shell script.  You're on your own there, sorry.)
+
+						- stripes & lidl & aahz

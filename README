@@ -1,15 +1,33 @@
 This is the main Xtank directory.  The subdirectories are as follows:
 
-BETA-README 	Beta release notes.
-Doc		Documentation on how to play Xtank
-Help		Files used by the on-line help system in Xtank
-Todo		Ideas for the future, lists from the past
-Mazes		Files describing Mazes used in Xtank (stickybitted)
-Programs	Files for robot programs to load into Xtank (stickybitted)
-README		This file
-Src		Source code for Xtank
-Util		Random utilities used in writing Xtank
-Vehicles	Files describing vehicles used in Xtank (stickybitted)
-xtank		Shell script to run Xtank
-dbgxtank	Shell script to run Xtank under dbx
-to-fix		Working notes for V1.2UMDENG
+BETA-README   Beta release notes.
+Doc           Documentation on how to play Xtank
+Bin           Programs and shell scripts
+Bin/xtank     Shell script to run Xtank
+Bin/dbgxtank  Shell script to run Xtank under dbx
+Help          Files used by the on-line help system in Xtank
+Todo          Ideas for the future, lists from the past
+Mazes         Files describing Mazes used in Xtank (stickybitted)
+Programs      Files for robot programs to load into Xtank (stickybitted)
+Src           Source code for Xtank
+Util          Random utilities used in writing Xtank (largely untested)
+Vehicles      Files describing vehicles used in Xtank (stickybitted)
+README        This file
+
+
+Code is currently being maintained by stripes@eng.umd.edu,
+lidl@eng.umd.edu, and aahz@eng.umd.edu.
+
+There is also a mailing list for code writers: xtank@eng.umd.edu, the 
+mailing list request (additions and deletions) address is
+xtank-request@eng.umd.edu.
+
+To build this UMDENG Xtank distribution:
+
+         1) "chmod +w Imakefile.Config"
+         2) Edit Imakefile.Config for your site
+         3) "xmkmf"
+         4) "make Makefiles"
+         5) "make"
+         6) Edit the xtank shell script in Bin/xtank so it knows
+            where you put the xtank binaries.

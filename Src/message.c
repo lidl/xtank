@@ -6,6 +6,28 @@
 ** message.c
 */
 
+/*
+$Author: rpotter $
+$Id: message.c,v 2.3 1991/02/10 13:51:22 rpotter Exp $
+
+$Log: message.c,v $
+ * Revision 2.3  1991/02/10  13:51:22  rpotter
+ * bug fixes, display tweaks, non-restart fixes, header reorg.
+ *
+ * Revision 2.2  91/01/20  09:58:40  rpotter
+ * complete rewrite of vehicle death, other tweaks
+ * 
+ * Revision 2.1  91/01/17  07:12:35  rpotter
+ * lint warnings and a fix to update_vector()
+ * 
+ * Revision 2.0  91/01/17  02:10:14  rpotter
+ * small changes
+ * 
+ * Revision 1.1  90/12/29  21:02:54  aahz
+ * Initial revision
+ * 
+*/
+
 #include "malloc.h"
 #include "xtank.h"
 #include "graphics.h"
@@ -15,6 +37,8 @@
 #include "map.h"
 #include "vehicle.h"
 #include "terminal.h"
+#include "globals.h"
+#include "assert.h"
 
 
 extern Terminal *term;
@@ -72,10 +96,6 @@ DATA_LOC, DATA_LOC, DATA_MISC, DATA_MISC, DATA_MISC};
 /* Whether or not to initialize the data for each opcode */
 static Byte data_init[MAX_OPCODES] = {
 TRUE, FALSE, FALSE, TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE, FALSE};
-
-extern int num_vehicles;
-extern int end_boundry;
-extern Vehicle *vehicle[];
 
 Menu_int msg_sys[MAX_TERMINALS];
 
@@ -149,24 +169,24 @@ init_msg_terminal(num)
 */
 init_msg_game()
 {
-	extern int num_terminals;
-	extern Terminal *terminal[];
-	Menu_int *sys;
-	int i;
+    extern int num_terminals;
+    extern Terminal *terminal[];
+    Menu_int *sys;
+    int i;
 
-	for (i = 0; i < num_vehicles; i++)
-		vehicle_entries[i] = vehicle[i]->owner->name;
+    for (i = 0; i < num_veh; i++)
+	vehicle_entries[i] = actual_vehicles[i].owner->name;
 
-	for (i = 0; i < num_terminals; i++)
-	{
-		sys = &msg_sys[terminal[i]->num];
-		menu_resize(sys, VEHICLE_MENU, num_vehicles);
-		menu_unhighlight(sys, VEHICLE_MENU);
-		menu_unhighlight(sys, RECIPIENT_MENU);
-		menu_unhighlight(sys, OPCODE_MENU);
-		menu_set_hil(sys, RECIPIENT_MENU, 0);
-		menu_set_hil(sys, OPCODE_MENU, OP_TEXT);
-	}
+    for (i = 0; i < num_terminals; i++)
+    {
+	sys = &msg_sys[terminal[i]->num];
+	menu_resize(sys, VEHICLE_MENU, num_veh);
+	menu_unhighlight(sys, VEHICLE_MENU);
+	menu_unhighlight(sys, RECIPIENT_MENU);
+	menu_unhighlight(sys, OPCODE_MENU);
+	menu_set_hil(sys, RECIPIENT_MENU, 0);
+	menu_set_hil(sys, OPCODE_MENU, OP_TEXT);
+    }
 }
 
 /*
@@ -193,124 +213,125 @@ unsigned int status;
 }
 
 /*
-** Handles input events in game window.  This includes clicks on menus
+** Handles input events in message window.  This includes clicks on menus
 ** and keystrokes for editing messages.
 */
-game_input(event)
+message_input(event)
 Event *event;
 {
-	Vehicle *v;
-	Message *m;
-	char disp[80];
-	int menu, choice, len, i, itemp;
-	Boolean fast_print, fast_erase;
+    Vehicle *v = term->vehicle;
+    Message *m;
+    char disp[80];
+    int menu, choice, len, i, itemp;
+    Boolean fast_print, fast_erase;
 
-	if ((v = term->vehicle) == (Vehicle *) NULL)
-		return GAME_RUNNING;
+    /* can't send messages in observation mode */
+    if (v == NULL || term->observer)
+	return GAME_RUNNING;
 
-	fast_print = fast_erase = FALSE;
-	m = &v->sending;
-	switch (event->type)
+    fast_print = fast_erase = FALSE;
+    m = &v->sending;
+    switch (event->type)
+    {
+      case EVENT_LBUTTON:
+      case EVENT_MBUTTON:
+      case EVENT_RBUTTON:
+	menu = menu_hit(&msg_sys[term->num], event->x, event->y);
+	if (menu == MENU_NULL)
+	    return GAME_RUNNING;
+
+	/* Find out which choice on the menu was selected */
+	menu_hit_p(&msg_sys[term->num], event, &menu, &choice, &itemp);
+
+	switch (menu)
 	{
-		case EVENT_LBUTTON:
-		case EVENT_MBUTTON:
-		case EVENT_RBUTTON:
-			menu = menu_hit(&msg_sys[term->num], event->x, event->y);
-			if (menu == MENU_NULL)
-				return GAME_RUNNING;
+	  case VEHICLE_MENU:
+	    menu_unhighlight(&msg_sys[term->num], RECIPIENT_MENU);
+	    {
+		int j;
 
-			/* Find out which choice on the menu was selected */
-			menu_hit_p(&msg_sys[term->num], event, &menu, &choice, &itemp);
-
-			switch (menu)
-			{
-				case VEHICLE_MENU:
-					menu_unhighlight(&msg_sys[term->num], RECIPIENT_MENU);
-					{
-						int j;
-
-						for (j = 0; j < end_boundry; j++)
-						{
-							if (vehicle[j]->number == choice)
-								break;
-						}
-						assert(j < end_boundry);
-						m->recipient = vehicle[j]->number;
-					}
-					break;
-				case RECIPIENT_MENU:
-					menu_unhighlight(&msg_sys[term->num], VEHICLE_MENU);
-					m->recipient = (choice == 0) ? RECIPIENT_ALL
-						: MAX_VEHICLES + choice - 1;
-					break;
-				case OPCODE_MENU:
-					/* Set opcode and clear data, since it may be bad */
-                    m->opcode = (Opcode) choice;
-					for (i = 0; i < MAX_DATA_LEN; i++)
-						m->data[i] = '\0';
-
-					/* Initialize data with location if opcode desires it */
-                    if (data_init[(int)m->opcode])
-					{
-						m->data[0] = v->loc->grid_x;
-						m->data[1] = v->loc->grid_y;
-					}
-					break;
-				case SEND_MENU:
-					/* Send the current message */
-					send_message(v);
-					break;
-			}
+		for (j = 0; j < num_veh; j++)
+		{
+		    if (actual_vehicles[j].number == choice)
 			break;
-		case EVENT_KEY:
-			if (event->key == '\r')
-			{
-				send_message(v);
-				break;
-			}
+		}
+		assert(j < num_veh);
+		m->recipient = actual_vehicles[j].number;
+	    }
+	    break;
+	  case RECIPIENT_MENU:
+	    menu_unhighlight(&msg_sys[term->num], VEHICLE_MENU);
+	    m->recipient = (choice == 0) ? RECIPIENT_ALL
+		: MAX_VEHICLES + choice - 1;
+	    break;
+	  case OPCODE_MENU:
+	    /* Set opcode and clear data, since it may be bad */
+	    m->opcode = (Opcode) choice;
+	    for (i = 0; i < MAX_DATA_LEN; i++)
+		m->data[i] = '\0';
 
-			/* Ignore text if we are not writing a text message */
-			if (m->opcode != OP_TEXT)
-				return GAME_RUNNING;
-			len = strlen((char *) m->data);
-
-			/* Check for backspace */
-			if (event->key == 127)
-			{
-				if (len > 0)
-				{
-					m->data[len - 1] = '\0';
-					fast_erase = TRUE;
-				}
-				else
-					return GAME_RUNNING;		/* to avoid prompt flicker */
-			}
-			else
-			{
-				/* If the message is full, send it, else turn fast printing
-				   on */
-				m->data[len] = event->key;
-				if (len == MAX_DATA_LEN - 1)
-					send_message(v);
-				else
-					fast_print = TRUE;
-			}
-			break;
+	    /* Initialize data with location if opcode desires it */
+	    if (data_init[(int)m->opcode])
+	    {
+		m->data[0] = v->loc->grid_x;
+		m->data[1] = v->loc->grid_y;
+	    }
+	    break;
+	  case SEND_MENU:
+	    /* Send the current message */
+	    send_message(v);
+	    break;
+	}
+	break;
+      case EVENT_KEY:
+	if (event->key == '\r')
+	{
+	    send_message(v);
+	    break;
 	}
 
-	/* Reformat message since we have changed some part of it */
-	len = format_message(m, disp);
+	/* Ignore text if we are not writing a text message */
+	if (m->opcode != OP_TEXT)
+	    return GAME_RUNNING;
+	len = strlen((char *) m->data);
 
-	/* Special cases for typing a character and erasing a character */
-	if (fast_print)
-		display_mesg2(GAME_WIN, disp + len - 1, len - 1, SENDING_ROW, MSG_FONT);
-	else if (fast_erase)
-		clear_text_rc(GAME_WIN, len, SENDING_ROW, 1, 1, MSG_FONT);
+	/* Check for backspace */
+	if (event->key == 127)
+	{
+	    if (len > 0)
+	    {
+		m->data[len - 1] = '\0';
+		fast_erase = TRUE;
+	    }
+	    else
+		return GAME_RUNNING; /* to avoid prompt flicker */
+	}
 	else
 	{
-		print_message(GAME_WIN, SENDING_ROW, disp);
+	    /* If the message is full, send it, else turn fast printing
+	       on */
+	    m->data[len] = event->key;
+	    if (len == MAX_DATA_LEN - 1)
+		send_message(v);
+	    else
+		fast_print = TRUE;
 	}
-	return GAME_RUNNING;
+	break;
+    }
+
+    /* Reformat message since we have changed some part of it */
+    len = format_message(m, disp);
+
+    /* Special cases for typing a character and erasing a character */
+    if (fast_print)
+	display_mesg2(GAME_WIN, disp + len - 1, len - 1, SENDING_ROW, MSG_FONT);
+    else if (fast_erase)
+	clear_text_rc(GAME_WIN, len, SENDING_ROW, 1, 1, MSG_FONT);
+    else
+    {
+	print_message(GAME_WIN, SENDING_ROW, disp);
+    }
+    return GAME_RUNNING;
 }
 
 /*
@@ -320,25 +341,26 @@ Event *event;
 map_input(event)
 Event *event;
 {
-	Vehicle *v;
+    Vehicle *v = term->vehicle;
 
-	if ((v = term->vehicle) == (Vehicle *) NULL)
-		return GAME_RUNNING;
+    /* can't mess with messages if just an observer */
+    if (term->observer)
+	return GAME_RUNNING;
 
-	if (event->type == EVENT_KEY && event->key == '\r')
-		send_message(v);
+    if (event->type == EVENT_KEY && event->key == '\r')
+	send_message(v);
 
     if (data_type[(int)v->sending.opcode] != DATA_LOC)
-		return GAME_RUNNING;
-
-	if (event->type == EVENT_LBUTTON || event->type == EVENT_MBUTTON ||
-			event->type == EVENT_RBUTTON)
-	{
-		v->sending.data[0] = map2grid(event->x);
-		v->sending.data[1] = map2grid(event->y);
-		display_sending();
-	}
 	return GAME_RUNNING;
+
+    if (event->type == EVENT_LBUTTON || event->type == EVENT_MBUTTON ||
+	event->type == EVENT_RBUTTON)
+    {
+	v->sending.data[0] = map2grid(event->x);
+	v->sending.data[1] = map2grid(event->y);
+	display_sending();
+    }
+    return GAME_RUNNING;
 }
 
 /*
@@ -351,37 +373,37 @@ set_message_data(v, event)
 Vehicle *v;
 Event *event;
 {
-	int dx, dy, dist, min_dist, min_num, x, y, dtype, i;
+    int dx, dy, dist, min_dist, min_num, x, y, dtype, i;
 
     dtype = data_type[(int)v->sending.opcode];
-	if (dtype == DATA_COMB)
-	{
+    if (dtype == DATA_COMB)
+    {
         /* Find the vehicle on screen with shortest distance to that location
-	   */
-		min_dist = (1 << 31) - 1;
-		for (i = 0; i < num_vehicles; i++)
-		{
-			x = vehicle[i]->loc->screen_x[term->num];
-			y = vehicle[i]->loc->screen_y[term->num];
-			if (x < 0 || x >= ANIM_WIN_WIDTH || y < 0 || y >= ANIM_WIN_HEIGHT)
-				continue;
-			dx = x - event->x;
-			dy = y - event->y;
-			dist = dx * dx + dy * dy;
-			if (dist < min_dist)
-			{
-				min_dist = dist;
-				min_num = vehicle[i]->number;
-			}
-		}
-		v->sending.data[0] = min_num;
-	}
-	else if (dtype == DATA_LOC)
+	 */
+	min_dist = (1 << 31) - 1;
+	for (i = 0; i < num_veh_alive; i++)
 	{
-		v->sending.data[0] = (term->loc.x + event->x) / BOX_WIDTH;
-		v->sending.data[1] = (term->loc.y + event->y) / BOX_HEIGHT;
+	    x = live_vehicles[i]->loc->screen_x[term->num];
+	    y = live_vehicles[i]->loc->screen_y[term->num];
+	    if (x < 0 || x >= ANIM_WIN_WIDTH || y < 0 || y >= ANIM_WIN_HEIGHT)
+		continue;
+	    dx = x - event->x;
+	    dy = y - event->y;
+	    dist = dx * dx + dy * dy;
+	    if (dist < min_dist)
+	    {
+		min_dist = dist;
+		min_num = live_vehicles[i]->number;
+	    }
 	}
-	display_sending();
+	v->sending.data[0] = min_num;
+    }
+    else if (dtype == DATA_LOC)
+    {
+	v->sending.data[0] = (term->loc.x + event->x) / BOX_WIDTH;
+	v->sending.data[1] = (term->loc.y + event->y) / BOX_HEIGHT;
+    }
+    display_sending();
 }
 
 /*
@@ -457,90 +479,89 @@ Vehicle *victim, *killer;
 dispatch_message(m)
 Message *m;
 {
-	int rec, i;
-	int sender_dead;
-	extern int end_boundry;
+    int rec, i;
+    int sender_dead;
 
-	/* * Sender is either a vehicle number, a number indicating anonymous, *
-	   or a number indicating no sender.  Commentator sender is neutral. * No
-	   sender means a bad message. */
-	if (m->sender == SENDER_COM)
-		m->sender_team = 0;
-	else if (m->sender == SENDER_DEAD)
-	{
-
-#ifdef WEIRD_BUG
-		printf("sender dead\n");
-#endif
-
-		sender_dead = m->data[0];
-		m->sender_team = SENDER_NONE;
-		for (i = 0; i < end_boundry; i++)
-		{
-			if (sender_dead == vehicle[i]->number)
-				m->sender_team = vehicle[i]->team;
-		}
-	}
-	else
-	{
-		m->sender_team = SENDER_NONE;
-		for (i = 0; i < num_vehicles; i++)
-		{
-			if (m->sender == vehicle[i]->number)
-				m->sender_team = vehicle[i]->team;
-		}
-	}
-	if (m->sender_team == SENDER_NONE)
-		return;
+    /* Sender is either a vehicle number, a number indicating anonymous, or a
+       number indicating no sender.  Commentator sender is neutral.  No sender
+       means a bad message. */
+    if (m->sender == SENDER_COM)
+	m->sender_team = 0;
+    else if (m->sender == SENDER_DEAD)
+    {
 
 #ifdef WEIRD_BUG
-	printf("didn't quit\n");
+	printf("sender dead\n");
 #endif
 
-	/* * Recipient is either a vehicle number, a special number indicating *
-	   all vehicles, or a team number + MAX_VEHICLES. */
-	rec = m->recipient;
-	if (rec >= 0 && rec < num_vehicles)
+	sender_dead = m->data[0];
+	m->sender_team = SENDER_NONE;
+	for (i = 0; i < num_veh; i++)
 	{
-		for (i = 0; i < num_vehicles; i++)
-			if (rec == vehicle[i]->number)
-			{
-				receive_message(vehicle[i], m);
-				break;
-			}
+	    if (sender_dead == actual_vehicles[i].number)
+		m->sender_team = actual_vehicles[i].team;
 	}
-	else if (rec == RECIPIENT_ALL)
+    }
+    else
+    {
+	m->sender_team = SENDER_NONE;
+	for (i = 0; i < num_veh; i++)
 	{
-		sender_dead = m->sender;
-		if (sender_dead == SENDER_DEAD)
-		{
-			m->sender = m->data[0];
+	    if (m->sender == actual_vehicles[i].number)
+		m->sender_team = actual_vehicles[i].team;
+	}
+    }
+    if (m->sender_team == SENDER_NONE)
+	return;
+
+#ifdef WEIRD_BUG
+    printf("didn't quit\n");
+#endif
+
+    /* Recipient is either a vehicle number, a special number indicating all
+       vehicles, or a team number + MAX_VEHICLES. */
+    rec = m->recipient;
+    if (rec >= 0 && rec < num_veh)
+    {
+	for (i = 0; i < num_veh_alive; i++)
+	    if (rec == live_vehicles[i]->number)
+	    {
+		receive_message(live_vehicles[i], m);
+		break;
+	    }
+    }
+    else if (rec == RECIPIENT_ALL)
+    {
+	sender_dead = m->sender;
+	if (sender_dead == SENDER_DEAD)
+	{
+	    m->sender = m->data[0];
             memcpy((char *)m->data, (char *)(m->data + 1), MAX_DATA_LEN - 1);
-		}
+	}
 
-		for (i = 0; i < num_vehicles; i++)
-		{
+	for (i = 0; i < num_veh_alive; i++)
+	{
 
 #ifdef WEIRD_BUG
-			printf("sending a %d message to #%d from #%d\n", m->opcode, i, m->sender);
+	    printf("sending a %d message to #%d from #%d\n", m->opcode, i, m->sender);
 #endif
 
-			if (sender_dead == SENDER_DEAD)
-			{
-				m->recipient = vehicle[i]->number;
-			}
+	    if (sender_dead == SENDER_DEAD)
+	    {
+		m->recipient = live_vehicles[i]->number;
+	    }
 
-			receive_message(vehicle[i], m);
-		}
+	    receive_message(live_vehicles[i], m);
 	}
-	else
-	{
-		/* Convert recipient to a team number */
-		rec -= MAX_VEHICLES;
-		for (i = 0; i < num_vehicles; i++)
-			if (rec == vehicle[i]->team)
-				receive_message(vehicle[i], m);
-	}
+    }
+    else
+    {
+	/* Convert recipient to a team number */
+	rec -= MAX_VEHICLES;
+	for (i = 0; i < num_veh_alive; i++)
+	    if (rec == live_vehicles[i]->team)
+		receive_message(live_vehicles[i], m);
+    }
 }
 
 #define inc_index(i) { if(++(i) == MAX_MESSAGES) (i) = 0; }
@@ -588,65 +609,66 @@ Message *m;
 display_msg(status)
 unsigned int status;
 {
-	Vehicle *v;
-	char disp[80];
-	int num;
+    Vehicle *v = term->vehicle;
+    char disp[80];
+    int num;
 
-	/* Check for being exposed */
-	check_expose(MSG_WIN, status);
+    /* Check for being exposed */
+    check_expose(MSG_WIN, status);
 
-	/* If we are turning this window off or on, clear it */
-	if (status != REDISPLAY)
-		clear_window(MSG_WIN);
+    /* If we are turning this window off or on, clear it */
+    if (status != REDISPLAY)
+	clear_window(MSG_WIN);
 
-	if ((v = term->vehicle) == (Vehicle *) NULL)
-		return;
+    /* no messages if no vehicle being tracked */
+    if (v == (Vehicle *) NULL)
+	return;
 
-	switch (status)
+    switch (status)
+    {
+      case ON:
+	/* Display all the messages and highlight the next open line */
+	for (num = 0; num < MAX_MESSAGES; num++)
 	{
-		case ON:
-			/* Display all the messages and highlight the next open line */
-			for (num = 0; num < MAX_MESSAGES; num++)
-			{
-				if (num == v->next_message)
-				{
-					hl_message(MSG_WIN, num);
-				}
-				else
-				{
-					format_message(&v->received[num], disp);
-					display_mesg(MSG_WIN, disp, num, MSG_FONT);
-				}
-			}
-			hl_message(MSG_WIN, v->next_message);
-			break;
-		case REDISPLAY:
-			/* If there are new messages, display them and highlight the next
-			   line */
-			if (v->new_messages > 0 && !v->death_timer)
-			{
-				num = v->next_message - v->new_messages;
-				if (num < 0)
-					num = MAX_MESSAGES + num;
+	    if (num == v->next_message)
+	    {
+		hl_message(MSG_WIN, num);
+	    }
+	    else
+	    {
+		format_message(&v->received[num], disp);
+		display_mesg(MSG_WIN, disp, num, MSG_FONT);
+	    }
+	}
+	hl_message(MSG_WIN, v->next_message);
+	break;
+      case REDISPLAY:
+	/* If there are new messages, display them and highlight the next
+	   line */
+	if (v->new_messages > 0 && !v->death_timer)
+	{
+	    num = v->next_message - v->new_messages;
+	    if (num < 0)
+		num = MAX_MESSAGES + num;
 
 #ifdef TRACE_MESSAGE
-				printf("\nprinting %d messages starting at %d\n\n", v->new_messages, num);
+	    printf("\nprinting %d messages starting at %d\n\n", v->new_messages, num);
 #endif
 
-				while (num != v->next_message)
-				{
-					if (v->received[num].recipient != RECIPIENT_ALL)
-					{
-						beep_window();
-					}
-					format_message(&v->received[num], disp);
-					print_message(MSG_WIN, num, disp);
-					inc_index(num);
-				}
-				hl_message(MSG_WIN, num);
-			}
-			break;
-	}							/* end switch */
+	    while (num != v->next_message)
+	    {
+		if (v->received[num].recipient != RECIPIENT_ALL)
+		{
+		    beep_window();
+		}
+		format_message(&v->received[num], disp);
+		print_message(MSG_WIN, num, disp);
+		inc_index(num);
+	    }
+	    hl_message(MSG_WIN, num);
+	}
+	break;
+    }				/* end switch */
 }
 
 /* Macros for adding strings and numbers to the display string */
@@ -668,31 +690,31 @@ unsigned int status;
     disp[i++] = (char) str[j++];
 
 #define print_combatant(num) \
-	{\
-		int j;\
-		for (j = 0; j < end_boundry; j++)\
-		{\
-			if (vehicle[j]->number == num)\
-				break;\
-		}\
-		if (j == end_boundry) { \
-			printf("assert failed on num = %d %c\n",num,num); \
-			printf("%s\n", m->data);\
-			printf("%x, %x, %x, %x, %x, %x, %x, %x, %x, %x, %x\n",\
-				*(m->data), *(m->data+1), *(m->data+2), *(m->data+3),\
-				*(m->data+4), *(m->data+5), *(m->data+6), *(m->data+7),\
-				*(m->data+8), *(m->data+9), *(m->data+10));\
-			printf("m->opcode %d, sender %d, team %d, recp %d\n", \
-				m->opcode, m->sender, m->sender_team, m->recipient); \
-			printf("Failure in print_combatant, attempting to continue\n");\
-			disp[i++] = 'A'; \
-			disp[i++] = 'F'; \
-			disp[i++] = 'U'; \
-		} else {\
-			disp[i++] = team_char[vehicle[j]->team]; \
-			print_num(num); \
-		} \
-	}
+{ \
+    int fooj; \
+ \
+    for (fooj = 0; fooj < num_veh; fooj++) { \
+	if (actual_vehicles[fooj].number == num) \
+	    break; \
+    } \
+    if (fooj == num_veh) {  \
+	printf("assert failed on num = %d %c\n",num,num);  \
+	printf("%s\n", m->data); \
+	printf("%x, %x, %x, %x, %x, %x, %x, %x, %x, %x, %x\n", \
+	       *(m->data), *(m->data+1), *(m->data+2), *(m->data+3), \
+	       *(m->data+4), *(m->data+5), *(m->data+6), *(m->data+7), \
+	       *(m->data+8), *(m->data+9), *(m->data+10)); \
+	printf("m->opcode %d, sender %d, team %d, recp %d\n",  \
+	       m->opcode, m->sender, m->sender_team, m->recipient);  \
+	printf("Failure in print_combatant, attempting to continue\n"); \
+	disp[i++] = 'A';  \
+	disp[i++] = 'F';  \
+	disp[i++] = 'U';  \
+    } else { \
+	disp[i++] = team_char[actual_vehicles[fooj].team];  \
+	print_num(num);  \
+    }  \
+}
 
 /*
 ** Formats message into a string    {sender}->{recipient} {opcode} {data}
@@ -702,103 +724,103 @@ format_message(m, disp)
 Message *m;
 char *disp;
 {
-	extern char team_char[];
-	Byte *data;
+    extern char team_char[];
+    Byte *data;
     int rec, sen, i, j;
     Opcode op;
 
-	i = 0;
-	/* Add sender id characters */
-	sen = m->sender;
-	if (sen == SENDER_NONE)
-	{
-		/* No sender, message doesn't exist */
-		disp[i] = '\0';
-		return 0;
-	}
-	if (sen == SENDER_COM)
-	{
-		/* Commentator sender */
-		disp[i++] = 'C';
-		disp[i++] = 'O';
-		disp[i++] = 'M';
-	}
-	else
-	{
-		/* Vehicle sender */
-		print_combatant(sen);
-	}
+    i = 0;
+    /* Add sender id characters */
+    sen = m->sender;
+    if (sen == SENDER_NONE)
+    {
+	/* No sender, message doesn't exist */
+	disp[i] = '\0';
+	return 0;
+    }
+    if (sen == SENDER_COM)
+    {
+	/* Commentator sender */
+	disp[i++] = 'C';
+	disp[i++] = 'O';
+	disp[i++] = 'M';
+    }
+    else
+    {
+	/* Vehicle sender */
+	print_combatant(sen);
+    }
 
-	/* Add arrow */
-	disp[i++] = '-';
-	disp[i++] = '>';
+    /* Add arrow */
+    disp[i++] = '-';
+    disp[i++] = '>';
 
-	/* Add receiver id characters */
-	rec = m->recipient;
-	if (rec == RECIPIENT_ALL)
-	{
-		/* All vehicles received message */
-		disp[i++] = 'A';
-		disp[i++] = 'L';
-		disp[i++] = 'L';
-	}
-	else if (rec >= MAX_VEHICLES)
-	{
-		/* Team received message */
-		disp[i++] = team_char[rec - MAX_VEHICLES];
-	}
-	else
-	{
-		/* Vehicle received message */
-		print_combatant(rec);
-	}
+    /* Add receiver id characters */
+    rec = m->recipient;
+    if (rec == RECIPIENT_ALL)
+    {
+	/* All vehicles received message */
+	disp[i++] = 'A';
+	disp[i++] = 'L';
+	disp[i++] = 'L';
+    }
+    else if (rec >= MAX_VEHICLES)
+    {
+	/* Team received message */
+	disp[i++] = team_char[rec - MAX_VEHICLES];
+    }
+    else
+    {
+	/* Vehicle received message */
+	print_combatant(rec);
+    }
 
-	disp[i++] = ' ';
+    disp[i++] = ' ';
 
-	/* Add body of message, constructed from opcode and data */
-	op = m->opcode;
-	data = m->data;
+    /* Add body of message, constructed from opcode and data */
+    op = m->opcode;
+    data = m->data;
     print_str(op_str[(int)op]);
     switch (data_type[(int)op])
+    {
+      case DATA_LOC:
+	/* Data is an (x,y) location */
+	disp[i++] = '(';
+	print_num(data[0])
+	    disp[i++] = ',';
+	print_num(data[1])
+	    disp[i++] = ')';
+	break;
+      case DATA_COMB:
+	/* Data is a combatant number */
+	print_combatant(data[0]);
+	break;
+      case DATA_MISC:
+	if (op == OP_DEATH)
 	{
-		case DATA_LOC:
-			/* Data is an (x,y) location */
-			disp[i++] = '(';
-			print_num(data[0])
-				disp[i++] = ',';
-			print_num(data[1])
-				disp[i++] = ')';
-			break;
-		case DATA_COMB:
-			/* Data is a combatant number */
-			print_combatant(data[0]);
-			break;
-		case DATA_MISC:
-			if (op == OP_DEATH)
-			{
-				print_combatant(data[0]);
-				if (data[2] == SENDER_NONE)
-				{
-					print_str(" died");
-				}
-				else
-				{
-					print_str(" was kill ");
-					print_num(data[1]);
-					print_str(" for ");
-					print_combatant(data[2]);
-				}
-			}
-			else
-			{
-				/* Data is a string */
-				print_str(data)
-			}
-			break;
+	    print_combatant(data[0]);
+	    if (data[2] == SENDER_NONE)
+	    {
+		print_str(" died");
+	    }
+	    else
+	    {
+		print_str(" was kill ");
+		print_num(data[1]);
+		print_str(" for ");
+		print_combatant(data[2]);
+	    }
 	}
+	else
+	{
+	    /* Data is a string */
+	    print_str(data)
+	    }
+	break;
+    }
 
-	disp[i] = '\0';
-	return i;
+    disp[i] = '\0';
+    return i;
 }
 
 /*

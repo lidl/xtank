@@ -1,37 +1,37 @@
-Xtank is available via ftp on ftp.eng.umd.edu as /xtank/xtank.1.2e.tar.Z
+Send comments to xtank@eng.umd.edu                              29 Sept 1991
 
-This is test version 1.2e of Xtank
+The latest Xtank beta release is available via FTP on ftp.eng.umd.edu.
 
-Documentation can be found in ....../xtank/Doc
-essential.dvi How to play xtank       vdesign.dvi  How to design vehicles
-mdesign.dvi   How to design mazes     xtanklib.dvi How to write robot programs
-dvi2ps -r ....../xtank/Doc/essential.dvi | lpr -Ppname
-is the command to print out the file essential.dvi to the printer named pname.
-
-11/12/90       Xtank Developers    send comments to xtank@eng.umd.edu
+Documentation can be found in xtank/Doc:
+	essential  - How to play xtank
+	mdesign    - How to design mazes
+	vdesign    - How to design vehicles
+	xtanklib   - How to write robot programs
 
 UMD-ENG Hacks (partial list):
-----------------------------
     Screenery
-    =========
         Shocker Walls   - Electrified walls really hurt.  Scalable (0-10).
         Peace           - Bullets ting while on YOUR peace square.
-
     Treads
-    ======
         Hover           - Experimental.
-
     Specials
-    ========
-        Repair          - Costs ALOT, when stopped, swaps fuel for armor.
+        Repair          - Costs ALOT, when not moving, swaps fuel for armor.
         RamPlate        - When you hit someone with your FRONT, 
                           you cause extra damage and take less.
                           The RamPlate weighs half that of your front armor.
         Navigation      - Makes driving backwards much easier.  You
                           head toward the direction you choose,
                           rather than away from it.
-
     Misc
-    ====
         Scrolling menus - Kinda obvious
         Xdefaults       - Documented elsewhere
+
+Contibuted Hacks (partial list):
+    X11 Optimization and generally cluefull hacking
+        Line Batching   - Aaron Eastlund
+        Point Batching
+        Stingy Redraw
+        Blank Nametags
+    Robots:
+        Pzkw_I          - Hans Jeppesen
+        RacerX          - Robert Potter

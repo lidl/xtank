@@ -2,19 +2,27 @@
 ** This is the object file for the soft bullet explosion
 */
 
-#define soft_views 10
+#ifndef FAST_EXPLOS
+# define soft_views 10
+#else
+# define soft_views 1
+#endif
 
 static Picture soft_pic[soft_views] = {
+#ifndef FAST_EXPLOS
       { 7, 7, 3, 3 },
       { 13, 13, 6, 6 },
       { 19, 19, 9, 9 },
       { 27, 28, 13, 13 },
       { 33, 33, 16, 16 },
       { 35, 35, 17, 17 },
+#endif
       { 33, 33, 16, 16 },
+#ifndef FAST_EXPLOS
       { 29, 30, 14, 14 },
       { 31, 32, 15, 15 },
       { 27, 26, 12, 13 } 
+#endif
 };
 
 static Object soft_obj = {
@@ -23,6 +31,7 @@ static Object soft_obj = {
 	soft_pic
 };
 
+#ifndef FAST_EXPLOS
 static unsigned char soft0_bits[] = {
     0x14, 0x2a, 0x5d, 0x3e, 0x5d, 0x2a, 0x14};
 
@@ -104,6 +113,7 @@ static unsigned char soft5_bits[] = {
     0x02, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
     0x00, 0x24, 0x00, 0x00, 0x00, 0x00, 0x00, 0x88, 
     0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00};
+#endif
 
 static unsigned char soft6_bits[] = {
     0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x04, 0x80, 
@@ -128,6 +138,7 @@ static unsigned char soft6_bits[] = {
     0x01, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
     0x00, 0x10, 0x00, 0x00, 0x00};
 
+#ifndef FAST_EXPLOS
 static unsigned char soft7_bits[] = {
     0x00, 0x10, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 
     0x20, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 
@@ -177,16 +188,21 @@ static unsigned char soft9_bits[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
     0x00, 0x10, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 
     0x00, 0x00, 0x00, 0x00, 0x80, 0x00, 0x04, 0x00};
+#endif
 
 static unsigned char *soft_bitmap[soft_views] = {
+#ifndef FAST_EXPLOS
 	soft0_bits,
 	soft1_bits,
 	soft2_bits,
 	soft3_bits,
 	soft4_bits,
 	soft5_bits,
+#endif
 	soft6_bits,
+#ifndef FAST_EXPLOS
 	soft7_bits,
 	soft8_bits,
 	soft9_bits
+#endif
 };

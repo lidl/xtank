@@ -6,6 +6,28 @@
 ** update.c
 */
 
+/*
+$Author: rpotter $
+$Id: update.c,v 2.3 1991/02/10 13:51:55 rpotter Exp $
+
+$Log: update.c,v $
+ * Revision 2.3  1991/02/10  13:51:55  rpotter
+ * bug fixes, display tweaks, non-restart fixes, header reorg.
+ *
+ * Revision 2.2  91/01/20  09:59:14  rpotter
+ * complete rewrite of vehicle death, other tweaks
+ * 
+ * Revision 2.1  91/01/17  07:13:18  rpotter
+ * lint warnings and a fix to update_vector()
+ * 
+ * Revision 2.0  91/01/17  02:10:43  rpotter
+ * small changes
+ * 
+ * Revision 1.1  90/12/29  21:03:14  aahz
+ * Initial revision
+ * 
+*/
+
 #include "malloc.h"
 #include "xtank.h"
 #include "disc.h"
@@ -14,14 +36,13 @@
 #include "sysdep.h"
 #include "bullet.h"
 #include "terminal.h"
+#include "globals.h"
 
 extern Boolean intersect_wall();
 
-extern Map box;
+extern Map real_map;
 extern int frame;
 extern Settings settings;
-extern int num_vehicles;
-extern Vehicle *vehicle[];
 extern Eset *eset;
 extern Bset *bset;
 extern Weapon_stat weapon_stat[];
@@ -38,28 +59,28 @@ update_loc(old_loc, loc, dx, dy)
 Loc *old_loc, *loc;
 int dx, dy;
 {
-		(loc)->x = (old_loc)->x + dx;
-		(loc)->y = (old_loc)->y + dy;
+    (loc)->x = (old_loc)->x + dx;
+    (loc)->y = (old_loc)->y + dy;
 
-		(loc)->box_x = (old_loc)->box_x + dx;
-		(loc)->box_y = (old_loc)->box_y + dy;
+    (loc)->box_x = (old_loc)->box_x + dx;
+    (loc)->box_y = (old_loc)->box_y + dy;
 
     if ((loc)->box_x >= BOX_WIDTH) {
-			(loc)->box_x -= BOX_WIDTH;
-			(loc)->grid_x = (old_loc)->grid_x + 1;
+	(loc)->box_x -= BOX_WIDTH;
+	(loc)->grid_x = (old_loc)->grid_x + 1;
     } else if ((loc)->box_x < 0) {
-			(loc)->box_x += BOX_WIDTH;
-			(loc)->grid_x = (old_loc)->grid_x - 1;
+	(loc)->box_x += BOX_WIDTH;
+	(loc)->grid_x = (old_loc)->grid_x - 1;
     } else (loc)->grid_x = (old_loc)->grid_x;
 
     if ((loc)->box_y >= BOX_HEIGHT) {
-			(loc)->box_y -= BOX_HEIGHT;
-			(loc)->grid_y = (old_loc)->grid_y + 1;
+	(loc)->box_y -= BOX_HEIGHT;
+	(loc)->grid_y = (old_loc)->grid_y + 1;
     } else if ((loc)->box_y < 0) {
-			(loc)->box_y += BOX_HEIGHT;
-			(loc)->grid_y = (old_loc)->grid_y - 1;
+	(loc)->box_y += BOX_HEIGHT;
+	(loc)->grid_y = (old_loc)->grid_y - 1;
     } else (loc)->grid_y = (old_loc)->grid_y;
-		}
+}
 
 #endif							/* AMIGA */
 
@@ -67,207 +88,196 @@ int dx, dy;
 ** Computes the state of the specified vehicle for one frame.
 */
 update_vehicle(v)
-Vehicle *v;
+    Vehicle *v;
 {
-	Loc *loc, *old_loc;
-	Vector *vector;
-	Box *b;
-	float xadj, yadj;
-	int i;
+    Loc *loc, *old_loc;
+    Vector *vector;
+    Box *b;
+    float xadj, yadj;
+    int i;
 
-	vector = &v->vector;
+    vector = &v->vector;
 
-	/* Decrement all weapon reload counters */
-	if (v->num_weapons > 0)
-		for (i = 0; i < v->num_weapons; i++)
-			if (v->weapon[i].reload_counter > 0)
-				v->weapon[i].reload_counter--;
+    /* Decrement all weapon reload counters */
+    if (v->num_weapons > 0)
+	for (i = 0; i < v->num_weapons; i++)
+	    if (v->weapon[i].reload_counter > 0)
+		v->weapon[i].reload_counter--;
 
-	/* Decrement fuel if the settings allow it */
-	if (v->fuel > 0)
-	{
-		if (!settings.si.no_wear)
-		{
-			v->fuel -= FUEL_CONSUME * MAX_SPEED *
-				((vector->drive * vector->drive) /
-				 (v->vdesc->max_speed * v->vdesc->max_speed));
-		}
+    /* Decrement fuel if the settings allow it */
+    if (v->fuel > 0) {
+	if (!settings.si.no_wear) {
+	    v->fuel -= FUEL_CONSUME * MAX_SPEED *
+		    ((vector->drive * vector->drive) /
+		     (v->vdesc->max_speed * v->vdesc->max_speed));
 	}
-	else
-		v->fuel = 0;
+    } else
+	v->fuel = 0;
 
-	/* Decrement heat by heat_sinks every five frames */
-	if ((frame % 5) == 0)
-	{
-		v->heat -= v->vdesc->heat_sinks + 1;
-		if (v->heat < 0)
-			v->heat = 0;
-	}
-	/* Stop vehicle from sliding every 16 frames */
-	if (v->status & VS_sliding)
-	{
-		if (!v->slide_count--)
-			v->status &= ~VS_sliding;
-	}
+    /* Decrement heat by heat_sinks every five frames */
+    if ((frame % 5) == 0) {
+	v->heat -= v->vdesc->heat_sinks + 1;
+	if (v->heat < 0)
+	    v->heat = 0;
+    }
+    /* Stop vehicle from sliding every 16 frames */
+    if (v->status & VS_sliding) {
+	if (!v->slide_count--)
+	    v->status &= ~VS_sliding;
+    }
+    /* Update vector */
+    update_vector(v);
 
-	/* Update vector */
-	update_vector(v);
+    /* Get pointer to box vehicle is in */
+    b = &real_map[v->loc->grid_x][v->loc->grid_y];
 
-	/* Get pointer to box vehicle is in */
-	b = &box[v->loc->grid_x][v->loc->grid_y];
+    /* Handle interesting box types after xspeed and yspeed calculation */
+    box_type_check(v, b, &xadj, &yadj);
 
-	/* Handle interesting box types after xspeed and yspeed calculation */
-	box_type_check(v, b, &xadj, &yadj);
+    /* Update location */
+    loc = v->old_loc;
+    v->old_loc = old_loc = v->loc;
+    v->loc = loc;
 
-	/* Update location */
-	loc = v->old_loc;
-	v->old_loc = old_loc = v->loc;
-	v->loc = loc;
+    update_loc(old_loc, loc, vector->xspeed + xadj, vector->yspeed + yadj);
 
-	update_loc(old_loc, loc, vector->xspeed + xadj, vector->yspeed + yadj);
-
-	/* Update turrets */
-	if (v->num_turrets > 0)
-		for (i = 0; i < v->num_turrets; i++)
-			update_turret(&v->turret[i]);
+    /* Update turrets */
+    if (v->num_turrets > 0)
+	for (i = 0; i < v->num_turrets; i++)
+	    update_turret(&v->turret[i]);
 }
 
-/*
-** Updates the motion vector for the vehicle.
-*/
+
+/* Updates the motion vector for the vehicle.  The model is designed for
+   regular tank treads, and is really not realistic for hover "treads".
+   Rotation handling is not realistic for any treads. */
+
 update_vector(v)
-Vehicle *v;
+    Vehicle *v;
 {
-	Vector *vector = &v->vector;
-	float turning_rate;			/* fastest they can turn at current speed */
-	float friction;				/* friction with the ground */
-	float heading_diff;			/* difference between direction it is moving
-								   and direction it is pointing */
-	float roll_speed;			/* how fast it is rolling forward */
-	float slide_speed;			/* how fast is is sliding sideways */
-	float accel_lim;			/* the limit to acceleration imposed by
-								   ground and tread friction */
-	float desired_acc;			/* how much more speed the driver wants */
+    Vector *vector = &v->vector;
+    float turning_rate;		/* fastest they can turn at current speed */
+    float friction;		/* friction with the ground */
+    float heading_diff;		/* difference between direction it is moving
+				   and direction it is pointing */
+    float roll_speed;		/* how fast it is rolling forward */
+    float slide_speed;		/* how fast is is sliding sideways */
+    float accel_lim;		/* the limit to acceleration imposed by ground
+				   and tread friction */
+    float desired_acc;		/* how much more speed the driver wants */
 
 
-	/* don't let them turn or accelerate if they are slicked with oil */
-	if (v->status & VS_sliding)
-		return;
+    /* don't let them turn or accelerate if they are slicked with oil */
+    if (v->status & VS_sliding)
+	return;
 
-	/* Update heading */
+    /* Update heading */
 
-	if (v->fuel > 0)
-	{
-        int spd = 0;
+    if (v->fuel > 0) {
+	int spd = 0;
 
-		if (v->safety == TRUE)
-		{						/* pay attention to speed? */
-            spd = ABS((int) vector->speed);
-            if (spd > MAX_SPEED)
-			{
-                spd = MAX_SPEED;
-			}
-		}
-        turning_rate = v->turn_rate[spd];
+	if (v->safety == TRUE) {/* pay attention to speed? */
+	    spd = ABS((int) vector->speed);
+	    if (spd > MAX_SPEED) {
+		spd = MAX_SPEED;
+	    }
 	}
-	else
-	{
-		turning_rate = 0;		/* can't turn with no fuel */
-	}
+	turning_rate = v->turn_rate[spd];
+    } else {
+	turning_rate = 0;	/* can't turn with no fuel */
+    }
 
-	switch (vector->heading_flag)
-	{
-		case CLOCKWISE:
-			if ((vector->heading += turning_rate) >= vector->desired_heading)
-			{
-				vector->heading = vector->desired_heading;
-                vector->heading_flag = NO_SPIN;
-			}
-			break;
-		case COUNTERCLOCKWISE:
-			if ((vector->heading -= turning_rate) <= vector->desired_heading)
-			{
-				vector->heading = vector->desired_heading;
-                vector->heading_flag = NO_SPIN;
-			}
-			break;
-	}
+    switch (vector->heading_flag) {
+	case CLOCKWISE:
+	    if ((vector->heading += turning_rate) >= vector->desired_heading) {
+		vector->heading = vector->desired_heading;
+		vector->heading_flag = NO_SPIN;
+	    }
+	    break;
+	case COUNTERCLOCKWISE:
+	    if ((vector->heading -= turning_rate) <= vector->desired_heading) {
+		vector->heading = vector->desired_heading;
+		vector->heading_flag = NO_SPIN;
+	    }
+	    break;
+    }
 
     /* when out of fuel, pretend they want to stop (actually, we ought to let
        them coast to a stop, but that involves figuring out what the rolling
        friction should be, ugh) */
-	if (v->fuel <= 0)
-		vector->drive = 0.0;
+    if (v->fuel <= 0)
+	vector->drive = 0.0;
 
-	/* break velocity into components w.r.t the heading */
-	heading_diff = vector->angle - vector->heading;
-	roll_speed = cos(heading_diff) * vector->speed;
-	slide_speed = sin(heading_diff) * vector->speed;
+    /* break velocity into components W.R.T the heading */
+    heading_diff = vector->angle - vector->heading;
+    roll_speed = cos(heading_diff) * vector->speed;
+    slide_speed = sin(heading_diff) * vector->speed;
 
     /* determine the ground friction */
-    friction = (v->vdesc->treads != 4 &&	/* not hover treads */
-		box[v->loc->grid_x][v->loc->grid_y].type == SLIP) ?
-			settings.si.slip_friction :
-			settings.si.normal_friction;
+    friction = (v->vdesc->treads != HOVER_TREAD &&
+		real_map[v->loc->grid_x][v->loc->grid_y].type == SLIP) ?
+	    settings.si.slip_friction :
+	    settings.si.normal_friction;
 
-    /* modify that by the tread friction to produce the total traction */
-	friction *= tread_stat[v->vdesc->treads].friction;
-
-    /* and convert that to an acceleration (note that the mass of the vehicle
-       falls out of the equation, since the frictional force is proportional to
-       the mass) */
-	accel_lim = friction * MAX_ACCEL;
-
-	/* reduce sliding speed by accel_lim */
-    if (ABS(slide_speed) > accel_lim)
-	{
-		slide_speed -= accel_lim * SIGN(slide_speed);
-	/* %%% vehicle is skidding, so perhaps we should reduce accel_lim
-	   (dynamic friction < static friction).  Would provide a motivation
-	   for using the "safe turning" option. */
-	}
-	else
-	{
-		slide_speed = 0;
-	}
+    accel_lim = friction * v->vdesc->tread_acc;
 
     /* figure out how much they want to accelerate */
-	if (v->num_discs > 0)
-	{
+    if (v->num_discs > 0) {
 	/* if they have discs, pretend they want to go slower (more discs does
 	   NOT mean more slowdown) */
-        desired_acc = (vector->drive * settings.si.owner_slowdown) -
-	    roll_speed;
+	desired_acc = (vector->drive * settings.si.owner_slowdown) -
+		roll_speed;
+    } else {
+	desired_acc = vector->drive - roll_speed;
+    }
+
+    /* figure out whether they are braking or accelerating */
+    if (desired_acc * roll_speed >= 0) {	/* same sign? */
+	/* reduce sliding speed by accel_lim */
+	if (ABS(slide_speed) > accel_lim) {
+	    slide_speed -= accel_lim * SIGN(slide_speed);
+	    /* since static friction is less than dynamic friction, we reduce
+	       accel_lim when the vehicle is sliding sideways (we assume that
+	       all vehicles have anti-lock brakes/engines so that they never
+	       skid forward or backward) */
+	    accel_lim *= 0.6;
+	} else {
+	    slide_speed = 0;
 	}
-	else
-	{
-		desired_acc = vector->drive - roll_speed;
+
+	/* now take engine power into account */
+	accel_lim = MIN(accel_lim, v->vdesc->engine_acc);
+
+	/* don't let them accelerate more than accel_lim */
+	if (ABS(desired_acc) > accel_lim) {
+	    desired_acc = accel_lim * SIGN(desired_acc);
 	}
 
-    /* if they are trying to speed up, take engine power limit into account
-       (otherwise they are braking, and that's only limited by traction) */
-    if (ABS(roll_speed + desired_acc) > ABS(roll_speed))
-	{
-        accel_lim = MIN(accel_lim, v->vdesc->acc);
+	roll_speed += desired_acc;	/* accelerate */
+
+	/* re-compose the rolling and sliding vectors into the new x and y
+	   speeds */
+	assign_speed(vector,
+		     (cos(vector->heading) * roll_speed +
+		      cos(vector->heading + PI / 2) * slide_speed),
+		     (sin(vector->heading) * roll_speed +
+		      sin(vector->heading + PI / 2) * slide_speed));
+    } else {
+	/* they are braking, so just reduce the magnitude of the overall vector
+	   without changing the direction (we presume they just lock their
+	   treads and skid */
+	if (ABS(vector->speed) > accel_lim) {
+	    vector->speed -= accel_lim * SIGN(vector->speed);
+	    vector->xspeed = vector->speed * cos(vector->angle);
+	    vector->yspeed = vector->speed * sin(vector->angle);
+	} else {
+	    vector->speed = vector->xspeed = vector->yspeed =
+		vector->angle = 0.0;
 	}
+    }
 
-    /* don't let them accelerate/decelerate more than accel_lim */
-    if (ABS(desired_acc) > accel_lim)
-	{
-        desired_acc = accel_lim * SIGN(desired_acc);
-	}
-
-    /* do the accelaration (finally) */
-	roll_speed += desired_acc;
-
-	/* Compute new angle and speed */
-	vector->xspeed = cos(vector->heading) * roll_speed +
-		cos(vector->heading + PI / 2) * slide_speed;
-	vector->yspeed = sin(vector->heading) * roll_speed +
-		sin(vector->heading + PI / 2) * slide_speed;
-
-	assign_speed(vector, vector->xspeed, vector->yspeed);
 }
+
 
 /*
 ** Computes the rotation (0 to 16) from the heading (-PI to PI).
@@ -275,10 +285,10 @@ Vehicle *v;
 update_rotation(v)
 Vehicle *v;
 {
-	int views;
+    int views;
 
-	views = v->obj->num_pics;
-	v->vector.old_rot = v->vector.rot;
+    views = v->obj->num_pics;
+    v->vector.old_rot = v->vector.rot;
     v->vector.rot = ((int)(v->vector.heading / (2*PI) * views + views + .5)) %
 	views;
 }
@@ -286,37 +296,37 @@ Vehicle *v;
 update_turret(t)
 Turret *t;
 {
-	float delta_angle;
-	int views;
-	Boolean angle_changed = TRUE;
+    float delta_angle;
+    int views;
+    Boolean angle_changed = TRUE;
 
-	t->old_rot = t->rot;
-	delta_angle = t->turn_rate;
-	switch (t->angle_flag)
+    t->old_rot = t->rot;
+    delta_angle = t->turn_rate;
+    switch (t->angle_flag)
+    {
+      case NO_SPIN:
+	angle_changed = FALSE;
+	break;
+      case CLOCKWISE:
+	if ((t->angle += delta_angle) >= t->desired_angle)
 	{
-        case NO_SPIN:
-			angle_changed = FALSE;
-			break;
-		case CLOCKWISE:
-			if ((t->angle += delta_angle) >= t->desired_angle)
-			{
-				t->angle = t->desired_angle;
-                t->angle_flag = NO_SPIN;
-			}
-			break;
-		case COUNTERCLOCKWISE:
-			if ((t->angle -= delta_angle) <= t->desired_angle)
-			{
-				t->angle = t->desired_angle;
-                t->angle_flag = NO_SPIN;
-			}
-			break;
+	    t->angle = t->desired_angle;
+	    t->angle_flag = NO_SPIN;
 	}
-	if (angle_changed == TRUE)
+	break;
+      case COUNTERCLOCKWISE:
+	if ((t->angle -= delta_angle) <= t->desired_angle)
 	{
-		views = t->obj->num_pics;
-		t->rot = ((int) ((t->angle) / (2 * PI) * views + views + .5)) % views;
+	    t->angle = t->desired_angle;
+	    t->angle_flag = NO_SPIN;
 	}
+	break;
+    }
+    if (angle_changed == TRUE)
+    {
+	views = t->obj->num_pics;
+	t->rot = ((int) ((t->angle) / (2 * PI) * views + views + .5)) % views;
+    }
 }
 
 /*
@@ -432,73 +442,72 @@ Bullet *b;
 update_seeker(b)
 Bullet *b;
 {
-	Loc *loc;
+    Loc *loc;
     float accel, sp, sp2, axs, ays, xdir, ydir;
-	int dx, dy, seek, best_dx, best_dy, best_seek, best_heat, i;
+    int dx, dy, seek, best_dx, best_dy, best_seek, best_heat, i;
 
-	/* Make a trail of exhaust */
-	make_explosion(b->loc, EXP_EXHAUST);
+    /* Make a trail of exhaust */
+    make_explosion(b->loc, EXP_EXHAUST);
 
-	/* Find all vehicles that would affect heat seeking */
-	best_seek = 0;
-	for (i = 0; i < num_vehicles; i++)
-	{
-		/* * Is vehicle within 3 boxes, in line of sight, in front of the
-		   seeker and * hotter/closer than the previous targets? */
-		loc = vehicle[i]->loc;
-		dx = (int) (loc->x - b->loc->x);
-		dy = (int) (loc->y - b->loc->y);
+    /* Find all vehicles that would affect heat seeking */
+    best_seek = 0;
+    for (i = 0; i < num_veh_alive; i++) {
+	/* Is vehicle within 3 boxes, in line of sight, in front of the seeker
+	   and hotter/closer than the previous targets? */
+	loc = live_vehicles[i]->loc;
+	dx = (int) (loc->x - b->loc->x);
+	dy = (int) (loc->y - b->loc->y);
 
-        seek = (50 + vehicle[i]->heat) * (BOX_WIDTH * BOX_WIDTH * 9 -
+        seek = (50 + live_vehicles[i]->heat) * (BOX_WIDTH * BOX_WIDTH * 9 -
 					  (dx * dx + dy * dy));
-		if (seek > best_seek &&
-				(dx * b->xspeed + dy * b->yspeed > 0) &&
-				!intersect_wall(b->loc, loc))
-		{
-			best_seek = seek;
-			best_heat = vehicle[i]->heat;
-			best_dx = dx;
-			best_dy = dy;
-		}
-	}
-
-	/* If we found something to seek, adjust speed components to follow it */
-	if (best_seek > 0 && (rnd(30) < best_heat))
+	if (seek > best_seek &&
+	    (dx * b->xspeed + dy * b->yspeed > 0) &&
+	    !intersect_wall(b->loc, loc))
 	{
+	    best_seek = seek;
+	    best_heat = live_vehicles[i]->heat;
+	    best_dx = dx;
+	    best_dy = dy;
+	}
+    }
+
+    /* If we found something to seek, adjust speed components to follow it */
+    if (best_seek > 0 && (rnd(30) < best_heat))
+    {
         sp = weapon_stat[(int)b->type].ammo_speed;
-		sp2 = sp * sp;
-		xdir = ((b->xspeed > 0) ? 1 : -1);
-		ydir = ((b->yspeed > 0) ? 1 : -1);
+	sp2 = sp * sp;
+	xdir = ((b->xspeed > 0) ? 1 : -1);
+	ydir = ((b->yspeed > 0) ? 1 : -1);
         axs = ABS(b->xspeed);
         ays = ABS(b->yspeed);
-		if (b->xspeed * best_dy < b->yspeed * best_dx)
+	if (b->xspeed * best_dy < b->yspeed * best_dx)
             accel = SEEKER_ACC;
-		else
+	else
             accel = -SEEKER_ACC;
 
-		if (axs > ays)
-		{
+	if (axs > ays)
+	{
             b->yspeed -= xdir * accel;
             if (ABS(b->yspeed) >= sp)
-			{
-				b->xspeed = 0;
-				b->yspeed = ydir * sp;
-			}
-			else
-				b->xspeed = xdir * sqrt(sp2 - b->yspeed * b->yspeed);
-		}
-		else
-		{
+	    {
+		b->xspeed = 0;
+		b->yspeed = ydir * sp;
+	    }
+	    else
+		b->xspeed = xdir * sqrt(sp2 - b->yspeed * b->yspeed);
+	}
+	else
+	{
             b->xspeed += ydir * accel;
             if (ABS(b->xspeed) >= sp)
-			{
-				b->yspeed = 0;
-				b->xspeed = xdir * sp;
-			}
-			else
-				b->yspeed = ydir * sqrt(sp2 - b->xspeed * b->xspeed);
-		}
+	    {
+		b->yspeed = 0;
+		b->xspeed = xdir * sp;
+	    }
+	    else
+		b->yspeed = ydir * sqrt(sp2 - b->xspeed * b->xspeed);
 	}
+    }
 }
 
 /*
@@ -507,41 +516,41 @@ Bullet *b;
 update_disc(b)
 Bullet *b;
 {
-	float dx, dy;
-	float dist;
-	float angle, delta;
+    float dx, dy;
+    float dist;
+    float angle, delta;
 
-	/* If the disc is owned by someone, change its velocity to orbit him */
-	if (b->owner != (Vehicle *) NULL)
-	{
-		/* compute the angle to the vehicle */
-		dx = b->owner->loc->x - b->loc->x;
-		dy = b->owner->loc->y - b->loc->y;
+    /* If the disc is owned by someone, change its velocity to orbit him */
+    if (b->owner != (Vehicle *) NULL)
+    {
+	/* compute the angle to the vehicle */
+	dx = b->owner->loc->x - b->loc->x;
+	dy = b->owner->loc->y - b->loc->y;
         angle = ATAN2(dy, dx);
-		dist = dx * dx + dy * dy;
+	dist = dx * dx + dy * dy;
 
-		/* Compute a delta which will bring us into orbit around our owner */
-		if (dist <= DISC_ORBIT_SQ)
-			delta = PI / 2 * (2 - (dist / DISC_ORBIT_SQ));
-		else
-			delta = PI / 2 * (DISC_ORBIT_SQ / dist);
-
-		/* If disc_spin is set, orbit counterclockwise, otherwise, clockwise */
-		if (b->owner->status & VS_disc_spin)
-			angle += delta;
-		else
-			angle -= delta;
-
-		/* Compute new xspeed and yspeed */
-		b->xspeed = DISC_MED_SPEED * cos(angle);
-		b->yspeed = DISC_MED_SPEED * sin(angle);
-	}
-	/* otherwise slow the disc down a bit */
+	/* Compute a delta which will bring us into orbit around our owner */
+	if (dist <= DISC_ORBIT_SQ)
+	    delta = PI / 2 * (2 - (dist / DISC_ORBIT_SQ));
 	else
-	{
-		b->xspeed *= settings.si.disc_friction;
-		b->yspeed *= settings.si.disc_friction;
-	}
+	    delta = PI / 2 * (DISC_ORBIT_SQ / dist);
+
+	/* If disc_spin is set, orbit counterclockwise, otherwise, clockwise */
+	if (b->owner->status & VS_disc_spin)
+	    angle += delta;
+	else
+	    angle -= delta;
+
+	/* Compute new xspeed and yspeed */
+	b->xspeed = DISC_MED_SPEED * cos(angle);
+	b->yspeed = DISC_MED_SPEED * sin(angle);
+    }
+    /* otherwise slow the disc down a bit */
+    else
+    {
+	b->xspeed *= settings.si.disc_friction;
+	b->yspeed *= settings.si.disc_friction;
+    }
 }
 
 /*
@@ -574,26 +583,25 @@ update_explosions()
 */
 update_maze_flags()
 {
-	Vehicle *v;
-	Loc *loc, *old_loc;
-	int i;
+    Vehicle *v;
+    Loc *loc, *old_loc;
+    int i;
 
-	for (i = 0; i < num_vehicles; i++)
-	{
-		v = vehicle[i];
+    for (i = 0; i < num_veh_alive; i++) {
+	v = live_vehicles[i];
 
-		/* don't do anything if the vehicle isn't alive */
-		if (!(v->status & VS_is_alive))
-			continue;
+	/* don't do anything if the vehicle isn't alive */
+	if (!tstflag(v->status, VS_is_alive))
+	    continue;
 
-		loc = v->loc;
-		old_loc = v->old_loc;
-		if ((loc->grid_x != old_loc->grid_x) || (loc->grid_y != old_loc->grid_y))
-		{
-			box[old_loc->grid_x][old_loc->grid_y].flags &= ~v->flag;
-			box[loc->grid_x][loc->grid_y].flags |= v->flag;
-		}
+	loc = v->loc;
+	old_loc = v->old_loc;
+	if ((loc->grid_x != old_loc->grid_x) ||
+	    (loc->grid_y != old_loc->grid_y)) {
+	    real_map[old_loc->grid_x][old_loc->grid_y].flags &= ~v->flag;
+	    real_map[loc->grid_x][loc->grid_y].flags |= v->flag;
 	}
+    }
 }
 
 /*
@@ -604,9 +612,8 @@ update_specials()
 	Vehicle *v;
 	int i, num;
 
-	for (i = 0; i < num_vehicles; i++)
-	{
-		v = vehicle[i];
+	for (i = 0; i < num_veh_alive; i++) {
+		v = live_vehicles[i];
 		for (num = 0; num < MAX_SPECIALS; num++)
             do_special(v, (SpecialType)num, SP_update);
 	}
@@ -618,51 +625,50 @@ update_specials()
 */
 update_screen_locs()
 {
-	extern Terminal *term;
-	Vehicle *v;
-	Exp *e;
-	Loc *bloc;
-	int sx, sy;
-	int i;
+    extern Terminal *term;
+    Vehicle *v;
+    Exp *e;
+    Loc *bloc;
+    int sx, sy;
+    int i;
 
     /* If terminal is tracking a vehicle, compute screen loc from vehicle loc
-       */
-	v = term->vehicle;
-	if (v != (Vehicle *) NULL)
-	{
-		/* Compute the loc of the upper left corner of the animation window */
-		term->loc.grid_x = v->loc->grid_x - NUM_BOXES / 2;
-		term->loc.grid_y = v->loc->grid_y - NUM_BOXES / 2;
-		term->loc.x = v->loc->x - NUM_BOXES * BOX_WIDTH / 2;
-		term->loc.y = v->loc->y - NUM_BOXES * BOX_HEIGHT / 2;
-	}
-	/* Terminal screen offset */
-	sx = term->loc.x;
-	sy = term->loc.y;
+     */
+    v = term->vehicle;
+    if (v != (Vehicle *) NULL)
+    {
+	/* Compute the loc of the upper left corner of the animation window */
+	term->loc.grid_x = v->loc->grid_x - NUM_BOXES / 2;
+	term->loc.grid_y = v->loc->grid_y - NUM_BOXES / 2;
+	term->loc.x = v->loc->x - NUM_BOXES * BOX_WIDTH / 2;
+	term->loc.y = v->loc->y - NUM_BOXES * BOX_HEIGHT / 2;
+    }
+    /* Terminal screen offset */
+    sx = term->loc.x;
+    sy = term->loc.y;
 
-	/* Compute screen coordinates for the vehicles */
-	for (i = 0; i < num_vehicles; i++)
-	{
-		v = vehicle[i];
-		v->loc->screen_x[term->num] = v->loc->x - sx;
-		v->loc->screen_y[term->num] = v->loc->y - sy;
-	}
+    /* Compute screen coordinates for the vehicles */
+    for (i = 0; i < num_veh_alive; i++) {
+	v = live_vehicles[i];
+	v->loc->screen_x[term->num] = v->loc->x - sx;
+	v->loc->screen_y[term->num] = v->loc->y - sy;
+    }
 
-	/* Compute the screen coordinates for the bullets */
-	for (i = 0; i < bset->number; i++)
-	{
-		bloc = bset->list[i]->loc;
-		bloc->screen_x[term->num] = bloc->x - sx;
-		bloc->screen_y[term->num] = bloc->y - sy;
-	}
+    /* Compute the screen coordinates for the bullets */
+    for (i = 0; i < bset->number; i++)
+    {
+	bloc = bset->list[i]->loc;
+	bloc->screen_x[term->num] = bloc->x - sx;
+	bloc->screen_y[term->num] = bloc->y - sy;
+    }
 
-	/* Compute the screen coordinates for the explosions */
-	for (i = 0; i < eset->number; i++)
-	{
-		e = eset->list[i];
-		e->old_screen_x[term->num] = e->screen_x[term->num];
-		e->old_screen_y[term->num] = e->screen_y[term->num];
-		e->screen_x[term->num] = e->x - sx;
-		e->screen_y[term->num] = e->y - sy;
-	}
+    /* Compute the screen coordinates for the explosions */
+    for (i = 0; i < eset->number; i++)
+    {
+	e = eset->list[i];
+	e->old_screen_x[term->num] = e->screen_x[term->num];
+	e->old_screen_y[term->num] = e->screen_y[term->num];
+	e->screen_x[term->num] = e->x - sx;
+	e->screen_y[term->num] = e->y - sy;
+    }
 }

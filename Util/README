@@ -1,13 +1,11 @@
 There is not much here of value, except perhaps the dmaz program
 
-Makefile	makefile for porgrams resident here
+Makefile	makefile for programs resident here
 
-dmaz		VAX executable for printing out mazes in ascii.
-dmaz.c
-mazedesc.c	sources for dmaz
+mazedesc.c
+dmaz.c		program for printing out mazes in ascii.
 
 objcreate.c
-objcon.c
 ovjview.c	Source files for a programs used to manipulate .obj files
 objcon.c	(collections of bitmaps in Src/Objects directory)
 

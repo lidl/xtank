@@ -1,0 +1,27 @@
+/**/#
+/**/# Top-Level Imakefile - part of the UMDENG X-Tank distribution
+/**/#
+/**/# $Id: Imakefile,v 1.5 1991/09/30 01:05:33 lidl Exp $
+/**/#
+
+#include "./Imakefile.Config"
+
+#define PassCDebugFlags
+#define IHaveSubdirs
+
+        SUBDIRS = Src
+
+MakeSubdirs($(SUBDIRS))
+
+        TARFILE = /tmp/xtank.tar
+        EXCLUDE = /tmp/excluded
+
+release:
+	cp /dev/null ${EXCLUDE}
+	find . \( -name \*,v -o -name RCS -o -name Makefile -o \
+		-name Makefile.bak -o -name Patches -o -name HeartBurn\* -o \
+		-name tags -o -name TAGS -o -name .version \) -print | \
+	sed 's/^.\///' >> ${EXCLUDE}
+	gtar +create +verbose +exclude-from ${EXCLUDE} +file ${TARFILE} .
+	compress -v ${TARFILE}
+	rm -f ${EXCLUDE}

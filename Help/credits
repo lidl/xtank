@@ -1,56 +1,76 @@
 We would like to thank the following people for their contributions to xtank:
 
-Terry Donahue    For writing most all of the code, and then giving it to us!
+Terry Donahue       For writing most all of the code, and then giving it to us!
 
-Gordon H. Smith (skeeve@eng.umd.edu)
-	 &
-Josh M. Osborne (stripes@eng.umd.edu)
-		 For this release, and quite possibly the next few.
+Gordon H. Smith    (aahz@eng.umd.edu)
+     &
+Josh M. Osborne    (stripes@eng.umd.edu)
+        For this release, and quite possibly the next few, code maintainers.
 
-Kurt Lidl	(lidl@eng.umd.edu)
-		 Struggling Artist.
+Robert Potter      (rpotter@grip.cis.upenn.edu)
+        General hacking, tweaking and frobbing.  Cool robot designs!
+
+Kurt Lidl          (lidl@eng.umd.edu)
+        Struggling Artist and patch-meister.
+
+Aaron Eastlund     (aarone@sail.labs.tek.com)
+        X11 code optimizations. (Point, Line batching)
+        Redraw optimization. (Stingy Redraw code)
+        No names mode.
+
+David Hsu          (hsu@eng.umd.edu)
+        Play tester
+
+Tony Ambardar      (bird@sevior.physics.ubc.ca)
+        Ported to DECstations running ultrix.
+
+Hans Jeppesen      (lucifer@iesd.auc.dk)
+        Pzkw_I, dum_maze, runner and roadrunner robots.
+
+???                (greg%lurker.uucp@ICS.UCI.EDU)
+        Ported to RS6000 running AIX.
 
 Christopher North-Keys
-		 Escher Menu Code.
+        Escher Menu Code.
 
-Laura Baldwin	 Fiery explosion bitmap
+Laura Baldwin      Fiery explosion bitmap
 
-Doug Church	 Menu interface code
-		 Design of user interface
+Doug Church        Menu interface code
+        Design of user interface
 
-Eric Esterling	 playtester
-		 Unix consultant
+Eric Esterling     Playtester
+        Unix consultant
 
-Rob Fullmer	 Gaming consultant
-		 Head playtester
-		 Tank bitmap designer
+Rob Fullmer        Gaming consultant
+        Head playtester
+        Tank bitmap designer
 
-Eon Harry	 Title logo and Head tank bitmap designer
-		 Aesthetics and marketing consultant (Mr. Organic Flowthru)
+Eon Harry          Title logo and Head tank bitmap designer
+        Aesthetics and marketing consultant (Mr. Organic Flowthru)
 
-Joe Killian	 Severe optimization of 90 and 180 degree bitmap rotation
+Joe Killian        Severe optimization of 90 and 180 degree bitmap rotation
 
-Evan Reidell	 Explosion bitmaps
+Evan Reidell       Explosion bitmaps
 
-Dan Schmidt	 Development of vehicle design program
-		 Development of maze design program
-		 Documentation
+Dan Schmidt        Development of vehicle design program
+        Development of maze design program
+        Documentation
 
-John Smolin	 Playtester
-		 Algorithm consultant
+John Smolin        Playtester
+        Algorithm consultant
 
-Bill Sommerfeld  Dynamic loading module for xtank programs
-		 Unix consultant
+Bill Sommerfeld    Dynamic loading module for xtank programs
+        Unix consultant
 
-Erik Winfree	 Amiga Graphics Toolkit
-		 Amiga support and porting
-		 Code reviewer and improver
+Erik Winfree       Amiga Graphics Toolkit
+        Amiga support and porting
+        Code reviewer and improver
 
-Steve Worley	 Efficient solution to inelastic collision problem
-		 Fountain of game extensions and ideas
+Steve Worley       Efficient solution to inelastic collision problem
+        Fountain of game extensions and ideas
 
-Mike Zehr	 Head algorithm consultant
-		 Playtester
-		 Design of vehicle design system
-		 Large tank explosion
-		 Vehicle physics algorithm designer
+Mike Zehr          Head algorithm consultant
+        Playtester
+        Design of vehicle design system
+        Large tank explosion
+        Vehicle physics algorithm designer

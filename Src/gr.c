@@ -7,14 +7,34 @@
 ** gr.c
 */
 
+/*
+$Author: rpotter $
+$Id: gr.c,v 2.3 1991/02/10 13:50:35 rpotter Exp $
+
+$Log: gr.c,v $
+ * Revision 2.3  1991/02/10  13:50:35  rpotter
+ * bug fixes, display tweaks, non-restart fixes, header reorg.
+ *
+ * Revision 2.2  91/01/20  09:57:49  rpotter
+ * complete rewrite of vehicle death, other tweaks
+ * 
+ * Revision 2.1  91/01/17  07:11:27  rpotter
+ * lint warnings and a fix to update_vector()
+ * 
+ * Revision 2.0  91/01/17  02:09:28  rpotter
+ * small changes
+ * 
+ * Revision 1.1  90/12/29  21:02:22  aahz
+ * Initial revision
+ * 
+*/
+
 #include "xtank.h"
 #include "screen.h"
 #include "graphics.h"
 #include "gr.h"
 #include "terminal.h"
-
-
-extern char *malloc();
+#include "globals.h"
 
 
 int num_terminals = 0;
@@ -47,75 +67,74 @@ int terminal_num;
 make_terminal(display_name)
 char *display_name;
 {
-	Boolean taken[MAX_TERMINALS];
-	Terminal *t;
-	int i;
+    Boolean taken[MAX_TERMINALS];
+    Terminal *t;
+    int i;
 
-	/* Check if we have room for another terminal */
-	if (num_terminals >= MAX_TERMINALS)
-		return -1;
+    /* Check if we have room for another terminal */
+    if (num_terminals >= MAX_TERMINALS)
+	return -1;
 
-	/* Ensure that Terminal structure is intialized to zeros */
-	t = (Terminal *) calloc(1, sizeof(Terminal));
-	t->is_dead = FALSE;
-	t->video = (char *) make_video(display_name);
-	if (t->video == NULL)
+    /* Ensure that Terminal structure is intialized to zeros */
+    t = (Terminal *) calloc(1, sizeof(Terminal));
+    t->video = (char *) make_video(display_name);
+    if (t->video == NULL)
+    {
+	free((char *) t);
+	return -1;
+    }
+    /* Set active terminal so we can initialize it */
+    term = t;
+    if (open_windows())
+    {
+	close_terminal(term);
+	return -1;
+    }
+    set_cursor(CROSS_CURSOR);
+
+    /* Map the windows and wait for the animation window to get exposed */
+    map_windows();
+
+    /* Print out a message to keep the user happy while objects are being
+       made */
+    draw_text_rc(ANIM_WIN, 0, 0, "Initializing terminal...", M_FONT, WHITE);
+    sync_output(TRUE);
+
+    {
+	int flg;
+
+	flg = make_objects();
+
+	if (flg)
 	{
-		free((char *) t);
-		return -1;
+	    close_terminal(term);
+	    return -1;
 	}
-	/* Set active terminal so we can initialize it */
-	term = t;
-	if (open_windows())
+    }
+    /* Unexpose all the terminal's windows */
+    for (i = 0; i < MAX_WINDOWS; i++)
+	expose_win(i, FALSE);
+
+    /* Figure out the lowest available terminal number */
+    for (i = 0; i < num_terminals + 1; i++)
+	taken[i] = FALSE;
+    for (i = 0; i < num_terminals; i++)
+	taken[terminal[i]->num] = TRUE;
+    for (i = 0; i < num_terminals + 1; i++)
+	if (!taken[i])
 	{
-		close_terminal(term);
-		return -1;
+	    t->num = i;
+	    break;
 	}
-	set_cursor(CROSS_CURSOR);
+    terminal[num_terminals++] = t;
 
-	/* Map the windows and wait for the animation window to get exposed */
-	map_windows();
+    /* Setup the message menu system for the terminal */
+    init_msg_terminal(t->num);
 
-	/* Print out a message to keep the user happy while objects are being
-	   made */
-	draw_text_rc(ANIM_WIN, 0, 0, "Initializing terminal...", M_FONT, WHITE);
-	sync_output(TRUE);
+    /* Initialize 3D values for terminal */
+    init_terminal_3d(t);
 
-	{
-		int flg;
-
-		flg = make_objects();
-
-		if (flg)
-		{
-			close_terminal(term);
-			return -1;
-		}
-	}
-	/* Unexpose all the terminal's windows */
-	for (i = 0; i < MAX_WINDOWS; i++)
-		expose_win(i, FALSE);
-
-	/* Figure out the lowest available terminal number */
-	for (i = 0; i < num_terminals + 1; i++)
-		taken[i] = FALSE;
-	for (i = 0; i < num_terminals; i++)
-		taken[terminal[i]->num] = TRUE;
-	for (i = 0; i < num_terminals + 1; i++)
-		if (!taken[i])
-		{
-			t->num = i;
-			break;
-		}
-	terminal[num_terminals++] = t;
-
-	/* Setup the message menu system for the terminal */
-	init_msg_terminal(t->num);
-
-	/* Initialize 3D values for terminal */
-	init_terminal_3d(t);
-
-	return 0;
+    return 0;
 }
 
 /*
@@ -165,28 +184,28 @@ Terminal *t;
 */
 open_windows()
 {
-	int i;
-	int ret = 0;
+    int i;
+    int ret = 0;
 
-	ret += make_window(ANIM_WIN, ANIM_WIN_X, ANIM_WIN_Y, ANIM_WIN_WIDTH,
-					   ANIM_WIN_HEIGHT, 0);
-	ret += make_window(GAME_WIN, GAME_WIN_X, GAME_WIN_Y, GAME_WIN_WIDTH,
-					   GAME_WIN_HEIGHT, BORDER);
-	ret += make_window(CONS_WIN, CONS_WIN_X, CONS_WIN_Y, CONS_WIN_WIDTH,
-					   CONS_WIN_HEIGHT, BORDER);
-	ret += make_window(MAP_WIN, MAP_WIN_X, MAP_WIN_Y, MAP_WIN_WIDTH,
-					   MAP_WIN_HEIGHT, BORDER);
-	ret += make_window(HELP_WIN, HELP_WIN_X, HELP_WIN_Y, HELP_WIN_WIDTH,
-					   HELP_WIN_HEIGHT, BORDER);
-	ret += make_window(MSG_WIN, MSG_WIN_X, MSG_WIN_Y, MSG_WIN_WIDTH,
-					   MSG_WIN_HEIGHT, BORDER);
+    ret += make_window(ANIM_WIN, ANIM_WIN_X, ANIM_WIN_Y, ANIM_WIN_WIDTH,
+		       ANIM_WIN_HEIGHT, 0);
+    ret += make_window(GAME_WIN, GAME_WIN_X, GAME_WIN_Y, GAME_WIN_WIDTH,
+		       GAME_WIN_HEIGHT, BORDER);
+    ret += make_window(CONS_WIN, CONS_WIN_X, CONS_WIN_Y, CONS_WIN_WIDTH,
+		       CONS_WIN_HEIGHT, BORDER);
+    ret += make_window(MAP_WIN, MAP_WIN_X, MAP_WIN_Y, MAP_WIN_WIDTH,
+		       MAP_WIN_HEIGHT, BORDER);
+    ret += make_window(HELP_WIN, HELP_WIN_X, HELP_WIN_Y, HELP_WIN_WIDTH,
+		       HELP_WIN_HEIGHT, BORDER);
+    ret += make_window(MSG_WIN, MSG_WIN_X, MSG_WIN_Y, MSG_WIN_WIDTH,
+		       MSG_WIN_HEIGHT, BORDER);
 
-	for (i = 0; i < MAX_STAT_WINDOWS; i++)
-		ret += make_window(STAT_WIN + i,
-						   STAT_WIN_X,
-						   STAT_WIN_Y + STAT_WIN_HEIGHT * i,
-						   STAT_WIN_WIDTH, STAT_WIN_HEIGHT, STAT_BORDER);
-	return ret;
+    for (i = 0; i < MAX_STAT_WINDOWS; i++)
+	ret += make_window(STAT_WIN + i,
+			   STAT_WIN_X,
+			   STAT_WIN_Y + STAT_WIN_HEIGHT * i,
+			   STAT_WIN_WIDTH, STAT_WIN_HEIGHT, STAT_BORDER);
+    return ret;
 }
 
 /*
@@ -226,12 +245,11 @@ clear_windows()
 */
 map_battle_windows()
 {
-	extern int num_vehicles;
-	int w, mn;
+    int w, mn;
 
-    mn = STAT_WIN + MIN(MAX_STAT_WINDOWS, num_vehicles);
-	for (w = STAT_WIN; w < mn; w++)
-		map_window(w);
+    mn = STAT_WIN + MIN(MAX_STAT_WINDOWS, num_veh_alive);
+    for (w = STAT_WIN; w < mn; w++)
+	map_window(w);
 }
 
 /*

@@ -1,4 +1,3 @@
-#include "malloc.h"
 /*
 ** Xtank
 **
@@ -7,29 +6,68 @@
 ** game.c
 */
 
+/*
+$Author: lidl $
+$Id: game.c,v 2.6 1991/09/15 23:35:15 lidl Exp $
+
+$Log: game.c,v $
+ * Revision 2.6  1991/09/15  23:35:15  lidl
+ * helpsx if we pass the correct number of arguments to sprintf
+ * we didn't before :-(
+ *
+ * Revision 2.5  1991/08/22  03:23:21  aahz
+ * cast to avoid warning on i860.
+ *
+ * Revision 2.4  1991/03/25  00:25:59  stripes
+ * RS6K patch, broke a sprintf in display_game_stats.  Will fix after a
+ * trip to bathroom.
+ *
+ * Revision 2.3  1991/02/10  13:50:32  rpotter
+ * bug fixes, display tweaks, non-restart fixes, header reorg.
+ *
+ * Revision 2.2  91/01/20  09:57:47  rpotter
+ * complete rewrite of vehicle death, other tweaks
+ * 
+ * Revision 2.1  91/01/17  07:11:25  rpotter
+ * lint warnings and a fix to update_vector()
+ * 
+ * Revision 2.0  91/01/17  02:09:27  rpotter
+ * small changes
+ * 
+ * Revision 1.1  90/12/29  21:02:22  aahz
+ * Initial revision
+ * 
+*/
+
+#include "malloc.h"
 #include <ctype.h>
 #include "xtank.h"
 #include "graphics.h"
 #include "gr.h"
 #include "vehicle.h"
 #include "cosell.h"
+#include "globals.h"
 
 
 extern Maze maze;
-extern Vehicle *vehicle[];
-extern int num_vehicles;
 extern char *game_str[];
 extern char *teams_entries[];
 extern int team_color[];
 extern int num_terminals;
 extern Settings settings;
-extern Map box;
+extern Map real_map;
 extern int frame;
 
 
+TeamData teamdata[MAX_TEAMS];
+Team last_team;			/* the highest-numbered team that's playing
+				   (NB: they are not necessarily the
+				   low-numbered teams!)  */
+int num_teams;			/* the number of teams with any vehicles left
+				   in play (NB: they are not necessarily the
+				   low-numbered teams!) */
+Team winning_team;		/* team that has just won */
 static Vehicle *winning_vehicle;
-static int winning_team;
-int num_teams;
 
 /* the delta x and y for each of the 8 neighbors of a box */
 static int neighbor_x[] = { 0,  1, 1, 1, 0, -1, -1, -1};
@@ -67,30 +105,26 @@ Boolean init;
 combat_rules(init)
 Boolean init;
 {
-	Vehicle *v;
-	int i;
+    Vehicle *v;
+    int i;
 
-	if (init)
-		return GAME_RUNNING;
-
-	for (i = 0; i < num_vehicles; i++)
-	{
-		v = vehicle[i];
-
-		if (settings.robots_dont_win &&
-			v->owner->flesh == FALSE &&
-			v->owner->num_programs != 0)
-		{
-			continue;
-		}
-		if (v->owner->score >= settings.si.winning_score)
-		{
-			winning_vehicle = v;
-			winning_team = v->team;
-			return GAME_RESET;
-		}
-	}
+    if (init)
 	return GAME_RUNNING;
+
+    for (i = 0; i < num_veh_alive; i++) {
+	v = live_vehicles[i];
+
+	if (settings.robots_dont_win && v->owner->num_players == 0) {
+	    continue;
+	}
+	if (v->owner->score >= settings.si.winning_score)
+	{
+	    winning_vehicle = v;
+	    winning_team = v->team;
+	    return GAME_RESET;
+	}
+    }
+    return GAME_RUNNING;
 }
 
 /*
@@ -102,75 +136,75 @@ Boolean init;
 war_rules(init)
 Boolean init;
 {
-	static Byte time[GRID_WIDTH][GRID_HEIGHT][MAX_TEAMS];
+    static Byte time[GRID_WIDTH][GRID_HEIGHT][MAX_TEAMS];
     static int total[MAX_TEAMS];
     static int winning_total;
     static int percent;
     static int num_boxes;
-	Box *b;
+    Box *b;
     int x, y;
     int temp_team;
 
-	if (init)
-	{
-		/* Clear total # boxes in play and # owned by each team */
+    if (init)
+    {
+	/* Clear total # boxes in play and # owned by each team */
         for (temp_team = num_teams - 1; temp_team; --temp_team)
             total[temp_team] = 0;
         num_boxes = 0;
 
         for (x = GRID_WIDTH - 1; x >= 0; --x)
 	    for (y = GRID_HEIGHT - 1; y >= 0; --y)
-			{
-                b = &box[x][y];
-				if (!(b->flags & INSIDE_MAZE))
-					continue;
+	    {
+                b = &real_map[x][y];
+		if (!(b->flags & INSIDE_MAZE))
+		    continue;
 
                 /* Count # boxes in play and # owned by each team */
                 num_boxes++;
                 total[b->team]++;
 
-				/* Initialize time based on neighboring teams */
+		/* Initialize time based on neighboring teams */
                 war_init_time(time, x, y);
-			}
+	    }
 
         /* Compute winning total (fixed 3/17/90 JMO & GHS) */
-		percent = settings.si.winning_score % 100;
+	percent = settings.si.winning_score % 100;
 	if (percent == 0) percent = 75;
-		if (settings.si.winning_score > 100)
-		{
-			printf("Warning, winning_score is being used as a percentage (%d%%)\n",
-				   percent);
-		}
-        winning_total = (percent * num_boxes) / 100;
-	}
-	else
+	if (settings.si.winning_score > 100)
 	{
+	    printf("Warning, winning_score is being used as a percentage (%d%%)\n",
+		   percent);
+	}
+        winning_total = (percent * num_boxes) / 100;
+    }
+    else
+    {
 	int vnum;
 
-        for (vnum = num_vehicles - 1; vnum >= 0; --vnum) {
-	    Vehicle *v = vehicle[vnum];
+        for (vnum = num_veh_alive - 1; vnum >= 0; --vnum) {
+	    Vehicle *v = live_vehicles[vnum];
 	    int old_team, k;
 
 	    /* skip neutral vehicles */
             if (v->team == NEUTRAL)
-				continue;
+		continue;
 
-			x = v->loc->grid_x;
-			y = v->loc->grid_y;
-			b = &box[x][y];
+	    x = v->loc->grid_x;
+	    y = v->loc->grid_y;
+	    b = &real_map[x][y];
 
 	    /* skip vehicles that already own this box */
 	    if (b->team == v->team)
-				continue;
+		continue;
 
             /* Decrement time and check for takeover */
             if (--time[x][y][v->team] != (Byte) -1) 
 		continue;	/* no takeover yet */
 
-				old_team = b->team;
+	    old_team = b->team;
 	    if (! change_box(b, x, y)) {
 		/* well, I guess we can't change it after all */
-		time[x][y][v->team] = 1;	/* try again next time */
+		time[x][y][v->team] = 1; /* try again next time */
 		break;		/* skip all the rest of the vehicles, since
 				   they won't be able to change anything either
 				   */
@@ -179,11 +213,11 @@ Boolean init;
 
 	    /* Fix team totals */
 	    --total[old_team];
-	    if (++total[v->team] >= winning_total) {	/* win? */
-					winning_vehicle = (Vehicle *) NULL;
+	    if (++total[v->team] >= winning_total) { /* win? */
+		winning_vehicle = (Vehicle *) NULL;
 		winning_team = v->team;
-					return GAME_RESET;
-				}
+		return GAME_RESET;
+	    }
 
 	    /* re-initialize team time counts for this box */
 	    war_init_time(time, x, y);
@@ -198,11 +232,11 @@ Boolean init;
 		/* neighboring squares of new team get their times reduced by a
 		   factor of 1.5 */
 		times[v->team] = (((int) times[v->team]) << 8) / 384;
-				}
+	    }
 
-#if 1							/* THIS IS DEBUGING SHIT, REMOVE IT SOON */
+#if 1				/* THIS IS DEBUGING SHIT, REMOVE IT SOON */
 #include "message.h"
-				{
+	    {
 		Message m;
 
 		m.sender = SENDER_COM;
@@ -212,11 +246,11 @@ Boolean init;
 			teams_entries[v->team],
 			total[v->team] * 100 / num_boxes);
 		dispatch_message(&m);
-				}
+	    }
 #endif
-			}
-		}
-	return GAME_RUNNING;
+	}
+    }
+    return GAME_RUNNING;
 }
 
 
@@ -229,24 +263,26 @@ Byte time[GRID_WIDTH][GRID_HEIGHT][MAX_TEAMS];
 int x, y;
 {
     Byte *ptr = time[x][y];	/* this box's array of team counts */
-	int i;
+    int i;
 
-	/* Initialize times for this box to beginning value for 0 neighbors */
-	for (i = 0; i < num_teams; i++)
-        ptr[i] = settings.si.takeover_time;
-
-	/* Decrease times for this box depending on neighboring teams */
-	for (i = 0; i < 8; i++)
+    /* Initialize times for this box to beginning value for 0 neighbors */
+    for (i = 0; i < (int)last_team; i++)
 	{
-	Box *b = &box[x + neighbor_x[i]][y + neighbor_y[i]];
+		ptr[i] = settings.si.takeover_time;
+	}
 
-		if (!(b->flags & INSIDE_MAZE))
-			continue;
+    /* Decrease times for this box depending on neighboring teams */
+    for (i = 0; i < 8; i++)
+    {
+	Box *b = &real_map[x + neighbor_x[i]][y + neighbor_y[i]];
+
+	if (!(b->flags & INSIDE_MAZE))
+	    continue;
 
 	/* neighboring squares of the same team reduce time by a factor of 1.5
-	   */
+	 */
 	ptr[b->team] = (((int) ptr[b->team]) << 8) / 384;
-	}
+    }
 }
 
 
@@ -256,37 +292,38 @@ int x, y;
 ultimate_rules(init)
 Boolean init;
 {
-	Vehicle *v;
-	Box *b;
-	int i;
+    Vehicle *v;
+    Box *b;
+    int i;
 
-	if (init)
+    if (init)
+    {
+	/* Start up 1 disc on a random vehicle */
+	make_bullet((Vehicle *) NULL, live_vehicles[rnd(num_veh_alive)]->loc,
+		    DISC, 0.0);
+    }
+    else
+    {
+	/* When a vehicle is in an enemy goal, and has the disc, he wins */
+	for (i = 0; i < num_veh_alive; i++)
 	{
-		/* Start up 1 disc on a random vehicle */
-		make_bullet((Vehicle *) NULL, vehicle[rnd(num_vehicles)]->loc, DISC, 0.0);
-	}
-	else
-	{
-		/* When a vehicle is in an enemy goal, and has the disc, he wins */
-		for (i = 0; i < num_vehicles; i++)
+	    v = live_vehicles[i];
+	    if (v->num_discs > 0)
+	    {
+		b = &real_map[v->loc->grid_x][v->loc->grid_y];
+		if (b->type == GOAL && b->team != v->team)
 		{
-			v = vehicle[i];
-			if (v->num_discs > 0)
-			{
-				b = &box[v->loc->grid_x][v->loc->grid_y];
-				if (b->type == GOAL && b->team != v->team)
-				{
-					winning_vehicle = v;
-					winning_team = v->team;
-					v->owner->score++;
-					if (settings.commentator)
-						comment(COS_GOAL_SCORED, 0, v, (Vehicle *) NULL);
-					return GAME_RESET;
-				}
-			}
+		    winning_vehicle = v;
+		    winning_team = v->team;
+		    v->owner->score++;
+		    if (settings.commentator)
+			comment(COS_GOAL_SCORED, 0, v, (Vehicle *) NULL);
+		    return GAME_RESET;
 		}
+	    }
 	}
-	return GAME_RUNNING;
+    }
+    return GAME_RUNNING;
 }
 
 /*
@@ -295,43 +332,44 @@ Boolean init;
 capture_rules(init)
 Boolean init;
 {
-	static int total_discs;
-	Vehicle *v;
-	Box *b;
-	int i, j;
+    static int total_discs;
+    Vehicle *v;
+    Box *b;
+    int i, j;
 
-	if (init)
-	{
-		/* Start up 1 disc in the first starting box for each team */
-		total_discs = 0;
-		for (i = 1; i < num_teams; i++)
-			for (j = 0; j < num_vehicles; j++)
-				if (vehicle[j]->team == i)
-				{
-					make_bullet((Vehicle *) NULL, vehicle[j]->loc, DISC, 0.0);
-					total_discs++;
-					break;
-				}
-	}
-	else
-	{
-		/* When a vehicle is in its own goal, and has all the discs, he wins */
-		for (i = 0; i < num_vehicles; i++)
+    if (init)
+    {
+	/* Start up 1 disc in the first starting box for each team */
+	total_discs = 0;
+	for (i = 1; i < num_teams; i++)
+	    for (j = 0; j < num_veh_alive; j++)
+		if (live_vehicles[j]->team == i)
 		{
-			v = vehicle[i];
-			if (v->num_discs == total_discs)
-			{
-				b = &box[v->loc->grid_x][v->loc->grid_y];
-				if (b->type == GOAL && b->team == v->team)
-				{
-					winning_vehicle = v;
-					winning_team = v->team;
-					return GAME_RESET;
-				}
-			}
+		    make_bullet((Vehicle *) NULL, live_vehicles[j]->loc, DISC,
+				0.0);
+		    total_discs++;
+		    break;
 		}
+    }
+    else
+    {
+	/* When a vehicle is in its own goal, and has all the discs, he wins */
+	for (i = 0; i < num_veh_alive; i++)
+	{
+	    v = live_vehicles[i];
+	    if (v->num_discs == total_discs)
+	    {
+		b = &real_map[v->loc->grid_x][v->loc->grid_y];
+		if (b->type == GOAL && b->team == v->team)
+		{
+		    winning_vehicle = v;
+		    winning_team = v->team;
+		    return GAME_RESET;
+		}
+	    }
 	}
-	return GAME_RUNNING;
+    }
+    return GAME_RUNNING;
 }
 
 /*
@@ -347,10 +385,10 @@ Boolean init;
 	if (!init)
 	{
 		/* When a vehicle is a goal, he wins */
-		for (i = 0; i < num_vehicles; i++)
+		for (i = 0; i < num_veh_alive; i++)
 		{
-			v = vehicle[i];
-			b = &box[v->loc->grid_x][v->loc->grid_y];
+			v = live_vehicles[i];
+			b = &real_map[v->loc->grid_x][v->loc->grid_y];
 			if (b->type == GOAL)
 			{
 				winning_vehicle = v;
@@ -374,93 +412,95 @@ Boolean init;
 display_game_stats(status)
 unsigned int status;
 {
-	char s[80];
-	char fmt[80];
-	int i, j, k, l, m, n, reply;
-	extern int end_boundry;
+    char s[80];
+    char fmt[80];
+    int i, j, k, l, m, n, reply;
 
-	sprintf(fmt, "     %%%ds%%c: %%7d points   %%3d kills   %%3d deaths",
-            MAX_STRING);        
+    /* sprintf(fmt, "     %%%ds%%c: %%7d points   %%3d kills   %%3d deaths",
+            MAX_STRING);        		*/
+	sprintf(fmt, "%%11s%%c: %%-11s  %%7d points   %%3d kills   %%3d deaths");
 
-	for (n = 0; n < num_terminals; n++)
-	{
-		set_terminal(n);
+    for (n = 0; n < num_terminals; n++)
+    {
+	set_terminal(n);
 
-		clear_window(ANIM_WIN);
+	clear_window(ANIM_WIN);
 
         sprintf(s, "Game: %s     Frame: %d",
 		game_str[(int)settings.si.game],
-				frame);
-		mprint(s, 5, 2);
+		frame);
+	mprint(s, 5, 2);
 
-		/* If we just reset the game, say who scored what */
-		if (status == GAME_RESET)
-		{
-			switch (settings.si.game)
-			{
-				case CAPTURE_GAME:
-					sprintf(s, "All discs collected by the %s team",
-							teams_entries[winning_team]);
-					break;
-				case ULTIMATE_GAME:
-					sprintf(s, "A goal for the %s team scored by %s",
-						teams_entries[winning_team], winning_vehicle->disp);
-					break;
-				case COMBAT_GAME:
-					sprintf(s, "Battle won by %s", winning_vehicle->disp);
-					break;
-				case WAR_GAME:
-					sprintf(s, "War won by the %s team",
-							teams_entries[winning_team]);
-					break;
-				case RACE_GAME:
-					sprintf(s, "Race won by %s", winning_vehicle->disp);
-					break;
-			}
-			mprint(s, 5, 4);
-		}
-		/* Print out the total scores for all the teams */
-		mprint("Current score:", 5, 6);
-		l = 8;
-		for (i = 0, k = 0; i < num_teams; i++, k = 0)
-		{
-			for (j = 0, m = l + 1; j < end_boundry; j++)
-				if (vehicle[j]->team == i)
-				{
-					sprintf(s, fmt,
-							vehicle[j]->owner->name,
-							(settings.si.pay_to_play && vehicle[j]->is_dead
-							 ? '*' : ' '),
-							vehicle[j]->owner->score,
-                            vehicle[j]->owner->kills,   
-                            vehicle[j]->owner->deaths); 
-					mprint(s, 5, m++);
-					k += vehicle[j]->owner->score;
-                    if (n == num_terminals - 1 &&       
-							settings.si.game != ULTIMATE_GAME)
-					{
-                        vehicle[j]->owner->score = 0;   
-					}
-				}
-			if (m != l + 1)
-			{
-				sprintf(s, "  %s: %d points", teams_entries[i], k);
-				mprint_color(s, 5, l, team_color[i]);
-				l = m + 1;
-			}
-		}
-		flush_output();
-	}
-
-	set_terminal(0);
-	/* mprint("'q' to end game, 's' to start", 20, 40); */
-	mprint("'q' to end game", 20, 40);
-	do
+	/* If we just reset the game, say who scored what */
+	if (status == GAME_RESET)
 	{
-		reply = get_reply();
-		reply = islower(reply) ? toupper(reply) : reply;
+	    switch (settings.si.game)
+	    {
+	      case CAPTURE_GAME:
+		sprintf(s, "All discs collected by the %s team",
+			teams_entries[winning_team]);
+		break;
+	      case ULTIMATE_GAME:
+		sprintf(s, "A goal for the %s team scored by %s",
+			teams_entries[winning_team], winning_vehicle->disp);
+		break;
+	      case COMBAT_GAME:
+		sprintf(s, "Battle won by %s", winning_vehicle->disp);
+		break;
+	      case WAR_GAME:
+		sprintf(s, "War won by the %s team",
+			teams_entries[winning_team]);
+		break;
+	      case RACE_GAME:
+		sprintf(s, "Race won by %s", winning_vehicle->disp);
+		break;
+	    }
+	    mprint(s, 5, 4);
 	}
-	/* while (reply != 'Q' && reply != 'S'); */
-	while (reply != 'Q');
-	return ((reply == 'Q') ? GAME_QUIT : GAME_RESET);
+	/* Print out the total scores for all the teams */
+	mprint("Current score:", 5, 6);
+	l = 8;
+	for (i = 0, k = 0; i < MAX_TEAMS; i++, k = 0)
+	{
+	    for (j = 0, m = l + 1; j < num_veh; j++) {
+		Vehicle *v = &actual_vehicles[j];
+
+		if (v->team == i) {
+		    sprintf(s, fmt,
+			    v->owner->name,
+			    ((settings.si.pay_to_play &&
+			      !tstflag(v->status, VS_is_alive))
+			     ? '*' : ' '),
+			    v->name,v->owner->score, v->owner->kills,
+			    v->owner->deaths); 
+		    mprint(s, 5, m++);
+		    k += v->owner->score;
+                    if (n == num_terminals - 1 &&
+			settings.si.game != ULTIMATE_GAME)
+		    {
+                        v->owner->score = 0;   
+		    }
+		}
+	    }
+	    if (m != l + 1)
+	    {
+		sprintf(s, "  %s: %d points", teams_entries[i], k);
+		mprint_color(s, 5, l, team_color[i]);
+		l = m + 1;
+	    }
+	}
+	flush_output();
+    }
+
+    set_terminal(0);
+    /* mprint("'q' to end game, 's' to start", 20, 40); */
+    mprint("'q' to end game", 20, 40);
+    do
+    {
+	reply = get_reply();
+	reply = islower(reply) ? toupper(reply) : reply;
+    }
+    /* while (reply != 'Q' && reply != 'S'); */
+    while (reply != 'Q');
+    return ((reply == 'Q') ? GAME_QUIT : GAME_RESET);
 }

@@ -38,13 +38,12 @@ III.  xtank the computerized battle simulator
 	compete in a tournament (complete with prizes, commentators,
 	music, pizza, and an audience, like last year's Crobots contest).
 	
-	I want to
-	design a user interface to design vehicles (along with a point
-	allocation system to build the vehicle up from its respective
-	pieces).  Also a programmer interface needs to be made.  This
-	would specify the primitives that a vehicle control program could
-	use to interact with the xtank world (turn_turret, accelerate,
-	fire_weapon, activate_radar, etc.)
+	I want to design a user interface to design vehicles (along with a
+	point allocation system to build the vehicle up from its respective
+	pieces).  Also a programmer interface needs to be made.  This would
+	specify the primitives that a vehicle control program could use to
+	interact with the xtank world (turn_turret, accelerate, fire_weapon,
+	activate_radar, etc.)
 
 IV.  Mazelords the multi-player arcade/adventure/role-playing game
 	This will be the ultimate futuristic ground combat game.  I will

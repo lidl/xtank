@@ -1,0 +1,142 @@
+/**/#
+/**/# Imakefile for ./Src - part of the UMDENG X-Tank distribution
+/**/#
+/**/# $Id: Imakefile,v 1.12 1991/09/29 17:22:47 lidl Exp $
+/**/#
+
+#include "../Imakefile.Config"
+
+    CDEBUGFLAGS = -g
+        DEPLIBS = $(DEPXLIB)
+LOCAL_LIBRARIES = $(XLIB)
+           SRCS = main.c interface.c file.c setup.c init.c animate.c \
+                  game.c program.c update.c box.c collision.c hit.c \
+                  display.c 3d.c gr.c graphics.c thread.c objects.c \
+                  input.c actions.c maze.c console.c mapper.c radar.c \
+                  lowlib.c highlib.c status.c unix.c util.c intersect.c \
+                  escher.c vdesign.c mdesign.c menu.c icounter.c message.c \
+                  cosell.c repair.c scroll.c vehicle.c explosion.c \
+                  XMultiSync.c malloc.c version.c $(SRCS2)
+           OBJS = main.o interface.o file.o setup.o init.o animate.o \
+                  game.o program.o update.o box.o collision.o hit.o \
+                  display.o 3d.o gr.o graphics.o thread.o objects.o \
+                  input.o actions.o maze.o console.o mapper.o radar.o \
+                  lowlib.o highlib.o status.o unix.o util.o intersect.o \
+                  escher.o vdesign.o mdesign.o menu.o icounter.o message.o \
+                  cosell.o repair.o scroll.o vehicle.o explosion.o \
+                  XMultiSync.o malloc.o version.o $(OBJS2)
+           INCL = Include/assert.h Include/bullet.h Include/common.h \
+                  Include/cosell.h Include/disc.h Include/game.h \
+                  Include/globals.h Include/gr.h Include/graphics.h \
+                  Include/icounter.h Include/interface.h Include/limits.h \
+                  Include/loc.h Include/lowlib.h Include/malloc.h \
+                  Include/map.h Include/maze.h Include/mdesign.h \
+                  Include/menu.h Include/message.h Include/object.h \
+                  Include/outpost.h Include/program.h Include/screen.h \
+                  Include/scroll.h Include/settings.h Include/setup.h \
+                  Include/special-defs.h Include/special.h Include/sysdep.h \
+                  Include/team.h Include/terminal.h Include/thread.h \
+                  Include/tread-defs.h Include/types.h Include/vdesc.h \
+                  Include/vehicle.h Include/vehicleparts.h Include/vstructs.h \
+                  Include/weapon-defs.h Include/xtank.h Include/xtanklib.h
+          XINCL = Include/Xlibos.h Include/x11.h
+
+/**/# Note that both x11.c and mazeconv.c are included in other .c files,
+/**/# so they are not listed above!
+
+/**/# Important things that Xtank wants to find
+
+ EXTRA_INCLUDES = -I. -IInclude
+
+/**/# Everybody needs the following library
+
+EXTRA_LIBRARIES = -LPrograms -lxtankrobots -lm
+
+/**/# Start of System Dependent Things
+/**/# (e.g. libraries, linker flags and so forth)
+
+#ifdef i860Architecture
+  SYS_LIBRARIES = -L/usr/ucblib -lnsl -lucb
+#endif
+#ifdef ApolloArchitecture
+  SYS_LIBRARIES = -L/usr/X11/lib
+#endif
+#ifdef HPArchitecture
+  SYS_LIBRARIES = -lBSD -lmalloc
+# ifdef hp9000s800
+          SRCS2 = flush_hp9k8.c
+          OBJS2 = flush_hp9k8.o
+# endif
+#endif
+#ifdef UltrixArchitecture
+#ifdef MipsArchitecture
+          SRCS2 = mipssj.s
+          OBJS2 = mipssj.o
+#endif
+#endif
+#ifdef RiscArchitecture 
+/**/# IBM RS6000
+          SRCS2 = rs6klongjmp.s
+          OBJS2 = rs6klongjmp.o
+#endif
+#ifdef RtArchitecture
+/**/# IBM RT
+#endif
+#ifdef SGIArchitecture
+  SYS_LIBRARIES = -lm43 -lbsd -lsun
+#endif
+#ifdef SunArchitecture
+  SYS_LIBRARIES = /usr/lib/debug/malloc.o -llwp
+      CCOPTIONS = -Bstatic
+#ifdef SparcArchitecture
+/**/# Sun4
+#else
+/**/# Sun3
+#endif
+#endif
+#ifdef VaxArchitecture
+          SRCS2 = vaxsj.s
+          OBJS2 = vaxsj.o
+#endif
+
+/**/# End of System Dependent Things
+
+#define IHaveSubdirs
+#define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
+#define PassDefines 'DEFINES=$(DEFINES)'
+
+        SUBDIRS = Programs
+
+MakeSubdirs($(SUBDIRS))
+
+all::
+	$(RM) version.c
+
+ComplexProgramTarget($(XTANK_TARGET))
+
+ExtraSpecialObjectRule(init.o, init.c, -g)
+
+version.c:
+	@echo -n "Updating version number..."
+	@../Bin/newversion.sh $(XTANK_TARGET)
+	@echo " Done."
+
+copyout:
+	co $(SRCS) $(INCL)
+
+grpobj:
+	@-chgrp xtank *.o 2>/dev/null
+	@-chmod 664 *.o 2>/dev/null
+
+/**/#prof:
+/**/#	$(COMPILE.c) -O -pg $(SRCS)
+/**/#	$(LINK.c) -O -pg -o xtank.sun4.prof $(OBJS) $(LIBSUN)
+
+/**/#lint: $(SRCS)
+/**/#	$(LINT.c) $(SRCS) | grep -v "possible pointer alignment problem"
+
+print:
+	enscript -2rG Makefile $(INCL) $(SRCS) x11.c
+
+TAGS: $(INCL) $(SRCS) $(XINCL) $(XSRCS) x11.c
+	etags -t $(INCL) $(XINCL) $(SRCS) $(XSRCS) x11.c

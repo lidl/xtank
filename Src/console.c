@@ -1,4 +1,3 @@
-#include "malloc.h"
 /*
 ** Xtank
 **
@@ -7,6 +6,32 @@
 ** console.c
 */
 
+/*
+$Author: stripes $
+$Id: console.c,v 2.4 1991/03/25 00:40:13 stripes Exp $
+
+$Log: console.c,v $
+ * Revision 2.4  1991/03/25  00:40:13  stripes
+ * RS6K patches
+ *
+ * Revision 2.3  1991/02/10  13:50:16  rpotter
+ * bug fixes, display tweaks, non-restart fixes, header reorg.
+ *
+ * Revision 2.2  91/01/20  09:57:29  rpotter
+ * complete rewrite of vehicle death, other tweaks
+ * 
+ * Revision 2.1  91/01/17  07:11:07  rpotter
+ * lint warnings and a fix to update_vector()
+ * 
+ * Revision 2.0  91/01/17  02:09:13  rpotter
+ * small changes
+ * 
+ * Revision 1.1  90/12/29  21:02:09  aahz
+ * Initial revision
+ * 
+*/
+
+#include "malloc.h"
 #include "xtank.h"
 #include "graphics.h"
 #include "gr.h"
@@ -135,7 +160,7 @@ static Word console_word[] = {
 	{30, 5, 2},					/* Coord_x */
 	{36, 5, 2},					/* Coord_y */
 
-#ifdef apollo
+#if defined(_IBMR2) || defined(apollo)
 	{143, 90, 0},				/* Fuel */
 	{143, 110, 0},				/* Heat */
 #else

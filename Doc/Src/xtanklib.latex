@@ -8,10 +8,11 @@
 \font\sc=cmcsc10 
 
 \input{header.latex}
+\newcommand{\bitem}[1]{\item[{\bf #1}]}
 
-\title{How to Write an \xtank\ Robot Program}
-\author{Terry Donahue \and Dan Schmidt}
-\date{\today}
+\title{How to Write an XTANK Robot Program}
+\author{Robert Potter \and Terry Donahue \and Dan Schmidt}
+\date{January 20, 1991}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -21,86 +22,75 @@
 
 \section{Introduction}
 
-\xtanklib\ is the programmer's interface to \xtank.  Through the
-use of the functions in \xtanklib, a program has complete control over
-an \xtank\ vehicle.  Since there are a large number of functions in \xtanklib,
-they are organized into the following groups:
+\xtank\ robot programs are basically just C programs, with a few
+constraints.
+The robot interface to \xtank\ is provided by \xtanklib, a set of C functions
+and macros.
+This interface is virtually identical in functionality to that provided to
+human \xtank\ players.
 
-\begin{itemize}
-  \item Movement
-  \item Turrets
-  \item Weapons
-  \item Armor
-  \item Fuel
-  \item Heat
-  \item Specials
+This document assumes you are familiar with the C language, and that you have
+played \xtank\ enough to understand the basic features of the game.
 
-  \item Environment
-  \item Discs
-  \item Messages
+Improvements to this document are welcome.  If you find any errors, or can
+rewrite a section to make it clearer, send mail to
+\verb~rpotter@grip.cis.upenn.edu~.
 
-  \item Miscellaneous
-\end{itemize}
-
-\section{Programming Notes}
-
-\begin{itemize}
-  \item The source code for programs should be stored in the directory
-        \verb|$(XTANK_DIR)/$(XTANK_PROGRAMS)|.  Ask your local maintainer
-        what directory this is if you're not sure.  You must
-        \verb|#include  "xtanklib.h"| at the beginning of the program.
-
-  \item Your program filename must have a \verb~.c~ extension, 
-        e.g. \verb~<program name>.c~.
-
-  \item All procedures and global variables in your program should be 
-        prefixed with your program name.
-
-  \item Your main procedure must be called \verb~<program name>_main()~.
-        Make sure your main procedure never returns.  This can easily be
-        accomplished by using a big \verb~while(1)~ or \verb~for(;;)~ loop.
-
-  \item You may want to use static variables instead of global ones.
-        Static variables are limited in scope to the source file in
-         which they are declared, so you don't have to worry about what names
-        you use.
-
-  \item If you use {\em any} static or global variables in your \xtank\ program,
-        you won't be able to use it in two different vehicles in one battle
-        (i.e. running it against itself).  Every vehicle using your \xtank\
-        program will be using the same global and static variables.
-        If you plan to be able to use it in two different vehicles in
-        one battle, create a structure in your main procedure which
-        contains all ``global'' data, and pass its address to every function.
-
-  \item Global and static variables do not get reinitialized each battle,
-        so initialize them yourself, at the start of your main function.
-
-  \item All the numbering done by \xtank\ begins with 0, not 1.  For example,
-        the first turret is numbered 0, and the third turret is numbered
-        2.  Do not forget this.
-
-  \item If your program uses any math functions, such as atan2, sin, or cos,
-        be sure to \verb~#include <math.h>~.  The math library is automatically
-        linked in by \xtank.
-
-  \item Because of the way \xtank\ does the multi-tasking between \xtank\ 
-        programs
-        during a battle, there is a limit to the amount of stack
-        space  your program
-        can use.  Your program should not have more than 18K of local variable
-        space.  For most programs this is not a problem.
-
-  \item Your object (\verb~.o~) file should not be larger than 32K.  If it
-        is, \xtank\ will load it improperly.
-
-\end{itemize}
 
 \section{Program Format}
 
+Here are a few things you should keep in mind while writing your \xtank\ robot:
+
+\begin{itemize}
+  \item Your program should be put in the directory
+	\verb|$(XTANK_DIR)/$(XTANK_PROGRAMS)| (usually \verb~xtank/Programs~).
+	Ask your local maintainer what directory this is if you're not sure.
+
+  \item Your program filename should be named {\em program-name}\verb~.c~, e.g.
+	\verb~killer.c~.
+
+  \item You should \verb|#include <xtanklib.h>| at the beginning of your
+	program.
+
+  \item Your main procedure must {\em never} return.  This can easily be
+	accomplished by using a big \verb~while(1)~ or \verb~for(;;)~ loop.
+
+  \item Declare all globals (functions/variables) as \verb~static~.  This will
+	prevent name-space clashes with other robot programs and with \xtank\
+	itself.  The exception to this is your \verb~Prog_desc~ variable.
+
+  \item Avoid global or static variables. Because of the way that xtank loads
+	programs, these variables will be shared among all vehicles that are
+	running your program, with possibly disastrous results.  Of course,
+	generally read-only variables (such as run-time constants, or things
+	like game settings) {\em can} be peacefully shared between vehicles,
+	and thus can safely be made global.  Global and static variables do not
+	get reinitialized each battle, so initialize them yourself, at the
+	start of your main function.
+
+	This may seem like a heavy restriction, but a simple method for
+	simulating global variables is provided in the example at the end of
+	this document.
+
+  \item Because of the way \xtank\ does multi-tasking between \xtank\ programs
+	during a battle, the amount of stack space your program can use is
+	limited to 25K bytes.	Make sure that the total amount of local data
+	your program uses is comfortably less than this, to leave room on the
+	stack for function calls, and avoid heavily recursive algorithms.  For
+	most programs this is not a problem.
+
+  \item Your object (\verb~.o~) file should not be larger than 32K.  If it is,
+	\xtank\ might not load it properly.  (Or did this restriction go away?)
+\end{itemize}
+
+ 
+
+\subsection{Program Descriptor}
+
 A necessary part of every \xtank\ program is the \verb~Prog_desc~ structure.
 \xtank\ uses this structure to find out relevant information about your
-program.
+program.  Every \xtank\ program needs to have a \verb~Prog_desc~ variable named
+{\em program-name}\verb~_prog~.
 
 {\small
 \begin{tabbing}
@@ -112,26 +102,22 @@ program.
 \verb~  char *author;~   \> {\em name of author} \\
 \verb~  unsigned int abilities;~ \> {\em things the program does} \\
 \verb~  int skill;~      \> {\em ability rating of the program (0--10)} \\
-\verb~  int (*func)();~  \> {\em name of main function} \\
-\verb~  char *code;~     \> {\em used internally by \xtank} \\
+\verb~  void (*func)();~ \> {\em your main procedure} \\
 \verb~} Prog_desc;~      \\
 \end{tabbing}
 }
 
-\begin{itemize}
-  \vitem{name} is the name of the program, which might be more descriptive
-than the name of the file itself.  Only the first 18 characters of it will
-be used by \xtank.
-
-  \vitem{vehicle} is the default vehicle name.  It should be present in
-the default Vehicles directory.
-
-  \vitem{strategy} describes the program's strategy in a few sentences.
-
-  \vitem{author} is the name of the author of the program.
-
-  \vitem{abilities} lists the things the program does.  This should be
-the binary `or' of some of the following flags:
+\begin{description}
+\vitem{name} is the name of the program, which might be more descriptive than
+	the name of the file itself.  Only the first 18 characters of it will
+	be used by \xtank.
+\vitem{vehicle} is the default vehicle name.  It should be present in
+	the \verb|$(XTANK_DIR)/$(XTANK_VEHCICLES)| directory.
+\vitem{strategy} describes the program's strategy in a few sentences.  Don't
+        put newlines in this string.
+\vitem{author} is the name of the author of the program.
+\vitem{abilities} lists the things the program does.  This should be
+	the binary `or' of some of the following flags:
 \begin{verbatim}
   PLAYS_COMBAT            DOES_SHOOT              USES_TEAMS
   PLAYS_WAR               DOES_EXPLORE            USES_MINES
@@ -139,23 +125,17 @@ the binary `or' of some of the following flags:
   PLAYS_CAPTURE           DOES_REPLENISH          USES_SIDE_MOUNTS
   PLAYS_RACE                                      USES_MESSAGES
 \end{verbatim}
-For example, a tank which plays combat and shoots at everyone except
-its teammates might have \verb~PLAYS_COMBAT | DOES_SHOOT | USES_TEAMS~
-in this field.
+	For example, a program which plays combat and shoots at everyone except
+	its teammates might have \verb~PLAYS_COMBAT | DOES_SHOOT | USES_TEAMS~
+	in this field.
+\vitem{skill} is the skill level of the program for its particular type.
+	Most programs should be somewhere from 2 to 8.  Save 0 and 1 for the
+        truly awful, and 9 or 10 for the spectacular.
+\vitem{func} is the address of the main procedure of the program.
+\end{description}
 
-  \vitem{skill} is the skill of the program for its particular type.
-Most programs should be somwhere from 2 to 8.  Save 0 and 1 for the truly 
-awful, and 9 or 10 for the spectacular.
 
-  \vitem{func} is the name of the main procedure of the program,
-i.e. \verb~<program name>_main~.
-
-  \vitem{code} is used by \xtank\ to store your program.  It is initialized
-for you and you should not modify it.
-
-\end{itemize}
-
-\subsection*{The Smallest Possible \xtank\ Program}
+\subsection{The Smallest Possible \xtank\ Program}
 
 The only necessary parts of an \xtank\ program are the \verb~Prog_desc~
 structure and a main function which has an infinite loop.  The following
@@ -163,43 +143,36 @@ program is perfectly valid, although not too useful.
 
 {\small
 \begin{verbatim}
-/*
-** nothing.c
-*/
+/* minimal.c */
 
-#include "xtanklib.h"
+#include <xtanklib.h>
 
-extern int nothing_main();
-
-Prog_desc nothing_prog = {
-  "nothing",
-  "war",
-  "hexo#1",
-  "Just sits there",
-  "Terry Donahue",
-  1,
-  nothing_main
-}
-
-nothing_main()
+static void main()
 {
-  while(1) {
-    nothing_wait();
-  }
+    while (1) {
+        done();
+    }
 }
 
-nothing_wait()
-{
-  done();
-}
+Prog_desc minimal_prog = {
+    "minimal",
+    "Vanguard",
+    "Does nothing.",
+    "Robert Potter",
+    0,
+    0,
+    main
+};
 \end{verbatim}
 }
+
 
 \section{Coordinate Systems}
 
 The coordinate system in \xtank\ has x increasing to the right,
 and y increasing {\em down} the screen, {\em not up} as in most 
 coordinate systems.  Note that this makes angles measure clockwise.
+All angles are measured in radians.
 
 \setlength{\unitlength}{.5in}
 
@@ -228,658 +201,589 @@ coordinate systems.  Note that this makes angles measure clockwise.
 
 \vspace{.5in}
 
-Coordinates are used for screen coordinates (pixels)
-and maze coordinates (boxes).
+Any angle sent to \xtanklib\ will be converted to the above format.  Any angle
+output by \xtanklib\ will be in the range $0 \leq \mbox{angle} < 2\pi$.
 
-Any angle sent to \xtanklib\ will be converted to the above format.
-Any angle output by \xtanklib\ will be in the range  
-$0 \leq \mbox{angle} < 2\pi$.
 
-\section{Constants}
+\section{The Playing Area}
 
-The following constants have been predefined in {\tt xtanklib.h}.
+The \xtank\ world is a grid of rectangular ``boxes'', possibly separated by
+walls.  Boxes are much larger than vehicles, so you can drive around inside
+them.  Boxes are subdivided into ``pixels'', the smallest unit of distance in
+the game.
 
-\begin{itemize}
-  \vitem{BAD\_VALUE} returned by many functions to indicate that a value
-passed to it was out of range or inappropriate.
-  \vitem{GRID\_WIDTH} the maximum width of the maze (in boxes).
-  \vitem{GRID\_HEIGHT} the maximum height of the maze (in boxes).
-  \vitem{BOX\_WIDTH} the width of each box (in pixels).
-  \vitem{BOX\_HEIGHT} the height of each box (in pixels).
-  \vitem{SCREEN\_WIDTH} the width of the visible screen (in pixels).  Your
-vehicle cannot see things that are off its screen.  It is always considered
-to be at the center of its screen.  The screen width and height depend
-on your hardware.
-  \vitem{SCREEN\_HEIGHT} the height of the visible screen (in pixels).
-  \vitem{MAX\_DATA\_LEN} the maximum number of characters in a text message.
-Currently this is 31.
-  \vitem{MAX\_BLIPS} the maximum number of blips that \xtank\ will tell
-you about when you get blip information.  
-  \vitem{MAX\_VEHICLES} the maximum number of vehicles that \xtank\ will tell
-you about when you get vehicle information.
-  \vitem{MAX\_BULLETS} the maximum number of bullets that \xtank\ will tell
-you about when you get bullet information.
-  \vitem{MAX\_DISCS} the maximum number of discs that \xtank\ will tell
-you about when you get disc information.
-  \vitem{MAX\_LANDMARKS} the maximum number of landmarks that \xtank\ will tell
-you about when you get landmark information.
-\end{itemize}
-{\bf Note:} when you ask for information from \xtank, the array of structures
-you give it {\em must} be large enough to hold the maximum number of objects
-xtank might tell you about.  Otherwise you may get a segmentation 
-violation.  For example, when calling \verb~get_landmarks()~, the
-\verb~Landmark_info[]~ you pass to it must have at least \verb~MAX_LANDMARKS~
-elements.
+Some walls can be destroyed by shooting them or ramming into them.  Some boxes
+are distinguished by having a ``landmark'', which confers a special property.
+Here are the different kinds of landmarks:
 
-Also, you need not worry about losing information because your program
-can ``only'' see \verb~MAX_<whatever>~ items.  These constants are designed
-to be large enough so that you will never lose information.  For example,
-there will never be more than \verb~MAX_BULLETS~ bullets on the screen at
-one time, so there will never be a bullet on your screen which you are not
-aware of. 
+\begin{description}
+ \bitem{Depots:} these are places where you can buy fuel, ammunition or armor.
+ \bitem{Scroll boxes:} these tend to move you in some direction, much like a
+	conveyor belt.
+ \bitem{Slow boxes:} these just slow you down while you are in them.
+ \bitem{Slip boxes:} these make it difficult to change your velocity.
+ \bitem{Outposts:} these are automatic devices that shoot at you while orbiting
+	about.
+ \bitem{Peace boxes:} these give you a sanctuary where you can't be shot.
+ \bitem{Start boxes:} these are places where vehicles start the game, or where
+	they are resurrected after they are killed.
+ \bitem{Goals:} these are used in the Ultimate and Capture games.
+\end{description}
 
-\section{Types}
 
-There are many different names for an \verb~int~ in an \xtank\ program.
-This is to make programs clearer: an \verb~int~ standing for a weapon type
-should not be confused with an \verb~int~ standing for a side of a vehicle.
-All of these types are listed in this section, along with the values they
-can take on.  It is {\em very bad practice} to directly use these values,
-as they are subject to change; they are included for the curious.
 
-\setlength{\parskip}{1em}
+\section{The Robot Interface}
 
-\verb~TurretNum~: Used to specify a turret.
-\xx
+This section describes the actual data structures and library calls that make
+up the interface between \xtank\ and robot programs.  These are the low-level
+building blocks for writing an \xtank\ program.  It is strongly suggested that
+you develop higher-level procedures for doing more complex actions, instead of
+writing one big procedure that makes hundreds of \xtanklib\ calls.  Not only
+will your program be easier to write, but then you can then trade your
+\verb~perfect_lead()~ shooting procedure for someone else's \verb~best_dodge()~
+movement procedure.
+
+All of the constants and types described below are defined in
+\verb~xtanklib.h~.  The functions are linked in when your program is loaded
+into \xtank.  For the curious or adventurous, a browse through
+\verb~xtanklib.h~, \verb~lowlib.c~ and \verb~highlib.c~ (all found in
+\verb~xtank/Src~) might turn up other tasty oddments.
+
+
+\subsection{General}
+
+\subsubsection*{Constants:}
+
+\begin{description}
+  \vitem{NULL} Conventional value for pointers that don't point anywhere.
+  \vitem{BAD\_VALUE} returned by many functions to indicate that a value passed
+	to it was out of range or inappropriate.
+  \vitem{GRID\_WIDTH,GRID\_HEIGHT} the maximum dimensions of the maze (in
+	boxes).
+  \vitem{BOX\_WIDTH,BOX\_HEIGHT} the dimensions of each box (in pixels).
+  \vitem{SCREEN\_WIDTH,SCREEN\_HEIGHT} the dimensions of the visible screen
+	(in pixels).  Your vehicle is always considered to be at the center of
+	the screen, and cannot see things outside of it.
+  \vitem{LANDMARK\_WIDTH,LANDMARK\_HEIGHT} the dimensions of fuel/armor/ammo
+	depots.  You have to be within a rectangle this size at the center of
+	the box to buy anything.
+  \vitem{MAX\_TEAMS} The maximum number of teams there can be in the game.
+  \vitem{NEUTRAL} The team number of the neutral team.
+  \vitem{PI} $\pi$.
+  \vitem{TICKSZ} Robot programs only get control every \verb~TICKSZ~ (currently
+	2) frames.  This is a drag, but is necessary to keep the game from
+	being slowed down too much by robot multitasking.
+\end{description}
+
+
+\subsubsection*{Types:}
+
+\begin{description}
+  \vitem{Angle} a \verb~float~ representing an angle, in radians.  When
+	returned from an \xtanklib\ function, it will be from 0 to $2\pi$.  If
+	a value outside of this range is passed in, it will be converted to
+	this range.
+  \vitem{Boolean} an \verb~int~ which can either be \verb~TRUE~ (1) or
+	\verb~FALSE~ (0).
+  \vitem{Team} an \verb~int~ specifying the team a vehicle is on.
+  \vitem{Byte} an \verb~unsigned char~.
+  \vitem{ID} a \verb~Byte~ specifying the team a vehicle is on.
+\end{description}
+
+
+\subsubsection*{Macros:}
+
 \begin{verbatim}
-  0 TURRET1
-  1 TURRET2
-  2 TURRET3
+Angle fixed_angle(ang)
+    Angle ang;
+\end{verbatim}
+\vspace{-1ex}
+\noindent
+Maps the given angle back into the range [0--$2\pi$).
+
+\begin{verbatim}
+HYPOT(x,y), ATAN2(y,x), SQRT(x), SIN(x), COS(x)
+\end{verbatim}
+\vspace{-1ex}
+These macros are front ends for the normal math library functions, and are
+preferable because they cast their arguments to double, and on some systems do
+other things to avoid arithmetic errors.
+
+\begin{verbatim}
+MIN(x,y), MAX(x,y), ABS(x), SIGN(x), SQR(x)
+\end{verbatim}
+\vspace{-1ex}
+These are just conventional convenience macros.
+
+
+
+
+\subsection{Settings}
+
+Game settings describe the general parameters for the game currently being
+played.  They are essential for your program to know what to do in order to
+win.
+
+\subsubsection*{Types:}
+
+\begin{verbatim}
+typedef enum {
+    COMBAT_GAME, WAR_GAME, ULTIMATE_GAME, CAPTURE_GAME, RACE_GAME
+} Game;
 \end{verbatim}
 
-\verb~WeaponError~: Returned by \verb~fire_weapon()~ to explain the
-result of firing the weapon.
-\xx
 \begin{tabbing}
-\verb~  0 FIRED       ~ \= {\em the weapon fired successfully} \\
-\verb~  1 RELOADING~    \> {\em the weapon is busy reloading} \\
-\verb~  2 NO_AMMO~      \> {\em the weapon is out of ammo} \\
-\verb~  3 WEAPON_OFF~   \> {\em the weapon is turned off} \\
-\verb~  4 TOO_HOT~      \> {\em the vehicle is too hot to fire any weapons} \\
-\end{tabbing}
-
-\verb~WeaponType~: The various types of weapons.
-\xx
-\begin{verbatim}
-  0 LMG      3 LRIFLE     6 LCANNON     9 LROCKET     12 ACID     15 SEEKER
-  1 MG       4 RIFLE      7 CANNON     10 ROCKET      13 FLAME    16 SLICK
-  2 HMG      5 HRIFLE     8 HCANNON    11 HROCKET     14 MINE
-\end{verbatim}
-
-\verb~MountLocation~: The places where a weapon may be mounted.
-\xx
-\begin{verbatim}
-  0 MOUNT_TURRET1     3 MOUNT_FRONT
-  1 MOUNT_TURRET2     4 MOUNT_BACK
-  2 MOUNT_TURRET3     5 MOUNT_LEFT
-                      6 MOUNT_RIGHT
-\end{verbatim}
-
-\verb~Side~: The sides of the vehicle on which armor may be placed.
-\xx
-\begin{verbatim}
-  0 FRONT     2 LEFT       4 TOP
-  1 BACK      3 RIGHT      5 BOTTOM
-\end{verbatim}
-
-\verb~Opcode~: The kinds of messages a vehicle can send.
-\xx
-\begin{tabbing}
-\verb~  0 OP_LOCATION  ~ \= {\em announce your location} \\
-\verb~  1 OP_GOTO~ \> {\em tell a vehicle to go to a certain square} \\
-\verb~  2 OP_FOLLOW~ \> {\em tell a vehicle to follow another vehicle} \\
-\verb~  3 OP_HELP~ \> {\em ask for help} \\
-\verb~  4 OP_ATTACK~ \> {\em tell a vehicle to attack another vehicle} \\
-\verb~  5 OP_OPEN~ \> {\em ask to be thrown a disc} \\
-\verb~  6 OP_THROW~ \> {\em announce a disc throw} \\
-\verb~  7 OP_CAUGHT~ \> {\em announce that you've caught a disc} \\
-\verb~  8 OP_ACK~ \> {\em acknowledge another message} \\
-\verb~  9 OP_TEXT~ \> {\em send text} \\
-\verb~ 10 OP_DEATH~ \> {\em announce the death of a vehicle} \\
-\end{tabbing}
-
-\verb~DiscSpin~: Used to select which way a disc is spinning around
-the vehicle.
-\xx
-\begin{verbatim}
- -1 COUNTERCLOCKWISE
-  1 CLOCKWISE
-  2 TOGGLE
-\end{verbatim}
-
-\verb~Wall~: Passed to \verb~wall()~ to ask if there 
-is a wall on that side of a given box.
-\xx
-\begin{verbatim}
-  0 NORTH     2 SOUTH
-  1 EAST      3 WEST
-\end{verbatim}
-
-\verb~LandmarkType~: The various types of landmarks.
-\xx
-\begin{verbatim}
-  0 NORMAL     4 GOAL          8 SCROLL_E     12 SCROLL_W 
-  1 FUEL       5 OUTPOST       9 SCROLL_SE    13 SCROLL_NW
-  2 AMMO       6 SCROLL_N     10 SCROLL_S     14 SLIP
-  3 ARMOR      7 SCROLL_NE    11 SCROLL_SW    15 SLOW
-\end{verbatim}
-
-\verb~SpecialType~: The various types of specials.
-\xx
-\begin{verbatim}
-  0 CONSOLE      4 RAMPLATE
-  1 MAPPER       5 DEEPRADAR
-  2 RADAR        6 STEALTH
-  3 REPAIR
-\end{verbatim}
-
-\setlength{\parskip}{0ex}
-
-There are a few other types that are used in an \xtank\ program to 
-distinguish the roles of certain variables.  They are:
-\begin{itemize}
-  \vitem{Angle} an angle, in radians.  When returned from an \xtanklib\
-function, it will be from 0 to $2\pi$.  If a value outside of this range
-is passed in, it will be converted to this range.
-It is equivalent to a float.
-  \vitem{WeaponNum} an integer from 0 to \verb~num_weapons() - 1~ representing
-the weapon in that slot.
-  \vitem{Boolean} an integer which can either be \verb~TRUE~ (1) or
-\verb~FALSE~ (0).
-  \vitem{ID} an integer specifying the ID number of a vehicle.  When used
-in message passing, it can also be used to specify all vehicles on a team,
-or all vehicles in the maze.  See Section~\ref{Messages} 
-(page~\pageref{Messages}) for more information.
-  \vitem{Team} an integer specifying the team a vehicle is on.
-\end{itemize}
-
-\section{Structures}
-
-In some cases, \xtanklib\ functions are passed pointers to structures.
-All the structures which are used in \xtanklib\ are listed here.
-
-\begin{small}
-\begin{tabbing}
-\verb~  int grid_x, grid_y;     ~ \= \kill
+\verb~    int outpost_strength;       ~ \= \kill
 \verb~typedef struct {~ \\
-\verb~  int grid_x, grid_y;~ \> {\em box within the maze} \\
-\verb~  int box_x, box_y;~   \> {\em location within that box} \\ 
-\verb~  int x, y;~           \> {\em location in pixels from origin of maze} \\
-\> {\em (e.g. \verb|x = grid_x * BOX_WIDTH + box_x|)} \\
-\verb~} Location;~ \\
-\end{tabbing}
-
-\begin{tabbing}
-\verb~  unsigned int flags;      ~ \= \kill
-\verb~typedef struct {~ \\
-\verb~  unsigned int flags;~ \> {\em bits for walls, etc.; used by
-some macros} \\
-\verb~  LandmarkType type;~  \> {\em code for landmark type} \\
-\verb~  Team team;~  \> {\em what team owns the box, \verb~NEUTRAL~ if
-it's neutral} \\
-\verb~  char strength;~ \> {\em strength of the scroll, outpost, etc.} \\
-\verb~} Box;~ \\
-\end{tabbing}
-
-\begin{tabbing}
-\verb~  LandmarkType type;     ~  \= \kill
-\verb~typedef struct {~ \\
-\verb~  LandmarkType type;~  \> {\em code for landmark type} \\
-\verb~  Team team;~   \> {\em what team owns the box, \verb~NEUTRAL~
-if it's neutral} \\
-\verb~  int x,y;~     \> {\em box within the maze which the landmark is in } \\
-\verb~} Landmark_info;~ \\
-\end{tabbing}
-
-\begin{tabbing}
-\verb~typedef struct {        ~ \= \\
-\verb~  int x,y;~         \> {\em box within the maze which the blip is in} \\
-\verb~} Blip_info;~ \\
-\end{tabbing}
-
-\begin{tabbing}
-\verb~  float xspeed, yspeed;     ~ \= \kill
-\verb~typedef struct {~ \\
-\verb~  Location loc;~         \> {\em where the vehicle is} \\
-\verb~  float xspeed, yspeed;~ \> {\em its speed in the x and y directions} \\
-\verb~  Angle heading;~        \> {\em its heading (in radians)} \\
-\verb~  ID id;~             \> {\em a unique identifier for this vehicle} \\ 
-\verb~  Team team;~             \> {\em which team it is on } \\
-\verb~  BodyType body;~        \> {\em what type of body it has} \\ 
-\verb~} Vehicle_info;~ \\
-\end{tabbing}
-
-\begin{tabbing}
-\verb~  MountLocation mount;     ~ \= \kill
-\verb~typedef struct {~ \\
-\verb~  WeaponType type;~     \> {\em the type of weapon } \\
-\verb~  MountLocation mount;~ \> {\em where it's mounted } \\
-\verb~  int damage;~          \> {\em how much damage each bullet does } \\
-\verb~  int heat;~            \> {\em how much your heat is increased when the
-                                      weapon is fired }\\
-\verb~  int range;~           \> {\em range of the weapon in pixels} \\
-\verb~  int reload;~          \> {\em how many frames it takes to reload the
-                                      weapon between shots } \\
-\verb~  int max_ammo;~        \> {\em the bullet capacity of the weapon } \\
-\verb~  int ammo_speed;~      \> {\em speed of the bullets } \\
-\verb~} Weapon_info;~ \\
-\end{tabbing}
-
-\begin{tabbing}
-\verb~  float xspeed, yspeed;     ~ \= \kill
-\verb~typedef struct {~ \\
-\verb~  Location loc;~         \> {\em where the bullet is } \\
-\verb~  float xspeed, yspeed;~ \> {\em its speed in the x and y directions} \\
-\verb~  WeaponType type;~    \> {\em what type of weapon it was fired from} \\ 
-\verb~} Bullet_info;~ \\
-\end{tabbing}
-
-\begin{tabbing}
-\verb~  float xspeed, yspeed;     ~ \= \kill
-\verb~typedef struct {~ \\
-\verb~  Location loc;~         \> {\em where the disc is } \\
-\verb~  float xspeed, yspeed;~ \> {\em its speed in the x and y directions} \\
-\verb~  ID owner;~            \> {\em who it is orbiting,
-   \verb~NO_OWNER~ if it is unowned} \\
-\verb~  Angle angle;~          \> {\em what angle it is at relative to its
-owner} \\
-\verb~  DiscSpin spin;~        \> {\em which way it is spinning around its
-owner} \\
-\verb~} Disc_info;~ \\
-\end{tabbing}
-
-\begin{tabbing}
-\verb~  int outpost_strength;     ~ \= \kill
-\verb~typedef struct {~ \\
-\verb~  Boolean ricochet;~ \> {\em whether or not bullets can bounce 
-                                   off walls} \\
-\verb~  Boolean no_wear;~ \> {\em whether or not vehicles take damage and
-                                  use up fuel } \\
-\verb~  Boolean full_map;~ \> {\em whether everyone starts out with a
-complete map } \\
-\verb~  Game game;~ \> {\em what type of game is being played} \\
-\verb~  int winning_score;~ \> {\em how many points a vehicle needs 
-                             to win the game} \\
-\verb~  int outpost_strength;~ \> {\em the strength of outposts (1--10)} \\
-\verb~  float scroll_speed;~ \> {\em the speed of scrolling squares} \\
-\verb~  float box_slowdown;~ \> {\em how much slow squares slow you down} \\
-\verb~  float disc_friction;~ \> {\em how quickly discs will 
-                                  slow down if unowned} \\
-\verb~  float owner_slowdown;~ \> {\em how much owning a disc will 
-                                   slow you down} \\
+\verb~    Game game;~ \>            {\em basic rules} \\
+\verb~    Boolean ricochet;~ \>     {\em whether bullets bounce off walls} \\
+\verb~    Boolean rel_shoot;~ \>    {\em whether shooter's speed added to bullet's} \\
+\verb~    Boolean no_wear;~ \>      {\em whether vehicles take damage and use fuel} \\
+\verb~    Boolean restart;~ \>      {\em whether vehicles restart after death} \\
+\verb~    Boolean full_map;~ \>     {\em whether vehicles start out with full map} \\
+\verb~    Boolean pay_to_play;~ \>  {\em whether vehicles have to "pay to play"} \\
+\verb~    int winning_score;~ \>    {\em score needed to win the game} \\
+\verb~    int takeover_time;~ \>    {\em difficulty of capturing a box (in War mode)} \\
+\verb~    int outpost_strength;~ \> {\em firepower of outposts (0--10)} \\
+\verb~    int shocker_walls;~ \>    {\em extra damage done by walls (0--10)} \\
+\verb~    float scroll_speed;~ \>   {\em speed of scroll boxes (0--10)} \\
+\verb~    float slip_friction;~ \>  {\em ground traction in slip boxes (0--1)} \\
+\verb~    float normal_friction;~ \>{\em ground traction in all other boxes (0--1)} \\
+\verb~    float disc_friction;~ \>  {\em slowdown factor for a free disc (0--1)} \\
+\verb~    float box_slowdown;~ \>   {\em slow box speed factor (0--1)} \\
+\verb~    float owner_slowdown;~ \> {\em disc owner speed factor (0--1)} \\
 \verb~} Settings_info;~ \\
 \end{tabbing}
 
-\begin{tabbing}
-\verb~unsigned char data[MAX_DATA_LEN];     ~ \= \kill
-\verb~typedef struct {~ \\
-\verb~  ID sender;~ \> {\em vehicle number of the sender} \\
-\verb~  Team char sender_team;~ \> {\em team number of the sender} \\
-\verb~  ID recipient;~ \> {\em vehicle number of the recipient} \\
-\verb~  Opcode opcode;~ \> {\em the type of message} \\
-\verb~  unsigned char data[MAX_DATA_LEN];~ \> {\em the message itself} \\
-\verb~} Message;~ \\
-\end{tabbing} 
-\end{small}
+\noindent
+Additional notes about some of these fields:
 
-\section{Settings}
+\begin{description}
+\vitem{game} Describes the winning conditions of the game.
+\vitem{full\_map} If this is \verb~TRUE~, then the vehicle's mapper will
+	be initialized with information about the entire maze at the
+	beginning of each battle.
+\vitem{pay\_to\_play} If this is \verb~TRUE~, then players will lose the price
+	of their vehicle every time they die and restart.
+\vitem{takeover\_time} In the War game, you have to be in a box this many
+	updates before you are considered its owner.  This time is further
+	modified by the ownership of neighboring boxes.
+\vitem{outpost\_strength} Determines how many and what types of bullets
+	will be fired by an outpost.  A value of 0 means outposts will not
+	fire.  A value of 10 means 5 heavy rocket launchers will be fired at
+	each vehicle in the outpost's box per frame.
+\vitem{scroll\_speed} When your vehicle is in a scroll square, its
+	speed will be changed by this much in the direction of the scroll
+	square.  For example, if you are heading north at speed 10, and you're
+	in a southwards scroll square of speed 10, you will not move at all.
+\vitem{box\_slowdown} Determines the fraction of your speed you will
+	{\em retain} when moving through a slow square.  For example, if you
+	are heading north at speed 10, and you're in a slow square with a
+	slowdown of 0.6, you will only move at speed 6.
+\vitem{disc\_friction} When a disc is unowned, its speed will be
+	multiplied by this value every frame.  Therefore, if the disc friction
+	is 1.0, the disc will never slow down.
+\vitem{disc\_slow} Determines the fraction of your speed you will
+	{\em retain} when a disc is orbiting you.  For example, if
+	\verb~disc_slow~ is 0.0, the vehicle which owns the disc cannot move.
+\end{description}
 
-This is a more detailed description of the exact effects some members
-of the \verb~Settings_info~ structure.
+\subsubsection*{Functions:}
 
-\begin{itemize}
-  \vitem{full\_map} If this is \verb~TRUE~, then the vehicle's mapper
-will automatically be initialized with information about the entire
-maze at the beginning of each battle.  To access this information,
-call \verb~map_get()~ and then use the builtin map macros such as
-\verb~map_wall()~.
-  \vitem{outpost\_strength} Ranges from 0 to 10.  It determines how many
-and what types of bullets will be fired by an outpost.  A value of 0 means
-outposts will not fire.  A value of 10 means 5 heavy rocket launchers will
-be fired at each vehicle in the outpost's box per frame.
-  \vitem{scroll\_speed} Ranges from 0.0 to 10.0.  When your vehicle is in
-a scroll square, its speed will be changed by this much in the direction
-of the scroll square.  For example, if you are heading north at speed 10,
-and you're in a southwards scroll square of speed 10, you will not move at all.
-  \vitem{box\_slowdown} Ranges from 0.5 to 1.0.  It determines
-the fraction of your speed you will retain when moving through a slow
-square.  For example, if you are heading north at speed 10, and you're in
-a slow square with a slowdown of 0.6, you will only move at speed 6.
-  \vitem{disc\_friction} Ranges from 0.99 to 1.0.  When a disc is
-unowned, its speed will be multiplied by this value every frame.  Therefore,
-if the disc friction is 1.0, the disc will never slow down.
-  \vitem{disc\_slow} Ranges from 0.0 to 1.0.  It determines the
-fraction of your speed you will retain when a disc is orbiting you.  For
-example, if \verb~disc_slow~ is 0.0, the vehicle which owns the disc cannot
-move.
-\end{itemize}
+\index{get_settings}
+\begin{verbatim}
+get_settings(settings_info)
+    Settings_info *settings_info;
+\end{verbatim}
+\vspace{-1ex}
+\noindent
+Returns a copy of the game settings in \verb~settings_info~.  These settings do
+not change during the game, so you only need to get them once.
 
-\section{Messages}\label{Messages}
 
-Sending or receiving a message requires you to keep track of several
-variables, outlined below.  When you send a message, these will be arguments
-to \verb~send_msg()~; when you receive a message, they will be in a
-\verb~Message~ structure.
-
-\paragraph{Recipient}
-
-This is an \verb~ID~ specifying what vehicle you are sending the message to.
-You can also send messages to a specific team by using \verb~MAX_VEHICLES~ plus
-the team number as the recipient.  To send a message to everybody, use
-\verb~RECIPIENT_ALL~.
-
-\paragraph{Opcode}
-
-An opcode specifies what kind of message is being sent or received.
-The various kinds of opcodes are summarized in the {\bf Types} section.
-
-\paragraph{Data field}
-
-There are 10 different types of messages, which have widely differing types
-of data to be sent.  One of the arguments to \verb~send_msg()~ is 
-\verb~char data[MAX_DATA_LEN]~;
-this section describes what information should go in that array for each 
-kind of message.
-\begin{itemize}
-  \vitem{OP\_LOCATION} A box; put the x coordinate in \verb~data[0]~ and the
-y coordinate in \verb~data[1]~.
-  \vitem{OP\_GOTO} A box.
-  \vitem{OP\_FOLLOW}  A combatant; put the number of the vehicle in
-\verb~data[0]~.
-  \vitem{OP\_HELP} A box (you're asking for help at a particular location).
-  \vitem{OP\_ATTACK} A combatant.
-  \vitem{OP\_OPEN} A box (you're open at that particular location).
-  \vitem{OP\_THROW} A box (you're throwing to that location).
-  \vitem{OP\_CAUGHT} A box (you caught a disc at that location).
-  \vitem{OP\_ACK} Nothing in particular - you can put anything you want there.
-  \vitem{OP\_TEXT} The text of your message, in the form of a null-terminated
-string. {\bf Note:} make sure that the
-text is not more than \verb~MAX_DATA_LEN-1~ characters long!  Otherwise your
-program may crash.
-  \vitem{OP\_DEATH} Vehicle ID of victim in \verb~data[0]~, new number
-of kills for the killer in \verb~data[1]~, and vehicle ID of killer
-in \verb~data[2]~.  A message with this opcode is sent from \verb~SENDER_COM~
-to \verb~RECIPIENT_ALL~ every time a vehicle dies.  If the victim wasn't
-killled by a vehicle, \verb~data[2]~ contains \verb~SENDER_NONE~.
-\end{itemize}
-
-\section{Functions}
-
-What follows is a long list of specifications for the functions in \xtanklib.
-These are the low-level building blocks for writing an \xtank\ program.
-It is strongly suggested that you develop higher-level procedures for doing
-more complex actions, instead of writing one big procedure that makes
-hundreds of \xtanklib\ calls.  Not only will your program be easier to write,
-but then you can then trade your ``perfect\_lead'' shooting procedure for
-someone else's ``best\_dodge'' movement procedure.
-
-\setlength{\parskip}{3ex}
 
 \subsection{Movement}
 
+\index{get_location}
+\begin{verbatim}
+void get_location(loc)
+    Location *loc;
+\end{verbatim}
+\vspace{-1ex}
+Returns your vehicle's current location in \verb~loc~.
+
 \index{turn_vehicle}
 \begin{verbatim}
-turn_vehicle(desired_angle)
-     Angle desired_angle;
+void turn_vehicle(desired_heading)
+    Angle desired_heading;
 \end{verbatim}
-\xx
-Starts turning the vehicle to \verb~desired_angle~.  Depending on its
-turn rate, this may take a while.
+\vspace{-1ex}
+Starts turning the vehicle to \verb~desired_angle~.  Depending on the
+turn rate (handling), this may take a rew frames.
 
 \index{turn_rate}
 \begin{verbatim}
-float turn_rate(abs_speed)
-     float abs_speed;
+Angle turn_rate(abs_speed)
+    float abs_speed;
 \end{verbatim}
-\xx
-Returns the turn rate (in radians/frame) of the vehicle for the 
+\vspace{-1ex}
+Returns how fast the vehicle can turn (in radians/frame) when it's going at the
 specified absolute speed.
 
 \index{set_safety}
 \begin{verbatim}
-set_safety(safe)
-     Boolean safe;
+void set_safety(safe)
+    Boolean safe;
 \end{verbatim}
-\xx
-If \verb~safe~ is \verb~TRUE~, turn safe turning on, otherwise turn
-it off.
+\vspace{-1ex}
+Sets the safe-turning flag to the value of \verb~safe~.  With safe-turning on,
+your vehicle will turn more slowly at higher speeds, but will not skid
+sideways.
 
 \index{set_abs_drive}
 \begin{verbatim}
-set_abs_drive(abs_drive)
-     float abs_drive;
+void set_abs_drive(abs_drive)
+    float abs_drive;
 \end{verbatim}
-\xx
+\vspace{-1ex}
 Sets the vehicle's drive to \verb~abs_drive~.  \verb~abs_drive~ can vary from
 \verb~-max_speed()~ to \verb~max_speed()~.  {\bf Note:} your drive is
-{\em not} equivalent to your speed!  Your drive is how fast your vehicle
-is trying to go by turning its wheels.  Your speed is how fast your
-vehicle is actually moving.  If you are skidding, in a box with a scroll
-landmark, or your path is blocked by another object (such as a wall or
-another vehicle), the two will be different.
+{\em not} equivalent to your speed!  Your drive is how fast your vehicle is
+trying to go by turning its wheels.  Your speed is how fast your vehicle is
+actually moving.  It takes a few frames for your vehicle to accelerate or brake
+to the desired speed.  Also, there are sundry other things in the game that can
+change your velocity, such as landmarks and collisions.
 
 \index{set_rel_drive}
 \begin{verbatim}
-set_rel_drive(rel_drive)
-     float rel_drive;
+void set_rel_drive(rel_drive)
+    float rel_drive;
 \end{verbatim}
-\xx
-Sets the vehicle's drive to \verb~rel_drive/9 * max_speed()~.
-\verb~rel_drive~ can range from $-9.0$ to $9.0$.
+\vspace{-1ex}
+Sets the vehicle's drive relative to the maximum.  \verb~rel_drive~ can range
+from -9 (full reverse) to 9 (full forward).
 
 \index{speed}
 \begin{verbatim}
 float speed()
 \end{verbatim}
-\xx
-Returns the current speed of the vehicle.
+\vspace{-1ex}
+Returns the current speed of the vehicle in pixels per frame.  If you need to
+know the direction or X and Y components of the vehcicle's velocity, use
+\verb~get_self()~.
 
 \index{max_speed}
 \begin{verbatim}
 float max_speed()
 \end{verbatim}
-\xx
-Returns the maximum speed of the vehicle.
+\vspace{-1ex}
+Returns the maximum speed of the vehicle in pixels per frame.
 
 \index{heading}
 \begin{verbatim}
 Angle heading()
 \end{verbatim}
-\xx
-Returns the current heading of the vehicle.
+\vspace{-1ex}
+Returns the current heading of the vehicle.  Note that this is the direction
+the front of the vehicle is pointing, which isn't necessarily the direction it
+is moving.
+
+\index{tread_acc}
+\begin{verbatim} 
+float tread_acc()
+\end{verbatim}
+\vspace{-1ex}
+Returns the limit to acceleration/deceleration imposed by the traction of the
+vehicle's treads.  This value should be multiplied by the appropriate
+\verb~normal_friction~ or \verb~slip_friction~ setting before use.  This
+parameter affects how fast your vehicle can speed up, and also how fast it can
+stop.  The units used are pixels per frame per frame.
+
+\index{engine_acc}
+\begin{verbatim} 
+float engine_acc()
+\end{verbatim}
+\vspace{-1ex}
+Returns the limit to acceleration imposed by the power of the vehicle's engine.
+This parameter affects how fast your vehicle can speed up, but not how fast it
+can stop (all vehicles have excellent brakes).  The units used are pixels per
+frame per frame.
 
 \index{acc}
 \begin{verbatim} 
 float acc()
 \end{verbatim}
-\xx
-Returns the acceleration of the vehicle.
+\vspace{-1ex}
+This function returns the minimum of \verb~tread_acc()~ and
+\verb~engine_acc()~.  This is how fast your vehicle can speed up on normal
+ground.
 
 \index{vehicle_size}
 \begin{verbatim}
-vehicle_size(width,height)
-     int *width;
-     int *height;
+void vehicle_size(width, height)
+    int *width;
+    int *height;
 \end{verbatim}
-\xx
-Puts the width and height (in pixels) of the bounding box around the
-picture of the vehicle into the integers pointed to by width and height.
-These values change as the vehicle rotates.
+\vspace{-1ex}
+Returns the width and height (in pixels) of a bounding box around the the
+vehicle (which may change as the vehicle rotates).  The box is centered on the
+vehicle's current location.  This is useful for determining if you are going to
+collide with something.
 
-\subsection{Turrets}
 
-\index{num_turrets}
-\begin{verbatim}
-int num_turrets()
-\end{verbatim}
-\xx
-Returns the number of turrets on the vehicle.
-
-\index{turret_angle}
-\begin{verbatim}
-Angle turret_angle(num)
-     TurretNum num;
-\end{verbatim}
-\xx
-Returns the angle of the specified turret.
-
-\index{turret_position}
-\begin{verbatim}
-turret_position(turret,xp,wp)
-     TurretNum turret;
-     int *xp, *wp;
-\end{verbatim}
-\xx
-Puts the position of the specified turret relative to the vehicle's
-location in \verb~xp~ and \verb~yp~.
-
-\index{turret_turn_rate}
-\begin{verbatim}
-float turret_turn_rate(num)
-     TurretNum num;
-\end{verbatim}
-\xx
-Returns the turn rate of the specified turret (in radians/frame).
-
-\index{turn_turret}
-\begin{verbatim}
-turn_turret(num,angle)
-     TurretNum num;
-     Angle     angle;
-\end{verbatim}
-\xx
-Starts to turn the turret numbered \verb~num~ to \verb~angle~.
-
-\index{turn_all_turrets}
-\begin{verbatim}
-turn_all_turrets(angle)
-     Angle angle;
-\end{verbatim}
-\xx
-Starts to turn all turrets to \verb~angle~.
-
-\index{aim_turret}
-\begin{verbatim}
-aim_turret(num,dx,dy)
-     int num;
-     int dx,dy;
-\end{verbatim}
-\xx
-Starts to turn the turret numbered \verb~num~ to aim at a location \verb~dx~ 
-pixels away horizontally and \verb~dy~ pixels away vertically from the vehicle.
-
-\index{aim_all_turrets}
-\begin{verbatim}
-aim_all_turrets(dx,dy)
-     int dx,dy;
-\end{verbatim}
-\xx
-Starts to turn all turrets to aim at a location \verb~dx~ pixels 
-away horizontally
-and \verb~dy~ pixels away vertically from the vehicle.
 
 \subsection{Weapons}
+
+\subsubsection*{Constants:}
+
+\begin{description}
+  \vitem{VMAX\_WEAPONS} The number of weapon types.
+  \vitem{MAX\_WEAPONS} The number of weapons a vehicle can have.
+  \vitem{NUM\_MOUNTS} The number of places on a vehicle that weapons can be
+	mounted.
+\end{description}
+
+\subsubsection*{Types:}
+
+\begin{verbatim}
+typedef int WeaponNum;          /* range 0 - VMAX_WEAPONS-1 */
+
+typedef enum {
+    MOUNT_TURRET1, MOUNT_TURRET2, MOUNT_TURRET3,
+    MOUNT_FRONT, MOUNT_BACK, MOUNT_LEFT, MOUNT_RIGHT,
+} MountLocation;
+
+typedef enum {
+    LMG, MG, HMG, LRIFLE, RIFLE, HRIFLE, LCANNON, CANNON, HCANNON,
+    LROCKET, ROCKET, HROCKET, ACID, FLAME, MINE, SEEKER, SLICK
+} WeaponType;
+
+typedef struct {
+    WeaponType type;            /* what type of weapon it is */
+    MountLocation mount;        /* where it's mounted */
+    int damage;                 /* damage each bullet does */
+    int heat;                   /* heat each firing produces */
+    int range;                  /* range of bullets */
+    int reload;                 /* how much time must pass between firings */
+    int max_ammo;               /* how much ammo it can hold */
+    int ammo_speed;             /* speed of bullet */
+    int frames;                 /* how long bullets live */
+} Weapon_info;
+
+typedef enum {
+    BAD_WEAPON_NUM = BAD_VALUE, /* there is no weapon with that number! */
+    FIRED = 0,                  /* no problem, fired successfully */
+    RELOADING,                  /* was fired too recently (firing rate) */
+    NO_AMMO,                    /* no ammunition left */
+    WEAPON_OFF,                 /* has been turned off */
+    TOO_HOT                     /* vehicle is too hot */
+} WeaponStatus;
+\end{verbatim}
+
+\subsubsection*{Macros:}
+
+\index{IS_TURRET}
+\begin{verbatim}
+Boolean IS_TURRET(mnt)
+    MountLocation mnt;
+\end{verbatim}
+\vspace{-1ex}
+Returns \verb~TRUE~ if the given mounting is a turret.
+
+\subsubsection*{Functions:}
 
 \index{num_weapons}
 \begin{verbatim}
 int num_weapons()
 \end{verbatim}
-\xx
+\vspace{-1ex}
 Returns the number of weapons on the vehicle.
 
 \index{get_weapon}
 \begin{verbatim}
-get_weapon(num,winfo)
+int get_weapon(num, winfo)
      WeaponNum num;
      Weapon_info *winfo;
 \end{verbatim}
-\xx
-Puts all the constant information about the specified weapon
-into the \verb~Weapon_info~ structure.
+\vspace{-1ex}
+Returns all the constant information about the specified weapon into
+\verb~winfo~.  Returns \verb~0~ for success or \verb~BAD_VALUE~ if you don't
+have a weapon of that number.
 
 \index{weapon_time}
 \begin{verbatim}
 int weapon_time(num)
      WeaponNum num;
 \end{verbatim}
-\xx
-Returns the number of frames before the weapon is reloaded and ready to
-fire again.  If the weapon can fire immediately, returns 0.
+\vspace{-1ex}
+Returns the number of frames before the weapon is ready to fire again.  If the
+weapon can fire immediately, returns \verb~0~.
 
 \index{weapon_ammo}
 \begin{verbatim}
 int weapon_ammo(num)
      WeaponNum num;
 \end{verbatim}
-\xx
-Returns the number of bullets left in the specified weapon.
+\vspace{-1ex}
+Returns the number of bullets left in the weapon.
 
 \index{weapon_on}
 \begin{verbatim}
 Boolean weapon_on(num)
      WeaponNum num;
 \end{verbatim}
-\xx
+\vspace{-1ex}
 Returns \verb~TRUE~ if the specified weapon is on, \verb~FALSE~ if it is not.
 
 \index{turn_on_weapon}
 \begin{verbatim}
-turn_on_weapon(num)
+int turn_on_weapon(num)
      WeaponNum num;
 \end{verbatim}
-\xx
-Turns on the specified weapon.
+\vspace{-1ex}
+Turns on the specified weapon.  Returns \verb~0~ for success or
+\verb~BAD_VALUE~ if you don't have a weapon of that number.
 
 \index{turn_off_weapon}
 \begin{verbatim}
-turn_off_weapon(num)
+int turn_off_weapon(num)
      WeaponNum num;
 \end{verbatim}
-\xx
-Turns off the specified weapon.
+\vspace{-1ex}
+Turns off the specified weapon.  Returns \verb~0~ for success or
+\verb~BAD_VALUE~ if you don't have a weapon of that number.
 
 \index{fire_weapon}
 \begin{verbatim}
-WeaponError fire_weapon(num)
+WeaponStatus fire_weapon(num)
      WeaponNum num;
 \end{verbatim}
-\xx
-Fires the specified weapon.  Returns a \verb~WeaponError~ describing the
-result.
+\vspace{-1ex}
+Fires the specified weapon.  The return value tells you if if worked, and if
+not why not.
 
 \index{fire_all_weapons}
 \begin{verbatim}
-fire_all_weapons()
+int fire_all_weapons()
 \end{verbatim}
-\xx
-Attempts to fire all weapons in numerical order. 
+\vspace{-1ex}
+Attempts to fire all weapons in numerical order.  Returns \verb~BAD_VALUE~ if
+you don't have any weapons, \verb~0~ otherwise.
+
+
+
+\subsection{Turrets}
+
+\subsubsection*{Types:}
+
+\begin{verbatim}
+typedef enum {
+    TURRET1, TURRET2, TURRET3
+} TurretNum;
+\end{verbatim}
+
+
+\subsubsection*{Functions:}
+
+\index{num_turrets}
+\begin{verbatim}
+int num_turrets()
+\end{verbatim}
+\vspace{-1ex}
+Returns the number of turrets on the vehicle.
+
+\index{turret_angle}
+\begin{verbatim}
+Angle turret_angle(num)
+    TurretNum num;
+\end{verbatim}
+\vspace{-1ex}
+Returns the angle of the specified turret.
+
+\index{turret_position}
+\begin{verbatim}
+void turret_position(num, xp, wp)
+    TurretNum num;
+    int *xp, *wp;
+\end{verbatim}
+\vspace{-1ex}
+Returns the the position of the turret relative to the vehicle's location in
+\verb~xp~ and \verb~yp~.  This will change as the vehicle rotates.
+
+\index{turret_turn_rate}
+\begin{verbatim}
+Angle turret_turn_rate(num)
+    TurretNum num;
+\end{verbatim}
+\vspace{-1ex}
+Returns the turning rate of the specified turret (in radians/frame).  This
+depends on the weight of the weapons mounted on the turret.
+
+\index{turn_turret}
+\begin{verbatim}
+void turn_turret(num, angle)
+    TurretNum num;
+    Angle angle;
+\end{verbatim}
+\vspace{-1ex}
+Sets the desired angle of the turret to \verb~angle~.  It will take a few
+frames for it to get there, depending on the turret turning rate.
+
+\index{turn_all_turrets}
+\begin{verbatim}
+void turn_all_turrets(angle)
+    Angle angle;
+\end{verbatim}
+\vspace{-1ex}
+Starts to turn all turrets to \verb~angle~.
+
+\index{aim_turret}
+\begin{verbatim}
+void aim_turret(num, dx, dy)
+     int num;
+     int dx,dy;
+\end{verbatim}
+\vspace{-1ex}
+Starts to turn the turret to aim at a location \verb~dx~ pixels away
+horizontally and \verb~dy~ pixels away vertically from the vehicle.
+
+\index{aim_all_turrets}
+\begin{verbatim}
+void aim_all_turrets(dx, dy)
+    int dx,dy;
+\end{verbatim}
+\vspace{-1ex}
+Starts to turn all turrets to aim at a location \verb~dx~ pixels away
+horizontally and \verb~dy~ pixels away vertically from the vehicle.
+
+
 
 \subsection{Armor}
+
+\subsubsection*{Types:}
+
+\begin{verbatim}
+typedef enum {
+    FRONT, BACK, LEFT, RIGHT, TOP, BOTTOM,
+} Side;
+\end{verbatim}
+
+\subsubsection*{Functions:}
 
 \index{armor}
 \begin{verbatim}
 int armor(num)
-     Side num;
+    Side num;
 \end{verbatim}
-\xx
-Returns the current amount of armor on the specified side.
+\vspace{-1ex}
+Returns the current amount of armor on the specified side of the vehicle.
 
 \index{max_armor}
 \begin{verbatim}
 int max_armor(num)
-     Side num;
+    Side num;
 \end{verbatim}
-\xx
+\vspace{-1ex}
 Returns the maximum amount of armor on the specified side.  This is
 what the vehicle started out with at the beginning of the battle.
 
@@ -887,8 +791,11 @@ what the vehicle started out with at the beginning of the battle.
 \begin{verbatim}
 int protection()
 \end{verbatim}
-\xx
-Returns the protection factor of the type of armor on the vehicle.
+\vspace{-1ex}
+Returns the protection factor of the type of armor on the vehicle.  This many
+hit points are subtracted from the damage each bullet does.
+
+
 
 \subsection{Fuel}
 
@@ -896,14 +803,16 @@ Returns the protection factor of the type of armor on the vehicle.
 \begin{verbatim}
 float fuel()
 \end{verbatim}
-\xx
+\vspace{-1ex}
 Returns the current amount of fuel in the vehicle.
 
 \begin{verbatim}
 float max_fuel()
 \end{verbatim}
-\xx
+\vspace{-1ex}
 Returns the maximum amount of fuel the vehicle can hold.
+
+
 
 \subsection{Heat}
 
@@ -911,153 +820,293 @@ Returns the maximum amount of fuel the vehicle can hold.
 \begin{verbatim}
 int heat()
 \end{verbatim}
-\xx
-Returns the heat of the vehicle.
+\vspace{-1ex}
+Returns the current heat of the vehicle, in the range 0--100.
+
 
 \index{heat_sinks}
 \begin{verbatim}
 int heat_sinks()
 \end{verbatim}
-\xx
-Returns the number of heat sinks in the vehicle.
+\vspace{-1ex}
+Returns the number of heat sinks in the vehicle.  Each heat sink will reduce
+the vehicle's heat by 1 every 5 frames.
+
 
 \subsection{Specials}
+
+
+\subsubsection*{Types:}
+
+\begin{verbatim}
+typedef enum {
+    CONSOLE, MAPPER, RADAR, REPAIR, RAMPLATE, DEEPRADAR, STEALTH, NAVIGATION
+} SpecialType;
+\end{verbatim}
+
+\subsubsection*{Functions:}
 
 \index{has_special}
 \begin{verbatim}
 Boolean has_special(num)
-     SpecialType num;
+    SpecialType num;
 \end{verbatim}
-\xx
+\vspace{-1ex}
 Returns \verb~TRUE~ if the vehicle has the specified special, otherwise
-returns \verb~FALSE~.
+returns \verb~FALSE~.  Refer to the vehicle design document to see what each of
+these specials does.
 
-\subsection{Environment}
+
+
+\subsection{Mapping}
+
+If your vehicle is equipped with a mapper you can find out about the layout of
+the maze.  As you travel through the maze, your map will become more complete.
+Your map may become out-of-date, however, if somebody destroys a wall or
+outpost when you aren't around to see it.
+
+If the full-map setting is in effect, of course, all vehicles get to see
+everthing.
+
+\subsubsection*{Constants:}
+
+\begin{description}
+\vitem{NUM\_LANDMARK\_TYPES} The number of different kinds of boxes.
+\end{description}
+
+\subsubsection*{Types:}
+
+\begin{verbatim}
+typedef enum {
+    NO_DIR = -1, NORTH, EAST, SOUTH, WEST
+} WallSide;
+
+typedef enum {
+    MAP_NONE = 0,               /* no wall at all */
+    MAP_WALL,                   /* normal (indestructible) wall */
+    MAP_DEST                    /* destructible wall */
+} WallType;
+
+typedef enum {
+    BAD_MAPPER = BAD_VALUE,     /* you don't have a mapper! */
+    NORMAL = 0,                 /* nothing unusual */
+    FUEL,                       /* fuel depot */
+    AMMO,                       /* ammunition depot */
+    ARMOR,                      /* armor depot */
+    GOAL,                       /* goal for race and ultimate games, by team */
+    OUTPOST,                    /* shoots at vehicles, by team */
+    PEACE,                      /* protection from damage, by team */
+    SCROLL_N,                   /* north scrolling */
+    SCROLL_NE,                  /* northeast scrolling */
+    SCROLL_E,                   /* east scrolling */
+    SCROLL_SE,                  /* southeast scrolling */
+    SCROLL_S,                   /* south scrolling */
+    SCROLL_SW,                  /* southwest scrolling */
+    SCROLL_W,                   /* west scrolling */
+    SCROLL_NW,                  /* northwest scrolling */
+    SLIP,                       /* slippery */
+    SLOW,                       /* slowdown */
+    START_POS,                  /* vehicle starting position, by team */
+} LandmarkType;
+
+typedef struct {
+    Flag flags;                 /* bits for walls, inside maze, etc. */
+    LandmarkType type;
+    Team team;                  /* number of the team that owns the box */
+    Byte strength;              /* strength of the scroll, outpost, etc. */
+    void *user_data;            /* robot programs can do whatever they want
+                                   with this */
+} Box;
+
+typedef struct {
+    LandmarkType type;
+    Team team;                  /* team that "owns" it */
+    int x, y;                   /* box coordinates */
+} Landmark_info;
+\end{verbatim}
+
+
+\subsubsection*{Functions:}
 
 \index{wall}
 \begin{verbatim}
-Boolean wall(side,x,y)
-     Wall side;
-     int x,y;
+WallType wall(side, x, y)
+    WallSide side;
+    int x,y;
 \end{verbatim}
-\xx
-Returns \verb~TRUE~ if there is a wall on the specified side of the box (x,y)
-and \verb~FALSE~ if there isn't.  If you have no way of knowing (it isn't
-on your map), returns \verb~FALSE~.
-You can only detect the presence of a wall if it is
-on your map and you have your mapper on.
-
-\index{map_get}
-\begin{verbatim}
-Box **map_get()
-\end{verbatim}
-\xx
-Returns a pointer to the vehicle's map.  The map will be initialzed
-for you automatically if \verb~full_map~ in the \verb~Settings_info~
-structure is \verb~TRUE~.  
-
-\index{clear_path}
-\begin{verbatim}
-Boolean clear_path(start,finish)
-     Location *start, *finish;
-\end{verbatim}
-\xx
-Returns \verb~TRUE~ if there are no walls blocking the path from 
-\verb~start~ to \verb~finish~; otherwise returns \verb~FALSE~.  Keep 
-in mind that the path has 0 width, so
-a bullet would make it through, but a vehicle might not.
+\vspace{-1ex}
+Tells you what kind of wall is on the specified side of box
+(\verb~x~,\verb~y~).  If the wall location isn't on your map, returns
+\verb~MAP_NONE~.
 
 \index{landmark}
 \begin{verbatim}
-LandmarkType landmark(x,y)
-     int x,y;
+LandmarkType landmark(x, y)
+    int x, y;
 \end{verbatim}
-\xx
-Returns the type of the landmark in box ({\tt x},{\tt y}).
-If there is no landmark there, or you have no way of knowing, it returns
-NORMAL.
-You can only detect the presence of a landmark if it is
-on your map and you have your mapper on.
+\vspace{-1ex}
+Returns the type of the landmark in box (\verb~x~,\verb~y~).  If there is no
+landmark there, or you have no way of knowing what's there, returns
+\verb~NORMAL~.  Returns \verb~BAD_MAPPER~ if you don't have a mapper, 
 
 \index{get_landmarks}
 \begin{verbatim}
-get_landmarks(num_landmark_infos,landmark_info)
-     int *num_landmark_infos;
-     Landmark_info landmark_info[]; /* Must have size >= MAX_LANDMARKS */
+int get_landmarks(num_landmark_infos, landmark_info)
+    int *num_landmark_infos;
+    Landmark_info landmark_info[]; /* Must have size >= MAX_LANDMARKS */
 \end{verbatim}
-\xx
-Puts information about all the landmarks your mapper has seen into the
-\verb~landmark_info~ array. Puts the number of landmarks your mapper
-has seen into \verb~num_landmark_infos~.
+\vspace{-1ex}
+Returns information about landmarks your mapper has seen in
+\verb~landmark_info[]~, and returns the number of them in
+\verb~num_landmark_infos~.  Unfortunately, only the first \verb~MAX_LANDMARKS~
+(currently 50) landmarks that you have seen get covered.  Returns
+\verb~BAD_VALUE~ if you don't have a mapper.
+
+\index{clear_path}
+\begin{verbatim}
+Boolean clear_path(start, finish)
+    Location *start, *finish;
+\end{verbatim}
+\vspace{-1ex}
+Returns \verb~TRUE~ if there are no walls blocking the path from 
+\verb~start~ to \verb~finish~; otherwise returns \verb~FALSE~.  Keep 
+in mind that the path has 0 width, so a bullet would make it through, but a
+vehicle might not.
+
+\index{map_get}
+\begin{verbatim}
+Box (*map_get())[GRID_HEIGHT]
+\end{verbatim}
+\vspace{-1ex}
+Returns a pointer to the vehicle's entire map.  Here is an example of use, for
+those having trouble understanding that type:
+\vspace{-1ex}
+\begin{verbatim}
+      {
+          Box (*my_map)[GRID_HEIGHT];
+
+          my_map = map_get();
+          if (my_map[9][4].type == ARMOR) ...
+      }
+\end{verbatim}
+
+\subsubsection*{Macros}
+
+For the following macros, \verb~map~ should be the return value of
+\verb~get_map()~.  These macros may evaluate their arguments more than once, so
+you should be careful how you call them.
+
+\index{map_wall}
+\begin{verbatim}
+WallType map_wall(map, dir, x, y)
+     Box (*map)[GRID_HEIGHT];
+     WallSide dir;
+     int x, y;
+\end{verbatim}
+\vspace{-1ex}
+Returns the type of wall on the specified side of the specified box.
+
+\index{map_landmark}
+\begin{verbatim}
+LandmarkType map_landmark(map, x, y)
+     Box (*map)[GRID_HEIGHT];
+     int x, y;
+\end{verbatim}
+\vspace{-1ex}
+Returns the type of landmark in box (\verb~x~,\verb~y~).
+
+\index{map_team}
+\begin{verbatim}
+Team map_team(map, x, y)
+     Box (*map)[GRID_HEIGHT];
+     int x, y;
+\end{verbatim}
+\vspace{-1ex}
+Returns the owner of box (\verb~x~,\verb~y~).
+
+\index{map_strength}
+\begin{verbatim}
+Byte map_strength(map, x, y)
+     Box (*map)[GRID_HEIGHT];
+     int x, y;
+\end{verbatim}
+\vspace{-1ex}
+Returns the strength (on a scale of 0 to 10) of the box (\verb~x~,\verb~y~).
+This is useful if there is an outpost there.  If you want to know about scroll
+or slow boxes, it's simpler to just consult the game settings.
+
+\index{map_off_grid}
+\begin{verbatim}
+Boolean map_off_grid(x, y)
+     int x, y;
+\end{verbatim}
+\vspace{-1ex}
+Returns \verb~TRUE~ if the given box coordinates are off the edge of the world.
+
+
+
+
+
+\subsection{Vehicles}
+
+\subsubsection*{Types:}
+
+\begin{verbatim}
+typedef struct {
+    int grid_x, grid_y;         /* coordinates of the box */
+    int box_x, box_y;           /* coordinates within the box (in pixels) */
+    int x, y;                   /* absolute coordinates (in pixels) */
+} Location;
+
+typedef struct {
+    Location loc;               /* where it is */
+    float xspeed, yspeed;       /* components of current velocity */
+    Angle heading;              /* direction body is pointing */
+    ID id;                      /* unique identification number */
+    Team team;                  /* team number */
+    int body;                   /* body type */
+    int num_turrets;            /* number of turrets on the body */
+    Angle turret_angle[MAX_TURRETS];    /* direction each turret is pointing */
+} Vehicle_info;
+\end{verbatim}
+
+
+\subsubsection*{Functions:}
 
 \index{get_self}
 \begin{verbatim}
-get_self(my_info)
-     Vehicle_info *my_info;
+void get_self(my_info)
+    Vehicle_info *my_info;
 \end{verbatim}
-\xx
-Puts information about your vehicle into the structure pointed to by
-\verb~my_info~.  Note that this duplicates the work of some functions,
-such as \verb~get_location~.
-
-\index{get_location}
-\begin{verbatim}
-get_location(loc)
-     Location *loc;
-\end{verbatim}
-\xx
-Puts your vehicle's current location into the location structure pointed to
-by \verb~loc~.
-
-\index{get_bullets}
-\begin{verbatim}
-get_bullets(num_bullet_infos,bullet_info)
-     int *num_bullet_infos;
-     Bullet_info bullet_info[];	/* Must have size >= MAX_BULLETS */
-\end{verbatim}
-\xx
-Puts information about all visible bullets into the \verb~bullet_info~ array.
-Puts the number of visible bullets into \verb~num_bullet_infos~.
-
-\index{get_blips}
-\begin{verbatim}
-get_blips(num_blip_infos,blip_info)
-     int *num_blip_infos;
-     Blip_info blip_info[];	/* Must have size >= MAX_BLIPS */
-\end{verbatim}
-\xx
-Puts information about all radar blips into the \verb~blip_info~ array.
-Puts the number of blips into \verb~num_blip_infos~.
-The radar has a period of 24 frames.  The blips stay on the screen for
-15 frames.  Blips are alive (are returned by this function) for 19
-frames after their birth.
+\vspace{-1ex}
+Returns lots of information about your vehicle in \verb~my_info~.  Note that
+this duplicates the work of some functions, such as \verb~get_location()~.
 
 \index{number_vehicles}
 \begin{verbatim}
 int number_vehicles()
 \end{verbatim}
-\xx 
+\vspace{-1ex} 
 Returns the number of vehicles currently alive.
 
 \index{get_vehicles}
 \begin{verbatim}
-get_vehicles(num_vehicle_infos,vehicle_info)
-     int *num_vehicle_infos;
-     Vehicle_info vehicle_info[]; /* Must have size >= MAX_VEHICLES */
+void get_vehicles(num_vehicle_infos, vehicle_info)
+    int *num_vehicle_infos;
+    Vehicle_info vehicle_info[]; /* Must have size >= MAX_VEHICLES */
 \end{verbatim}
-\xx
-Puts information about all visible vehicles (excluding your own)
-into the \verb~vehicle_info~ array.  Puts the number of visible vehicles into
-\verb~num_vehicle_infos~.
+\vspace{-1ex}
+Returns information about all visible vehicles (excluding your own) in
+\verb~vehicle_info[]~, and how many there are in \verb~num_vehicle_infos~.
 
 \index{get_closest_enemy}
 \begin{verbatim}
-Boolean get_closest_enemy(enemy)
-     Vehicle_info enemy;
+Boolean get_closest_enemy(enemy) 
+    Vehicle_info *enemy;
 \end{verbatim}
-\xx
-Puts information about the closest visible enemy vehicle into \verb|enemy|.
-It returns \verb|TRUE| if a visible enemy exists, \verb|FALSE| if not.  An
+\vspace{-1ex}
+Returns information about the closest visible enemy vehicle in \verb~enemy~.
+Returns \verb|TRUE| if a visible enemy exists, \verb|FALSE| if not.  An
 enemy is someone who is not on your team.  All neutral vehicles are
 enemies.
 
@@ -1066,233 +1115,435 @@ enemies.
 Team get_team(vid)
      ID vid;
 \end{verbatim}
-\xx
+\vspace{-1ex}
 Returns the team number of the specified vehicle.
+
+
+\subsection{Radar}
+
+If your vehicle is equipped with radar, you can get some information about the
+whereabouts of vehicles that are too far to see directly.
+
+\subsubsection*{Types:}
+
+\begin{verbatim}
+typedef struct {
+    int x, y;                 /* box coordinates */
+} Blip_info;
+\end{verbatim}
+
+\subsubsection*{Functions:}
+
+\index{get_blips}
+\begin{verbatim}
+int get_blips(num_blip_infos, blip_info)
+     int *num_blip_infos;
+     Blip_info blip_info[];     /* Must have size >= MAX_BLIPS */
+\end{verbatim}
+\vspace{-1ex}
+Returns information about all radar blips in \verb~blip_info[]~, and the number
+of them in \verb~num_blip_infos~.  The radar has a period of 24 frames.  The
+blips stay on the screen for 15 frames.  Blips are alive (are returned by this
+function) for 19 frames after their birth.  Returns \verb~BAD_VALUE~ if you
+don't have radar.
+
+
+
+\subsection{Bullets}
+
+Be forewarned that good bullet-dodging algorithms are difficult to do, because
+of time constraints.
+
+\subsubsection*{Types:}
+
+\begin{verbatim}
+typedef struct {
+    Location loc;
+    float xspeed, yspeed;       /* current velocity (can change for Seekers) */
+    WeaponType type;
+    int id;                     /* a unique identification number */
+} Bullet_info;
+\end{verbatim}
+
+\subsubsection*{Functions:}
+
+\index{get_bullets}
+\begin{verbatim}
+void get_bullets(num_bullet_infos, bullet_info)
+     int *num_bullet_infos;
+     Bullet_info bullet_info[];	/* Must have size >= MAX_BULLETS */
+\end{verbatim}
+\vspace{-1ex}
+Returns information about all visible bullets in \verb~bullet_info[]~, and the
+number of them in \verb~num_bullet_infos~.
+
+
+
+\subsection{Discs}
+
+Discs are used in the Ultimate and Capture games.
+
+\subsubsection*{Constants:}
+
+\begin{description}
+ \vitem{NO\_OWNER} The owner of a disc when nobody owns it.
+\end{description}
+
+\subsubsection*{Types:}
+
+\begin{verbatim}
+typedef enum {
+    COUNTERCLOCKWISE = -1, CLOCKWISE = 1, TOGGLE = 2
+} Spin;
+
+typedef struct {
+    Location loc;               /* where it is */
+    float xspeed, yspeed;       /* current velocity */
+    ID owner;                   /* who has it */
+    Angle angle;                /* direction from owner */
+    Spin spin;                  /* direction it's orbiting owner */
+} Disc_info;
+\end{verbatim}
+
+\subsubsection*{Functions:}
 
 \index{get_discs}
 \begin{verbatim}
-get_discs(num_disc_infos,disc_info)
+void get_discs(num_disc_infos, disc_info)
      int *num_disc_infos;
      Disc_info disc_info[];  /* Must have size >= MAX_DISCS */
 \end{verbatim}
-\xx
-Puts information about all visible discs into the \verb~disc_info~ array.
-Puts the number of visible discs into \verb~num_disc_infos~.
-
-\index{get_settings}
-\begin{verbatim}
-get_settings(settings_info)
-     Settings_info *settings_info;
-\end{verbatim}
-Puts the values of important user-changeable settings into the structure
-pointed to by \verb~settings_info~.
-
-\subsection{Map macros}
-
-For the following macros, \verb~map~ should be the return value of
-\verb~get_map()~.  These macros do not actually look at the
-environment; they merely look up information stored in \verb~map~.
-If your map is out of date, these macros may return inaccurate
-information.
-
-\index{map_wall}
-\begin{verbatim}
-Boolean map_wall(map,dir,x,y)
-     Box **map;
-     Wall dir;
-     int x,y;
-\end{verbatim}
-\xx
-Returns \verb~TRUE~ if \verb~map~ indicates that there is a wall on
-the specified side of the specified box, and \verb~FALSE~ otherwise.
-
-\index{map_landmark}
-\begin{verbatim}
-LandmarkType map_landmark(map,x,y)
-     Box **map;
-     int x,y;
-\end{verbatim}
-\xx
-Returns the type of landmark in box (x,y).
-
-\index{map_team}
-\begin{verbatim}
-Team map_team(map,x,y)
-     Box **map;
-     int x,y;
-\end{verbatim}
-\xx
-Returns the owner of box (x,y).
-
-\index{map_strength}
-\begin{verbatim}
-char map_strength(map,x,y)
-     Box **map;
-     int x,y;
-\end{verbatim}
-\xx
-Returns the strength (on a scale of 0 to 10) of the box (x,y) if it is
-a scroll, slow, or outpost square.  It may be more useful to look at
-the information returned by \verb~get_settings~ for this information.
-
-\subsection{Discs}
+\vspace{-1ex}
+Returns information about all visible discs in \verb~disc_info[]~, and how many
+there are in \verb~num_disc_infos~.
 
 \index{num_discs}
 \begin{verbatim}
 int num_discs()
 \end{verbatim}
-\xx
+\vspace{-1ex}
 Returns the number of discs that the vehicle owns.
 
 \index{throw_discs}
 \begin{verbatim}
-throw_discs(speed)
-     float speed;
+void throw_discs(speed, delay)
+    float speed;
+    Boolean delay;
 \end{verbatim}
-\xx
-Releases all the discs that the vehicle is carrying at the desired speed.
-\verb~speed~ must be between $0.0$ and $25.0$.
+\vspace{-1ex}
+Releases all the discs that the vehicle owns at the specified speed, which must
+be between 0.0 and 25.0.  If \verb~delay~ is \verb~TRUE~ then the discs will be
+released next frame (robots only get control every other frame).  When
+released, discs fly off tangentially.
 
 \index{spin_discs}
 \begin{verbatim}
-spin_discs(dir)
-     DiscSpin dir;
+void spin_discs(dir)
+     Spin dir;
 \end{verbatim}
-\xx
+\vspace{-1ex}
 Spins all the discs owned by the vehicle in the specified direction.
 
-\subsection{Messages}
 
-See Section~\ref{Messages} (page~\pageref{Messages})
-for more information on how to send
-and receive messages.
 
-\index{messages}
+\subsection{Messages}\label{Messages}
+
+Messages are used to commnunicate between vehicles.
+
+\subsubsection*{Constants:}
+
+\begin{description}
+\vitem{SENDER\_COM} Sender ID for messages from the commentator.
+\vitem{SENDER\_NONE} Sender ID when there is no sender (does this happen?).
+\vitem{SENDER\_DEAD} Sender ID when the sender is dead (does this happen?).
+\vitem{MAX\_OPCODES} The number of diffent kinds of messages.
+\end{description}
+
+\subsubsection*{Types:}
+
 \begin{verbatim}
-int messages()
+typedef enum {
+     OP_LOCATION, OP_GOTO, OP_FOLLOW, OP_HELP, OP_ATTACK, OP_OPEN, OP_THROW,
+     OP_CAUGHT, OP_ACK, OP_TEXT, OP_DEATH
+} Opcode;
+
+typedef struct {
+    ID sender;                  /* vehicle number of sender */
+    Byte sender_team;           /* team number of sender */
+    ID recipient;               /* vehicle number of recipient */
+    Opcode opcode;              /* type of message */
+    int frame;                  /* frame number when sent */
+    Byte data[MAX_DATA_LEN];    /* data of message */
+} Message;
 \end{verbatim}
-\xx
-Returns the number of messages waiting to be read.
+
+\noindent
+These fields are used as follows:
+
+\begin{description}
+\vitem{recipient} specifies what vehicle(s) the message is for.  It can be a
+	vehicle number, or \verb~MAX_VEHICLES~ plus a team number, or
+	\verb~RECIPIENT_ALL~, to mean a single vehicle, a whole team, or
+	everyone in the game, respectively.
+\vitem{opcode} specifies the message type, and the interpretation of the
+	\verb~data[]~ field:
+    \begin{description}
+    \vitem{OP\_LOCATION} The sender's current location; \verb~data[0]~
+	is a box X coordinate and \verb~data[1]~ is a box Y coordinate.
+    \vitem{OP\_GOTO} Go to a certain box.
+    \vitem{OP\_FOLLOW} Follow a certain vehicle; \verb~data[0]~ is a vehicle
+	number.
+    \vitem{OP\_HELP} Send help to a certain box.
+    \vitem{OP\_ATTACK} Attack a certain vehicle.
+    \vitem{OP\_OPEN} Throw to a certain box.
+    \vitem{OP\_THROW} A throw was made to a certain box.
+    \vitem{OP\_CAUGHT} A catch was made at a certain box.
+    \vitem{OP\_ACK} A message acknowledgement; \verb~data[0]~ is the opcode of
+	the message being acknowledged.
+    \vitem{OP\_TEXT} Some arbitrary message; \verb~data[]~ is a null-terminated
+	string.  Don't try to send a message of more than \verb~MAX_DATA_LEN-1~
+	(currently 30) characters!
+    \vitem{OP\_DEATH} A death notice; \verb~data[0]~ is the ID of a victim,
+	\verb~data[1]~ is the new number of kills for the killer, and
+	\verb~data[2]~ is the ID of the killer (or \verb~SENDER_NONE~).
+    \end{description}
+\end{description}
+
+\subsubsection*{Functions:}
 
 \index{send_msg}
 \begin{verbatim}
-send_msg(recipient,opcode,data)
+send_msg(recipient, opcode, data)
+    Byte recipient;
+    Opcode opcode;
+    Byte *data;
 \end{verbatim}
-\xx
+\vspace{-1ex}
+\noindent
 Sends a message to the recipient with the given opcode and data.
+
+\begin{verbatim}
+int messages()
+\end{verbatim}
+\vspace{-1ex}
+\noindent
+Returns the number of messages waiting to be read.
 
 \index{receive_msg}
 \begin{verbatim}
-receive_msg(m)
-     Message *m;
+Boolean receive_msg(msg)
+    Message *msg;
 \end{verbatim}
-\xx
-Copies the information from the next received message into the 
-\verb~Message~ structure.
+\vspace{-1ex}
+\noindent
+If there is a message pending this function copies it into \verb~msg~ and
+returns \verb~TRUE~, otherwise it just returns \verb~FALSE~.
+
 
 \subsection{Miscellaneous}
+
+\index{get_outpost_loc}
+\begin{verbatim}
+void get_outpost_loc(x, y, frame_num, xret, yret)
+    int x, y;                   /* box coords of the outpost */
+    int frame_num;              /* when */
+    int *xret, *yret;           /* return pixel coords (absolute) */
+\end{verbatim}
+\vspace{-1ex}
+This function tells you where an outpost is, or where it will be in the future.
+The \verb~frame_num~ argument is a frame number, it can be in the future or in
+the present (or even in the past, if you care).  The location in absolute pixel
+coordinates of the outpost at that time is returned in \verb~xret~ and
+\verb~yret~.  This location is acccurate for future times only if the outpost
+does not get hit by any bullets.
+
 
 \index{frame_number}
 \begin{verbatim}
 int frame_number();
 \end{verbatim}
-\xx
-Returns the animation frame number.  It is useful for keeping track of
-the passage of time.
+\vspace{-1ex}
+Returns the game clock.  It is useful for keeping track of the passage of time.
 
 \index{num_kills}
 \begin{verbatim}
 int num_kills()
 \end{verbatim}
-\xx
-Returns number of kills the vehicle has accrued during this battle.
+\vspace{-1ex}
+Returns number of kills you have accrued during this battle.
 
 \index{score}
 \begin{verbatim}
 int score()
 \end{verbatim}
-\xx
-Returns the current score of the vehicle.
+\vspace{-1ex}
+Returns your current score.
 
 \index{get_money}
 \begin{verbatim}
 int get_money()
 \end{verbatim}
-\xx
-Returns the amount of money the vehicle owns.  Money is used to buy fuel and
-ammo, and to repair armor.
+\vspace{-1ex}
+Returns the amount of money you have.  Money is used to buy fuel and ammo, and
+to repair armor.
 
 \index{done}
 \begin{verbatim}
-done()
+void done()
 \end{verbatim}
-\xx
-This function will not return until the next frame of execution,
-so calling it means giving up your remaining cpu time for this frame.
-Use it if you don't wish to do anything more this frame.
+\vspace{-1ex}
+Sleeps until your next turn.  You should call this at the end of your main
+loop.  Doing so keeps your program from needlessly slowing down the game
+by repeating the same calculations over and over.
 
-\appendix
+\index{set_cleanup_func}
+\begin{verbatim}
+void set_cleanup_func(funcp, argp)
+    void (*funcp)();            /* pointer to function to call */
+    void *argp;                 /* its argument */
+\end{verbatim}
+\vspace{-1ex}
+This function lets you specify to \xtank\ a function to be called when your
+vehicle dies (or the game ends).  The function is called with the given
+argument, i.e \verb~funcp(argp)~.  \verb~argp~ will typically be the address of
+some structure.
+
+NOTE: the purpose of this function is to let you \verb~free()~ any memory you
+may have \verb~malloc()~ed.  Do not try to do anything else, such as calling
+other \xtanklib\ functions, or you might crash \xtank!
+
+
+
+
+\section{Time Constraints}
+
+The execution of \xtank\ robot programs is interleaved with the execution of
+\xtank\ itself.  In order to keep the game running quickly \xtank\ imposes a
+limit on the CPU time that robots can use each frame.  The upshot of this is
+that if your robot tries to run some really hairy algorithm, it will find
+itself losing turns.  To see if this is happening, check the
+\verb~frame_number()~ each time through your main loop (but remember that your
+robot only gets a turn every \verb~TICKSZ~ frames, no matter how fast it runs).
+
+
+
+
+
+\section{Compiling Your Robot}
+
+If your program is in the directory \verb|$(XTANK_DIR)/$(XTANK_PROGRAMS)|, is
+named {\em something}\verb~.c~, and only consists of one \verb~.c~ file then
+\xtank\ can compile it for you; just load the \verb~.c~ file.  Otherwise, if
+you have multiple modules or special compilation requirements you'll have to
+compile your program yourself.  To do this just compile your program into a
+\verb~.o~ file (don't strip it), put it in
+\verb|$(XTANK_DIR)/$(XTANK_PROGRAMS)|, and load it directly.  You don't have to
+link your program with the math library because you automatically get access to
+the library routines already linked into \xtank.
+
+
+
+
+\section{Debugging Your Robot}
+
+Robot programs are a little difficult to debug, since you can't run normal
+debuggers on dynamically linked code.  Either debug using \verb~printf()~
+and/or the message system, or bite the bullet and make your program one of
+\xtank's compiled-in robots.  The latter lets you use a debugger, but makes
+linking pretty slow.
+
+Another annoyance is the fact that \xtank\ dies if your robot causes a
+segmentation violation.  Too bad we don't have a threading system that could
+handle this a little more gracefully.
+
+
+
 
 \section{A Sample Robot}
 
-Here is a simple robot which actually does something.  It looks for
-vehicles, and if it finds one, it runs towards it and shoots at it.
-
 {\small
 \begin{verbatim}
+/*****************************************************************************\
+* spider.c - An example XTank player.                                         *
+*                                                                             *
+* Note the use of the All structure to simulate global variables, and the use *
+* of set_cleanup_func().                                                      *
+\*****************************************************************************/
 
-/*
-** attack.c
-*/
-
-#include "xtanklib.h"
+#include <xtanklib.h>
 #include <math.h>
 
-extern int attack_main();
+static void main();             /* forward reference */
 
-Prog_desc attack_prog = {
-  "attack",
-  "combat",
-  "hexo#1",
-  "Attacks",
-  "Terry Donahue",
-  2,
-  attack_main
-}
+Prog_desc spider_prog = {
+    "spider",
+    "Red_tie",
+    "Waits for an enemy to appear, then charges in guns blazing.",
+    "Robert Potter (after Terry Donahue)",
+    PLAYS_COMBAT | DOES_SHOOT,
+    2,
+    main
+};
 
-attack_main()
+/* all my global data */
+typedef struct {
+    Location myloc;             /* where I am */
+    Boolean have_target;        /* whether I have someone to attack */
+    Vehicle_info target;        /* who I'm going to attack */
+} All;
+
+static void look_around(allp)
+    All *allp;
 {
-  Location myloc;
-  Vehicle_info enemy;
-  int dx,dy;
-
-  /* Get moving */
-  set_rel_speed(5.0);
-
-  while(1) {
-    /* Find out where I am */
-    get_location(&myloc);
-
-    /* If a bad guy's around, blast him */
-    if(get_closest_enemy(enemy)) {
-
-      /* Find out where he is with respect to me */
-      dx = enemy.x - myloc.x;
-      dy = enemy.y - myloc.y;
-
-      /* Aim my turrets at him */
-      aim_all_turrets(dx,dy);
-
-      /* Give him everything I've got */
-      fire_all_weapons();
-
-      /* Turn towards him */
-      turn_vehicle(atan2((double) dy, (double) dx));
-    }
-  }
+    get_location(&allp->myloc); /* find out where I am */
+    allp->have_target = get_closest_enemy(&allp->target);
 }
 
+static void do_something(allp)
+    All *allp;
+{
+    /* If a bad guy's around, attack him */
+    if (allp->have_target) {
+        int dx, dy;
+
+        /* Find out where he is with respect to me */
+        dx = allp->target.loc.x - allp->myloc.x;
+        dy = allp->target.loc.y - allp->myloc.y;
+
+        aim_all_turrets(dx, dy);
+        fire_all_weapons();     /* blast him */
+
+        turn_vehicle(ATAN2(dy, dx));
+        set_rel_drive(9.0);     /* give chase */
+    } else {
+        set_rel_drive(0.0);     /* wait for next victim */
+    }
+}
+
+static void cleanup(allp)
+    All *allp;
+{
+    /* free all dynamically allocated memory */
+    free((char *)allp);
+}
+
+static void main()
+{
+    All *allp;
+
+    /* allocate the All structure dynamically, to save stack space */
+    allp = (All *) calloc(1, sizeof(*allp));
+
+    /* arrange for the All structure to get free()ed when I die */
+    set_cleanup_func(cleanup, (void *) allp);
+
+    while (1) {
+        look_around(allp);
+        do_something(allp);
+        done();
+    }
+}
 \end{verbatim}
 }
-\end{document}
 
+\end{document}

@@ -2,16 +2,24 @@
 ** This is the object file for the fiery bullet explosion
 */
 
-#define fiery_views 7
+#ifndef FAST_EXPLOS
+# define fiery_views 7
+#else
+# define fiery_views 1
+#endif
 
 static Picture fiery_pic[fiery_views] = {
+#ifndef FAST_EXPLOS
       { 5, 5, 2, 2 },
       { 9, 9, 3, 4 },
       { 11, 11, 4, 5 },
       { 23, 23, 10, 11 },
+#endif
       { 25, 25, 11, 12 },
+#ifndef FAST_EXPLOS
       { 25, 25, 11, 12 },
       { 25, 25, 11, 12 } 
+#endif
 };
 
 static Object fiery_obj = {
@@ -20,6 +28,7 @@ static Object fiery_obj = {
 	fiery_pic
 };
 
+#ifndef FAST_EXPLOS
 static unsigned char fiery_bits0[] = {
     0x02, 0x14, 0x0e, 0x05, 0x08};
 
@@ -43,6 +52,7 @@ static unsigned char fiery_bits3[] = {
     0x20, 0x00, 0x06, 0xe0, 0xc1, 0x0f, 0x60, 0x22, 
     0x00, 0x20, 0x36, 0x00, 0x00, 0x1c, 0x00, 0x00, 
     0x18, 0x00, 0x00, 0x30, 0x00};
+#endif
 
 static unsigned char fiery_bits4[] = {
     0x00, 0x3c, 0x00, 0x00, 0x00, 0x62, 0x00, 0x00, 
@@ -59,6 +69,7 @@ static unsigned char fiery_bits4[] = {
     0x30, 0xc6, 0x19, 0x00, 0x00, 0x8c, 0x00, 0x00, 
     0x00, 0x78, 0x00, 0x00};
 
+#ifndef FAST_EXPLOS
 static unsigned char fiery_bits5[] = {
     0x00, 0x3c, 0x00, 0x00, 0x00, 0x62, 0x00, 0x00, 
     0x30, 0xc1, 0x18, 0x00, 0x48, 0x80, 0x29, 0x00, 
@@ -88,13 +99,18 @@ static unsigned char fiery_bits6[] = {
     0x40, 0x00, 0x00, 0x00, 0x08, 0x01, 0x24, 0x00, 
     0x00, 0x00, 0x01, 0x00, 0x00, 0x04, 0x00, 0x00, 
     0x00, 0x50, 0x00, 0x00};
+#endif
 
 static unsigned char *fiery_bitmap[fiery_views] = {
+#ifndef FAST_EXPLOS
 	fiery_bits0,
 	fiery_bits1,
 	fiery_bits2,
 	fiery_bits3,
+#endif
 	fiery_bits4,
+#ifndef FAST_EXPLOS
 	fiery_bits5,
 	fiery_bits6
+#endif
 };

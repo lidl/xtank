@@ -15,65 +15,33 @@ Fuels are ok, and many walls are ok if enough of them are destructible.
 
 DJCmaze1	Combat	8	interesting idea (for many players)
 simple		Combat	8	like it says, meant for long term fights
-hotbox		Combat	7	Depends on # of players, just general melee...
 ice		Combat	7	Slippery, A/F/W with outposts.
 				General get to the armor melee.
 four		Combat	7	Small and simple good for Heat seeker battles
-karena		Combat	7	Combat in several areas.  Mid-square areas
-				could be eliminated.  Corner boxes allow
-				interesting protection.  Lack of armor is good
-heinous		Combat	7	Some interesting areas.  Armor is in the right
-				position.  Weapons aren't
 Ninemare	Combat	7	tough, but big
 Riverworld	Combat	7	some points are too far away from the action
-Wasteland	Combat	7	just combat
-shack2		Combat	7	Better on the armors, really spread out and
-				destructible walls.  Some neat places, but
-				mostly hunt and destroy.
 Quadrant	Combat	7	Close combat
 Quadrant2	Combat	6	More combat, not so close, too far
 City		Combat	5	not bad... too spread apart sometimes
-City1		Combat	5	City without outposts
-CityII		Combat	7	City with destructible walls
 SuperCity	Combat	7	City maze with almost all walls destructible
 DJCmaze2	Combat	5	should have outposts in open area
 DJCschool	Combat	6	not bad, but needs >4 players
-Deadly		Combat	5	totally heinous, and ridiculous too...
 Duel		Combat	6	sort of neat
 Duel1		Combat	6	sort of neat
 Dumbarton	Combat	6	sort of neat
-Hell#		Combat	6	too big.  Weird
-Hell2		Combat	6	almost the same
 Labyrinth	Combat	6	okay
-Nuke		Combat	6	spiral around center with A/F/W
-Zoo		Combat	6	Very random, like a zoo
 combat1		Combat	6	some areas are just not in the right place,
 				but it's okay.  City-like
-competition	Combat	6	maze a bit far from central combat area
-gyro		Combat	6	Somebody must have been really bored.
-				Giant Octagon, going in circles, center has
-				A/F/W, but you have to find the entrance.
 wildwest	Combat	6	A western town
 heinousII	Combat	6	Not too different.  Big deal
 pain		Combat	6	Open warfare and outpost killing
-shack		Combat	5	Too many armors, big combat area
 Eighty-eight	Combat	5	Too large and heinous
-Roger		Combat	5	well... too many zigzags
 STOMP		Combat	5	too wide open in places
-Savannah	Combat	5	Big spiral and some outposts
 Arena1		Combat	5	large track.
-ArenaII		Combat	5	too big, like above
-Basic		Combat	5	tough one for several players
-Blip		Combat	5	no inspiration here
-dh1		Combat	5	not bad, not awesome
 Crossover	Combat	5	could be better.  Too far away.
-dh3		Combat	5	Another one of these blah mazes
-Strategy	Combat	4	on the big side, again.
-dh2		Combat	4	Poor design layout...
 A-mazing	Combat 	4	a bit under average
 Box		Combat	4	not too great.
 Crossover2	Combat	4	too spread out.
-GMOspiral	Combat	4	too much stuff A/W/F
 Knock		Combat	4	too big
 Commaze1	Combat	4	a little under average
 Cross		Combat	4	too many hiding places
@@ -82,27 +50,14 @@ Rather		Combat	3	blah, too hard to get anywhere
 Pool		Combat	3	Boring, big and open like a pool table
 gauntlet	Combat	4	too big, too many armors... need >6
 genesis		Combat	3	too many armors, too big
-alexmaze	Combat	4	not too well designed space-wise
-alley		Combat	3	maze is too large, should be 1/2
-aminii		Combat	3	too many armors, too spread out
-Asylum		Combat	3	too spread apart
 Vortex		Combat	2	boring
-grimbohunt	Combat	2	boring, sections are too far separated.
-				Probably requires >6 players because of layout.
 wilddude	Combat	2	Large, walls, nothing else
-dinky		Combat	Test	3x3 empty maze
-dookybutt	Combat	Test	1x1 empty maze
-frame		Combat	Test	fullscreen empty maze
-smallbox	Combat	Test	Not too inspired.
 smallish	Combat	Test	Good for several person (>3) combat simulation,
 				melee for more.  Nothing in it.
 smallishII	Combat	Test	Like smallish, but with A/W/F.
 
 Total		War	8	Wicked...
-Total_war	War	8	Almost the same as above.
 mazex		War	7	Gee, how come there are so many outposts?
-shanegamaze	War	7	confused+interesting. Upper maze looks useless
-Variable	War	6	depends on use
 DDR		War	5	okay for war.
 Warmaze1	War	4	not bad, not awesome
 
@@ -122,18 +77,11 @@ U4	       Ultimate	8	very good for 4 players,
 NewFour	       Ultimate	7	pretty good
 Octoid	       Ultimate	7	very tough ultimate board
 U4-1	       Ultimate	7	tough, until you master it
-Ultimate4      Ultimate	6	passable, but open goals
-goal22	       Ultimate	6	wall locations leave a bit to be desired,
-				goal is still a bit too open to straight tosses
 goal3	       Ultimate	6	side pockets are bad... too easy to toss
 				right in from 45% angle, or with wall bounces.
-goal2	       Ultimate	5	too small, no central divider
 FirUlt1	       Ultimate	4	Too many goals...
-FourGoals      Ultimate	4  	Doesn't work too awesomely (needs >8)
-Foursome       Ultimate	3	Ultimate in this?!?!?
 Frisbee	       Ultimate	3	non-protected goals
 goal4	       Ultimate	3	huh?  Not that awesome.
-goal	       Ultimate	Test	5x5 maze with goal in center
 small	       Ultimate	Test	Small maze with 4 goals
 
 
@@ -167,13 +115,8 @@ Slip_race	Race	7	good race with hard turns
 racemaze	Race	7	not bad.  Short, simple, think a little after
 				running it a few times.  Good for beginners and
 				those who want to sharpen their abilities.
-medium.race	Race	6	Racing around, some capability for getting
-				completely lost and losing badly.
-				Memorization in middle part
 race		Race	6	Practice wall dodging, and that's all
 Shelter		Race	6	not too bad, not too awesome
-Race		Race	5	Just your average race maze
-RacerX		Race	5	same thing
 Slalom		Race	5	Open areas with outposts at gates between
 slalom		Race	Test	Repetitive slalom across entire board
 vroom		Race	Test	Single 2 lane slalom
@@ -205,8 +148,9 @@ hrace5		Race	6	Short, 3 player, fast, some problems with end
 hrace6		Race	6	Medium/short length, 4 player, not perfect...
 
 The hassault series is for head-to-head team competition, where each
-team is given an identical maze to fight through.  There are many outposts
-to defeat to exit the maze.
+team is given an identical maze to fight through.  There are many
+outposts to defeat to exit the maze.  You can turn outposts off to
+make these more like hraces.
 
 hassault1	Race	8	Totally heinous, 2 teams of 3, head-to-head
 				race to the goal.

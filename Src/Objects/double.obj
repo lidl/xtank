@@ -2,9 +2,14 @@
 ** Information about the double object
 */
 
-#define double_views 11
+#ifndef FAST_EXPLOS
+# define double_views 11
+#else
+# define double_views 1
+#endif
 
 static Picture double_pic[double_views] = {
+#ifndef FAST_EXPLOS
       { 9, 9, 4, 4 },
       { 13, 13, 6, 6 },
       { 17, 17, 8, 8 },
@@ -13,9 +18,12 @@ static Picture double_pic[double_views] = {
       { 29, 29, 14, 14 },
       { 31, 30, 15, 15 },
       { 31, 31, 15, 15 },
+#endif
       { 28, 30, 14, 14 },
+#ifndef FAST_EXPLOS
       { 28, 30, 14, 14 },
       { 17, 17, 8, 8 } 
+#endif
 };
 
 static Object double_obj = {
@@ -24,6 +32,7 @@ static Object double_obj = {
 	double_pic
 };
 
+#ifndef FAST_EXPLOS
 static unsigned char double0_bits[] = {
     0x7c, 0x00, 0xfe, 0x00, 0xab, 0x01, 0xd7, 0x01, 
     0xab, 0x01, 0xd7, 0x01, 0xab, 0x01, 0xfe, 0x00, 
@@ -123,6 +132,7 @@ static unsigned char double7_bits[] = {
     0x08, 0x01, 0x40, 0x00, 0x00, 0x04, 0x10, 0x0a, 
     0x40, 0x50, 0x45, 0x00, 0x10, 0x0c, 0x02, 0x00, 
     0x00, 0x40, 0x10, 0x00};
+#endif
 
 static unsigned char double8_bits[] = {
     0x00, 0x00, 0x01, 0x00, 0x00, 0xa8, 0x02, 0x00, 
@@ -141,6 +151,7 @@ static unsigned char double8_bits[] = {
     0x00, 0x02, 0x09, 0x01, 0x20, 0xa8, 0x22, 0x00, 
     0x00, 0x06, 0x01, 0x00, 0x00, 0x20, 0x00, 0x00};
 
+#ifndef FAST_EXPLOS
 static unsigned char double9_bits[] = {
     0x00, 0x00, 0x01, 0x00, 0x00, 0xa8, 0x02, 0x00, 
     0x00, 0x42, 0x08, 0x00, 0x90, 0x04, 0x22, 0x00, 
@@ -166,8 +177,10 @@ static unsigned char double10_bits[] = {
     0x01, 0x20, 0x24, 0x00, 0x12, 0x89, 0x00, 0x48, 
     0x20, 0x00, 0x84, 0x4a, 0x00, 0x10, 0x10, 0x00, 
     0x40, 0x05, 0x00};
+#endif
 
 static unsigned char *double_bitmap[double_views] = {
+#ifndef FAST_EXPLOS
 	double0_bits,
 	double1_bits,
 	double2_bits,
@@ -176,7 +189,10 @@ static unsigned char *double_bitmap[double_views] = {
 	double5_bits,
 	double6_bits,
 	double7_bits,
+#endif
 	double8_bits,
+#ifndef FAST_EXPLOS
 	double9_bits,
 	double10_bits
+#endif
 };

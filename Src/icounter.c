@@ -7,10 +7,38 @@
 ** icounter.c
 */
 
+/*
+$Author: lidl $
+$Id: icounter.c,v 2.5 1991/09/15 09:24:51 lidl Exp $
+
+$Log: icounter.c,v $
+ * Revision 2.5  1991/09/15  09:24:51  lidl
+ * removed vestiges of config.h file, now all configuration is done in
+ * the Imakefile, and propogated via compile-time -D flags
+ *
+ * Revision 2.4  1991/05/01  20:28:32  lidl
+ * added Motorola SysVR3 unix support for both the m68k and the m88k
+ *
+ * Revision 2.3  1991/02/10  13:50:45  rpotter
+ * bug fixes, display tweaks, non-restart fixes, header reorg.
+ *
+ * Revision 2.2  91/01/20  09:58:00  rpotter
+ * complete rewrite of vehicle death, other tweaks
+ * 
+ * Revision 2.1  91/01/17  07:11:44  rpotter
+ * lint warnings and a fix to update_vector()
+ * 
+ * Revision 2.0  91/01/17  02:09:37  rpotter
+ * small changes
+ * 
+ * Revision 1.1  90/12/29  21:02:31  aahz
+ * Initial revision
+ * 
+*/
+
 #include "icounter.h"
 #include "common.h"
 #include "types.h"
-#include "config.h"
 
 #ifdef UNIX
 #include <stdio.h>
@@ -19,6 +47,45 @@
 #include <signal.h>
 
 #define INC_TIME 10000
+
+#if defined(MOTOROLA) && defined(m68k)
+static unsigned int start_val = INC_TIME / 1000;
+static unsigned int stop_val = 0;
+
+int elapsed_time;
+
+/*
+** Virtual timer alarm handler.  Updates how much time has passed
+** by incrementing elapsed_time by INC_TIME.
+*/
+increment_time()
+{
+	elapsed_time += INC_TIME;
+}
+
+setup_counter()
+{
+	if((int) sigset(SIGALRM, increment_time) == -1)
+		rorre("Could not set up interval timer signal handler.");
+}
+
+/*
+** Start up interval timer to call increment_time every INC_TIME ms.
+*/
+start_counter()
+{
+	(void) alarm(start_val);
+}
+
+/*
+** Stop the interval timer.
+*/
+stop_counter()
+{
+	(void) alarm(stop_val);
+}
+
+#else /* MOTOROLA && 88k */
 
 static struct itimerval start_val = {{0, INC_TIME}, {0, INC_TIME}};
 static struct itimerval stop_val = {{0, 0}, {0, 0}};
@@ -36,7 +103,11 @@ void increment_time()
 
 setup_counter()
 {
+#if defined(MOTOROLA) && defined(m88k)
+	if ((int) sigset(SIGVTALRM, increment_time) == -1)
+#else
 	if ((int) signal(SIGVTALRM, increment_time) == -1)
+#endif
 		rorre("Could not set up interval timer signal handler.");
 }
 
@@ -55,6 +126,7 @@ stop_counter()
 {
 	(void) setitimer(ITIMER_VIRTUAL, &stop_val, (struct itimerval *) NULL);
 }
+#endif /* MOTOROLA && m88k */
 
 
 /* Has enough real time passed since the last frame? */
@@ -64,6 +136,23 @@ void sigalrm_handler()
 {
 	real_timer_expired = TRUE;
 }
+
+#if defined(MOTOROLA) && defined(m88k)
+#define timerclear(tvp)	(tvp)->tv_sec = (tvp)->tv_usec = 0
+#endif
+
+#if defined(MOTOROLA) && defined(m68k)
+
+start_real_counter(time)
+int time;
+{
+}
+
+wait_for_real_counter()
+{
+}
+
+#else
 
 start_real_counter(time)
 int time;
@@ -79,7 +168,11 @@ int time;
     (void) setitimer(ITIMER_REAL, &real_timer, (struct itimerval *)NULL);
 
 	/* Call the sigalrm_handler function every time the handler expires */
+#if defined(MOTOROLA) && defined(m88k)
+	sigset(SIGALRM, sigalrm_handler);
+#else
 	signal(SIGALRM, sigalrm_handler);
+#endif
 }
 
 wait_for_real_counter()
@@ -92,6 +185,7 @@ wait_for_real_counter()
 		pause();
 	real_timer_expired = FALSE;
 }
+#endif /* MOTOROLA && m68k */
 
 #endif
 

@@ -1,0 +1,293 @@
+These are various ideas for features to add to Xtank, contributed by many
+different people.  It's not that well organized, I admit.
+
+###############################################################################
+
+The maze design area should have a key for quick-save, which should retain
+current settings on Name/Type/Designer/Description.
+
+Let relative shooting be a per-player option?
+
+Safe turning should be toggleable by users.
+
+How about catching signals, so if a robot program dies, we can just nuke it and
+continue the game?
+
+How about putting the message window near the map window so pointing to a box
+and then sending a message is a little easier?
+
+There should be keyboard equivalents for sending different message types.
+
+Vehicle_info should have the turret positions in addition to the turret angles.
+
+You should be able to steer by clicking in the map window, like in XTrek.
+
+We really need multiple players/programs per vehicle.
+
+The Prog_desc structure should have a field for suggested stack size, so
+heavily recursive robots can be written.  This will not be compatible with
+existing robots, I guess.  There should also be a function that robots can call
+to see how much stack space they have left.
+
+Scoring should be game dependent (i.e. #goals for race, etc.)
+
+Have weapon on/off toggles be actuated by clicking on the weapon as
+well as using the shifted keys.
+
+It would be nice if, when in battle mode, you get to see the messages
+sent to the vehicle you are tracking.  Right now, the only way to
+see debugging messages is to send them to RECIPIENT_ALL, so it's
+impossible to debug a specific vehicle when lots are playing  (I
+need to have at least a 2 on 2 for the problem I'm having to show
+up).  If that feature were in, vehicles could send debugging messages
+to themselves, and I could switch back and forth and see what they
+were saying.
+
+How about leaving burnt-out hulks when a vehicle is killed?  They could be
+implemented as special kinds of vehicles.  They would not move by themselves,
+but could be pushed around (they would obey the normal collision rules for
+vehicles).  They would absorb bullets too.  Each hulk would start with
+something like half the mass of the killed vehicle.  When a hulk took damage
+from bullets or collisions its mass would be reduced.  At some lower limit of
+mass the hulk would simply vanish.  Presumably there would be a few different
+bitmaps for different-sized hulks.  The damage rate for hulks could be tweaked
+so that they would be an interesting presence without becoming so long-lived as
+to be annoying.
+
+How about a self-destruct command?  It is very annoying to run out of fuel and
+have to just sit there until sombody comes by and kills you.  To prevent people
+from robbing their opponents of a kill, a 10 second delay in which no other
+action is possible would be needed.  Or the pay-to-play setting could be used
+instead.
+
+How about a TEWS (is that the right acronym?), a radar-detector special that
+locates tanks that have their radar on?  There must be some reason for having
+on OFF switch on the radar...
+
+Optionally allow the player to select which tank to buy next. This would make
+long games more interesting.
+
+###############################################################################
+
+Mines and mortars:
+
+Set the fuse on mines on a per-game or per-tank basis.  Currently they're
+not that big a deal, but if they lasted the lifetime of a tank (an extreme)
+life could get strange.  Setting a limit on the number of active mines per
+tank might be good, and a way to set all of them off remotely would be good.
+
+A high-trajectory, unguided, area effect weapon.  The mouse would be used
+to select the point of impact, and intervening tanks, etc., would be passed
+over. [ mortar ]
+
+Maybe the mortar and the mine-layer could be combined: you can lob your mines
+over walls.  If they land on a tank, top armor is damaged.
+
+Anyone see TRON?  Remember the grid bugs?  Wouldn't they make lovely,
+pseudo-predictable, heat-seeking mines?  Wouldn't it be a bitch to
+accidently deploy some of these in a constrained area?  >;->
+
+###############################################################################
+
+The slide boxes correlate nicely to the effect of gravity upon a tank
+upon a ramp.  It might be possible to assign each square with an integer
+level, and the same for bullets.  This would enable three-dimensional
+layout (although without bridges and the like) with bullets passing over
+lower tanks, or impacting upon ramps between levels.
+
+The smaller tanks would have a better chance against the huge ones if
+there were places in the maze the megaliths couldn't access due to their
+size.  Perhaps increasing the resolution of the base game grid and using
+more open mazes to compensate would provide this effect.
+
+###############################################################################
+
+Has anyone tried writing a tank program which opens a socket to a
+seperately-run user interface?  (This approach would also let the
+user swap out tank algorithms without having to dynaload, without
+the risk of a bug crashing xtank, and without having to think about
+data-hiding problems invalidated the simulation.)
+
+Has anyone tried to use sockets to have two tanks communicate, or
+arranged for them to be controlled by a single external program?
+
+###############################################################################
+
+make difficulty reflect difficulty
+side mounted weapons firing in 90 degree arc
+serparate keys for firing different types of weapons
+fire_weapons(flags)
+fire_mines
+fire_slicks
+both take x,y
+
+###############################################################################
+
+Here's an idea a friend of mine had for Yet Another way to handle relative
+shooting.  He's convinced me that it is a Good Thing.
+
+The idea is that each type of weapon would have its own (fixed) degree
+of relative shooting.  There would be no user-settable switch.  For
+instance bullet-type weapons (machine guns, autocannon, pulse rifles,
+mine layers) would shoot relatively, rocket-type weapons (rocket
+launchers, heat seekers) would shoot absolutely, and fluid-type
+weapons (acid sprayers, flame throwers, oil slicks) would be a
+combination of both.
+
+The advantages are these:
+
+        It's more physically realistic (for whatever that's worth).
+
+        It's more fun, since it introduces new skills to be learned.
+        You have to learn to aim different kinds of weapons.  You have
+        to learn to design vehicles with appropriate combinations of
+        weapon types.  During combat you have to learn to choose a
+        line of fire that brings the right weapons to bear.
+
+        It's more consistent.  I'm tired of having arguments with my
+        co-players over the relative-shooting setting.  Those with
+        religious convictions can just stick with those weapons that
+        conform to thier bias.  They lose the use of the other
+        weapons, but that's the cost of pig-headedness :-).  (Note
+        that I myself have a religious preference for absolute
+        shooting).
+
+The disadvantages are these:
+
+        It's harder to write robot code, since a single aiming
+        algorithm no longer suffices for all weapons.  I don't think
+        this is such a big deal, since robots currently have to
+        contend with the relative-shooting setting anyhow.
+
+        It'll piss off players with hardened habits.
+
+###############################################################################
+
+I believe some of this has already been fixed...
+
+			   VEHICLE DESIGN
+
+increase power of smaller engines to give the vehicle designers
+more reasonable choices.
+
+increase cost of small vehicles, since they're so hard to hit.
+
+decrease speed penalty for having a larger vehicle.
+
+make acid sprayers less optimal
+	more expensive?
+	lower damage?
+	more weight?
+
+make spiders roomier, space = 4000?
+
+make rhinos faster and more maneuverable
+
+make malices less gross
+	less maneuverable/speedy
+	more expensive
+
+make armor heavier
+
+###############################################################################
+
+Specials and landmarks
+----------------------
+Jump		Allow passage over walls
+Nitro boost	Double acc, 50% higher max speed, sets speed to max
+Turret lock-on	Program that automatically tracks the nearest enemy with turret
+Smoke screen	Makes smoke which can't be seen through
+Radar detector	Detects when someone is using radar on you
+Radar jammer	Makes enemy radar within a given range useless
+Radar cloak	Makes you invisible to radar
+
+Display Modes
+-------------
+LOS	Only display things that you can see by line of sight
+3D	Perspective display of things.  tanks+bullets are polygons
+night	Only display things that have light shed on them from light source
+
+###############################################################################
+
+				PHYSICS
+
+1.  collisions based on actual shape of vehicle
+
+2.  collisions that rotate vehicles
+
+3.  skidding, losing control of vehicle during collision
+
+
+###############################################################################
+
+
+Thanks to Steve Jankowski, Christos S. Zoulas, Hal Peterson,
+Christopher North-Keys, Robert Potter, Bill Bolosky, and Tor
+Lillqvist for their improvements. 
+
+Desired improvements:
+
+1.  Get it running on other hardware.  (HP9000 series 300, Apollo, Dec 3100's)
+
+This requires porting the multi-threading code, which is used to run
+multiple robot programs concurrently to control the enemy vehicles in
+the game.  For most machines, this requires a change to thread.c
+around line 58, where the stack pointer register is initialized.
+Or you can substitute a different threads package if one is available
+on your machine.
+
+This also requires porting the dynamic linking code, which is
+used to load object code for robot programs into the running
+executable.  The current implementation in unix.c should work on most
+Unixes.  Never strip an xtank executable since that makes it
+impossible to dynamically link.  If you can't get the dynamic linking
+code working, just remove the #define DYNALOAD in config.h.
+You will then not be able to add new robot programs without recompiling.
+
+If you are not running X11R3, you may have to modify the graphics code. 
+All the X specific code is in x11.c.  Scattered about the
+code you will find #ifdef AMIGA and #ifdef 640x200.  They don't work.
+Neither does the Amiga version.
+
+2.  Make multi-player games easier to start.  This can be done by
+having xtank listen to some port (or a zephyr message class for
+those who have it) for messages from other machines that want to join
+the game.  Also, when someone starts a game of xtank, xtank would
+call out to the network (on the known port) to find out if there
+are any other machines currently running xtank.  If so, the player
+would be asked if he wants to join that game (perhaps with some
+information about the number of people currently playing, what game,
+etc.).  The player should also have the option of not allowing
+other players join the game, if he just wants to play alone.
+
+3.  More conformance to X application standards (support for more
+XResources, a man page, correct command line option handling).
+Perhaps use of a toolkit (although I don't like the thought of the
+executable doubling in size...).  
+
+4.  A better language for writing robot programs (along with a fast
+interpreter/compiler for the language).  This seems like a big
+project to me, but I know many programmers who are better at writing
+compilers than me!
+
+6.  More dynamic listings of vehicles and mazes that are available.
+I'd really like to see a list of all the mazes in the Mazes directory
+and browse through them quickly.
+
+7.  Difficulty levels (currently the difficulty level does very
+little).  This is pretty easy to do, since you just need to pick
+a set of vehicles and robot programs from the set available.  To
+facilitate this, it may be useful to write robot programs which
+look at the difficulty level of the game to decide how well to play.
+
+8. Implementing new games.  Let your imagination run wild.  Xtank was
+designed to maximize player creativity.
+
+I heartily recommend 2-on-2 Ultimate with commentator and no-wear set,
+2-on-2, in moosemaze with everyone in Ultimate vehicles.  It has the
+pace and feel of ice hockey.
+
+				Terry Donahue
+
+Note slightly       -->		tmdonahu@athena.mit.edu	(once a week)
+different usernames -->		tdonahue@next.com	(every day)

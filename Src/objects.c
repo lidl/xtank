@@ -1,4 +1,3 @@
-#include "malloc.h"
 /*
 ** Xtank
 **
@@ -7,6 +6,35 @@
 ** objects.c
 */
 
+/*
+$Author: lidl $
+$Id: objects.c,v 2.5 1991/09/19 05:35:22 lidl Exp $
+
+$Log: objects.c,v $
+ * Revision 2.5  1991/09/19  05:35:22  lidl
+ * side-effect of shorting des_landmarks.obj to des_lmarks.obj
+ *
+ * Revision 2.4  1991/09/17  17:02:59  lidl
+ * shortened various names of objects to 14 characters for SVRcrippled compat.
+ *
+ * Revision 2.3  1991/02/10  13:51:27  rpotter
+ * bug fixes, display tweaks, non-restart fixes, header reorg.
+ *
+ * Revision 2.2  91/01/20  09:58:45  rpotter
+ * complete rewrite of vehicle death, other tweaks
+ * 
+ * Revision 2.1  91/01/17  07:12:42  rpotter
+ * lint warnings and a fix to update_vector()
+ * 
+ * Revision 2.0  91/01/17  02:10:18  rpotter
+ * small changes
+ * 
+ * Revision 1.1  90/12/29  21:02:57  aahz
+ * Initial revision
+ * 
+*/
+
+#include "malloc.h"
 #include "xtank.h"
 #include "graphics.h"
 #include "gr.h"
@@ -16,7 +44,6 @@
 #define MAX_TURRET_OBJS		1
 #define MAX_EXP_OBJS		9			/* GHS */
 #define MAX_LANDMARK_OBJS	3
-#define MAX_RANDOM_OBJS		3
 
 #include "Objects/lightc.obj"
 #include "Objects/hexo.obj"
@@ -43,11 +70,11 @@
 
 #include "Objects/electric.obj"			/* GHS */
 
-#include "Objects/all_bullets.obj"
+#include "Objects/bullets.obj"
 
-#include "Objects/anim_landmarks.obj"
-#include "Objects/map_landmarks.obj"
-#include "Objects/design_landmarks.obj"
+#include "Objects/anm_lmarks.obj"
+#include "Objects/map_lmarks.obj"
+#include "Objects/des_lmarks.obj"
 
 #include "Objects/xtank.obj"
 #include "Objects/team.obj"
@@ -94,61 +121,62 @@ int object_error;
 */
 make_objects()
 {
-	int num;
-	extern Object *make_object();
+    int num;
+    extern Object *make_object();
 
-	/* Clear the error flag */
-	object_error = 0;
+    /* Clear the error flag */
+    object_error = 0;
 
-	/* Make all of the vehicle objects */
-	num = 0;
-	vehicle_obj[num++] = make_object(&lightc_obj, lightc_bitmap);
-	vehicle_obj[num++] = make_object(&hexo_obj, hexo_bitmap);
-	vehicle_obj[num++] = make_object(&spider_obj, spider_bitmap);
-	vehicle_obj[num++] = make_object(&psycho_obj, psycho_bitmap);
-	vehicle_obj[num++] = make_object(&tornado_obj, tornado_bitmap);
-	vehicle_obj[num++] = make_object(&marauder_obj, marauder_bitmap);
-	vehicle_obj[num++] = make_object(&tiger_obj, tiger_bitmap);
-	vehicle_obj[num++] = make_object(&rhino_obj, rhino_bitmap);
-	vehicle_obj[num++] = make_object(&medusa_obj, medusa_bitmap);
-	vehicle_obj[num++] = make_object(&malice_obj, malice_bitmap);
-	vehicle_obj[num++] = make_object(&trike_obj, trike_bitmap);
-	num_vehicle_objs = num;
+    /* Make all of the vehicle objects */
+    num = 0;
+    vehicle_obj[num++] = make_object(&lightc_obj, lightc_bitmap);
+    vehicle_obj[num++] = make_object(&hexo_obj, hexo_bitmap);
+    vehicle_obj[num++] = make_object(&spider_obj, spider_bitmap);
+    vehicle_obj[num++] = make_object(&psycho_obj, psycho_bitmap);
+    vehicle_obj[num++] = make_object(&tornado_obj, tornado_bitmap);
+    vehicle_obj[num++] = make_object(&marauder_obj, marauder_bitmap);
+    vehicle_obj[num++] = make_object(&tiger_obj, tiger_bitmap);
+    vehicle_obj[num++] = make_object(&rhino_obj, rhino_bitmap);
+    vehicle_obj[num++] = make_object(&medusa_obj, medusa_bitmap);
+    vehicle_obj[num++] = make_object(&malice_obj, malice_bitmap);
+    vehicle_obj[num++] = make_object(&trike_obj, trike_bitmap);
+    num_vehicle_objs = num;
 
 
-	/* Make all of the turret objects */
-	turret_obj[0] = make_object(&turret_sm_obj, turret_sm_bitmap);
-	num_turret_objs = 1;
+    /* Make all of the turret objects */
+    turret_obj[0] = make_object(&turret_sm_obj, turret_sm_bitmap);
+    num_turret_objs = 1;
 
-	/* Make all of the explosion objects */
-	num_exp_objs = 0;
-	exp_obj[num_exp_objs++] = make_object(&shock_obj, shock_bitmap);
-	exp_obj[num_exp_objs++] = make_object(&gleam_obj, gleam_bitmap);
-	exp_obj[num_exp_objs++] = make_object(&tink_obj, tink_bitmap);
-	exp_obj[num_exp_objs++] = make_object(&soft_obj, soft_bitmap);
-	exp_obj[num_exp_objs++] = make_object(&circle_obj, circle_bitmap);
-	exp_obj[num_exp_objs++] = make_object(&fiery_obj, fiery_bitmap);
-	exp_obj[num_exp_objs++] = make_object(&double_obj, double_bitmap);
-	exp_obj[num_exp_objs++] = make_object(&exhaust_obj, exhaust_bitmap);
-			/*GHS*/
-	exp_obj[num_exp_objs++] = make_object(&electric_obj, electric_bitmap);
+    /* Make all of the explosion objects */
+    num_exp_objs = 0;
+    exp_obj[num_exp_objs++] = make_object(&shock_obj, shock_bitmap);
+    exp_obj[num_exp_objs++] = make_object(&gleam_obj, gleam_bitmap);
+    exp_obj[num_exp_objs++] = make_object(&tink_obj, tink_bitmap);
+    exp_obj[num_exp_objs++] = make_object(&soft_obj, soft_bitmap);
+    exp_obj[num_exp_objs++] = make_object(&circle_obj, circle_bitmap);
+    exp_obj[num_exp_objs++] = make_object(&fiery_obj, fiery_bitmap);
+    exp_obj[num_exp_objs++] = make_object(&double_obj, double_bitmap);
+    exp_obj[num_exp_objs++] = make_object(&exhaust_obj, exhaust_bitmap);
+    /*GHS*/
+    exp_obj[num_exp_objs++] = make_object(&electric_obj, electric_bitmap);
 
-	/* Make the bullet object */
-	bullet_obj = make_object(&all_bullets_obj, all_bullets_bitmap);
+    /* Make the bullet object */
+    bullet_obj = make_object(&all_bullets_obj, all_bullets_bitmap);
 
-	/* Make the landmark objects */
-	landmark_obj[0] = make_object(&anim_landmarks_obj, anim_landmarks_bitmap);
-	landmark_obj[1] = make_object(&map_landmarks_obj, map_landmarks_bitmap);
-	landmark_obj[2] = make_object(&design_landmarks_obj, design_landmarks_bitmap);
-	num_landmark_objs = 3;
+    /* Make the landmark objects */
+    landmark_obj[0] = make_object(&anim_landmarks_obj, anim_landmarks_bitmap);
+    landmark_obj[1] = make_object(&map_landmarks_obj, map_landmarks_bitmap);
+    landmark_obj[2] = make_object(&design_landmarks_obj,
+				  design_landmarks_bitmap);
+    num_landmark_objs = 3;
 
-	/* Make the random objects */
-	random_obj[XTANK_OBJ] = make_object(&xtank_obj, xtank_bitmap);
-	random_obj[TEAM_OBJ] = make_object(&team_obj, team_bitmap);
-	random_obj[TERP_OBJ] = make_object(&terp_obj, terp_bitmap);
-	num_random_objs = 3;
+    /* Make the random objects */
+    random_obj[XTANK_OBJ] = make_object(&xtank_obj, xtank_bitmap);
+    random_obj[TEAM_OBJ] = make_object(&team_obj, team_bitmap);
+    random_obj[TERP_OBJ] = make_object(&terp_obj, terp_bitmap);
+    num_random_objs = 3;
 
-	return object_error;
+    return object_error;
 }
 
 /*
@@ -158,16 +186,16 @@ Object *make_object(obj, bitmap)
 Object *obj;
 Bits **bitmap;
 {
-	int i;
+    int i;
 
-	for (i = 0; i < obj->num_pics; i++)
+    for (i = 0; i < obj->num_pics; i++)
+    {
+	if (make_picture(&obj->pic[i], (char *)bitmap[i]))
 	{
-		if (make_picture(&obj->pic[i], bitmap[i]))
-		{
-			object_error = 1;
-		}
+	    object_error = 1;
 	}
-	return (obj);
+    }
+    return (obj);
 }
 
 /*
@@ -175,24 +203,24 @@ Bits **bitmap;
 */
 free_objects()
 {
-	int i;
+    int i;
 
-	for (i = 0; i < num_vehicle_objs; i++)
-		free_object(vehicle_obj[i]);
+    for (i = 0; i < num_vehicle_objs; i++)
+	free_object(vehicle_obj[i]);
 
-	for (i = 0; i < num_turret_objs; i++)
-		free_object(turret_obj[i]);
+    for (i = 0; i < num_turret_objs; i++)
+	free_object(turret_obj[i]);
 
-	for (i = 0; i < num_exp_objs; i++)
-		free_object(exp_obj[i]);
+    for (i = 0; i < num_exp_objs; i++)
+	free_object(exp_obj[i]);
 
-	free_object(bullet_obj);
+    free_object(bullet_obj);
 
-	for (i = 0; i < num_landmark_objs; i++)
-		free_object(landmark_obj[i]);
+    for (i = 0; i < num_landmark_objs; i++)
+	free_object(landmark_obj[i]);
 
-	for (i = 0; i < num_random_objs; i++)
-		free_object(random_obj[i]);
+    for (i = 0; i < num_random_objs; i++)
+	free_object(random_obj[i]);
 }
 
 /*
