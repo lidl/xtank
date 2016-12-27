@@ -286,8 +286,8 @@ int play_game()
 ** Sets up the combatants, and the world for a game.
 ** Returns either GAME_FAILED or GAME_RUNNING.
 */
-setup_game(newgame)
-Boolean newgame;
+int
+setup_game(Boolean newgame)
 {
 	extern void disc_init_history();
 	int i;

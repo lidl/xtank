@@ -6,21 +6,10 @@
 ** $Id$
 */
 
-#include "tanklimits.h"
-#include "malloc.h"
-#include <assert.h>
-#include "xtank.h"
-#include "graphics.h"
-#include "mazeconv.c"
-#include "gr.h"
-#include "vdesc.h"
-#include "setup.h"
-#include "vehicle.h"
-#include "terminal.h"
-#include "globals.h"
-#include "vstructs.h"
 #ifdef UNIX
 #include <sys/param.h>
+#include <dirent.h>
+#if 0
 #ifdef linux
 #define MAXNAMLEN NAME_MAX
 #endif
@@ -31,11 +20,31 @@
 #if defined(SVR4) || defined(SYSV)
 #include <dirent.h>
 #endif
+#endif
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+#include <sys/stat.h>	/* for chmod() */
+
+#include "tanklimits.h"
+#include "malloc.h"
+#include <assert.h>
+#include "xtank.h"
+#include "graphics.h"
+#include "gr.h"
+#include "vdesc.h"
+#include "setup.h"
+#include "bullet.h"
+#include "vehicle.h"
+#include "terminal.h"
+#include "globals.h"
+#include "vstructs.h"
 #include "proto.h"
 
 char pathname[MAXPATHLEN];
 char headersdir[MAXPATHLEN];	/* full name of directory to find headers in */
-char vehiclesdir[MAXNAMLEN], mazesdir[MAXNAMLEN], programsdir[MAXNAMLEN];
+char vehiclesdir[MAXPATHLEN], mazesdir[MAXPATHLEN], programsdir[MAXPATHLEN];
 char username[MAX_STRING], displayname[256];
 
 #ifdef NEED_AUX_FONT
@@ -60,11 +69,84 @@ int num_mdescs = 0;
 Sdesc *sdesc = NULL;
 int num_sdescs = 0;
 
+static int external_type[] =
+{
+	NORMAL,
+	FUEL,
+	AMMO,
+	ARMOR,
+	GOAL,
+	OUTPOST,
+	SCROLL_N,
+	SCROLL_NE,
+	SCROLL_E,
+	SCROLL_SE,
+	SCROLL_S,
+	SCROLL_SW,
+	SCROLL_W,
+	SCROLL_NW,
+	SLIP,
+	SLOW,
+	START_POS,
+	NORTH_SYM,
+	WEST_SYM,
+	NORTH_DEST_SYM,
+	WEST_DEST_SYM,
+	PEACE,
+	TELEPORT,
+	-1
+};
+
+#define TO_INTERNAL_TYPE       0
+#define TO_EXTERNAL_TYPE       1
+
+void
+convert_maze(Mdesc *d, int convtype)
+{
+	Byte flags, *dptr;
+	int ctr;
+
+	/* For each box there is a byte that contains 8 flags.  If EMPTY_BOXES is
+       set, the remaining 7 bits give the number of empty boxes (excluding this
+       one) to make before reading the next byte.  Otherwise, If TYPE_EXISTS is
+       set, the next byte is the box type.  Otherwise, the type is 0. If
+       TEAM_EXISTS is set, the next byte is the box team.  Otherwise, the team
+       is 0. */
+	dptr = d->data;
+	while (*dptr) {
+		flags = *(dptr++);
+
+		/* Check for empty box flag */
+		if (!(flags & EMPTY_BOXES)) {
+			if (flags & TYPE_EXISTS) {
+				if (convtype == TO_INTERNAL_TYPE)
+					*dptr = external_type[(LandmarkType) *dptr];
+				else {
+					ctr = 0;
+					while (external_type[ctr] != -1) {
+						if (external_type[ctr] == (int) *dptr) {
+							*dptr = ctr;
+							break;
+						}
+						ctr++;
+					}
+					dptr++;
+				}
+
+				if (flags & TEAM_EXISTS) {
+					dptr++;
+				}
+			}
+		}
+	}
+}
+
 /*
 ** Makes all vehicles listed in [vehiclesdir]/list and all mazes listed in
 ** [mazesdir]/list.
 */
-load_desc_lists()
+void
+load_desc_lists(void)
 {
 	FILE *file;
 	char filename[MAXPATHLEN];
@@ -130,9 +212,8 @@ load_desc_lists()
 ** Puts the number of the vehicle into num, if loaded.
 ** Returns one of DESC_LOADED, DESC_NOT_FOUND, DESC_BAD_FORMAT, DESC_NO_ROOM.
 */
-make_vdesc(name, num)
-char *name;
-int *num;
+int
+make_vdesc(char *name, int *num)
 {
 	Vdesc *d;
 	int retval, i;
@@ -191,9 +272,8 @@ int *num;
 #define check_range(val,mx) \
   if((int)(val) < 0 || (int)(val) >= (int)(mx)) return DESC_BAD_FORMAT;
 
-int ReadVehicleFormat0(file, d)
-FILE *file;
-Vdesc *d;
+int
+ReadVehicleFormat0(FILE *file, Vdesc *d)
 {
 	int i;
 	int num_tur;
@@ -292,9 +372,8 @@ Vdesc *d;
 ** Loads the vehicle description from the file "[vehiclesdir]/[name].v".
 ** Returns one of DESC_LOADED, DESC_NOT_FOUND, DESC_BAD_FORMAT.
 */
-load_vdesc(d, name)
-Vdesc *d;
-char *name;
+int
+load_vdesc(Vdesc *d, char *name)
 {
 	extern int num_vehicle_objs;
 	extern Object *vehicle_obj[];
@@ -363,8 +442,8 @@ char *name;
 ** Saves the specified vehicle description.
 ** Returns one of DESC_NOT_FOUND, DESC_SAVED.
 */
-save_vdesc(d)
-Vdesc *d;
+int
+save_vdesc(Vdesc *d)
 {
 	return (SaveVehicleFormat1(d));
 }
@@ -374,9 +453,8 @@ Vdesc *d;
 ** Puts the number of the maze into num if loaded.
 ** Returns one of DESC_LOADED, DESC_NOT_FOUND, DESC_BAD_FORMAT, DESC_NO_ROOM.
 */
-make_mdesc(name, num)
-char *name;
-int *num;
+int
+make_mdesc(char *name, int *num)
 {
 	Mdesc *d;
 	int retval, i;
@@ -435,9 +513,8 @@ int *num;
 ** Loads the maze description from the file "[mazesdir]/[name].m".
 ** Returns one of DESC_LOADED, DESC_NOT_FOUND, DESC_BAD_FORMAT.
 */
-load_mdesc(d, name)
-Mdesc *d;
-char *name;
+int
+load_mdesc(Mdesc *d, char *name)
 {
 	FILE *file;
 	char filename[MAXPATHLEN];
@@ -487,9 +564,8 @@ char *name;
 ** Returns DESC_BAD_FORMAT if string is too long or EOF is reached.
 ** Otherwise, returns DESC_LOADED.
 */
-alloc_str(file, strp)
-FILE *file;
-char **strp;
+int
+alloc_str(FILE *file, char **strp)
 {
 	int ret;
 	char temp[MAX_DATA_BYTES];
@@ -514,8 +590,8 @@ char **strp;
 ** Saves the specified maze description.
 ** Returns one of DESC_NOT_FOUND, DESC_SAVED.
 */
-save_mdesc(d)
-Mdesc *d;
+int
+save_mdesc(Mdesc *d)
 {
 	FILE *file;
 	char filename[MAXPATHLEN];
@@ -558,9 +634,8 @@ Mdesc *d;
 	return DESC_SAVED;
 }
 
-load_sdesc(d, name)
-Sdesc *d;
-char *name;
+int
+load_sdesc(Sdesc *d, char *name)
 {
 	FILE *file;
 	char filename[MAXPATHLEN];
@@ -608,9 +683,8 @@ char *name;
 ** Returns one of DESC_LOADED, DESC_NOT_FOUND, DESC_BAD_FORMAT, DESC_NO_ROOM.
 */
 /*ARGSUSED*/
-make_sdesc(name, num)
-char *name;
-int *num;
+int
+make_sdesc(char *name, int *num)
 {
 
 	return (DESC_NOT_FOUND);
@@ -622,7 +696,8 @@ int *num;
 ** Reads environment variables for the pathname, username,
 ** vehicles directory, mazes directory, and programs directory.
 */
-get_environment()
+void
+get_environment(void)
 {
 	extern char *getenv();
 	char *p;
@@ -630,7 +705,7 @@ get_environment()
 	/* Read in variables, providing appropriate defaults if not found */
 	strcpy(username, (p = getenv("USER")) ? p :
 		   ((p = getenv("LOGNAME")) ? p : "user"));
-	strcpy(pathname, (p = getenv("XTANK_DIR")) ? p : XTANK_DIR);
+	strcpy(pathname, (p = getenv("XTANK_DIR")) ? p : "/usr/local/share/XTank");
 	strcpy(vehiclesdir, (p = getenv("XTANK_VEHICLES")) ? p : "Vehicles");
 	strcpy(mazesdir, (p = getenv("XTANK_MAZES")) ? p : "Mazes");
 	strcpy(programsdir, (p = getenv("XTANK_PROGRAMS")) ? p : "Programs");
@@ -662,8 +737,8 @@ get_environment()
 ** Reads a file, returning its contents in a null-terminated string.
 ** Returns an empty string if the file is not found.
 */
-char *read_file(filename)
-char *filename;
+char *
+read_file(char *filename)
 {
 	FILE *file;
 	char *string, temp[MAXPATHLEN];
@@ -732,8 +807,8 @@ char *filename;
 	return (string);
 }
 
-int save_settings(pcFileName)
-char *pcFileName;
+int
+save_settings(char *pcFileName)
 {
 	int ctri, ctrj;
 	int iProg;
@@ -750,7 +825,7 @@ char *pcFileName;
 	extern char force_states[MAX_SPECIALS];
 
 	if (!*pcFileName) {
-		return 0;
+		return 1;
 	}
 	outfile = fopen(pcFileName, "w");
 	assert(outfile);
@@ -894,4 +969,5 @@ char *pcFileName;
 	}							/* end of for - for each vehicle */
 
 	fclose(outfile);
+	return 0;
 }

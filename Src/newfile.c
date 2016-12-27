@@ -205,8 +205,8 @@ void init_Wnames()
 ** Saves the specified vehicle description.
 ** Returns one of DESC_NOT_FOUND, DESC_SAVED.
 */
-int SaveVehicleFormat1(d)
-Vdesc *d;
+int
+SaveVehicleFormat1(Vdesc *d)
 {
 	extern char pathname[], vehiclesdir[];
 	FILE *file;

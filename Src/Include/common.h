@@ -26,9 +26,12 @@
 #define BAD_VALUE       (-1)
 
 /* Useful macros */
-
+#if !defined(MIN)
 #define MIN(x,y) (((x) < (y)) ? (x) : (y))
+#endif
+#if !defined(MAX)
 #define MAX(x,y) (((x) > (y)) ? (x) : (y))
+#endif
 #define ABS(x) (((x) > 0) ? (x) : -(x))
 #define SIGN(x)	((x) < 0 ? -1 : (x) == 0 ? 0 : 1)
 #define SQR(x) ((x)*(x))

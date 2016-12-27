@@ -144,14 +144,6 @@ void explode_location P_((Loc *, int, int));
 
 #if defined(FILE) && defined(Vdesc) && defined(Mdesc) && defined(Sdesc)
 /* file.c */
-int load_desc_lists P_((void));
-int make_vdesc P_((char *name, int *num));
-int ReadVehicleFormat P((FILE *file, Vdesc *d));
-int load_vdesc P_((Vdesc *d, char *name));
-int save_vdesc P_((Vdesc *d));
-int make_mdesc P_((char *name, int *num));
-int load_mdesc P_((Mdesc *d, char *name));
-int alloc_str P_((FILE * file, char **strp));
 int save_mdesc P_((Mdesc *d));
 int load_sdesc P_((Sdesc *d, char *name));
 int make_sdesc P_((char *name, int *num));
@@ -159,6 +151,17 @@ int get_environment P_((void));
 char *read_file P_((char *filename));
 int save_settings P_((char *filename));
 #endif
+int ReadVehicleFormat0 P_((FILE *, Vdesc *));
+int ReadVehicleFormat1 P_((FILE *, Vdesc *));
+int alloc_str P_((FILE *, char **));
+void convert_maze P_((Mdesc *, int));
+void load_desc_lists P_((void));
+int load_mdesc P_((Mdesc *, char *));
+int load_vdesc P_((Vdesc *, char *));
+int make_mdesc P_((char *, int *));
+int make_vdesc P_((char *, int *));
+int save_vdesc P_((Vdesc *));
+int SaveVehicleFormat1 P_((Vdesc *));
 
 #ifdef Boolean
 /* game.c */
@@ -358,10 +361,6 @@ int make_dest_walls P_((int percent));
 int set_box_types P_((int num_prob, FLOAT prob[]));
 #endif
 
-/* mazeconv.c */
-#ifdef Mdesc
-int convert_maze P_((Mdesc *d, int convtype));
-#endif
 
 /* mdesign.c */
 #ifdef Event
@@ -577,9 +576,7 @@ int customized_combatants P_((void));
 int init_terms P_((void));
 int init_combatants P_((void));
 int play_game P_((void));
-#ifdef Boolean
-int setup_game P_((Boolean newgame));
-#endif
+int setup_game P_((Boolean));
 #ifdef Combatant
 int setup_combatant P_((Combatant *c));
 #endif
@@ -667,9 +664,9 @@ void vdesign_save P_((Vdesc *d));
 int vdesign_interface P_((Vdesc *d));
 int erase_vdesign_menus P_((int mu));
 int init_vdesc P_((Vdesc *d));
-int compute_vdesc P_((Vdesc *d));
 int display_vdesc P_((Vdesc *d, unsigned int status));
 #endif
+int compute_vdesc P_((Vdesc *));
 int init_vdesign P_((void));
 
 /* vehicle.c */
