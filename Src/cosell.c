@@ -11,6 +11,8 @@
 ** adjusted to better handle multiple discs by Adam Bryant.
 */
 
+#include <stdlib.h>
+
 #include "malloc.h"
 #include "xtank.h"
 #include "cosell.h"
@@ -74,11 +76,8 @@ extern Map real_map;
  *   COS_NUKE:  (HAK and MEL 2/93)
  *	     a nuke detonated against a tank
  */
-comment(op, dat, vh1, vh2, db)
-char op;
-int dat;
-Vehicle *vh1, *vh2;
-Bullet *db;
+int
+comment(int op, int dat, Vehicle *vh1, Vehicle *vh2, Bullet *db)
 {
 	extern Vehicle *disc_old_owner(), *disc_last_owner(), *disc_cur_owner();
 	static int slick_frame = 0;	/* frame when last slick was dropped */
