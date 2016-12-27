@@ -16,10 +16,12 @@
 #include "cosell.h"
 #include "globals.h"
 #include "clfkr.h"
+#include "message.h"
+#include "terminal.h"
 #include "proto.h"
 #ifdef SOUND
 #include "sound.h"
-#endif SOUND
+#endif /* SOUND */
 
 extern Maze maze;
 extern char *games_entries[];
@@ -53,8 +55,8 @@ static int neighbor_y[] =
 ** Applies the rules of the game during play.
 ** Returns one of GAME_RUNNING, GAME_RESET, GAME_OVER.
 */
-game_rules(init)
-Boolean init;
+int
+game_rules(Boolean init)
 {
 	switch (settings.si.game) {
 	  case STQ_GAME:
@@ -78,8 +80,8 @@ Boolean init;
 ** Vehicles fight each other for score.
 ** A team wins when a vehicle on that team gets the required score.
 */
-int combat_rules(init)
-Boolean init;
+int
+combat_rules(Boolean init)
 {
 	Vehicle *v;
 	int i, j;
@@ -139,8 +141,8 @@ Boolean init;
 	return (retcode);
 }
 
-int stq_rules(init)
-int init;
+int
+stq_rules(Boolean init)
 {
 	static int starter;
 	Coord *start;
@@ -183,8 +185,8 @@ int init;
 ** The more vehicles in a box, the faster the takeover.
 ** A team wins the game if they control the required percentage of boxes.
 */
-war_rules(init)
-Boolean init;
+int
+war_rules(Boolean init)
 {
 	static Byte time[GRID_WIDTH][GRID_HEIGHT][MAX_TEAMS];
 	static int total[MAX_TEAMS];
@@ -310,10 +312,8 @@ Boolean init;
 /*
 ** Initializes the time values for a square based on the neighboring teams.
 */
-
-war_init_time(time, x, y)
-Byte time[GRID_WIDTH][GRID_HEIGHT][MAX_TEAMS];
-int x, y;
+void
+war_init_time(Byte time[GRID_WIDTH][GRID_HEIGHT][MAX_TEAMS], int x, int y)
 {
 	Byte *ptr = time[x][y];		/* this box's array of team counts */
 	int i;
@@ -340,8 +340,8 @@ int x, y;
 /*
 ** One disc in game, disc owned in own (or opponents') goal wins.
 */
-ultimate_rules(init)
-Boolean init;
+int
+ultimate_rules(Boolean init)
 {
 	Vehicle *v;
 	Box *b;
@@ -382,7 +382,7 @@ Boolean init;
 				  ((b->team == v->team) == settings.si.ultimate_own_goal)) {
 #ifdef SOUND
 					play_all(GOAL_SOUND);
-#endif SOUND
+#endif /* SOUND */
 					winning_vehicle = v;
 					winning_team = v->team;
 					v->owner->score++;
@@ -400,8 +400,8 @@ Boolean init;
 /*
 ** One disc per non-neutral team, all discs in own goal wins.
 */
-capture_rules(init)
-Boolean init;
+int
+capture_rules(Boolean init)
 {
 	static int total_discs;
 	Vehicle *v;
@@ -428,7 +428,7 @@ Boolean init;
 				if (b->type == GOAL && b->team == v->team) {
 #ifdef SOUND
 					play_all(GOAL_SOUND);
-#endif SOUND
+#endif /* SOUND */
 					winning_vehicle = v;
 					winning_team = v->team;
 					v->owner->score++;
@@ -443,8 +443,8 @@ Boolean init;
 /*
 ** First one to a goal wins.
 */
-race_rules(init)
-Boolean init;
+int
+race_rules(Boolean init)
 {
 	Vehicle *v;
 	Box *b;
@@ -474,8 +474,8 @@ Boolean init;
 /*
 ** Displays the current state of the game, who scored, and the current score.
 */
-display_game_stats(status)
-unsigned int status;
+int
+display_game_stats(int status)
 {
 	int n, reply;
 
@@ -552,46 +552,32 @@ unsigned int status;
 }
 
 
-int ScreenOut(str, x, y)
-char *str;
-int x;
-int y;
+int
+ScreenOut(char *str, int x, int y)
 {
 	return (mprint(str, x, y));
 }
 
-
-int ScreenOutColor(str, x, y, color)
-char *str;
-int x;
-int y;
-int color;
+int
+ScreenOutColor(char *str, int x, int y, int color)
 {
 	return (mprint_color(str, x, y, color));
 }
 
-
-int StandardOut(str, x, y)
-char *str;
-int x;
-int y;
+void
+StandardOut(char *str, int x, int y)
 {
 	puts(str);
 }
 
-
-int StandardOutColor(str, x, y, color)
-char *str;
-int x;
-int y;
-int color;
+void
+StandardOutColor(char *str, int x, int y, int color)
 {
 	puts(str);
 }
 
-int display_game_stats_to_current(status, n)
-unsigned int status;
-int n;
+int
+display_game_stats_to_current(int status, int n)
 {
 	int i, j, k, l, m;
 	char s[80];
@@ -606,7 +592,6 @@ int n;
 		plain_out = StandardOut;
 		color_out = StandardOutColor;
 	}
-
 
 	if (n < 0) {
 		(*plain_out) ("", 0, 0);

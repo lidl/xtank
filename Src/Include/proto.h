@@ -161,23 +161,21 @@ int make_vdesc P_((char *, int *));
 int save_vdesc P_((Vdesc *));
 int SaveVehicleFormat1 P_((Vdesc *));
 
-#ifdef Boolean
 /* game.c */
-int combat_rules P_((Boolean init));
-int stq_rules P_((Boolean init));
-int war_rules P_((Boolean init));
-int war_init_time P_((Byte time[GRID_WIDTH][GRID_HEIGHT][MAX_TEAMS], int x, int y));
-int ultimate_rules P_((Boolean init));
-int capture_rules P_((Boolean init));
-int race_rules P_((Boolean init));
-int display_game_stats P_((unsigned int status));
-int ScreenOut P_((char *str, int x, int y));
-int ScreenOutColor P_((char *str, int x, int y, int color));
-int StandardOut P_((char *str, int x, int y));
-int StandardOutColor P_((char *str, int x, int y, int color));
-int display_game_stats_to_current(unsigned int status, int n)
-#endif
-int game_rules P_((Boolean init));
+int ScreenOut P_((char *, int, int));
+int ScreenOutColor P_((char *, int, int, int));
+void StandardOut P_((char *, int, int));
+void StandardOutColor P_((char *, int, int, int));
+int capture_rules P_((Boolean));
+int combat_rules P_((Boolean));
+int display_game_stats P_((int));
+int display_game_stats_to_current P_((int, int));
+int game_rules P_((Boolean));
+int race_rules P_((Boolean));
+int stq_rules P_((Boolean));
+int ultimate_rules P_((Boolean));
+void war_init_time P_((Byte time[GRID_WIDTH][GRID_HEIGHT][MAX_TEAMS], int, int));
+int war_rules P_((Boolean));
 
 /* gr.c */
 void clear_windows P_((void));
@@ -455,8 +453,8 @@ int init_messages P_((Vehicle *v));
 int send_message P_((Vehicle *v));
 int send_death_message P_((Vehicle *victim, Vehicle *killer));
 #endif
+int dispatch_message P_((Message *));
 #ifdef Message
-int dispatch_message P_((Message *m));
 #ifdef Vehicle
 int receive_message P_((Vehicle *v, Message *m));
 #endif
