@@ -10,6 +10,9 @@
 ** Comment: Graphics Toolkit
 */
 
+#ifndef _GRAPHICS_H_
+#define _GRAPHICS_H_
+
 #include "common.h"
 #include "object.h"
 
@@ -85,3 +88,5 @@ Event;
 #endif
 
 Video *make_video();
+
+#endif /* _GRAPHICS_H_ */

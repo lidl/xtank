@@ -6,6 +6,9 @@
 ** $Id$
 */
 
+#ifndef _TERMINAL_H_
+#define _TERMINAL_H_
+
 #include "vehicle.h"
 #include "loc.h"
 
@@ -53,3 +56,5 @@ Terminal;
 
 extern Terminal *terminal[];
 extern int num_terminals;
+
+#endif /* _TERMINAL_H_ */
