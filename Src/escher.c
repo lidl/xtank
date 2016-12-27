@@ -10,8 +10,9 @@
 
 #include "sysdep.h"
 #include "graphics.h"
+#include "bullet.h"
+#include "vehicle.h"
 #include "proto.h"
-
 
 /*
  * corners (corner one is near the visual origin)
@@ -33,8 +34,8 @@ int ey[4][4] =
 	{0, -1, -2, -1},
 	{0, 0, 1, 2}};
 
-menu_frame(win, x, y, w, h, func, color, frame)
-int win, x, y, w, h, func, color, frame;
+void
+menu_frame(int win, int x, int y, int w, int h, int func, int color, int frame)
 {
 	int c;						/* corner */
 	int d;						/* delta inside of frame */

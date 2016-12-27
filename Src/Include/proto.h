@@ -134,7 +134,7 @@ void draw_obj P_((Object *, int, int, int, int));
 void draw_picture_string P_((Object *, int, char *, int, int, int));
 
 /* escher.c */
-int menu_frame P_((int win, int x, int y, int w, int h, int func, int color, int frame));
+void menu_frame P_((int, int, int, int, int, int, int, int));
 
 /* explosion.c */
 int make_explosion P_((Loc *loc, unsigned int type, int index));

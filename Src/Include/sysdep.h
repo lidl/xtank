@@ -23,20 +23,24 @@
 #define ATAN2(Y,X) atan2((double)Y, (double)X)
 #endif
 
+#if 0
+/* drem() not available so add a wrapper around fmod() */
+#if !defined(drem)
 
-#if defined(AMIGA) || defined(MOTOROLA) || defined(i860) || defined(mmax) || \
-    !(defined(sun) && defined(SVR4))
-/* drem() not available so replace with wrapper around fmod() */
+#if defined(fmod)
 static double temp_drem;
 
-#define drem(a,b) ((temp_drem = fmod(a,b)) > (b)/2 ? temp_drem-(b) : temp_drem)
-#endif
+#define drem(a,b) \
+	((temp_drem = fmod(a,b)) > (b)/2 ? temp_drem-(b) : temp_drem)
 
+#else /* !fmod */
 
-/* If you have no drem or fmod try this... */
-#if defined(sequent)
-#define drem(a,b) (((double)(a))-(int)((((double)(a))/((double)(b)))+((double) 0.5))*(b))
-#endif
+#define drem(a,b) \
+	(((double)(a))-(int)((((double)(a))/((double)(b)))+((double) 0.5))*(b))
+#endif /* !fmod */
+#endif /* !drem */
+
+#endif /* 0 */
 
 /* If you have no cbrt in your library, try this */
 /* also included linux -- not needed any more (it breaks too) */
