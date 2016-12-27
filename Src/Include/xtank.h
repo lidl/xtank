@@ -20,9 +20,6 @@
 #include "screen.h"
 #include "xtanklib.h"			/* many important things here */
 
-/* changed the include for proto.h to be in the individual source files */
-/* #include "proto.h"		/* function prototypes for ANSI compilers */
-
 #ifdef AMIGA
 #include "amiga.h"
 #endif

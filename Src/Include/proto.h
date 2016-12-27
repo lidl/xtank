@@ -6,7 +6,7 @@
 ** $Id$
 */
 
-#if defined(__STDC__) || defined(__cplusplus)
+#if 1 || defined(__STDC__) || defined(__cplusplus)
 #define P_(s) s
 #else
 #define P_(s) ()
@@ -45,21 +45,21 @@ Bullet *make_bullet P_((Vehicle *v, Loc *loc, WeaponType type, Angle angle, lCoo
 #endif
 #ifdef Bullet
 int explode P_((Bullet *b, int damage));
-int expl_area P_((Bullet *b));
 #endif
 #ifdef Vehicle
-int do_special P_((Vehicle *v, SpecialType special_num, unsigned int action));
 #endif
-int move_view P_((int dx, int dy));
+void do_special P_((Vehicle *, SpecialType, int));
+void move_view P_((int dx, int dy));
 int next_live_tank P_((void));
 int previous_live_tank P_((void));
 int IsVehicleAlive P_((int num));
-int switch_view P_((int num));
-int display_pause_message P_((void));
-int pause_game P_((Boolean state));
-int set_game_speed P_((int spd));
-int check_game_speed P_((void));
+void switch_view P_((int num));
+void display_pause_message P_((void));
+void pause_game P_((Boolean state));
+void set_game_speed P_((int spd));
+void check_game_speed P_((void));
 #endif
+void expl_area P_((Bullet *b));
 
 /* animate.c */
 int animate P_((void));
@@ -76,7 +76,6 @@ int box_outpost P_((Vehicle *v, Box *b, int grid_x, int grid_y));
 int closest_vehicle P_((Loc *loc, Vehicle *target));
 #endif
 #ifdef Box
-int outpost_loc P_((Box *b, Loc *oloc, int grid_x, int grid_y));
 int coll_outpost P_((Box *b, Loc *loc));
 Coord *outpost_coordinate P_((Box *b, int fr));
 #endif
@@ -89,10 +88,11 @@ int box_slow P_((Vehicle *v));
 #endif
 int init_changed_boxes P_((void));
 #ifdef Box
-int change_box P_((Box *b, int x, int y));
 int old_box P_((Box *b, int x, int y));
 #endif
 #endif
+int outpost_loc P_((Box *b, Loc *oloc, int grid_x, int grid_y));
+int change_box P_((Box *b, int x, int y));
 
 /* collision.c */
 #ifdef Vehicle
@@ -118,7 +118,6 @@ Vehicle *disc_cur_owner P_((Bullet *b));
 Vehicle *disc_last_owner P_((Bullet *b));
 Vehicle *disc_old_owner P_((Bullet *b));
 int get_disc_team P_((Bullet *b));
-void set_disc_team P_((Bullet *b, int teamnum));
 int set_disc_owner P_((Bullet *b, Vehicle *v));
 #endif
 #ifdef Vehicle
@@ -128,6 +127,7 @@ int set_disc_orbit P_((Vehicle *v, Spin dir));
 #endif
 #endif
 #endif
+void set_disc_team P_((Bullet *b, int teamnum));
 
 /* display.c */
 int display_terminal P_((unsigned int status, int lastterm));
@@ -154,9 +154,9 @@ int draw_picture_string P_((Object *obj, int view, char *str, int x, int y, int 
 int menu_frame P_((int win, int x, int y, int w, int h, int func, int color, int frame));
 
 /* explosion.c */
-#ifdef Loc
 int make_explosion P_((Loc *loc, unsigned int type, int index));
 int explode_location P_((Loc *loc, int num, unsigned int type));
+#ifdef Loc
 #endif
 
 #if defined(FILE) && defined(Vdesc) && defined(Mdesc) && defined(Sdesc)
@@ -213,7 +213,6 @@ int unmap_battle_windows P_((void));
 /* highlib.c */
 /* highlib.c prototypes are in lowlib.h */
 
-#if defined(Vehicle) && defined(WallSide) && defined(Box)
 /* hit.c */
 Side find_affected_side P_((Vehicle *v, double angle));
 int vehicle_hit_vehicle P_((Vehicle *v1, Vehicle *v2, int width, int height, int shx, int shy));
@@ -229,6 +228,7 @@ int damage_vehicle P_((Vehicle *v, Vehicle *damager, int damage, double angle, i
 int bounce_vehicles P_((Vehicle *v1, Vehicle *v2, int dx, int dy, double elast));
 int bounce_vehicle_wall P_((Vehicle *v, int dx, int dy, double elast));
 int assign_speed P_((Vector *vec, double xsp, double ysp));
+#if defined(Vehicle) && defined(WallSide) && defined(Box)
 #endif
 
 /* icounter.c */
@@ -701,11 +701,11 @@ int unmake_vehicle P_((Vehicle *v));
 int activate_vehicle P_((Vehicle *v));
 void inactivate_vehicle P_((Vehicle *victim));
 void explode_vehicle P_((Vehicle *victim));
-int kill_vehicle P_((Vehicle *victim, Vehicle *killer));
 #endif
 #ifdef Terminal
 void make_observer P_((Terminal *trm));
 #endif
+int kill_vehicle P_((Vehicle *victim, Vehicle *killer));
 
 /* x11.c */
 int open_graphics P_((void));

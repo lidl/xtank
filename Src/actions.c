@@ -20,7 +20,6 @@
 #include "assert.h"
 #include "proto.h"
 
-
 extern Terminal *term;
 extern Weapon_stat weapon_stat[];
 extern Settings settings;
@@ -29,9 +28,7 @@ extern Boolean game_paused;
 extern int frame;	/* HAK 2/93 */
 extern Map real_map;
 
-
 /* Adjust velocity, keeping direction the same */
-
 void adjust_speed(FLOAT *speedx, FLOAT *speedy, double adjust)
 {
 	double angle;
@@ -45,9 +42,8 @@ void adjust_speed(FLOAT *speedx, FLOAT *speedy, double adjust)
 ** Adjusts the specified location by dx in the x direction, and
 ** dy in the y direction.
 */
-adjust_loc(loc, dx, dy)
-Loc *loc;
-int dx, dy;
+void
+adjust_loc(Loc *loc, int dx, int dy)
 {
 	/* adjust x coordinate */
 	loc->x += dx;
@@ -78,9 +74,7 @@ int dx, dy;
 ** teleguided missile does indeed exist.
 */ 
 
-Boolean get_tele(v,b)
-Vehicle *v;
-Bullet **b;
+Boolean get_tele(Vehicle *v, Bullet **b)
 {
    extern Bset *bset;
    Bullet *temp;
@@ -105,17 +99,14 @@ Bullet **b;
    }
    return(GotIt);
 }
-	 
 
 /*
 ** turn_tow: This function looks through the BUllet list for the youngest TOW
 ** fired by the vehicle pointed to by v. It then changes the bullet's direction
 ** by 20*direction degrees. TRUE is returned if a TOW is found, FALSE otherwise.
 */
-
-turn_tow(v,direction)
-Vehicle *v;
-float direction;
+int
+turn_tow(Vehicle *v, float direction)
 {
    Boolean GotOne;
    int i;
@@ -174,8 +165,8 @@ float direction;
 ** to RED, which translates to "it's gonna BLOW!" in my code. Life is also cut
 ** short for the poor missile...
 */
-det_tow(v)
-Vehicle *v;
+int
+det_tow(Vehicle *v)
 {
    Boolean GotOne;
    int i;
@@ -212,14 +203,9 @@ Vehicle *v;
  * It now returns the bullet, so that the caller may
  * modify it... (HAK 4/93)
  */
-Bullet *make_bullet(v, loc, type, angle, target)
-Vehicle *v;
-Loc *loc;
-WeaponType type;
-Angle angle;
-lCoord *target;
+Bullet *
+make_bullet(Vehicle *v, Loc *loc, WeaponType type, Angle angle, lCoord *target)
 {
-	extern set_disc_team();
 	Weapon_stat *ws;
 	extern Bset *bset;
 	Bullet *b;
@@ -290,9 +276,8 @@ lCoord *target;
 ** Destroys bullet b, and creates an explosion in its place.
 ** The type of the explosion is dependent on the damage.
 */
-explode(b, damage)
-Bullet *b;
-int damage;
+void
+explode(Bullet *b, int damage)
 {
 	unsigned int type;
 
@@ -325,10 +310,8 @@ static FLOAT area_tbl[AREA_TBL_LEN] = {
 0.003906
 };
 
-/* renamed expl_nuke to expl_area (HAK 3/93) */
-
-expl_area(b)	/* Lots-o-changes 2/93 (HAK and MEL) */
-Bullet *b;
+void
+expl_area(Bullet *b)	/* Lots-o-changes 2/93 (HAK and MEL) */
 {
 	double dist, angle, hitsoff, nuke_sqr;
 	int x, y, dx, dy, i, j, damage, face, opp, adj1, adj2, index, weap_dam;
@@ -481,10 +464,8 @@ Bullet *b;
 ** Does the specified action for the specified special in the
 ** specified vehicle.
 */
-do_special(v, special_num, action)
-Vehicle *v;
-SpecialType special_num;
-unsigned int action;
+void
+do_special(Vehicle *v, SpecialType special_num, int action)
 {
 	Special *s;
         int i;
@@ -610,8 +591,8 @@ unsigned int action;
 ** Moves the view on the current terminal by dx vertically and dy horizontally.
 ** The terminal stops tracking.
 */
-move_view(dx, dy)
-int dx, dy;
+void
+move_view(int dx, int dy)
 {
 	Intloc new;
 
@@ -633,7 +614,9 @@ int dx, dy;
 
 #define INCR_WRAP(a,b) {if ((a) == (b)) (a) = 0; else (a)++;}
 #define DECR_WRAP(a,b) {if ((a) == 0) (a) = (b); else (a)--;}
-int next_live_tank()
+
+int
+next_live_tank(void)
 {
 	int iCurrentTank = -1;
 
@@ -649,7 +632,8 @@ int next_live_tank()
 	return (iCurrentTank);
 }
 
-int previous_live_tank()
+int
+previous_live_tank(void)
 {
 	int iCurrentTank = -1;
 
@@ -665,8 +649,8 @@ int previous_live_tank()
 	return (iCurrentTank);
 }
 
-int IsVehicleAlive(num)
-int num;
+int
+IsVehicleAlive(int num)
 {
 	int i;
 
@@ -686,8 +670,8 @@ int num;
 ** the terminal stops tracking.
 */
 
-switch_view(num)
-int num;
+void
+switch_view(int num)
 {
 	extern int num_terminals;
 	extern Terminal *terminal[];
@@ -738,7 +722,8 @@ int num;
 /*
 ** Xors the pause message onto the animation window.
 */
-display_pause_message()
+void
+display_pause_message(void)
 {
 	draw_text(ANIM_WIN, PAUSE_X, PAUSE_Y,
 			  "Game paused -- RETURN to unpause  SPACE to single step",
@@ -749,8 +734,8 @@ display_pause_message()
 ** If state is TRUE, sets game_speed to 0 to pause.
 ** If state is FALSE, restores game_speed to old value.
 */
-pause_game(state)
-Boolean state;
+void
+pause_game(Boolean state)
 {
 	if (state == TRUE) {
 		/* If not already paused, set game_speed to 0 */
@@ -770,8 +755,8 @@ Boolean state;
 /*
 ** Sets game speed to specified value if it is reasonable.
 */
-set_game_speed(spd)
-int spd;
+void
+set_game_speed(int spd)
 {
 	if (spd > 0 && spd <= MAX_GAME_SPEED)
 		settings.game_speed = spd;
@@ -781,7 +766,8 @@ int spd;
 /*
 ** Deals with game pause.  Waits if game is running faster than it should.
 */
-check_game_speed()
+void
+check_game_speed(void)
 {
 	char reply;
 
