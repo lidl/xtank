@@ -70,6 +70,7 @@ void box_landmark P_((Vehicle *v, Box *b));
 void box_slow P_((Vehicle *v));
 void box_outpost P_((Vehicle *v, Box *b, int grid_x, int grid_y));
 int closest_vehicle P_((Loc *loc, Vehicle *target));
+<<<<<<< HEAD
 void box_type_check P_((Vehicle *v, Box *b, FLOAT *xadj, FLOAT *yadj));
 int coll_outpost P_((Box *b, Loc *loc));
 Coord *outpost_coordinate P_((Box *b, int fr));
@@ -82,10 +83,10 @@ int change_box P_((Box *b, int x, int y));
 /* collision.c */
 #ifdef Vehicle
 #endif
-int coll_bullets_maze P_((void));
-int coll_bullets_vehicles P_((void));
-int coll_vehicles_vehicles P_((void));
-int coll_vehicle_walls P_((Vehicle *v));
+void coll_bullets_maze P_((void));
+void coll_bullets_vehicles P_((void));
+void coll_vehicles_vehicles P_((void));
+void coll_vehicle_walls P_((Vehicle *v));
 
 #ifdef Vehicle
 /* cosell.c */

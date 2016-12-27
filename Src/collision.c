@@ -11,6 +11,7 @@
 #include "vstructs.h"
 #include "screen.h"
 #include "bullet.h"
+#include "lowlib.h"
 #include "globals.h"
 #include "assert.h"
 #include "proto.h"
@@ -23,8 +24,8 @@ extern Map real_map;
 /*
 ** Handles collisions between specified vehicle and all walls
 */
-coll_vehicle_walls(v)
-Vehicle *v;
+void
+coll_vehicle_walls(Vehicle *v)
 {
 	Loc *loc, *oloc;
 	Picture *pic;
@@ -157,7 +158,8 @@ Vehicle *v;
 /*
 ** Handles all collisions between bullets and maze.
 */
-coll_bullets_maze()
+void
+coll_bullets_maze(void)
 {
 	extern Bset *bset;
 	Bullet *b;
@@ -367,7 +369,8 @@ coll_bullets_maze()
 /*
 ** Handles all collisions between bullets and tanks.
 */
-coll_bullets_vehicles()
+void
+coll_bullets_vehicles(void)
 {
 	extern Bset *bset;
 	Bullet *b;
@@ -588,7 +591,8 @@ coll_bullets_vehicles()
 /*
 ** Handles all collisions between vehicles and other vehicles.
 */
-coll_vehicles_vehicles()
+void
+coll_vehicles_vehicles(void)
 {
 	Vehicle *v1, *v2;
 	Loc *v1loc, *v2loc;

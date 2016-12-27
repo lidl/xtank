@@ -315,8 +315,7 @@ Vehicle_info *enemy;
 
    Changed to return the result of the clip algorithm (HAK 3/93)
 */
-int line_in_rect(ix1, iy1, ix2, iy2, w1, h1, w2, h2)
-int *ix1, *iy1, *ix2, *iy2, w1, h1, w2, h2;
+int line_in_rect(int *ix1, int *iy1, int *ix2, int *iy2, int w1, int h1, int w2, int h2)
 {
 	int code1, code2;
 	int converted = FALSE;

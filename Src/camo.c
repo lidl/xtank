@@ -7,6 +7,8 @@
 
 #include "malloc.h"
 #include "xtank.h"
+#include "bullet.h"
+#include "special.h"
 #include "vehicle.h"
 #include "graphics.h"
 #include "globals.h"
@@ -23,10 +25,7 @@
 
 extern int frame;
 
-SpecialStatus special_stealth(v, record, action)
-Vehicle *v;
-char *record;
-unsigned int action;
+SpecialStatus special_stealth(Vehicle *v, char *record, int action)
 {
 	Stealth *s;
 
@@ -84,19 +83,18 @@ unsigned int action;
 
 	  case SP_deactivate:
 		  v->rcs = v->normal_rcs;
+		  return SP_off;
 		  break;
 
 	  default:
 		  break;
 
 	}
-	return;
+	/** kludgey, but need to return something */
+	return SP_nonexistent;
 }
 
-SpecialStatus special_camo(v, record, action)
-Vehicle *v;
-char *record;
-unsigned int action;
+SpecialStatus special_camo(Vehicle *v, char *record, int action)
 {
 	Camo *c;
 
@@ -131,13 +129,15 @@ unsigned int action;
 
 	  case SP_deactivate:
 		  v->camod = FALSE;
+
+		  return SP_off;
 		  break;
 
 	  default:
 		  break;
 	}
 
-	return;
+	return SP_nonexistent;
 }
 
 
@@ -147,10 +147,7 @@ unsigned int action;
  */
 
 
-SpecialStatus special_rdf(v, record, action)
-Vehicle *v;
-char *record;
-unsigned int action;
+SpecialStatus special_rdf(Vehicle *v, char *record, int action)
 {
 	Rdf *r;
 	int i;
@@ -192,7 +189,7 @@ unsigned int action;
 				  }
 				  r->zapped = TRUE;
 			  }
-			  return;
+			  return SP_nonexistent;
 		  }
 		  if (r->zapped) {
 			  for (i = 0; i < MAX_VEHICLES; i++)
@@ -256,11 +253,8 @@ unsigned int action;
 			  return SP_on;
 		  break;
 
-
 	  case SP_redisplay:
-
 		  for (i = 0; i < MAX_VEHICLES; i++) {
-
 			  t = &r->trace[v->number][i];
 
 			  /*
