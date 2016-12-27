@@ -96,11 +96,11 @@ int change_box P_((Box *b, int x, int y));
 
 /* collision.c */
 #ifdef Vehicle
-int coll_vehicle_walls P_((Vehicle *v));
 #endif
 int coll_bullets_maze P_((void));
 int coll_bullets_vehicles P_((void));
 int coll_vehicles_vehicles P_((void));
+int coll_vehicle_walls P_((Vehicle *v));
 
 #ifdef Vehicle
 /* cosell.c */
@@ -179,7 +179,6 @@ int save_settings P_((char *filename));
 
 #ifdef Boolean
 /* game.c */
-int game_rules P_((Boolean init));
 int combat_rules P_((Boolean init));
 int stq_rules P_((Boolean init));
 int war_rules P_((Boolean init));
@@ -194,13 +193,12 @@ int StandardOut P_((char *str, int x, int y));
 int StandardOutColor P_((char *str, int x, int y, int color));
 int display_game_stats_to_current(unsigned int status, int n)
 #endif
+int game_rules P_((Boolean init));
 
 /* gr.c */
 int set_terminal P_((int terminal_num));
 int make_terminal P_((char *display_name));
-#ifdef Boolean
 int sync_terminals P_((Boolean discard));
-#endif
 #ifdef Terminal
 int close_terminal P_((Terminal *t));
 #endif
@@ -529,13 +527,13 @@ int init_prog_descs P_((void));
 int init_specials P_((Vehicle *v));
 int zap_specials P_((Vehicle *v));
 int init_programs P_((Vehicle *v));
-int run_all_programs P_((void));
 int run_program P_((Program *prog));
 int check_time P_((void));
 int stop_program P_((void));
 int make_programs P_((Vehicle *v, int num_progs, int prog_num[]));
 int find_pdesc P_((char *prog_name, int *index_return));
 #endif
+int run_all_programs P_((void));
 
 #ifndef NO_CAMO
 #ifdef Vehicle
@@ -648,9 +646,7 @@ int compile_module P_((char *module_name, Prog_desc **symbol, char **code, char 
 
 /* update.c */
 #ifdef Vehicle
-int update_vehicle P_((Vehicle *v));
 int update_vector P_((Vehicle *v));
-int update_rotation P_((Vehicle *v));
 #endif
 #ifdef Turret
 int update_turret P_((Turret *t));
@@ -659,8 +655,10 @@ int update_bullets P_((void));
 #ifdef Bullet
 int update_disc P_((Bullet *b));
 #endif
+int update_vehicle P_((Vehicle *v));
 int update_explosions P_((void));
 int update_maze_flags P_((void));
+int update_rotation P_((Vehicle *v));
 int update_specials P_((void));
 int update_screen_locs P_((void));
 
@@ -697,8 +695,6 @@ void make_turrets P_((Vehicle *v));
 void make_specials P_((Vehicle *v, Flag which));
 void unmake_specials P_((Vehicle *v));
 Vehicle *make_vehicle P_((Vdesc *d, Combatant *c));
-int unmake_vehicle P_((Vehicle *v));
-int activate_vehicle P_((Vehicle *v));
 void inactivate_vehicle P_((Vehicle *victim));
 void explode_vehicle P_((Vehicle *victim));
 #endif
@@ -706,6 +702,8 @@ void explode_vehicle P_((Vehicle *victim));
 void make_observer P_((Terminal *trm));
 #endif
 int kill_vehicle P_((Vehicle *victim, Vehicle *killer));
+int unmake_vehicle P_((Vehicle *v));
+int activate_vehicle P_((Vehicle *v));
 
 /* x11.c */
 int open_graphics P_((void));

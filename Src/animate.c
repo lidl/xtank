@@ -8,9 +8,12 @@
 
 #include "malloc.h"
 #include "xtank.h"
+#include "bullet.h"
+#include "vehicle.h"
 #include "terminal.h"
 #include "globals.h"
 #include "clfkr.h"
+#include "graphics.h"
 #include "proto.h"
 
 extern int frame;
@@ -33,7 +36,8 @@ int sync_rate = 16;
 **
 ** Returns one of GAME_RUNNING, GAME_QUIT, GAME_OVER, or GAME_RESET.
 */
-animate()
+int
+animate(void)
 {
 	extern int num_terminals;
 	extern Terminal *terminal[];
