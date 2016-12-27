@@ -25,13 +25,15 @@ int toggle_3d P_((int mask));
 int XMultiSync P_((Display *dpys[], int num_dpys, int discard));
 #endif
 
-#ifdef _XTANKLIB_H_
 /* actions.c */
+void adjust_loc P_((Loc *loc, int dx, int dy));
+Bullet *make_bullet P_((Vehicle *v, Loc *loc, WeaponType type, Angle angle, lCoord *target));
+
+#ifdef _XTANKLIB_H_
 #ifdef FLOAT
 void adjust_speed P_((FLOAT *speedx, FLOAT *speedy, double adjust));
 #endif
 #ifdef Loc
-int adjust_loc P_((Loc *loc, int dx, int dy));
 #endif
 #ifdef Vehicle
 #ifdef Bullet
@@ -40,7 +42,6 @@ Boolean get_tele P_((Vehicle *v, Bullet **b));
 int turn_tow P_((Vehicle *v, float direction));
 int get_tow P_((Vehicle *v))l
 #ifdef Bullet
-Bullet *make_bullet P_((Vehicle *v, Loc *loc, WeaponType type, Angle angle, lCoord *target));
 #endif
 #endif
 #ifdef Bullet
@@ -64,34 +65,18 @@ void expl_area P_((Bullet *b));
 /* animate.c */
 int animate P_((void));
 
-#ifdef _XTANKLIB_H_
 /* box.c */
-#if defined(Vehicle) && defined(Box)
-int box_type_check P_((Vehicle *v, Box *b, double *xadj, double *yadj));
-int box_landmark P_((Vehicle *v, Box *b));
-int box_outpost P_((Vehicle *v, Box *b, int grid_x, int grid_y));
-#endif
-#ifdef Loc
-#ifdef Vehicle
+void box_landmark P_((Vehicle *v, Box *b));
+void box_slow P_((Vehicle *v));
+void box_outpost P_((Vehicle *v, Box *b, int grid_x, int grid_y));
 int closest_vehicle P_((Loc *loc, Vehicle *target));
-#endif
-#ifdef Box
+void box_type_check P_((Vehicle *v, Box *b, FLOAT *xadj, FLOAT *yadj));
 int coll_outpost P_((Box *b, Loc *loc));
 Coord *outpost_coordinate P_((Box *b, int fr));
-#endif
-#endif
-#ifdef FLOAT
-int box_scroll P_((LandmarkType type, FLOAT *xadj, FLOAT *yadj));
-#endif
-#ifdef Vehicle
-int box_slow P_((Vehicle *v));
-#endif
-int init_changed_boxes P_((void));
-#ifdef Box
+void box_scroll P_((LandmarkType type, FLOAT *xadj, FLOAT *yadj));
+void init_changed_boxes P_((void));
 int old_box P_((Box *b, int x, int y));
-#endif
-#endif
-int outpost_loc P_((Box *b, Loc *oloc, int grid_x, int grid_y));
+void outpost_loc P_((Box *b, Loc *oloc, int grid_x, int grid_y));
 int change_box P_((Box *b, int x, int y));
 
 /* collision.c */
@@ -121,12 +106,12 @@ int get_disc_team P_((Bullet *b));
 int set_disc_owner P_((Bullet *b, Vehicle *v));
 #endif
 #ifdef Vehicle
-int release_discs P_((Vehicle *v, double dspeed, Boolean delay));
 #ifdef Spin
 int set_disc_orbit P_((Vehicle *v, Spin dir));
 #endif
 #endif
 #endif
+int release_discs P_((Vehicle *v, double dspeed, Boolean delay));
 void set_disc_team P_((Bullet *b, int teamnum));
 
 /* display.c */

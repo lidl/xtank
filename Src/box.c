@@ -21,13 +21,11 @@
 #include "gr.h"					/* for MAP_WIN */
 #include "proto.h"
 
-
 extern Boolean intersect_wall();
 
 extern Map real_map;
 extern int frame;
 extern Settings settings;
-
 
 /* Whether an outpost fires */
 #define OUTPOST_FIRE  32		/* should be a power of 2 for the
@@ -206,10 +204,8 @@ Coord outpost_coord[OUTPOST_PATS][OUTPOST_FRAMES] =
 ** Activates any outposts within 2 boxes of the vehicle.
 ** Puts adjustments of x and y components of speed into xadj and yadj.
 */
-box_type_check(v, b, xadj, yadj)
-Vehicle *v;
-Box *b;
-FLOAT *xadj, *yadj;
+void
+box_type_check(Vehicle *v, Box *b, FLOAT *xadj, FLOAT *yadj)
 {
 	int x, y;
 
@@ -254,9 +250,8 @@ FLOAT *xadj, *yadj;
 /*
 ** Applies the effects of a landmark on the specified vehicle.
 */
-box_landmark(v, b)
-Vehicle *v;
-Box *b;
+void
+box_landmark(Vehicle *v, Box *b)
 {
 	extern Engine_stat engine_stat[];
 	extern Weapon_stat weapon_stat[];
@@ -483,10 +478,8 @@ Box *b;
 /*
 ** If the vehicle is an enemy, the outpost shoots it with a leading fan.
 */
-box_outpost(v, b, grid_x, grid_y)
-Vehicle *v;
-Box *b;
-int grid_x, grid_y;
+void
+box_outpost(Vehicle *v, Box *b, int grid_x, int grid_y)
 {
 	Loc oloc;
 	double ang, lead, dx, dy;
@@ -528,9 +521,8 @@ int grid_x, grid_y;
 	make_bullet((Vehicle *) NULL, &oloc, btype, ang, NULL);
 }
 
-closest_vehicle(loc, target)
-Loc *loc;
-Vehicle *target;
+int
+closest_vehicle(Loc *loc, Vehicle *target)
 {
 	Vehicle *v;
 	int i, dx, dy, dist;
@@ -563,10 +555,8 @@ Vehicle *target;
 ** Creates a location structure for an outpost at the given grid coordinates
 ** in the given box.
 */
-outpost_loc(b, oloc, grid_x, grid_y)
-Box *b;
-Loc *oloc;
-int grid_x, grid_y;
+void
+outpost_loc(Box *b, Loc *oloc, int grid_x, int grid_y)
 {
 	Coord *oc;
 
@@ -583,9 +573,8 @@ int grid_x, grid_y;
 /*
 ** Returns whether a location collides with an outpost in the box.
 */
-coll_outpost(b, loc)
-Box *b;
-Loc *loc;
+int
+coll_outpost(Box *b, Loc *loc)
 {
 	Coord *oc;
 	int dx, dy;
@@ -597,9 +586,8 @@ Loc *loc;
 		 dy > -OUTPOST_HEIGHT / 2 && dy < OUTPOST_WIDTH / 2) ? TRUE : FALSE;
 }
 
-Coord *outpost_coordinate(b, fr)
-Box *b;
-int fr;
+Coord *
+outpost_coordinate(Box *b, int fr)
 {
 	return get_outpost_coord(b, fr);
 }
@@ -607,9 +595,8 @@ int fr;
 /*
 ** Increases the xspeed and yspeed of the vehicle in the scroll direction.
 */
-box_scroll(type, xadj, yadj)
-LandmarkType type;
-FLOAT *xadj, *yadj;
+void
+box_scroll(LandmarkType type, FLOAT *xadj, FLOAT *yadj)
 {
 	FLOAT ss;
 
@@ -654,8 +641,8 @@ FLOAT *xadj, *yadj;
 /*
 ** Multiplies xspeed and yspeed of vehicle by box_slow.
 */
-box_slow(v)
-Vehicle *v;
+void
+box_slow(Vehicle *v)
 {
 	v->vector.xspeed *= settings.si.box_slowdown;
 	v->vector.yspeed *= settings.si.box_slowdown;
@@ -688,7 +675,8 @@ static int num_changed_boxes = 0;
 /*
 ** Sets all changed boxes back to unchanged and num_changed_boxes to 0.
 */
-init_changed_boxes()
+void
+init_changed_boxes(void)
 {
 	extern Map real_map;
 	Changed_box *cb;
@@ -709,9 +697,8 @@ init_changed_boxes()
 ** Marks box as changed, to indicate that its old value is here.
 ** Returns 1 if successful, 0 if unsuccessful.
 */
-change_box(b, x, y)
-Box *b;
-int x, y;
+int
+change_box(Box *b, int x, int y)
 {
 	Changed_box *cb;
 
@@ -736,9 +723,8 @@ int x, y;
 ** Puts the old contents of the box at (x,y) into b.
 ** Returns 1 if successful, 0 if unsuccessful.
 */
-old_box(b, x, y)
-Box *b;
-int x, y;
+int
+old_box(Box *b, int x, int y)
 {
 	Changed_box *cb;
 	int i;
