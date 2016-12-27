@@ -7,6 +7,11 @@
 */
 
 #include "xtank.h"
+#include "bullet.h"
+#include "vehicle.h"
+#include "object.h"
+#include "proto.h"
+#include "vehicle.h"
 
 #ifdef BATCH_LINES
 #define USE_BATCHED_LINES
@@ -51,9 +56,8 @@ extern int frame;
 /*
 ** Displays everything on the current terminal.
 */
-display_terminal(status, lastterm)
-unsigned int status;
-int lastterm;
+void
+display_terminal(unsigned int status, int lastterm)
 {
 	/* Display all of the windows */
 	display_anim(status, lastterm);
@@ -69,16 +73,14 @@ int lastterm;
 ** Displays the vehicles, walls, landmarks, bullets, and explosions in the
 ** animation window.
 */
-display_anim(status, lastterm)
-unsigned int status;
-int lastterm;
+void
+display_anim(unsigned int status, int lastterm)
 {
 	Vehicle *v;
 	int i;
 
 #ifndef NO_HUD
 	unsigned int action;
-
 #endif /* NO_HUD */
 
 	/* Check for being exposed */
@@ -128,7 +130,6 @@ int lastterm;
 	display_explosions(status);
 
 #ifndef NO_HUD
-
 	/*
      *  The test for NULL is a piece of SPAM.
      *
@@ -171,9 +172,8 @@ int lastterm;
 /*
 ** Displays the specified vehicle and its turrets in the animation window.
 */
-display_vehicle(v, status)
-Vehicle *v;
-unsigned int status;
+void
+display_vehicle(Vehicle *v, unsigned int status)
 {
 	Loc *loc, *old_loc;
 	Picture *pic;
@@ -254,9 +254,8 @@ unsigned int status;
 /*
 ** Displays all turrets for the specified vehicle in the animation window.
 */
-display_turrets(v, status)
-Vehicle *v;
-unsigned int status;
+void
+display_turrets(Vehicle *v, unsigned int status)
 {
 	Picture *pic;
 	Loc *loc, *old_loc;
@@ -340,9 +339,8 @@ unsigned int status;
 ** If point_bullets is on, all non-disc bullets are drawn as points.
 ** Otherwise, the bullet bitmaps are used.
 */
-display_bullets(status, lastterm)
-unsigned int status;
-int lastterm;
+void
+display_bullets(unsigned int status, int lastterm)
 {
 	extern char team_char[];
 	extern Bset *bset;
@@ -464,8 +462,8 @@ int lastterm;
 /*
 ** Displays all the explosions visible in the animation window.
 */
-display_explosions(status)
-unsigned int status;
+void
+display_explosions(unsigned int status)
 {
 	extern Eset *eset;
 	Exp *e;
@@ -519,6 +517,9 @@ unsigned int status;
       oc = outpost_coordinate(b,fr); \
       draw_picture(ANIM_WIN,line_x+oc->x,line_y+oc->y,pic,DRAW_XOR, \
 		   team_color_bright[b->team]); \
+      break; \
+    default: \
+      break; \
   }
 
 /* Draws team character in the center of the box */
@@ -532,8 +533,8 @@ unsigned int status;
 /*
 ** Displays all the walls and landmarks in the animation window.
 */
-display_maze(status)
-unsigned int status;
+void
+display_maze(unsigned int status)
 {
 	extern char team_char[];
 	extern Object *landmark_obj[];
@@ -665,8 +666,8 @@ unsigned int status;
 /*
 ** Displays mapper and radar in the map window.
 */
-display_map(status)
-unsigned int status;
+void
+display_map(unsigned int status)
 {
 	Vehicle *v = term->vehicle;
 
@@ -714,8 +715,8 @@ unsigned int status;
 /*
 ** Displays the console information in the console window.
 */
-display_cons(status)
-unsigned int status;
+void
+display_cons(unsigned int status)
 {
 	unsigned int action;
 
@@ -771,8 +772,8 @@ char *help_battle[] =
 /*
 ** Displays helpful information in the help window.
 */
-display_help(status)
-unsigned int status;
+void
+display_help(unsigned int status)
 {
 	int i, lim;
 	char **text;
@@ -829,7 +830,8 @@ unsigned int status;
 /*
 ** Displays pictures of all bodies, bullets, explosions, and landmarks.
 */
-display_pics()
+void
+display_pics(void)
 {
 	int exp_view, v_view, max_pics, split;
 	int xpos;
@@ -952,10 +954,8 @@ display_pics()
 ** at the specified location and working downwards in jumps of height.
 ** The specified view is used for each object, provided it exists.
 */
-draw_objs(obj, text, first, last, view, x, y, height)
-Object *obj[];
-Boolean text;
-int first, last, view, x, y, height;
+void
+draw_objs(Object *obj[], Boolean text, int first, int last, int view, int x, int y, int height)
 {
 	int i;
 
@@ -970,7 +970,8 @@ int first, last, view, x, y, height;
 
 char *box_type_name[NUM_LANDMARK_TYPES];
 
-init_box_names()
+void
+init_box_names(void)
 {
 	int i;
 
@@ -1002,9 +1003,8 @@ init_box_names()
 ** Draws all the views of a given object in a vertical column, starting
 ** at the specified location and working downwards in jumps of height.
 */
-draw_obj(obj, type, x, y, height)
-Object *obj;
-int type, x, y, height;
+void
+draw_obj(Object *obj, int type, int x, int y, int height)
 {
 	extern Weapon_stat weapon_stat[];
 	char *str;
@@ -1035,10 +1035,8 @@ int type, x, y, height;
 ** at the specified location in the animation window.  The adj parameter
 ** is added to the picture coordinates but not the text coordinates.
 */
-draw_picture_string(obj, view, str, x, y, adj)
-Object *obj;
-char *str;
-int view, x, y, adj;
+void
+draw_picture_string(Object *obj, int view, char *str, int x, int y, int adj)
 {
 	draw_picture(ANIM_WIN, x + adj, y + adj, &obj->pic[view], DRAW_COPY,
 				 WHITE);

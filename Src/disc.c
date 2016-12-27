@@ -16,7 +16,7 @@
 #include "proto.h"
 #ifdef SOUND
 #include "sound.h"
-#endif SOUND
+#endif /* SOUND */
 
 extern Settings settings;
 
@@ -29,7 +29,8 @@ static int max_discs_out = 0;
 /*
 ** Function to initialize the settings of the discs.
 */
-void disc_init_history()
+void
+disc_init_history(void)
 {
 	int i;
 
@@ -44,9 +45,8 @@ void disc_init_history()
 /*
 ** Change the indicated disc owner... shifting history
 */
-void disc_new_owner(b, vh1)
-Bullet *b;
-Vehicle *vh1;
+void
+disc_new_owner(Bullet *b, Vehicle *vh1)
 {
 	int teamnum;
 
@@ -61,8 +61,8 @@ Vehicle *vh1;
 /*
 ** Return who currently owns the disc
 */
-Vehicle *disc_cur_owner(b)
-Bullet *b;
+Vehicle *
+disc_cur_owner(Bullet *b)
 {
 	return (cur_owners[get_disc_team(b)]);
 }
@@ -70,8 +70,8 @@ Bullet *b;
 /*
 ** Return who last owned the disc
 */
-Vehicle *disc_last_owner(b)
-Bullet *b;
+Vehicle *
+disc_last_owner(Bullet *b)
 {
 	return (last_owners[get_disc_team(b)]);
 }
@@ -79,8 +79,8 @@ Bullet *b;
 /*
 ** Return who owned the disc a while ago.
 */
-Vehicle *disc_old_owner(b)
-Bullet *b;
+Vehicle *
+disc_old_owner(Bullet *b)
 {
 	return (old_owners[get_disc_team(b)]);
 }
@@ -88,8 +88,8 @@ Bullet *b;
 /*
 ** Return the original team ownership of a disc
 */
-int get_disc_team(b)
-Bullet *b;
+int
+get_disc_team(Bullet *b)
 {
 	if (!b) {
 		if (max_discs_out > 1) {
@@ -103,9 +103,8 @@ Bullet *b;
 /*
 ** Set the original team ownership of a disc
 */
-void set_disc_team(b, teamnum)
-Bullet *b;
-int teamnum;
+void
+set_disc_team(Bullet *b, int teamnum)
 {
 	if (!b)
 		return;
@@ -118,9 +117,8 @@ int teamnum;
 /*
 ** Sets the owner of the specified disc to the specified vehicle.
 */
-set_disc_owner(b, v)
-Bullet *b;
-Vehicle *v;
+void
+set_disc_owner(Bullet *b, Vehicle *v)
 {
 	/* Take it away from previous owner */
 	if (b->owner != (Vehicle *) NULL) {
@@ -136,7 +134,7 @@ Vehicle *v;
 	/* display_bullets(OFF); */
 #ifdef SOUND
 	play_in_view(b->loc, DISC_NEW_OWNER_SOUND);
-#endif SOUND
+#endif /* SOUND */
 	disc_new_owner(b, v);
 	b->owner = v;
 	/* display_bullets(OFF); */
@@ -150,10 +148,8 @@ Vehicle *v;
 ** Allows one update if delay is set.  This allows robots to throw to
 ** an accuracy of one frame.
 */
-release_discs(v, dspeed, delay)
-Vehicle *v;
-FLOAT dspeed;
-Boolean delay;
+void
+release_discs(Vehicle *v, double dspeed, Boolean delay)
 {
 	extern Bset *bset;
 	Bullet *b;
@@ -168,7 +164,7 @@ Boolean delay;
 			if (b->type == DISC && b->owner == v) {
 #ifdef SOUND
 				play_in_view(b->loc, DISC_SOUND);
-#endif SOUND
+#endif /* SOUND */
 				if (delay)
 					update_disc(b);
 				curspeed = sqrt(b->xspeed * b->xspeed + b->yspeed * b->yspeed);
@@ -196,9 +192,8 @@ Boolean delay;
 /*
 ** Makes all discs owned by the vehicle spin in the specified direction.
 */
-set_disc_orbit(v, dir)
-Vehicle *v;
-Spin dir;
+void
+set_disc_orbit(Vehicle *v, Spin dir)
 {
 	switch (dir) {
 	  case CLOCKWISE:
@@ -209,6 +204,9 @@ Spin dir;
 		  break;
 	  case TOGGLE:
 		  v->status ^= VS_disc_spin;
+		  break;
+	  default:
+		  /* silence compiler warning about unhandled cases */
 		  break;
 	}
 }

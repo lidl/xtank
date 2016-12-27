@@ -70,7 +70,6 @@ void box_landmark P_((Vehicle *v, Box *b));
 void box_slow P_((Vehicle *v));
 void box_outpost P_((Vehicle *v, Box *b, int grid_x, int grid_y));
 int closest_vehicle P_((Loc *loc, Vehicle *target));
-<<<<<<< HEAD
 void box_type_check P_((Vehicle *v, Box *b, FLOAT *xadj, FLOAT *yadj));
 int coll_outpost P_((Box *b, Loc *loc));
 Coord *outpost_coordinate P_((Box *b, int fr));
@@ -88,10 +87,8 @@ void coll_bullets_vehicles P_((void));
 void coll_vehicles_vehicles P_((void));
 void coll_vehicle_walls P_((Vehicle *v));
 
-#ifdef Vehicle
 /* cosell.c */
 int comment P_((int op, int dat, Vehicle *vh1, Vehicle *vh2, Bullet *db));
-#endif
 
 #ifdef _XTANKLIB_H_
 /* disc.c */
@@ -103,7 +100,6 @@ void disc_new_owner P_((Bullet *b, Vehicle *vh1));
 Vehicle *disc_cur_owner P_((Bullet *b));
 Vehicle *disc_last_owner P_((Bullet *b));
 Vehicle *disc_old_owner P_((Bullet *b));
-int get_disc_team P_((Bullet *b));
 int set_disc_owner P_((Bullet *b, Vehicle *v));
 #endif
 #ifdef Vehicle
@@ -112,29 +108,30 @@ int set_disc_orbit P_((Vehicle *v, Spin dir));
 #endif
 #endif
 #endif
-int release_discs P_((Vehicle *v, double dspeed, Boolean delay));
+int get_disc_team P_((Bullet *b));
+void release_discs P_((Vehicle *v, double dspeed, Boolean delay));
 void set_disc_team P_((Bullet *b, int teamnum));
 
 /* display.c */
-int display_terminal P_((unsigned int status, int lastterm));
-int display_anim P_((unsigned int status, int lastterm));
+void display_terminal P_((unsigned int status, int lastterm));
+void display_anim P_((unsigned int status, int lastterm));
+void display_vehicle P_((Vehicle *v, unsigned int status));
 #ifdef Vehicle
-int display_vehicle P_((Vehicle *v, unsigned int status));
-int display_turrets P_((Vehicle *v, unsigned int status));
 #endif
-int display_bullets P_((unsigned int status, int lastterm));
-int display_explosions P_((unsigned int status));
-int display_maze P_((unsigned int status));
-int display_map P_((unsigned int status));
-int display_cons P_((unsigned int status));
-int display_help P_((unsigned int status));
-int display_pics P_((void));
-int init_box_names P_((void));
+void display_turrets P_((Vehicle *v, unsigned int status));
+void display_bullets P_((unsigned int status, int lastterm));
+void display_explosions P_((unsigned int status));
+void display_maze P_((unsigned int status));
+void display_map P_((unsigned int status));
+void display_cons P_((unsigned int status));
+void display_help P_((unsigned int status));
+void display_pics P_((void));
+void init_box_names P_((void));
 #ifdef Object
-int draw_objs P_((Object *obj[], Boolean text, int first, int last, int view, int x, int y, int height));
-int draw_obj P_((Object *obj, int type, int x, int y, int height));
-int draw_picture_string P_((Object *obj, int view, char *str, int x, int y, int adj));
 #endif
+void draw_objs P_((Object **, Boolean, int, int, int, int, int, int));
+void draw_obj P_((Object *, int, int, int, int));
+void draw_picture_string P_((Object *, int, char *, int, int, int));
 
 /* escher.c */
 int menu_frame P_((int win, int x, int y, int w, int h, int func, int color, int frame));
@@ -468,12 +465,12 @@ int dispatch_message P_((Message *m));
 #ifdef Vehicle
 int receive_message P_((Vehicle *v, Message *m));
 #endif
-int display_msg P_((unsigned int status));
 int format_message P_((Message *m, char *disp));
 #endif
 #ifdef Opcode
 void compose_message P_((Byte sender, Byte sendee, Opcode opcode, Byte * data));
 #endif
+int display_msg P_((unsigned int status));
 
 /* newconsole.c */
 int idx2armor P_((int idx, int *sidep));
@@ -639,8 +636,8 @@ int update_turret P_((Turret *t));
 #endif
 int update_bullets P_((void));
 #ifdef Bullet
-int update_disc P_((Bullet *b));
 #endif
+int update_disc P_((Bullet *b));
 int update_vehicle P_((Vehicle *v));
 int update_explosions P_((void));
 int update_maze_flags P_((void));
@@ -713,8 +710,8 @@ int draw_text_rc P_((int w, int x, int y, char *str, int font, int color));
 int clear_text_rc P_((int w, int x, int y, int width, int height, int font));
 int flush_output P_((void));
 #ifdef Boolean
-int sync_output P_((Boolean discard));
 #endif
+int sync_output P_((Boolean discard));
 #if defined(Video) && defined(Boolean)
 int multi_sync P_((Video *video[], int num_videos, Boolean discard));
 #endif
