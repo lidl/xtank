@@ -10,8 +10,10 @@
 #include "bullet.h"
 #include "vehicle.h"
 #include "object.h"
-#include "proto.h"
 #include "vehicle.h"
+#include "graphics.h"
+#include "terminal.h"
+#include "proto.h"
 
 #ifdef BATCH_LINES
 #define USE_BATCHED_LINES

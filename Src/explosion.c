@@ -10,6 +10,7 @@
 #include "bullet.h"
 #include "graphics.h"
 #include "loc.h"
+#include "terminal.h"
 #include "proto.h"
 #ifdef SOUND
 #include "sound.h"

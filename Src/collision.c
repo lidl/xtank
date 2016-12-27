@@ -14,6 +14,8 @@
 #include "lowlib.h"
 #include "globals.h"
 #include "assert.h"
+#include "graphics.h"
+#include "terminal.h"
 #include "proto.h"
 
 

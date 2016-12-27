@@ -12,6 +12,7 @@
 #include "graphics.h"
 #include "bullet.h"
 #include "vehicle.h"
+#include "terminal.h"
 #include "proto.h"
 
 /*

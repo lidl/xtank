@@ -13,6 +13,7 @@
 #include "cosell.h"
 #include "graphics.h"
 #include "globals.h"
+#include "terminal.h"
 #include "proto.h"
 #ifdef SOUND
 #include "sound.h"

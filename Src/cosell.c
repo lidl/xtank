@@ -19,6 +19,8 @@
 #include "bullet.h"
 #include "message.h"
 #include "globals.h"
+#include "graphics.h"
+#include "terminal.h"
 #include "proto.h"
 
 

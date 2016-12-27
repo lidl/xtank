@@ -13,6 +13,7 @@
 #include "graphics.h"
 #include "globals.h"
 #include "gr.h"
+#include "terminal.h"
 #include "proto.h"
 
 #ifndef NO_CAMO
