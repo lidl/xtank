@@ -13,16 +13,13 @@
 #include "proto.h"
 #ifdef SOUND
 #include "sound.h"
-#endif SOUND
+#endif /* SOUND */
 
 #define EXP_SPREAD 15
 
 /* Creates an explosion of the specified type at the specified location.  */
-
-make_explosion(loc, type, index)
-Loc *loc;
-unsigned int type;
-int index;
+void
+make_explosion(Loc *loc, int type, int index)
 {
 	extern int num_terminals;
 	extern Object *exp_obj[];
@@ -71,7 +68,7 @@ int index;
 		default:
 			play_in_view(loc, DAMAGE_EXPLOSION_SOUND);
 	}
-#endif SOUND
+#endif /* SOUND */
 	
 	e = eset->list[eset->number++];
 	e->x = (int) loc->x;
@@ -90,10 +87,8 @@ int index;
 /* Makes the given number of explosions of the given type around the
    location.  */
 
-explode_location(loc, num, type)
-Loc *loc;
-int num;
-unsigned int type;
+void
+explode_location(Loc *loc, int num, int type)
 {
 	Loc exp_loc;
 	int exp_dx, exp_dy;

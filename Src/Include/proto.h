@@ -137,8 +137,8 @@ void draw_picture_string P_((Object *, int, char *, int, int, int));
 void menu_frame P_((int, int, int, int, int, int, int, int));
 
 /* explosion.c */
-int make_explosion P_((Loc *loc, unsigned int type, int index));
-int explode_location P_((Loc *loc, int num, unsigned int type));
+void make_explosion P_((Loc *, int, int));
+void explode_location P_((Loc *, int, int));
 #ifdef Loc
 #endif
 
