@@ -6,13 +6,15 @@
 ** $Id$
 */
 
-#include "malloc.h"
+#include <stdlib.h>	/* for calloc(), free() */
 #include "xtank.h"
 #include "screen.h"
 #include "graphics.h"
 #include "gr.h"
 #include "terminal.h"
 #include "globals.h"
+#include "bullet.h"
+#include "vehicle.h"
 #include "proto.h"
 
 int num_terminals = 0;
@@ -27,8 +29,8 @@ Terminal *term;
 /*
 ** Sets the global terminal pointer term to the specified terminal number.
 */
-set_terminal(terminal_num)
-int terminal_num;
+void
+set_terminal(int terminal_num)
 {
 	if ((terminal_num < num_terminals) && (terminal_num >= 0)) {
 		term = terminal[terminal_num];
@@ -41,8 +43,8 @@ int terminal_num;
 ** Opens and maps windows, sets the cursor and makes objects.
 ** Returns -1 if terminal could not be made.
 */
-make_terminal(display_name)
-char *display_name;
+int
+make_terminal(char *display_name)
 {
 	Boolean taken[MAX_TERMINALS];
 	Terminal *t;
@@ -110,7 +112,7 @@ char *display_name;
 
 #ifdef SOUND
 	init_terminal_sound(t);
-#endif SOUND
+#endif /* SOUND */
 
 	return 0;
 }
@@ -118,8 +120,8 @@ char *display_name;
 /*
 ** Synchronizes all terminals.
 */
-sync_terminals(discard)
-Boolean discard;
+void
+sync_terminals(Boolean discard)
 {
 	Video *video[MAX_TERMINALS];
 	int i;
@@ -147,8 +149,8 @@ Boolean discard;
 /*
 ** Frees all storage for the terminal.
 */
-close_terminal(t)
-Terminal *t;
+void
+close_terminal(Terminal *t)
 {
 #ifdef SOUND
 	if (t->rplay_fd > 0)
@@ -162,7 +164,8 @@ Terminal *t;
 ** Opens all the windows used in the game.
 ** Returns non-zero value if a window could not be made.
 */
-open_windows()
+int
+open_windows(void)
 {
 	int i;
 	int ret = 0;
@@ -192,7 +195,8 @@ open_windows()
 ** Maps all the non-battle windows and waits for the animation window
 ** to be exposed.
 */
-map_windows()
+void
+map_windows(void)
 {
 	Event event;
 	int w, num_events;
@@ -211,7 +215,8 @@ map_windows()
 /*
 ** Clears all the non-battle windows.
 */
-clear_windows()
+void
+clear_windows(void)
 {
 	int w;
 
@@ -222,7 +227,8 @@ clear_windows()
 /*
 ** Maps a battle window for each vehicle.
 */
-map_battle_windows()
+void
+map_battle_windows(void)
 {
 	int w, mn;
 
@@ -234,7 +240,8 @@ map_battle_windows()
 /*
 ** Unmaps all the battle windows that are up.
 */
-unmap_battle_windows()
+void
+unmap_battle_windows(void)
 {
 	int w;
 

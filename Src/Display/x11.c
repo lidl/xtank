@@ -369,8 +369,8 @@ make_parent()
 /*
  * * Destroys the specified video.
  */
-close_video(video)
-Video *video;
+void
+close_video(Video *video)
 {
 	XCloseDisplay(video->dpy);
 	free((char *) video);
@@ -708,9 +708,8 @@ Char = `%c' (%3d)\n",
    the WIN_expose flag.  Events are stored in the event array, with num_events
    holding the number of events placed there.  */
 
-get_events(num_events, event)
-int *num_events;
-Event event[];
+void
+get_events(int *num_events, Event *event)
 {
 	XEvent xevent;
 	XAnyEvent *any_xevent;

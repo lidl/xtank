@@ -13,12 +13,10 @@
 #endif
 
 /* three-d.c */
-int display_anim_3d P_((unsigned int status));
-#ifdef Terminal
-int init_terminal_3d P_((Terminal *t));
-#endif
-int transform_3d P_((int *dx, int *dy));
-int toggle_3d P_((int mask));
+int display_anim_3d P_((int));
+int init_terminal_3d P_((Terminal *));
+int transform_3d P_((int *, int *));
+int toggle_3d P_((int));
 
 /* XMultiSync.c */
 #ifdef Display
@@ -182,17 +180,15 @@ int display_game_stats_to_current(unsigned int status, int n)
 int game_rules P_((Boolean init));
 
 /* gr.c */
-int set_terminal P_((int terminal_num));
-int make_terminal P_((char *display_name));
-int sync_terminals P_((Boolean discard));
-#ifdef Terminal
-int close_terminal P_((Terminal *t));
-#endif
+void clear_windows P_((void));
+void close_terminal P_((Terminal *));
+int make_terminal P_((char *));
+void map_battle_windows P_((void));
+void map_windows P_((void));
 int open_windows P_((void));
-int map_windows P_((void));
-int clear_windows P_((void));
-int map_battle_windows P_((void));
-int unmap_battle_windows P_((void));
+void set_terminal P_((int));
+void sync_terminals P_((Boolean));
+void unmap_battle_windows P_((void));
 
 /* highlib.c */
 /* highlib.c prototypes are in lowlib.h */
@@ -689,11 +685,11 @@ int activate_vehicle P_((Vehicle *v));
 int open_graphics P_((void));
 int close_graphics P_((void));
 int reset_video P_((void));
-#ifdef Video
 int set_video P_((Video *video));
+#ifdef Video
 Video *make_video P_((char *name));
-int close_video P_((Video *video));
 #endif
+void close_video P_((Video *));
 int make_parent P_((void));
 int make_window P_((int w, int x, int y, int width, int height, int border));
 int beep_window P_((void));
@@ -713,8 +709,8 @@ int sync_output P_((Boolean discard));
 int multi_sync P_((Video *video[], int num_videos, Boolean discard));
 #endif
 #ifdef Event
-int get_events P_((int *num_events, Event event[]));
 #endif
+int get_events P_((int *, Event *));
 #ifdef Boolean
 int follow_mouse P_((int w, Boolean status));
 int button_up P_((int w, Boolean status));
