@@ -863,9 +863,8 @@ Boolean status;
 /*
  * * Causes EVENT_*BUTTONUP to be enabled or disabled in get_events().
  */
-button_up(w, status)
-int w;
-Boolean status;
+void
+button_up(int w, Boolean status)
 {
 	if (status == TRUE)
 		vid->input_mask |= ButtonReleaseMask;

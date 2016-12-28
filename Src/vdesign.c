@@ -801,9 +801,8 @@ Vdesc *d;
 /*
 ** Displays all information about vehicle.
 */
-display_vdesc(d, status)
-Vdesc *d;
-unsigned int status;
+void
+display_vdesc(Vdesc *d, int status)
 {
 	extern Object *vehicle_obj[];
 	static Vdesc od;

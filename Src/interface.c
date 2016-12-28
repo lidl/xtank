@@ -7,7 +7,6 @@
 */
 
 #include "tanklimits.h"
-#include "malloc.h"
 #include "xtank.h"
 #include "screen.h"
 #include "graphics.h"
@@ -15,21 +14,30 @@
 #include "vstructs.h"
 #include "menu.h"
 #include "interface.h"
-#include "terminal.h"
 #include "setup.h"
+#include "bullet.h"
+#include "terminal.h"
+#include "vehicle.h"
 #include "proto.h"
 
 #ifdef UNIX
 #include <sys/param.h>
+#include <dirent.h>
+
+#if 0
 #if defined(sun) && defined(SVR4)
 #include <dirent.h>
 #else
 #include <sys/dir.h>
 #endif
 #endif
-#include "clfkr.h"
+#endif /* 0 */
 
-extern char *strdup();
+
+#include <stdlib.h>		/* for malloc(), free() */
+#include <string.h>		/* for strdup() */
+#include <unistd.h>		/* for unlink() */
+#include "clfkr.h"
 
 extern int num_veh;
 
@@ -57,7 +65,7 @@ extern char *version3;
 extern struct CLFkr command_options;
 
 /* Added in a '1' for the new combatants menu (HAK 2/93) */
-static whichlevel[MAX_MENUS] =
+static int whichlevel[MAX_MENUS] =
 {0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3};
 
 /* For convienence */
@@ -139,10 +147,10 @@ static char *ability_desc[] =
 
 static Menu_int menu_sys;
 
-int reset_dynamic_entries()
+void
+reset_dynamic_entries(void)
 {
 	int i;
-
 	int val;
 
 	/*
@@ -181,7 +189,8 @@ int reset_dynamic_entries()
 /*
 ** Initializes the main interface menus.
 */
-init_flags_hil()
+void
+init_flags_hil(void)
 {
 	menu_unhighlight(&menu_sys, FLAGS_MENU);
 
@@ -230,12 +239,10 @@ init_flags_hil()
 		menu_set_hil(&menu_sys, FLAGS_MENU, 20);
 	if (settings.si.teleport_any_to_any)
 		menu_set_hil(&menu_sys, FLAGS_MENU, 21);
-
 }
 
-void MakeForceString(pcTemp, iNum)
-char *pcTemp;
-int iNum;
+void
+MakeForceString(char *pcTemp, int iNum)
 {
 	int iVal = force_states[iNum];
 
@@ -254,7 +261,8 @@ int iNum;
 	strcpy(force_entries[iNum], pcTemp);
 }
 
-init_interface()
+void
+init_interface(void)
 {
 	int iCtr;
 	char acTemp[40];
@@ -325,7 +333,8 @@ init_interface()
 /*
 ** Initializes the combatants interface menus.
 */
-init_comb_menus()
+void
+init_comb_menus(void)
 {
 	int grid_wid, i, j;
 
@@ -400,9 +409,8 @@ init_comb_menus()
 				   setups_entries, M_FONT);
 }
 
-
-int sub_interface_main(choice)
-int choice;
+int
+sub_interface_main(int choice)
 {
 	int retval = 0;
 
@@ -445,8 +453,8 @@ int choice;
 	return (retval);
 }
 
-int sub_interface_force(choice)
-int choice;
+int
+sub_interface_force(int choice)
 {
 	int iVal;
 	char acTemp[40];
@@ -469,8 +477,8 @@ int choice;
 	return (0);
 }
 
-void sub_interface_view(choice)
-int choice;
+void
+sub_interface_view(int choice)
 {
 	switch (choice) {
 	  case 0:
@@ -495,8 +503,8 @@ int choice;
 	}
 }
 
-void sub_interface_load(choice)
-int choice;
+void
+sub_interface_load(int choice)
 {
 	switch (choice) {
 	  case 0:
@@ -516,8 +524,8 @@ int choice;
 	menu_unhighlight(&menu_sys, LOAD_MENU);
 }
 
-void sub_interface_design(choice)
-int choice;
+void
+sub_interface_design(int choice)
 {
 	switch (choice) {
 	  case 0:
@@ -532,8 +540,8 @@ int choice;
 	menu_unhighlight(&menu_sys, DESIGN_MENU);
 }
 
-void sub_interface_help(choice)
-int choice;
+void
+sub_interface_help(int choice)
 {
 	switch (choice) {
 	  case 0:
@@ -575,9 +583,8 @@ int choice;
 	expose_win(ANIM_WIN, TRUE);
 }
 
-void sub_interface_maze(choice, button)
-int choice;
-EventType button;
+void
+sub_interface_maze(int choice, EventType button)
 {
 	/* If the settings menu is up, set the settings, otherwise,  */
 	/* display information about the maze.                       */
@@ -599,8 +606,8 @@ EventType button;
 	}
 }
 
-void sub_interface_play(choice)
-int choice;
+void
+sub_interface_play(int choice)
 {
 	switch (choice) {
 	  case 0:
@@ -620,14 +627,14 @@ int choice;
 	menu_unhighlight(&menu_sys, PLAY_MENU);
 }
 
-void sub_interface_machine(choice)
-int choice;
+void
+sub_interface_machine(int choice)
 {
 	add_given_player(choice);
 }
 
-void sub_interface_settings(choice)
-int choice;
+void
+sub_interface_settings(int choice)
 {
 	char acFileName[MAXPATHLEN];
 	static int inited = 0;
@@ -718,8 +725,8 @@ int choice;
 	}
 }
 
-void sub_interface_flags(choice)
-int choice;
+void
+sub_interface_flags(int choice)
 {
 	switch (choice) {
 	  case 0:
@@ -799,7 +806,8 @@ int choice;
 ** The top level interface to xtank.
 */
 
-main_interface()
+int
+main_interface(void)
 {
 	Event ev;
 	int numev, menu, choice;
@@ -971,8 +979,8 @@ main_interface()
 /*
 ** Erases all menus on equal or higher levels than the specified menu.
 */
-erase_other_menus(mu)
-int mu;
+void
+erase_other_menus(int mu)
 {
 	int level, i;
 
@@ -984,16 +992,14 @@ int mu;
 			menu_erase(&menu_sys, i);
 }
 
-
 static int gridsel = 0;			/* the current row in the combatants menu */
-
 
 /* return 1 if we should quit */
 
-static int handle_comb_button(evp, mv)
-Event *evp;
-int mv;							/* the mouse button number, from left */
+static int
+handle_comb_button(Event *evp, int mv)
 {
+	/* mv - the mouse button number, from left */
 	int gi;
 	int choice;
 	int menu;
@@ -1080,7 +1086,8 @@ int mv;							/* the mouse button number, from left */
 ** grid and then picks a menu choice to fill that spot.  This progresses
 ** until the user clicks on done.
 */
-do_comb()
+void
+do_comb(void)
 {
 	int should_quit = 0;
 	int i, numev, mv;
@@ -1135,9 +1142,8 @@ do_comb()
 ** Puts the information from the specified combatants grid row into the
 ** given combatant structure.  Returns -1 if there's no combatant on the row
 */
-make_grid_combatant(c, row)
-Combatant *c;
-int row;
+int
+make_grid_combatant(Combatant *c, int row)
 {
 	c->vdesc = grid_val[2][row];
 	if (c->vdesc == UNDEFINED)
@@ -1157,9 +1163,8 @@ int row;
 /*
 ** Doesn't belong here...
 */
-combatant_to_grid(c, row)
-Combatant *c;
-int row;
+int
+combatant_to_grid(Combatant *c, int row)
 {
 	int val;
 	char *ptr;
@@ -1207,9 +1212,8 @@ int row;
 ** displays a menu with selections from 0 to 10.
 ** When called with init false, sets the initialized choice to the number.
 */
-do_num(num, init)
-int num;
-Boolean init;
+void
+do_num(int num, Boolean init)
 {
 	static int choice;
 
@@ -1240,7 +1244,8 @@ Boolean init;
 /*
 ** Displays information about the settings in the game window.
 */
-display_settings()
+void
+display_settings(void)
 {
 	extern *bool_str[];
 	char temp[41];
@@ -1291,8 +1296,8 @@ display_settings()
 /*
 ** Sets the specified setting to the given number scaled from the range 0 - 10.
 */
-set_setting(setting, num)
-int setting, num;
+void
+set_setting(int setting, int num)
 {
 	switch (setting) {
 	  case SET_DENSITY:
@@ -1337,8 +1342,8 @@ int setting, num;
 /*
 ** Returns the value of the specified setting scaled to the range 0 - 10.
 */
-setting_num(setting)
-int setting;
+int
+setting_num(int setting)
 {
 	switch (setting) {
 	  case SET_DENSITY:
@@ -1372,7 +1377,8 @@ int setting;
 /*
 ** Plays a game or explains failure to the user.
 */
-interface_play()
+void
+interface_play(void)
 {
 	int line, i;
 
@@ -1417,8 +1423,8 @@ interface_play()
 /*
 ** Displays information about a vehicle, maze, setup, player, or program.
 */
-do_view(menu, choice)
-int menu, choice;
+void
+do_view(int menu, int choice)
 {
 	clear_window(ANIM_WIN);
 	switch (menu) {
@@ -1448,8 +1454,8 @@ int menu, choice;
 /*
 ** Displays information about the specified maze.
 */
-display_mdesc(d)
-Mdesc *d;
+void
+display_mdesc(Mdesc *d)
 {
 	make_maze(d);
 	display_mdesc_maze();
@@ -1459,8 +1465,8 @@ Mdesc *d;
 /*
 ** Displays information about the specified program.
 */
-display_program(p)
-Prog_desc *p;
+void
+display_program(Prog_desc *p)
 {
 	char temp[256], *ptr, *end_ptr;
 	int row, width, len, i;
@@ -1542,13 +1548,14 @@ Prog_desc *p;
 ** for the terminals.  Checks the internet address, makes, and initializes
 ** each terminal.  Gets player information for each terminal.
 */
-add_players()
+void
+add_players(void)
 {
 
 #ifdef UNIX
 	extern char *network_error_str[];
-
 #endif
+
 	extern char video_error_str[];
 	extern int num_terminals;
 	char name[80], result[256], *tmp;
@@ -1607,8 +1614,8 @@ add_players()
 	}
 }
 
-add_given_player(choice)
-int choice;
+void
+add_given_player(int choice)
 {
 	char *name = machine_names[choice];
 
@@ -1670,8 +1677,8 @@ int choice;
 **
 ** Several fixes in here by HAK 2/93
 */
-remove_player(num)
-int num;
+void
+remove_player(int num)
 {
 	extern int num_terminals;
 	extern Terminal *terminal[];
@@ -1701,7 +1708,8 @@ int num;
 /*
 ** Asks the current terminal for a player name and a vehicle name.
 */
-get_player_info()
+void
+get_player_info(void)
 {
 	extern char *get_default();
 	extern char username[];
@@ -1779,13 +1787,9 @@ get_player_info()
 	term->keymap = vid->kludge.keymap;
 }
 
-input_filename(iWindow, pcPrevFileName, pcFileName, iLineNum, iFont, iMaxLen)
-int iWindow;
-char *pcPrevFileName;
-char *pcFileName;
-int iLineNum;
-int iFont;
-int iMaxLen;
+void
+input_filename(int iWindow, char *pcPrevFileName, char *pcFileName,
+	int iLineNum, int iFont, int iMaxLen)
 {
 	char temp[MAXPATHLEN];
 
@@ -1809,7 +1813,8 @@ int iMaxLen;
 ** Reports any errors to the user, displaying the errors produced
 ** by the compiler or linker.
 */
-make_prog_desc()
+void
+make_prog_desc(void)
 {
 	char filename[MAXPATHLEN];
 	static char prev_filename[MAXPATHLEN];
@@ -1826,9 +1831,8 @@ make_prog_desc()
 	load_prog_desc(filename, FALSE);
 }
 
-load_prog_desc(filename, batch)
-char *filename;
-int batch;
+void
+load_prog_desc(char *filename, int batch)
 {
 	extern char pathname[], programsdir[];
 	static char *report[] =
@@ -1946,8 +1950,8 @@ int batch;
 /*
 ** Ask the user for a desc name, try to load it and then fix the menus.
 */
-interface_load(type)
-int type;
+void
+interface_load(int type)
 {
 #ifdef OLD
 	int max_descs;
@@ -1975,9 +1979,8 @@ int type;
 /*
 ** Make the named desc, fix the desc menu, set the desc in the settings.
 */
-interface_set_desc(type, name)
-int type;
-char *name;
+void
+interface_set_desc(int type, char *name)
 {
 	int num, max_descs, result;
 
@@ -2018,8 +2021,8 @@ char *name;
 /*
 ** A description has been loaded, so add an item to the right menu.
 */
-fix_desc_menu(type)
-int type;
+void
+fix_desc_menu(int type)
 {
 	switch (type) {
 	  case VDESC:
@@ -2043,8 +2046,8 @@ int type;
 ** Prompts the user for a vehicle, maze, or setup name and loads it.
 ** Returns number of last description loaded or -1 if none loaded.
 */
-int ask_desc(type, row, col)
-int type;
+int
+ask_desc(int type, int row, int col)
 {
 	char prompt[80], resp[80], *format, *tname;
 	int ret, num;
@@ -2128,7 +2131,8 @@ int type;
 	return ((ret == DESC_LOADED) ? num : -1);
 }
 
-ask_winning_score()
+void
+ask_winning_score(void)
 {
 	if (settings.si.game == WAR_GAME)
 		settings.si.winning_score = input_int(ANIM_WIN, "Winning score",
@@ -2141,7 +2145,8 @@ ask_winning_score()
 	clear_ask(ASK_X, ASK_Y);  /* HAK 2/93 */
 }
 
-ask_maze_density()
+void
+ask_maze_density(void)
 {
 	int t = input_int(ANIM_WIN, "Maze density", ASK_X, ASK_Y, 3, 0, 10,
 					  INT_FONT);
@@ -2153,9 +2158,8 @@ ask_maze_density()
 /*
 ** Reads in the specified file and displays it in the specified window.
 */
-display_file(w, filename)
-int w;
-char *filename;
+void
+display_file(int w, char *filename)
 {
 	extern char *read_file();
 	char *str;
@@ -2171,10 +2175,8 @@ char *filename;
 ** tabs and newlines.  Prompts user to hit a key after each page,
 ** and at the end of the string.
 */
-display_long_str(w, str, font)
-int w;
-char *str;
-int font;
+void
+display_long_str(int w, char *str, int font)
 {
 	char c, temp[DISP_WIDTH + 1];
 	Boolean write = FALSE;
@@ -2229,8 +2231,8 @@ int font;
 /*
 ** Displays the title.  Sweeps gleams across it if gleams is true.
 */
-display_title(gleams)
-Boolean gleams;
+void
+display_title(Boolean gleams)
 {
 	Object *gleam_obj, *title_obj, *terp_obj, *rhino_obj, *trike_obj;
 	Object *cycle_obj;
@@ -2402,8 +2404,8 @@ Boolean gleams;
 }
 
 /* Jimmy */
-fix_combantants(nt)
-int nt;
+void
+fix_combantants(int nt)
 {
 	/* put player name in grid */
 	grid_ent[PLAYERS_MENU - PLAYERS_MENU][nt] =
@@ -2433,15 +2435,17 @@ int nt;
 	  (nt) % 2 + 1;
 }
 
-comb_load_v()  /* added 2/93 by HAK */
+void
+comb_load_v(void)  /* added 2/93 by HAK */
 {
-        ask_desc(VDESC, 5, 48);
-        menu_unhighlight(&menu_sys, COMBATANTS_MENU);
+	ask_desc(VDESC, 5, 48);
+	menu_unhighlight(&menu_sys, COMBATANTS_MENU);
 
 	expose_win(ANIM_WIN, TRUE);
 }
 
-comb_load_all()  /* added 2/93 by HAK */
+void
+comb_load_all(void)  /* added 2/93 by HAK */
 {
         int i, num;
         char temp[MAXNAMLEN];

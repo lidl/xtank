@@ -281,8 +281,8 @@ int *ival;
 	*ival = atoi(val);
 }
 
-int load_settings(pcFileName)
-	char *pcFileName;
+int
+load_settings(char *pcFileName)
 {
 	extern char force_states[];
 	int i;

@@ -148,7 +148,8 @@ Event *event;
 	return GAME_RUNNING;
 }
 
-design_maze()
+void
+design_maze(void)
 {
 	Event event;
 	int num_events;
@@ -275,8 +276,8 @@ display_mdesc_maze()
 /*
 ** Shows the type, name, designer and description of the specified mdesc.
 */
-display_mdesc_info(d)
-Mdesc *d;
+void
+display_mdesc_info(Mdesc *d)
 {
 	char temp[110];
 	extern char *games_entries[];

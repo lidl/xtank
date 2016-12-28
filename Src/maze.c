@@ -75,8 +75,8 @@ setup_maze()
 /*
 ** Makes a maze structure from the specified maze description.
 */
-make_maze(d)
-Mdesc *d;
+void
+make_maze(Mdesc *d)
 {
 	static Box empty_box =
 	{0, NORMAL, 0};

@@ -140,18 +140,17 @@ void menu_frame P_((int, int, int, int, int, int, int, int));
 /* explosion.c */
 void make_explosion P_((Loc *, int, int));
 void explode_location P_((Loc *, int, int));
-#ifdef Loc
-#endif
 
-#if defined(FILE) && defined(Vdesc) && defined(Mdesc) && defined(Sdesc)
+/* setups.l */
+int load_settings P_((char *));
+
 /* file.c */
 int save_mdesc P_((Mdesc *d));
 int load_sdesc P_((Sdesc *d, char *name));
 int make_sdesc P_((char *name, int *num));
-int get_environment P_((void));
-char *read_file P_((char *filename));
-int save_settings P_((char *filename));
-#endif
+void get_environment P_((void));
+char *read_file P_((char *));
+int save_settings P_((char *));
 int ReadVehicleFormat0 P_((FILE *, Vdesc *));
 int ReadVehicleFormat1 P_((FILE *, Vdesc *));
 int alloc_str P_((FILE *, char **));
@@ -236,69 +235,55 @@ void input_string P_((int, char *, char *, int, int, int, int));
 int confirm P_((int, char *, int, int, int));
 
 /* interface.c */
-int reset_dynamic_entries P_((void));
-int init_flags_hil P_((void));
-void MakeForceString P_((char *pcTemp, int iNum));
-int init_interface P_((void));
-int init_comb_menus P_((void));
-int sub_interface_main P_((int choice));
-int sub_interface_force P_((int choice));
-void sub_interface_view P_((int choice));
-void sub_interface_load P_((int choice));
-void sub_interface_design P_((int choice));
-void sub_interface_help P_((int choice));
-#ifdef EventType
-void sub_interface_maze P_((int choice, EventType button));
-#endif
-void sub_interface_play P_((int choice));
-void sub_interface_machine P_((int choice));
-void sub_interface_settings P_((int choice));
-void sub_interface_flags P_((int choice));
+void reset_dynamic_entries P_((void));
+void init_flags_hil P_((void));
+void MakeForceString P_((char *, int));
+void init_interface P_((void));
+void init_comb_menus P_((void));
+int sub_interface_main P_((int));
+int sub_interface_force P_((int));
+void sub_interface_view P_((int));
+void sub_interface_load P_((int));
+void sub_interface_design P_((int));
+void sub_interface_help P_((int));
+void sub_interface_maze P_((int, EventType));
+void sub_interface_play P_((int));
+void sub_interface_machine P_((int));
+void sub_interface_settings P_((int));
+void sub_interface_flags P_((int));
 int main_interface P_((void));
-int erase_other_menus P_((int mu));
-#ifdef Event
-static int handle_comb_button P_((Event *evp, int mv));
-#endif
-int do_comb P_((void));
-#ifdef Combatant
-int make_grid_combatant P_((Combatant *c, int row));
-int combatant_to_grid P_((Combatant *c, int row));
-#endif
-#ifdef Boolean
-int do_num P_((int num, Boolean init));
-#endif
-int display_settings P_((void));
-int set_setting P_((int setting, int num));
-int setting_num P_((int setting));
-int interface_play P_((void));
-int do_view P_((int menu, int choice));
-#ifdef Mdesc
-int display_mdesc P_((Mdesc *d));
-#endif
-#ifdef Prog_desc
-int display_program P_((Prog_desc *p));
-#endif
-int add_players P_((void));
-int add_given_player P_((int choice));
-int remove_player P_((int num));
-int get_player_info P_((void));
-int input_filename P_((int iWindow, char *pcPrevFileName, char *pcFileName, int iLineNum, int iFont, int iMaxLen));
-int make_prog_desc P_((void));
-int load_prog_desc P_((char *filename, int batch));
-int interface_load P_((int type));
-int interface_set_desc P_((int type, char *name));
-int fix_desc_menu P_((int type));
-int ask_desc P_((int type, int row, int col));
-int ask_winning_score P_((void));
-int ask_maze_density P_((void));
-int display_file P_((int w, char *filename));
-int display_long_str P_((int w, char *str, int font));
-#ifdef Boolean
-int display_title P_((Boolean gleams));
-#endif
-int fix_combantants P_((int nt));
-int comb_load_v P_((void));
-int comb_load_all P_((void));
+void erase_other_menus P_((int mu));
+static int handle_comb_button P_((Event *, int));
+void do_comb P_((void));
+int make_grid_combatant P_((Combatant *, int));
+int combatant_to_grid P_((Combatant *, int));
+void do_num P_((int, Boolean));
+void display_settings P_((void));
+void set_setting P_((int, int));
+int setting_num P_((int));
+void interface_play P_((void));
+void do_view P_((int, int));
+void display_mdesc P_((Mdesc *d));
+void display_program P_((Prog_desc *p));
+void add_players P_((void));
+void add_given_player P_((int));
+void remove_player P_((int));
+void get_player_info P_((void));
+void input_filename P_((int, char *, char *, int, int, int));
+void make_prog_desc P_((void));
+void load_prog_desc P_((char *, int));
+void interface_load P_((int));
+void interface_set_desc P_((int, char *));
+void fix_desc_menu P_((int));
+int ask_desc P_((int, int, int));
+void ask_winning_score P_((void));
+void ask_maze_density P_((void));
+void display_file P_((int, char *));
+void display_long_str P_((int, char *, int));
+void display_title P_((Boolean));
+void fix_combantants P_((int));
+void comb_load_v P_((void));
+void comb_load_all P_((void));
 
 /* intersect.c */
 #if defined(Loc) && defined(Boolean) && defined(Segment) && defined(Vehicle) && defined(Object)
@@ -335,11 +320,9 @@ int full_mapper P_((unsigned int status));
 
 /* maze.c */
 int setup_maze P_((void));
-#ifdef Mdesc
-int make_maze P_((Mdesc *d));
+void make_maze P_((Mdesc *d));
 int build_mdesc P_((Mdesc *d, Game type, char *name, char *designer, char *desc));
 int clear_mdesc P_((Mdesc *d));
-#endif
 int process_maze P_((void));
 int make_random_maze_walls P_((void));
 int remove_walls P_((int percent));
@@ -350,16 +333,12 @@ int set_box_types P_((int num_prob, FLOAT prob[]));
 
 
 /* mdesign.c */
-#ifdef Event
 static int handle_key P_((Event *event));
-int design_maze P_((void));
+void design_maze P_((void));
 int handle_button P_((Event *event));
-#endif
 int mdesign_show_anim P_((void));
 int display_mdesc_maze P_((void));
-#ifdef Mdesc
 int display_mdesc_info P_((Mdesc *d));
-#endif
 int mdesign_show_help P_((void));
 int mdesign_clear_input P_((void));
 #ifdef BoxC
@@ -402,7 +381,6 @@ int show_dot P_((BoxC *loc));
 #endif
 
 /* menu.c */
-#ifdef Menu_int
 int menu_sys_window P_((Menu_int *menuobj, int wdw));
 int menu_bare_make P_((Menu_int *menuobj, int menuid, char *title, int size, int width, int xtop, int ytop, int fntcode, int has_bar, int use_escher, int center));
 int menu_set_fields P_((Menu_int *menuobj, int menuid, int val));
@@ -426,7 +404,6 @@ int menu_unhighlight P_((Menu_int *menuobj, int menuid));
 int menu_sys_display P_((Menu_int *menuobj));
 int menu_sys_erase P_((Menu_int *menuobj));
 int menu_hit P_((Menu_int *menuobj, int x, int y));
-#endif
 
 /* message.c */
 int init_msg_sys P_((void));
@@ -647,8 +624,8 @@ void vdesign_save P_((Vdesc *d));
 int vdesign_interface P_((Vdesc *d));
 int erase_vdesign_menus P_((int mu));
 int init_vdesc P_((Vdesc *d));
-int display_vdesc P_((Vdesc *d, unsigned int status));
 #endif
+void display_vdesc P_((Vdesc *d, int status));
 int compute_vdesc P_((Vdesc *));
 int init_vdesign P_((void));
 
@@ -698,10 +675,8 @@ int multi_sync P_((Video *video[], int num_videos, Boolean discard));
 #ifdef Event
 #endif
 int get_events P_((int *, Event *));
-#ifdef Boolean
 int follow_mouse P_((int w, Boolean status));
-int button_up P_((int w, Boolean status));
-#endif
+void button_up P_((int w, Boolean status));
 int make_gcs P_((void));
 int set_font_path P_((char *fontdir));
 int make_cursors P_((void));
