@@ -73,7 +73,7 @@ double rint P_((double x));
 ** also have different arguement promotion rules.
 */
 
-#if defined(i860) || defined(sparc)
+#if 1 || defined(i860) || defined(sparc)
 #define FLOAT double
 #else
 #define FLOAT float
