@@ -286,14 +286,12 @@ void comb_load_v P_((void));
 void comb_load_all P_((void));
 
 /* intersect.c */
-#if defined(Loc) && defined(Boolean) && defined(Segment) && defined(Vehicle) && defined(Object)
 Boolean intersect_wall P_((Loc *start, Loc *finish));
 Boolean seg_intersect_obj P_((Object *obj, Segment *seg2, int xoffs, int yoffs, Coord *ipt));
 Boolean obj_overlap P_((Object *obj1, Object *obj2, int xoffs, int yoffs));
 Boolean seg_intersect P_((Segment *seg1, Segment *seg2, int xoffs, int yoffs, Coord *ipt));
-int make_segment P_((Segment *seg, int x1, int y1, int x2, int y2));
-int point_in_vehicle P_((Vehicle *v, double x, double y));
-#endif
+void make_segment P_((Segment *, int, int, int, int));
+int point_in_vehicle P_((Vehicle *, double, double));
 
 /* lowlib.c */
 /* lowlib.c prototypes are in lowlib.h */

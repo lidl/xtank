@@ -14,13 +14,11 @@
 
 extern Map real_map;
 
-Boolean seg_intersect();
-
 /*
 ** Returns true if the path from start to finish intersects a wall.
 */
-Boolean intersect_wall(start, finish)
-Loc *start, *finish;
+Boolean
+intersect_wall(Loc *start, Loc *finish)
 {
 	int dx, dy, lattice_dx, lattice_dy;
 	int tgrid_x, tgrid_y, fgrid_x, fgrid_y;
@@ -122,11 +120,8 @@ Loc *start, *finish;
 /*
 ** Determines whether or not and where a segment intersects an object.
 */
-Boolean seg_intersect_obj(obj, seg2, xoffs, yoffs, ipt)
-Object *obj;
-Segment *seg2;
-int xoffs, yoffs;
-Coord *ipt;
+Boolean
+seg_intersect_obj(Object *obj, Segment *seg2, int xoffs, int yoffs, Coord *ipt)
 {
 	Segment *seg1;
 	int i;
@@ -143,9 +138,8 @@ Coord *ipt;
 ** Determines whether or not two polygons overlap when separated by
 ** the given x and y offsets.
 */
-Boolean obj_overlap(obj1, obj2, xoffs, yoffs)
-Object *obj1, *obj2;
-int xoffs, yoffs;
+Boolean
+obj_overlap(Object *obj1, Object *obj2, int xoffs, int yoffs)
 {
 	Segment *seg1, *seg2;
 	int i, j;
@@ -165,10 +159,8 @@ int xoffs, yoffs;
 ** Assumes a coordinate frame from segment 1.  Segment 2 is
 ** offset from segment 1 by the offset values.
 */
-Boolean seg_intersect(seg1, seg2, xoffs, yoffs, ipt)
-Segment *seg1, *seg2;
-int xoffs, yoffs;
-Coord *ipt;
+Boolean
+seg_intersect(Segment *seg1, Segment *seg2, int xoffs, int yoffs, Coord *ipt)
 {
 	int x1, y1;
 	int ix, iy;
@@ -211,9 +203,8 @@ Coord *ipt;
 /*
 ** Makes a segment structure from two coordinates.
 */
-make_segment(seg, x1, y1, x2, y2)
-Segment *seg;
-int x1, y1, x2, y2;
+void
+make_segment(Segment *seg, int x1, int y1, int x2, int y2)
 {
 	seg->x1 = x1;
 	seg->x2 = x2;
@@ -246,9 +237,8 @@ int x1, y1, x2, y2;
 ** Returns true if the point located at absolute coords (x,y) is
 ** within the polygon of the specified vehicle
 */
-point_in_vehicle(v, x, y)
-Vehicle *v;
-FLOAT x, y;
+int
+point_in_vehicle(Vehicle *v, double x, double y)
 {
 	Boolean flag;
 	Segment *s, *smax;
