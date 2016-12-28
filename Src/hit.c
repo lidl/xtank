@@ -17,12 +17,13 @@
 #include "message.h"
 #include "bullet.h"
 #include "terminal.h"
+#include "graphics.h"
 #include "cosell.h"
 #include "globals.h"
 #include "proto.h"
 #ifdef SOUND
 #include "sound.h"
-#endif SOUND
+#endif /* SOUND */
 
 extern Map real_map;
 extern Settings settings;
@@ -32,9 +33,8 @@ extern int frame;
 
 #endif /* !NO_DAMAGE */
 
-Side find_affected_side(v, angle)
-Vehicle *v;
-FLOAT angle;
+Side
+find_affected_side(Vehicle *v, double angle)
 {
 	Side s;
 	FLOAT rel_angle;
@@ -62,9 +62,13 @@ FLOAT angle;
 ** Better bumpers result in less damage in general and less to that vehicle.
 */
 
-vehicle_hit_vehicle(v1, v2, dx, dy)
-Vehicle *v1, *v2;
-int dx, dy;
+/*
+** XXX: s1, s2 are scratch - the callers of vehicle_hit_vehicle do not
+**      match up with the prototype of this function!
+*/
+
+void
+vehicle_hit_vehicle(Vehicle *v1, Vehicle *v2, int s1, int s2, int dx, int dy)
 {
 	FLOAT ang, bump1, bump2, elast;
 	int damage, damage1, damage2;
@@ -178,7 +182,7 @@ int dx, dy;
 
 #ifdef SOUND
 	play_in_view(v1->loc, VEHICLE_HIT_VEHICLE_SOUND);
-#endif SOUND
+#endif /* SOUND */
 
 #ifdef GDEBUG
 	if (statfile) {
@@ -203,10 +207,8 @@ int dx, dy;
 ** Better bumpers result in less damage in general and less to the vehicle.
 ** Wall in box (grid_x,grid_y) at direction dir.
 */
-vehicle_hit_wall(v, grid_x, grid_y, dir)
-Vehicle *v;
-int grid_x, grid_y;
-WallSide dir;
+void
+vehicle_hit_wall(Vehicle *v, int grid_x, int grid_y, WallSide dir)
 {
 	FLOAT ang, bump, elast;
 	int dx, dy, damage, damage1, damage2;
@@ -214,7 +216,7 @@ WallSide dir;
 
 #ifdef SOUND
 	play_in_view(v->loc, VEHICLE_HIT_WALL_SOUND);
-#endif SOUND
+#endif /* SOUND */
 
 #ifdef GDEBUG
 	int itemp1, itemp2;
@@ -299,8 +301,8 @@ WallSide dir;
 /*
 ** Returns damage prop to kinetic energy, inversely prop to elasticity.
 */
-bounce_damage(xspeed, yspeed, elast)
-FLOAT xspeed, yspeed, elast;
+int
+bounce_damage(double xspeed, double yspeed, double elast)
 {
 	return (int) ((xspeed * xspeed + yspeed * yspeed) / (elast * 40.0));
 }
@@ -308,7 +310,8 @@ FLOAT xspeed, yspeed, elast;
 /*
 ** XXX
 */
-void invalidate_maps()
+void
+invalidate_maps(void)
 {
 	extern Combatant combatant[MAX_VEHICLES];
 	extern int num_combatants;
@@ -342,10 +345,8 @@ void invalidate_maps()
 ** If the bullet is a disk, then the vehicle is made owner of the disc.
 ** Otherwise, the bullet explodes, and the vehicle is damaged.
 */
-bul_hit_vehicle(v, b, dx, dy)
-Vehicle *v;
-Bullet *b;
-int dx, dy;
+void
+bul_hit_vehicle(Vehicle *v, Bullet *b, int dx, int dy)
 {
 	extern Vehicle *disc_last_owner(), *disc_old_owner();
 	Vehicle *shoot_v;
@@ -435,7 +436,8 @@ int dx, dy;
 	} /* if not disk */
 }
 
-void hit_blast(int whatHit, Bullet *b, int dx, int dy,
+void
+hit_blast(int whatHit, Bullet *b, int dx, int dy,
 		void *parm1, void *parm2, void *parm3)
 {
 	Loc temp;
@@ -495,10 +497,8 @@ void hit_blast(int whatHit, Bullet *b, int dx, int dy,
 ** Explodes the bullet and damages the outpost if the bullet isn't a disc.
 ** Gives some points and money to the owner of the bullet, if any.
 */
-bul_hit_outpost(b, bbox, grid_x, grid_y)
-Bullet *b;
-Box *bbox;
-int grid_x, grid_y;
+void
+bul_hit_outpost(Bullet *b, Box *bbox, int grid_x, int grid_y)
 {
 	int damage, lcount;
 
@@ -547,11 +547,11 @@ int grid_x, grid_y;
 **
 ** now returns TRUE if the bullet still exists, else false
 */
-bul_hit_wall(b, grid_x, grid_y, dir)
-Bullet *b;
-int grid_x, grid_y;				/* coordinates of box containing wall flag */
-WallSide dir;					/* direction bullet hit wall */
+int
+bul_hit_wall(Bullet *b, int grid_x, int grid_y, WallSide dir)
 {
+	/* grid_x, grid_y - coordinates of box containing wall flag */
+	/* dir - direction bullet hit wall */
 	FLOAT dx, dy;
 	int dam, lcount;
 
@@ -622,14 +622,12 @@ WallSide dir;					/* direction bullet hit wall */
 ** bounced it ended up on the wall in question.  Now it actually reflects,
 ** and thus can correctly be called a second time for the second wall.
 */
-bounce_bullet(b, dir, dx, dy)
-Bullet *b;
-WallSide dir;
-FLOAT dx, dy;
+void
+bounce_bullet(Bullet *b, WallSide dir, double dx, double dy)
 {
 #ifdef SOUND
 	play_in_view(b->loc, RICOCHET_SOUND);
-#endif SOUND
+#endif /* SOUND */
 	b->hurt_owner = TRUE;
 	switch (dir) {
 	  case NORTH:
@@ -648,10 +646,8 @@ FLOAT dx, dy;
 ** Damages a wall in box at (x,y) depending on direction of damage
 ** Returns amount of damage done to wall.
 */
-damage_wall(x, y, dir, damage)
-int x, y;
-WallSide dir;
-int damage;
+int
+damage_wall(int x, int y, WallSide dir, int damage)
 {
 	Box *b;
 	int dest, wl;
@@ -684,7 +680,7 @@ int damage;
 		invalidate_maps();
 #ifdef SOUND
 		play_in_view_x_y(x, y, TANK_EXPLOSION_SOUND);
-#endif SOUND
+#endif /* SOUND */
 	}
 	return damage;
 }
@@ -700,11 +696,8 @@ int damage;
 ** The vehicle is killed (by the damager) if the affected armor drops
 ** below 0.
 */
-damage_vehicle(v, damager, damage, angle, height)
-Vehicle *v, *damager;
-int damage;
-FLOAT angle;
-int height;
+int
+damage_vehicle(Vehicle *v, Vehicle *damager, int damage, double angle, int height)
 {
 	int hits_off;
 	int *side;
@@ -852,10 +845,8 @@ int height;
 ** Computes new velocities for the vehicles after a collision with
 ** v2 having a relative position of (dx,dy) with respect to v1.
 */
-bounce_vehicles(v1, v2, dx, dy, elast)
-Vehicle *v1, *v2;
-int dx, dy;
-FLOAT elast;
+void
+bounce_vehicles(Vehicle *v1, Vehicle *v2, int dx, int dy, double elast)
 {
 	Vehicle *temp;
 	FLOAT v1x, v1y, v2x, v2y;
@@ -896,10 +887,8 @@ FLOAT elast;
 ** Computes new velocity for the vehicle after a collision with a wall
 ** at a relative position of (dx,dy).
 */
-bounce_vehicle_wall(v, dx, dy, elast)
-Vehicle *v;
-int dx, dy;
-FLOAT elast;
+void
+bounce_vehicle_wall(Vehicle *v, int dx, int dy, double elast)
 {
 	FLOAT vx, vy;
 	FLOAT slope, c;
@@ -926,9 +915,8 @@ FLOAT elast;
 ** Computes the speed and angle from the xspeed and yspeed and sets the
 ** the xspeed, yspeed, speed, and angle of the vector.
 */
-assign_speed(vec, xsp, ysp)
-Vector *vec;
-FLOAT xsp, ysp;
+void
+assign_speed(Vector *vec, double xsp, double ysp)
 {
 	vec->xspeed = xsp;
 	vec->yspeed = ysp;

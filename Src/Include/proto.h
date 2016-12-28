@@ -43,7 +43,6 @@ int get_tow P_((Vehicle *v))l
 #endif
 #endif
 #ifdef Bullet
-int explode P_((Bullet *b, int damage));
 #endif
 #ifdef Vehicle
 #endif
@@ -58,6 +57,7 @@ void pause_game P_((Boolean state));
 void set_game_speed P_((int spd));
 void check_game_speed P_((void));
 #endif
+void explode P_((Bullet *b, int damage));
 void expl_area P_((Bullet *b));
 
 /* animate.c */
@@ -98,7 +98,6 @@ void disc_new_owner P_((Bullet *b, Vehicle *vh1));
 Vehicle *disc_cur_owner P_((Bullet *b));
 Vehicle *disc_last_owner P_((Bullet *b));
 Vehicle *disc_old_owner P_((Bullet *b));
-int set_disc_owner P_((Bullet *b, Vehicle *v));
 #endif
 #ifdef Vehicle
 #ifdef Spin
@@ -106,6 +105,7 @@ int set_disc_orbit P_((Vehicle *v, Spin dir));
 #endif
 #endif
 #endif
+void set_disc_owner P_((Bullet *b, Vehicle *v));
 int get_disc_team P_((Bullet *b));
 void release_discs P_((Vehicle *v, double dspeed, Boolean delay));
 void set_disc_team P_((Bullet *b, int teamnum));
@@ -192,22 +192,22 @@ void unmap_battle_windows P_((void));
 /* highlib.c prototypes are in lowlib.h */
 
 /* hit.c */
-Side find_affected_side P_((Vehicle *v, double angle));
-int vehicle_hit_vehicle P_((Vehicle *v1, Vehicle *v2, int width, int height, int shx, int shy));
-int vehicle_hit_wall P_((Vehicle *v, int grid_x, int grid_y, WallSide dir));
+void vehicle_hit_vehicle P_((Vehicle *v1, Vehicle *v2, int width, int height, int shx, int shy));
+void vehicle_hit_wall P_((Vehicle *v, int grid_x, int grid_y, WallSide dir));
 int bounce_damage P_((double xspeed, double yspeed, double elast));
-int invalidate_maps P_((void));
-int bul_hit_vehicle P_((Vehicle *v, Bullet *b, int dx, int dy));
-int bul_hit_outpost P_((Bullet *b, Box *bbox, int grid_x, int grid_y));
+void invalidate_maps P_((void));
+void bul_hit_vehicle P_((Vehicle *v, Bullet *b, int dx, int dy));
+void bul_hit_outpost P_((Bullet *b, Box *bbox, int grid_x, int grid_y));
 int bul_hit_wall P_((Bullet *b, int grid_x, int grid_y, WallSide dir));
-int bounce_bullet P_((Bullet *b, WallSide dir, double dx, double dy));
-int damage_wall P_((int x, int y, WallSide dir, int damage));
+void bounce_bullet P_((Bullet *b, WallSide dir, double dx, double dy));
 int damage_vehicle P_((Vehicle *v, Vehicle *damager, int damage, double angle, int height));
-int bounce_vehicles P_((Vehicle *v1, Vehicle *v2, int dx, int dy, double elast));
-int bounce_vehicle_wall P_((Vehicle *v, int dx, int dy, double elast));
-int assign_speed P_((Vector *vec, double xsp, double ysp));
 #if defined(Vehicle) && defined(WallSide) && defined(Box)
 #endif
+void assign_speed P_((Vector *vec, double xsp, double ysp));
+void bounce_vehicles P_((Vehicle *v1, Vehicle *v2, int dx, int dy, double elast));
+void bounce_vehicle_wall P_((Vehicle *v, int dx, int dy, double elast));
+int damage_wall P_((int x, int y, WallSide dir, int damage));
+Side find_affected_side P_((Vehicle *v, double angle));
 
 /* icounter.c */
 #if defined(MOTOROLA) && defined(m68k)
