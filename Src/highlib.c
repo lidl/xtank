@@ -10,6 +10,9 @@
 #include "xtank.h"
 #include "xtanklib.h"
 #include "screen.h"
+#include "bullet.h"
+#include "graphics.h"
+#include "terminal.h"
 #include "vehicle.h"
 #include "proto.h"
 
@@ -28,7 +31,8 @@ extern Vehicle *cv;
 /*
 ** Turns all turrets to the specified angle (in radians)
 */
-void turn_all_turrets( P_(Angle) angle)
+void
+turn_all_turrets( P_(Angle) angle)
 Pi_(Angle angle;)
 {
 	int i;
@@ -41,8 +45,8 @@ Pi_(Angle angle;)
 ** Aims all turrets at a location dx away horizontally
 ** and dy away vertically from the vehicle
 */
-void aim_all_turrets(dx, dy)
-int dx, dy;
+void
+aim_all_turrets(int dx, int dy)
 {
 	int i;
 
@@ -53,7 +57,8 @@ int dx, dy;
 /*
 ** Attempts to fire all weapons in numerical order.
 */
-int fire_all_weapons()
+int
+fire_all_weapons(void)
 {
 	int i;
 
@@ -73,8 +78,7 @@ int fire_all_weapons()
  **  amount of heat specified by temperature.
  */
 int 
-  fire_hot_weapons(temperature)
-int temperature;
+fire_hot_weapons(int temperature)
 {
    int i;
    
@@ -99,8 +103,7 @@ int temperature;
  ** amount of heat specified by temperature.
  */
 int 
-  fire_cool_weapons(temperature)
-int temperature;
+fire_cool_weapons(int temperature)
 {
   int i;
   
@@ -123,8 +126,8 @@ int temperature;
 ** Returns TRUE if there are no walls blocking the path from start to finish,
 ** otherwise returns FALSE.
 */
-Boolean clear_path(start, finish)
-Location *start, *finish;
+Boolean
+clear_path(Location *start, Location *finish)
 {
 	int start_x, start_y, finish_x, finish_y;
 	int dx, dy, lattice_dx, lattice_dy;
@@ -249,8 +252,8 @@ Location *start, *finish;
 ** Puts closest enemy vehicle with a clear path to it into enemy.
 ** Returns TRUE if such a vehicle exists, otherwise FALSE.
 */
-Boolean get_closest_enemy(enemy)
-Vehicle_info *enemy;
+Boolean
+get_closest_enemy(Vehicle_info *enemy)
 {
 	Vehicle_info vinfo[MAX_VEHICLES];
 	int num_vinfos;

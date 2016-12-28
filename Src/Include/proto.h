@@ -504,11 +504,11 @@ int init_specials P_((Vehicle *v));
 int zap_specials P_((Vehicle *v));
 int init_programs P_((Vehicle *v));
 int run_program P_((Program *prog));
-int check_time P_((void));
 int stop_program P_((void));
 int make_programs P_((Vehicle *v, int num_progs, int prog_num[]));
 int find_pdesc P_((char *prog_name, int *index_return));
 #endif
+int check_time P_((void));
 int run_all_programs P_((void));
 
 #ifndef NO_CAMO

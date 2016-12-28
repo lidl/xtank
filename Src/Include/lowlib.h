@@ -97,6 +97,7 @@ extern int fire_all_weapons P_((void));
 extern Boolean clear_path P_((Location *start, Location *finish));
 extern Boolean get_closest_enemy P_((Vehicle_info *enemy));
 int line_in_rect P_((int *, int *, int *, int *, int, int, int, int));
-
+void anim_fire_weapon P_((WeaponNum));
+int weapon_heat P_((WeaponNum));
 
 #undef P_
