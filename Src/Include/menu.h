@@ -10,6 +10,9 @@
 ** Comment: Part of the graphics toolkit
 */
 
+#ifndef _MENU_H_
+#define _MENU_H_
+
 #include "scroll.h"
 
 #define MAXMENU      25			/* Max number of menus allowed in a "system" */
@@ -145,3 +148,5 @@ Menu_int;
 
 #define menu_is_up(mo, mi) \
       ((mo)->is_up[mi])
+
+#endif /* _MENU_H_ */
