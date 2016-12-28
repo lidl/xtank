@@ -11,6 +11,7 @@
 #include "graphics.h"
 #include "vstructs.h"
 #include "bullet.h"
+#include "terminal.h"
 #include "proto.h"
 
 extern Weapon_stat weapon_stat[];
@@ -19,7 +20,8 @@ extern Settings settings;
 /*
 ** Initializes the settings.
 */
-init_settings()
+void
+init_settings(void)
 {
 	static Settings initial_settings =
 	{
@@ -72,8 +74,8 @@ init_settings()
 	settings = initial_settings;
 }
 
-init_turrets(v)
-Vehicle *v;
+void
+init_turrets(Vehicle *v)
 {
 	int i;
 
@@ -93,8 +95,8 @@ Vehicle *v;
 	}
 }
 
-
-init_bset()
+void
+init_bset(void)
 {
 	extern Bset *bset;
 	int i;
@@ -104,8 +106,8 @@ init_bset()
 		bset->list[i] = &bset->array[i];
 }
 
-
-init_eset()
+void
+init_eset(void)
 {
 	extern Eset *eset;
 	int i;

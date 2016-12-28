@@ -217,12 +217,10 @@ void start_real_counter P_((int time));
 void wait_for_real_counter P_((void));
 
 /* init.c */
-int init_settings P_((void));
-#ifdef Vehicle
-int init_turrets P_((Vehicle *v));
-#endif
-int init_bset P_((void));
-int init_eset P_((void));
+void init_settings P_((void));
+void init_turrets P_((Vehicle *v));
+void init_bset P_((void));
+void init_eset P_((void));
 
 /* input.c */
 int get_input P_((void));
