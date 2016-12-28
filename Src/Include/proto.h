@@ -6,6 +6,13 @@
 ** $Id$
 */
 
+#include "bullet.h"
+#include "menu.h"
+#include "setup.h"
+#include "terminal.h"
+#include "vehicle.h"
+#include "graphics.h"
+
 #if 1 || defined(__STDC__) || defined(__cplusplus)
 #define P_(s) s
 #else
