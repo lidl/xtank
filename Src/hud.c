@@ -14,6 +14,7 @@
 #include "gr.h"
 #include "vstructs.h"
 #include "bullet.h"
+#include "terminal.h"
 #include "proto.h"
 
 #ifndef NO_HUD
@@ -26,9 +27,8 @@ extern Settings settings;
 
 #define BBOX 100
 
-void draw_armor(armor, ang)
-int armor;
-Angle ang;
+void
+draw_armor(int armor, Angle ang)
 {
 	int start;
 
@@ -59,10 +59,8 @@ Angle ang;
  *
  */
 
-SpecialStatus special_hud(v, record, action)
-Vehicle *v;
-char *record;
-unsigned int action;
+SpecialStatus
+special_hud(Vehicle *v, char *record, int action)
 {
 	Hud *h;
 
@@ -390,8 +388,8 @@ unsigned int action;
 		  }
 		  return SP_on;
 		  break;
-
 	}
+	return SP_on;
 }
 
 
