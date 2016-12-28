@@ -6,6 +6,8 @@
 ** $Id$
 */
 
+#include <string.h>
+
 #include "malloc.h"
 #include "xtank.h"
 #include "screen.h"
@@ -13,9 +15,10 @@
 #include "gr.h"
 #include "disc.h"
 #include "sysdep.h"
-#include "vehicle.h"
-#include "terminal.h"
 #include "lowlib.h"
+#include "bullet.h"
+#include "terminal.h"
+#include "vehicle.h"
 #include "proto.h"
 
 extern Terminal *term;
@@ -30,11 +33,10 @@ extern Video *vid;
 #define MAX_ABS_SPEED 9.0
 #define SENSITIVITY_FACTOR 50.0 /* `Feel-good' value */
 #define PRECISION 0.1 /* Needed to allow us to `stop' */
-inline FLOAT 
-  compute_mouse_speed( ix, iy)
-int ix, iy;
+static FLOAT
+compute_mouse_speed(int ix, int iy)
 {
-  FLOAT temp = ((term->mouse_speed * (SQR(ix) + SQR(iy)) 
+  FLOAT temp = ((term->mouse_speed * (SQR(ix) + SQR(iy))
 		 * MAX_ABS_SPEED * SENSITIVITY_FACTOR)
 		/ (SQR(ANIM_WIN_WIDTH) + SQR(ANIM_WIN_HEIGHT)));
   return ( temp > PRECISION ? temp : (FLOAT) 0.0);
@@ -46,13 +48,12 @@ int ix, iy;
  * find 'KEY' then return the next char; else return KEY if we don't.
  */
 
-inline char
-  lookup_key(key)
-char key;
+static char
+lookup_key(char key)
 {
   char k = '\0';
   char *map = term->keymap;
-  
+
   if (map)
     while ((k = *map) != '\0')
       {
@@ -75,7 +76,8 @@ char key;
 ** handler according to the window in which they occur.
 ** Returns one of GAME_RUNNING, GAME_QUIT.
 */
-get_input()
+int
+get_input(void)
 {
 	extern int anim_input(), message_input(), map_input();
 	static int (*input_handler[MAX_WINDOWS]) () =
@@ -104,8 +106,8 @@ get_input()
 ** Handler for input events to animation window.
 ** Returns one of GAME_RUNNING, GAME_QUIT.
 */
-anim_input(event)
-Event *event;
+int
+anim_input(Event *event)
 {
 	extern int sync_rate;
 	Vehicle *v;
@@ -229,7 +231,6 @@ Event *event;
 			  if (term->mouse_drive_active)
 			    {
 			      turn_vehicle_human(ATAN2(dy, dx));
-			      
 			      if (term->mouse_speed != 0)
 				set_rel_drive(compute_mouse_speed(dx, dy));
 			    }
@@ -265,19 +266,17 @@ Event *event;
 					 * numeric keypad key as a weapon
 					 * toggling/firing command.
 					 */
-					if (event->keypad) 
+					if (event->keypad)
 					  {
 					    int weapon = event->key - '1';
-					    
 					    /*
 					     * If keypad is < 0 then use
 					     * the 1.3[df] style keypad
 					     * control method - numeric
-					     * keys toggle on/off weapons, 
+					     * keys toggle on/off weapons,
 					     * KP_0 fires all weapons (with
 					     * appropriate toggling.
 					     */
-					      
 					    if (event->keypad < 0)
 					      {
 						if (weapon >=0)
@@ -287,8 +286,7 @@ Event *event;
 						else
 						  {
 						    int wn;
-						    
-						    for (wn = 0; 
+						    for (wn = 0;
 							 wn < MAX_WEAPONS;
 							 wn++)
 						      {
@@ -351,7 +349,7 @@ Event *event;
 					if (term->mouse_heat != 0)
 					  {
 					    if (term->mouse_heat > 0)
-					      fire_cool_weapons((term->mouse_heat)); 
+					      fire_cool_weapons((term->mouse_heat));
 					    else
 					      fire_hot_weapons(-(term->mouse_heat));
 					  }
@@ -516,7 +514,8 @@ Event *event;
 ** Returns next character typed.  Blocks until character entered.
 ** Clicking any button returns a '\r'.
 */
-get_reply()
+int
+get_reply(void)
 {
 	int num_events;
 	Event event;
@@ -542,7 +541,8 @@ get_reply()
 /*
 ** Waits for next key or button press.
 */
-wait_input()
+void
+wait_input(void)
 {
 	int num_events;
 	Event event;
@@ -560,7 +560,8 @@ wait_input()
 /*
 ** Returns character typed if any.  Returns NULL if no character typed.
 */
-scan_input()
+int
+scan_input(void)
 {
 	int num_events;
 	Event event;
@@ -577,10 +578,8 @@ scan_input()
 /*
 ** Inputs an integer from the user.
 */
-input_int(w, input_str, col, row, deflt, mn, mx, font)
-int w;
-char *input_str;
-int col, row, deflt, mn, mx, font;
+int
+input_int(int w, char *input_str, int col, int row, int deflt, int mn, int mx, int font)
 {
 	Word disp;
 	char next_char, response[12], disp_response[80], temp[80];
@@ -664,10 +663,8 @@ int col, row, deflt, mn, mx, font;
 /*
 ** Inputs a string from the user.
 */
-input_string(w, prompt, response, col, row, font, max_length)
-int w;
-char *prompt, *response;
-int col, row, font, max_length;
+void
+input_string(int w, char *prompt, char *response, int col, int row, int font, int max_length)
 {
 	Word disp;
 	char next_char, disp_response[300];
@@ -718,10 +715,8 @@ int col, row, font, max_length;
 /*
 ** Prompts the user to confirm a given action.
 */
-confirm(w, disp, col, row, font)
-int w;
-char *disp;
-int col, row, font;
+int
+confirm(int w, char *disp, int col, int row, int font)
 {
 	char prompt[80], reply;
 

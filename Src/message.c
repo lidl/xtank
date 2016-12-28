@@ -496,9 +496,8 @@ Event *event;
 ** is set to the vehicle number of the nearest vehicle to the event's
 ** coordinates on the screen.
 */
-set_message_data(v, event)
-Vehicle *v;
-Event *event;
+void
+set_message_data(Vehicle *v, Event *event)
 {
 	int dx, dy, dist, min_dist, min_num, x, y, dtype, i;
 
@@ -559,8 +558,8 @@ Vehicle *v;
 /*
 ** Sends the current message for the specified vehicle, clears the data in it.
 */
-send_message(v)
-Vehicle *v;
+void
+send_message(Vehicle *v)
 {
 	int i;
 

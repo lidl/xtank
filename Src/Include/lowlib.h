@@ -91,11 +91,13 @@ extern void set_cleanup_func P_((void (*funcp) (), void *argp));
 #endif
 
 /* highlib.c */
-extern void turn_all_turrets P_((Angle angle));
-extern void aim_all_turrets P_((int dx, int dy));
+extern void turn_all_turrets P_((Angle));
+extern void aim_all_turrets P_((int, int));
 extern int fire_all_weapons P_((void));
-extern Boolean clear_path P_((Location *start, Location *finish));
-extern Boolean get_closest_enemy P_((Vehicle_info *enemy));
+extern int fire_cool_weapons P_((int));
+extern int fire_hot_weapons P_((int));
+extern Boolean clear_path P_((Location *, Location *));
+extern Boolean get_closest_enemy P_((Vehicle_info *));
 int line_in_rect P_((int *, int *, int *, int *, int, int, int, int));
 void anim_fire_weapon P_((WeaponNum));
 int weapon_heat P_((WeaponNum));

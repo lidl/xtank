@@ -25,7 +25,9 @@ int XMultiSync P_((Display *dpys[], int num_dpys, int discard));
 
 /* actions.c */
 void adjust_loc P_((Loc *loc, int dx, int dy));
-Bullet *make_bullet P_((Vehicle *v, Loc *loc, WeaponType type, Angle angle, lCoord *target));
+Bullet *make_bullet P_((Vehicle *, Loc *, WeaponType, Angle, lCoord *));
+int det_tow P_((Vehicle *));
+int turn_tow P_((Vehicle *, float direction));
 
 #ifdef _XTANKLIB_H_
 #ifdef FLOAT
@@ -37,8 +39,6 @@ void adjust_speed P_((FLOAT *speedx, FLOAT *speedy, double adjust));
 #ifdef Bullet
 Boolean get_tele P_((Vehicle *v, Bullet **b));
 #endif
-int turn_tow P_((Vehicle *v, float direction));
-int get_tow P_((Vehicle *v))l
 #ifdef Bullet
 #endif
 #endif
@@ -99,16 +99,12 @@ Vehicle *disc_cur_owner P_((Bullet *b));
 Vehicle *disc_last_owner P_((Bullet *b));
 Vehicle *disc_old_owner P_((Bullet *b));
 #endif
-#ifdef Vehicle
-#ifdef Spin
-int set_disc_orbit P_((Vehicle *v, Spin dir));
 #endif
-#endif
-#endif
-void set_disc_owner P_((Bullet *b, Vehicle *v));
-int get_disc_team P_((Bullet *b));
-void release_discs P_((Vehicle *v, double dspeed, Boolean delay));
-void set_disc_team P_((Bullet *b, int teamnum));
+void set_disc_orbit P_((Vehicle *, Spin));
+void set_disc_owner P_((Bullet *, Vehicle *));
+int get_disc_team P_((Bullet *));
+void release_discs P_((Vehicle *, double, Boolean));
+void set_disc_team P_((Bullet *, int));
 
 /* display.c */
 void display_terminal P_((unsigned int status, int lastterm));
@@ -224,15 +220,13 @@ void init_eset P_((void));
 
 /* input.c */
 int get_input P_((void));
-#ifdef Event
-int anim_input P_((Event *event));
-#endif
+int anim_input P_((Event *));
 int get_reply P_((void));
-int wait_input P_((void));
+void wait_input P_((void));
 int scan_input P_((void));
-int input_int P_((int w, char *input_str, int col, int row, int deflt, int mn, int mx, int font));
-int input_string P_((int w, char *prompt, char *response, int col, int row, int font, int max_length));
-int confirm P_((int w, char *disp, int col, int row, int font));
+int input_int P_((int, char *, int, int, int, int, int, int));
+void input_string P_((int, char *, char *, int, int, int, int));
+int confirm P_((int, char *, int, int, int));
 
 /* interface.c */
 int reset_dynamic_entries P_((void));
@@ -429,20 +423,18 @@ int menu_hit P_((Menu_int *menuobj, int x, int y));
 
 /* message.c */
 int init_msg_sys P_((void));
-int init_msg_terminal P_((int num));
+int init_msg_terminal P_((int));
 int init_msg_game P_((void));
 int display_game P_((unsigned int status));
+void send_message P_((Vehicle *));
+void set_message_data P_((Vehicle *, Event *));
 #ifdef Event
 int message_input P_((Event *event));
 int map_input P_((Event *event));
 #endif
 #ifdef Vehicle
-#ifdef Event
-int set_message_data P_((Vehicle *v, Event *event));
-#endif
 int display_sending P_((void));
 int init_messages P_((Vehicle *v));
-int send_message P_((Vehicle *v));
 int send_death_message P_((Vehicle *victim, Vehicle *killer));
 #endif
 int dispatch_message P_((Message *));
@@ -488,18 +480,16 @@ int rotate_objects P_((void));
 int rotate_object P_((Object *obj, Bits **bitmap));
 #endif
 
-#if defined(Vehicle) && defined(Program)
 /* program.c */
-int set_current_vehicle P_((Vehicle *v));
+int set_current_vehicle P_((Vehicle *));
 int init_prog_descs P_((void));
-int init_specials P_((Vehicle *v));
-int zap_specials P_((Vehicle *v));
-int init_programs P_((Vehicle *v));
-int run_program P_((Program *prog));
+int init_specials P_((Vehicle *));
+int zap_specials P_((Vehicle *));
+int init_programs P_((Vehicle *));
+int run_program P_((Program *));
 int stop_program P_((void));
-int make_programs P_((Vehicle *v, int num_progs, int prog_num[]));
-int find_pdesc P_((char *prog_name, int *index_return));
-#endif
+int make_programs P_((Vehicle *, int, int *));
+int find_pdesc P_((char *, int *));
 int check_time P_((void));
 int run_all_programs P_((void));
 
