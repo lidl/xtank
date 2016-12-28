@@ -487,7 +487,7 @@ SpecialStatus special_rdf P_((Vehicle *v, char *record, unsigned int action));
 #ifndef NO_HUD
 /* hud.c */
 #ifdef Angle
-voide draw_armor P_((int armor, Angle ang));
+void draw_armor P_((int armor, Angle ang));
 #endif
 #ifdef Vehicle
 SpecialStatus special_hud P_((Vehicle *v, char *record, unsigned int action));
