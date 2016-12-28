@@ -210,17 +210,11 @@ int damage_wall P_((int x, int y, WallSide dir, int damage));
 Side find_affected_side P_((Vehicle *v, double angle));
 
 /* icounter.c */
-#if defined(MOTOROLA) && defined(m68k)
-int increment_time P_((void));
-#else
-void increment_time P_((void));
-#endif
-int setup_counter P_((void));
-int start_counter P_((void));
-int stop_counter P_((void));
-void sigalrm_handler P_((void));
-int start_real_counter P_((int time));
-int wait_for_real_counter P_((void));
+void setup_counter P_((void));
+void start_counter P_((void));
+void stop_counter P_((void));
+void start_real_counter P_((int time));
+void wait_for_real_counter P_((void));
 
 /* init.c */
 int init_settings P_((void));

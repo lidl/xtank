@@ -12,13 +12,19 @@
 #include "common.h"
 #include "tanktypes.h"
 #include "clfkr.h"
+#include "bullet.h"
+#include "graphics.h"
+#include "terminal.h"
+#include "vehicle.h"
 #include "proto.h"
 
 #ifdef UNIX
+#include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>		/* for exit() */
+#include <unistd.h>		/* for pause() */
 #include <sys/types.h>
 #include <sys/time.h>
-#include <signal.h>
 
 #define INC_TIME 10000
 
@@ -29,11 +35,8 @@ int elapsed_time;
 ** by incrementing elapsed_time by INC_TIME.
 */
 
-#if defined(MOTOROLA) && defined(m68k)
-int increment_time()
-#else
-void increment_time()
-#endif
+static void
+increment_time(int sig __unused)
 {
 	elapsed_time += INC_TIME;
 #ifdef mmax
@@ -49,7 +52,8 @@ void increment_time()
 #define SIGVTALRM SIGALRM
 #endif
 
-setup_counter()
+void
+setup_counter(void)
 {
 #if defined(MOTOROLA) && defined(m88k) || defined(SVR4)
 	if ((int) sigset(SIGVTALRM, increment_time) == -1)
@@ -80,7 +84,8 @@ static struct itimerval stop_val =
 /*
 ** Start up interval timer to call increment_time every INC_TIME ms.
 */
-start_counter()
+void
+start_counter(void)
 {
 #if defined(MOTOROLA) && defined(m68k)
 	(void) alarm(start_val);
@@ -92,7 +97,8 @@ start_counter()
 /*
 ** Stop the interval timer.
 */
-stop_counter()
+void
+stop_counter(void)
 {
 #if defined(MOTOROLA) && defined(m68k)
 	(void) alarm(stop_val);
@@ -104,7 +110,8 @@ stop_counter()
 /* Has enough real time passed since the last frame? */
 static Boolean real_timer_expired = TRUE;
 
-void sigalrm_handler()
+static void
+sigalrm_handler(int sig __unused)
 {
 	real_timer_expired = TRUE;
 #ifdef linux
@@ -119,12 +126,13 @@ void sigalrm_handler()
 
 #if defined(MOTOROLA) && defined(m68k)
 
-start_real_counter(time)
-int time;
+void
+start_real_counter(int time)
 {
 }
 
-wait_for_real_counter()
+void
+wait_for_real_counter(void)
 {
 }
 
@@ -133,8 +141,8 @@ wait_for_real_counter()
 
 extern struct CLFkr command_options;	/* options for how xtank starts / exits */
 
-start_real_counter(time)
-int time;
+void
+start_real_counter(int time)
 {
 	struct itimerval real_timer;
 
@@ -156,7 +164,8 @@ int time;
 	}
 }
 
-wait_for_real_counter()
+void
+wait_for_real_counter(void)
 {
 	/* The variable real_timer_expires will be set to true when the ITIMER_REAL
        timer expires.  Until then, pause() is called, which gives up process
