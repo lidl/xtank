@@ -454,13 +454,11 @@ int init_players P_((void));
 
 /* objects.c */
 int make_objects P_((void));
-#ifdef Object
 Object *make_object P_((Object *obj, Bits **bitmap));
-int free_objects P_((void));
-int free_object P_((Object *obj));
-int rotate_objects P_((void));
-int rotate_object P_((Object *obj, Bits **bitmap));
-#endif
+void free_objects P_((void));
+void free_object P_((Object *obj));
+void rotate_objects P_((void));
+void rotate_object P_((Object *obj, Bits **bitmap));
 
 /* program.c */
 int set_current_vehicle P_((Vehicle *));

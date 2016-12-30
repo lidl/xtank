@@ -74,7 +74,8 @@ int object_error;
 ** Sets up all of the pixmaps in each object.
 ** Returns 1 if a pixmap could not be made.
 */
-make_objects()
+int
+make_objects(void)
 {
 	int num;
 	extern Object *make_object();
@@ -176,9 +177,8 @@ make_objects()
 /*
 ** Makes all the pictures for the specified object.
 */
-Object *make_object(obj, bitmap)
-Object *obj;
-Bits **bitmap;
+Object *
+make_object(Object *obj, Bits **bitmap)
 {
 	int i;
 
@@ -193,7 +193,8 @@ Bits **bitmap;
 /*
 ** Frees all the storage used by the objects.
 */
-free_objects()
+void
+free_objects(void)
 {
 	int i;
 
@@ -218,8 +219,8 @@ free_objects()
 /*
 ** Frees all the pictures used by the object.
 */
-free_object(obj)
-Object *obj;
+void
+free_object(Object *obj)
 {
 	int i;
 
@@ -230,7 +231,8 @@ Object *obj;
 /*
 ** Rotates all the vehicle objects to so that all 16 rotations exist.
 */
-rotate_objects()
+void
+rotate_objects(void)
 {
 	/* Rotate all of the vehicle objects */
 	rotate_object(&lightc_obj, lightc_bitmap);
@@ -254,9 +256,8 @@ rotate_objects()
 ** for every vehicle object.  This is done by 90 degree and 180
 ** degree rotations.
 */
-rotate_object(obj, bitmap)
-Object *obj;
-Bits **bitmap;
+void
+rotate_object(Object *obj, Bits **bitmap)
 {
 	Picture *pic, *rot_pic;
 	Bits *rotate_pic_90(), *rotate_pic_180();
