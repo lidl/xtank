@@ -6,6 +6,7 @@
 ** $Id$
 */
 
+#include <ctype.h>		/* for isdigit() */
 #include "xtank.h"
 #include "graphics.h"
 #include "gr.h"
@@ -15,7 +16,7 @@
 #include "proto.h"
 #ifdef SOUND
 #include "sound.h"
-#endif SOUND
+#endif /* SOUND */
 
 
 extern Weapon_stat weapon_stat[];
@@ -120,8 +121,8 @@ static char *console_w_status[] =
 static char *console_mount[] =
 {"T1", "T2", "T3", "T4", "F", "B", "L", "R"};
 
-int idx2armor(idx, sidep)
-int idx, *sidep;
+static int
+idx2armor(int idx, int *sidep)
 {
 	*sidep = (idx >= 44 && idx <= 47) ? 1 : 0;
 	switch (idx) {
@@ -140,15 +141,13 @@ int idx, *sidep;
 	}
 }
 
-con_init(v, record)
-Vehicle *v;
-char *record;
+static void
+con_init(Vehicle *v, char *record)
 {
 	int i, j;
 	char *cp;
 	int idx;
 	crecord *crec = (crecord *) record;
-	extern char *strdup();
 	static int nrec = 0;
 
 	for (i = 0; i < sizeof(console_raw_strs) / sizeof(char *); i++) {
@@ -369,19 +368,14 @@ char *record;
 	}
 }
 
-/*ARGSUSED*/
-special_dummy(v, record, action)
-Vehicle *v;
-char *record;
-unsigned int action;
+SpecialStatus
+special_dummy(Vehicle *v, char *record, int action)
 {
-	return;
+	return SP_on;
 }
 
-SpecialStatus special_console(v, record, action)
-Vehicle *v;
-char *record;
-unsigned int action;
+SpecialStatus
+special_console(Vehicle *v, char *record, int action)
 {
 	crecord *crec = (crecord *) record;
 	int i;
@@ -506,7 +500,7 @@ unsigned int action;
 				case CHBAR:
 #ifdef SOUND
 					console_sound(v, i, item->old_color, color);
-#endif SOUND
+#endif /* SOUND */
 					display_bar(CONS_WIN, item->x, item->y,
 								item->w, item->h,
 								*item->ival, &item->old_color, color,
@@ -517,7 +511,7 @@ unsigned int action;
 				case CHFBAR:
 #ifdef SOUND
 					console_sound(v, i, item->old_color, color);
-#endif SOUND
+#endif /* SOUND */
 					display_bar(CONS_WIN, item->x, item->y,
 								item->w, item->h,
 					  (int) (FSCALE * *item->fval), &item->old_color, color,
@@ -531,7 +525,7 @@ unsigned int action;
 			  if (str) {
 #ifdef SOUND
 				  console_sound(v, i, item->old_color, color);
-#endif SOUND
+#endif /* SOUND */
 				  draw_filled_rect(CONS_WIN,
 					  item->x, item->y, item->w, item->h, DRAW_COPY, BLACK);
 				  draw_text_left(CONS_WIN, item->x, item->y,
@@ -592,10 +586,10 @@ unsigned int action;
 ** spec'ed direction.  Sets last_color.  Note doesn't care if min != 0,
 ** but *should*
 */
-display_bar(w, x, y, width, height, val, last_color, new_color, min, max,
-			vert, init)
-int w, x, y, width, height, val, *last_color, new_color, min, max;
-Boolean vert, init;
+static void
+display_bar(int w, int x, int y, int width, int height, int val,
+	int *last_color, int new_color, int min, int max,
+	Boolean vert, Boolean init)
 {
 	int filled;
 
@@ -682,4 +676,4 @@ int	new_color;
 			play_owner(v, FUEL_OK_SOUND);
 	}
 }
-#endif
+#endif /* SOUND */

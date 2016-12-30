@@ -13,6 +13,8 @@
 #ifndef _TANKTYPES_H_
 #define _TANKTYPES_H_
 
+#include "sysdep.h"
+
 typedef enum {
 	False = 0,
 	True = 1

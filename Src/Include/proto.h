@@ -411,12 +411,11 @@ void compose_message P_((Byte sender, Byte sendee, Opcode opcode, Byte * data));
 void display_msg P_((int));
 
 /* newconsole.c */
-int idx2armor P_((int idx, int *sidep));
-#ifdef Vehicle
-int con_init P_((Vehicle *v, char *record));
-int special_dummy P_((Vehicle *v, char *record, unsigned int action));
-SpecialStatus special_console P_((Vehicle *v, char *record, unsigned int action));
-#endif
+static int idx2armor P_((int, int *));
+static void con_init P_((Vehicle *v, char *record));
+SpecialStatus special_dummy P_((Vehicle *, char *, int));
+SpecialStatus special_console P_((Vehicle *, char *, int));
+static void display_bar P_((int, int, int, int, int, int, int *, int, int, int, Boolean, Boolean));
 
 /* newfile.c */
 #ifdef Vdesc
