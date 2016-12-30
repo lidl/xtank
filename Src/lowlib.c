@@ -6,7 +6,8 @@
 ** $Id$
 */
 
-#include "malloc.h"
+#include <stdlib.h>		/* for abort() */
+
 #include "xtank.h"
 #include "xtanklib.h"
 #include "screen.h"
@@ -21,9 +22,9 @@
 #include "proto.h"
 #ifdef SOUND
 #include "sound.h"
-#endif SOUND
+#endif /* SOUND */
 
-#ifdef __bsdi__
+#if 1 || defined(__bsdi__)
 #define Angle double
 #define ID int
 #endif
@@ -65,8 +66,8 @@ Vehicle *cv;
 
 /* returns the vehicle's current location */
 
-void get_location(loc)
-Location *loc;
+void
+get_location(Location *loc)
 {
 	Loc *cvloc;
 
@@ -86,7 +87,8 @@ Location *loc;
 
 /* returns the vehicle's maximum speed, in pixels per frame */
 
-FLOAT max_speed()
+FLOAT
+max_speed(void)
 {
 	check_time();
 	return (cv->vdesc->max_speed);
@@ -95,7 +97,8 @@ FLOAT max_speed()
 
 /* returns the vehicle's current speed, in pixels per frame */
 
-FLOAT speed()
+FLOAT
+speed(void)
 {
 	check_time();
 	return (cv->vector.speed);
@@ -104,7 +107,8 @@ FLOAT speed()
 
 /* returns the direction the body of the vehicle is currently pointing */
 
-Angle heading()
+Angle
+heading(void)
 {
 	Angle hdng;
 
@@ -118,7 +122,8 @@ Angle heading()
 /* return the maximum possible acceleration of the vehicle, taking engine power
    and ground friction into account */
 
-FLOAT acc()
+FLOAT
+acc(void)
 {
 	check_time();
 	return cv->vdesc->acc;		/* assumes ground friction is 1.0 */
@@ -128,7 +133,8 @@ FLOAT acc()
 /* returns the acceleration limit imposed by the engine power.  This only
    affects speeding up. */
 
-FLOAT engine_acc()
+FLOAT
+engine_acc(void)
 {
 	check_time();
 	return cv->vdesc->engine_acc;
@@ -139,7 +145,8 @@ FLOAT engine_acc()
    multiplied by settings.si.normal_friction or settings.si.slip_friction
    before use).  This affects both speeding up and slowing down. */
 
-FLOAT tread_acc()
+FLOAT
+tread_acc(void)
 {
 	check_time();
 	return cv->vdesc->tread_acc;
@@ -148,9 +155,8 @@ FLOAT tread_acc()
 
 /* returns the vehicle's width and height at the current heading */
 
-void vehicle_size(width, height)
-int *width;
-int *height;
+void
+vehicle_size(int *width, int *height)
 {
 	Picture *pic;
 
@@ -164,8 +170,8 @@ int *height;
 /* sets the vehicle's desired heading, which will take a few frames to acheive,
    depending on the turning rate */
 
-void turn_vehicle(desired_heading)
-Angle desired_heading;
+void
+turn_vehicle(Angle desired_heading)
 {
 	FLOAT diff;
 	Vector *vector;
@@ -199,9 +205,8 @@ Angle desired_heading;
 	check_time();
 }
 
-
-void turn_vehicle_human(desired_heading)
-Angle desired_heading;
+void
+turn_vehicle_human(Angle desired_heading)
 {
 	if (cv->special[(int) NAVIGATION].status != SP_nonexistent &&
 		cv->vector.drive < 0.0) {
@@ -214,8 +219,8 @@ Angle desired_heading;
 /* returns the maximum turning rate (in radians per frame) of the vehicle if it
    is moving at the given speed */
 
-Angle turn_rate(abs_speed)
-FLOAT abs_speed;
+Angle
+turn_rate(FLOAT abs_speed)
 {
 	Angle turning_rate;
 	FLOAT ground_friction;
@@ -254,8 +259,8 @@ FLOAT abs_speed;
 
 /* sets the vehicle's desired speed */
 
-void set_abs_drive(abs_speed)
-FLOAT abs_speed;
+void
+set_abs_drive(FLOAT abs_speed)
 {
 	cv->vector.drive = (ABS(abs_speed) > cv->vdesc->max_speed ?
 						cv->vdesc->max_speed * SIGN(abs_speed) :
@@ -265,7 +270,8 @@ FLOAT abs_speed;
 
 /* gets the vehicle's current speed */
 
-FLOAT get_abs_drive()
+FLOAT
+get_abs_drive(void)
 {
 	check_time();
 	return (FLOAT) cv->vector.drive;
@@ -274,9 +280,10 @@ FLOAT get_abs_drive()
 
 /* sets the vehicle's desired speed relative to the maximum */
 
-void set_rel_drive(rel_drive)
-FLOAT rel_drive;				/* in the range -9 to 9 */
+void
+set_rel_drive(FLOAT rel_drive)
 {
+	/* rel_drive - in the range -9 to 9 */
 	/* Make sure the drive is within the allowable range */
 	if (rel_drive > 9.0)
 		rel_drive = 9.0;
@@ -291,8 +298,8 @@ FLOAT rel_drive;				/* in the range -9 to 9 */
 /* sets the safe-turning flag.  If true, the turning rate will be lower at
    higher speeds to prevent skidding */
 
-void set_safety(status)
-int status;
+void
+set_safety(int status)
 {
 	if (cv->vdesc->treads != HOVER_TREAD && status)
 		cv->safety = TRUE;
@@ -305,8 +312,8 @@ int status;
 /* sets the teleport flag.  If true, vehicles passing through teleports
    which are either neutral, or on the vehicle's team will be teleported */
 
-void set_teleport(status)
-int status;
+void
+set_teleport(int status)
 {
 	if (status)
 		cv->teleport = TRUE;
@@ -324,9 +331,7 @@ int status;
 /* returns the current position of the turret relative to the vehicle's
    position */
 
-void turret_position(turret, xp, yp)
-TurretNum turret;				/* which turret */
-int *xp, *yp;
+void turret_position(TurretNum turret, int *xp, int *yp)
 {
 	check_time();
 
@@ -346,7 +351,7 @@ int *xp, *yp;
 /*
 ** Returns the number of turrets on the vehicle
 */
-int num_turrets()
+int num_turrets(void)
 {
 	check_time();
 
@@ -358,8 +363,8 @@ int num_turrets()
 ** Returns angle of the specified turret (in radians, 0 <= angle < 2*PI)
 ** If the specified turret doesn't exist, returns BAD_VALUE
 */
-Angle turret_angle(num)
-TurretNum num;
+Angle
+turret_angle(TurretNum num)
 {
 	FLOAT angle;
 
@@ -378,8 +383,8 @@ TurretNum num;
 ** Returns turn rate of the specified turret (in radians/frame)
 ** If the specified turret doesn't exist, returns BAD_VALUE
 */
-Angle turret_turn_rate(num)
-TurretNum num;
+Angle
+turret_turn_rate(TurretNum num)
 {
 	check_time();
 
@@ -393,9 +398,8 @@ TurretNum num;
 /*
 ** Turns the turret numbered num to the specified angle (in radians)
 */
-void turn_turret(num, angle)
-TurretNum num;
-Angle angle;
+void
+turn_turret(TurretNum num, Angle angle)
 {
 	FLOAT diff;
 	Turret *t;
@@ -434,9 +438,8 @@ Angle angle;
 ** Aims the turret numbered num at a location dx away horizontally
 ** and dy away vertically from the vehicle
 */
-Angle aim_turret(num, dx, dy)
-TurretNum num;
-int dx, dy;
+Angle
+aim_turret(TurretNum num, int dx, int dy)
 {
 	FLOAT ang;
 	Coord *tcoord;
@@ -481,8 +484,8 @@ weapon_heat(WeaponNum num)
   return (ws->heat);
 }
 
-Boolean weapon_on(num)
-WeaponNum num;
+Boolean
+weapon_on(WeaponNum num)
 {
 	check_time();
 	if (!legal_weapon(num))
@@ -493,8 +496,8 @@ WeaponNum num;
 /*
 ** Turns on the specified weapon
 */
-int turn_on_weapon(num)
-WeaponNum num;
+int
+turn_on_weapon(WeaponNum num)
 {
 	Weapon *w;
 	int retval;
@@ -518,8 +521,8 @@ WeaponNum num;
 /*
 ** Turns off the specified weapon
 */
-int turn_off_weapon(num)
-WeaponNum num;
+int
+turn_off_weapon(WeaponNum num)
 {
 	Weapon *w;
 	int retval;
@@ -538,8 +541,7 @@ WeaponNum num;
 	return retval;
 }
 
-
-int
+void
 toggle_weapon(WeaponNum num)
 {
 	if (weapon_on(num)) {
@@ -574,8 +576,8 @@ map_fire_weapon(WeaponNum num)
 /*
 ** Fires a weapon
 */
-WeaponStatus fire_weapon(num)
-WeaponNum num;
+WeaponStatus
+fire_weapon(WeaponNum num)
 {
 	extern int num_terminals;
 	Weapon *w;
@@ -597,25 +599,25 @@ WeaponNum num;
 	if (w->reload_counter) {
 #ifdef SOUND
 		play_owner(cv, WEAPON_RELOADING_SOUND);
-#endif SOUND
+#endif /* SOUND */
 		retval = RELOADING;		/* weapon has not reloaded yet */
 	}
 	else if (w->status & WS_no_ammo) {
 #ifdef SOUND
 		play_owner(cv, WEAPON_NO_AMMO_SOUND);
-#endif SOUND
+#endif /* SOUND */
 		retval = NO_AMMO;		/* weapon has no ammo */
 	}
 	else if (!(w->status & WS_on)) {
 #ifdef SOUND
 		play_owner(cv, WEAPON_OFF_SOUND);
-#endif SOUND
+#endif /* SOUND */
 		retval = WEAPON_OFF;	/* weapon is off */
 	}
 	else if (cv->heat > 100) {
 #ifdef SOUND
 		play_owner(cv, WEAPON_TOO_HOT_SOUND);
-#endif SOUND
+#endif /* SOUND */
 		return TOO_HOT;			/* vehicle is too hot to shoot */
 	}
 	else {
@@ -694,7 +696,7 @@ WeaponNum num;
 				break;
 #endif
 		}
-#endif SOUND
+#endif /* SOUND */
 
 		retval = FIRED;
 		ws = &weapon_stat[(int) w->type];
@@ -787,7 +789,8 @@ WeaponNum num;
 }
 
 /* creation functions for special bullets... (HAK) */
-void creat_harm(Weapon *w, Loc *bloc, Angle angle)
+void
+creat_harm(Weapon *w, Loc *bloc, Angle angle)
 {
 	/* ingore passed-in value for angle */
 
@@ -795,7 +798,8 @@ void creat_harm(Weapon *w, Loc *bloc, Angle angle)
 	make_bullet(cv, cv->loc, w->type, angle, &cv->target);
 }
 
-void creat_mort(Weapon *w, Loc *bloc, Angle angle)
+void
+creat_mort(Weapon *w, Loc *bloc, Angle angle)
 {
 	angle = ATAN2((double)(cv->target.y - cv->loc->y),(double)(cv->target.x - cv->loc->x));
 	/* (Icko) */
@@ -806,7 +810,8 @@ void creat_mort(Weapon *w, Loc *bloc, Angle angle)
 /*
 ** Returns the number of weapons on the vehicle
 */
-int num_weapons()
+int
+num_weapons(void)
 {
 	check_time();
 	return (cv->num_weapons);
@@ -816,9 +821,8 @@ int num_weapons()
 ** Puts constant information about weapon into weapon info structure,
 ** Returns BAD_VALUE if specified weapon does not exist.
 */
-int get_weapon(num, winfo)
-WeaponNum num;
-Weapon_info *winfo;
+int
+get_weapon(WeaponNum num, Weapon_info *winfo)
 {
 	Weapon *w;
 	Weapon_stat *ws;
@@ -850,8 +854,8 @@ Weapon_info *winfo;
 /*
 ** Returns number of frames before weapon can fire again.
 */
-int weapon_time(num)
-WeaponNum num;
+int
+weapon_time(WeaponNum num)
 {
 	check_time();
 	if (!legal_weapon(num))
@@ -859,8 +863,8 @@ WeaponNum num;
 	return (cv->weapon[num].reload_counter);
 }
 
-int weapon_ammo(num)
-WeaponNum num;
+int
+weapon_ammo(WeaponNum num)
 {
 	check_time();
 	if (!legal_weapon(num))
@@ -872,37 +876,43 @@ WeaponNum num;
 /************************************/
 /* Information about one's own tank */
 /************************************/
-int get_tread_type()
+int
+get_tread_type(void)
 {
 	check_time();
 	return (cv->vdesc->treads);
 }
 
-int get_bumper_type()
+int
+get_bumper_type(void)
 {
 	check_time();
 	return (cv->vdesc->bumpers);
 }
 
-int get_vehicle_cost()
+int
+get_vehicle_cost(void)
 {
 	check_time();
 	return (cv->vdesc->cost);
 }
 
-int get_engine_type()
+int
+get_engine_type(void)
 {
 	check_time();
 	return (cv->vdesc->engine);
 }
 
-int get_handling()
+int
+get_handling(void)
 {
 	check_time();
 	return (cv->vdesc->handling);
 }
 
-int get_suspension_type()
+int
+get_suspension_type(void)
 {
 	check_time();
 	return (cv->vdesc->suspension);
@@ -916,8 +926,8 @@ int get_suspension_type()
 /*
 ** Returns amount of armor on the specified side
 */
-int armor(num)
-Side num;
+int
+armor(Side num)
 {
 	check_time();
 
@@ -930,8 +940,8 @@ Side num;
 /*
 ** Returns maximum amount of armor on the specified side as above
 */
-int max_armor(num)
-Side num;
+int
+max_armor(Side num)
 {
 	check_time();
 
@@ -944,7 +954,8 @@ Side num;
 /*
 ** Returns protection of the type of armor on the vehicle
 */
-int protection()
+int
+protection(void)
 {
 	check_time();
 	return armor_stat[cv->armor.type].defense;
@@ -982,9 +993,8 @@ Box (*map_get())[GRID_HEIGHT] {
 ** on your map.
 */
 
-WallType wall(dir, x, y)
-WallSide dir;
-int x, y;
+WallType
+wall(WallSide dir, int x, int y)
 {
 	Special *s = &cv->special[(int) MAPPER];
 
@@ -1001,8 +1011,8 @@ int x, y;
 /* tells you what kind of landmark is in the given box, or BAD_MAPPER if you
    don't have a mapper */
 
-LandmarkType landmark(x, y)
-int x, y;
+LandmarkType
+landmark(int x, int y)
 {
 	Special *s;
 	Mapper *m;
@@ -1028,10 +1038,10 @@ int x, y;
 ** Puts information about all landmarks your mapper has seen into the
 ** landmark_info array.  Returns BAD_VALUE if vehicle has no mapper.
 */
-int get_landmarks(num_landmark_infos, landmark_info)
-int *num_landmark_infos;
-Landmark_info landmark_info[];	/* Must have size >= MAX_LANDMARKS */
+int
+get_landmarks(int *num_landmark_infos, Landmark_info landmark_info[])
 {
+	/* landmark_info[] -  Must have size >= MAX_LANDMARKS */
 	Special *s = &cv->special[(int) MAPPER];
 	Mapper *m = (Mapper *) s->record;
 
@@ -1052,13 +1062,17 @@ Landmark_info landmark_info[];	/* Must have size >= MAX_LANDMARKS */
 	return 0;
 }
 
-/* return location of an outpost at the specified time (future locations are
-   only accurate if the outpost's strength doesn't change) */
+/* return location of an outpost at the specified time
+** (future locations are only accurate if the outpost's
+** strength doesn't change)
+**
+** x, y :         box coords of the outpost
+** frame_num :    when
+** *xret, *yret : return pixel coords (absolute)
+*/
 
-void get_outpost_loc(x, y, frame_num, xret, yret)
-int x, y;						/* box coords of the outpost */
-int frame_num;					/* when */
-int *xret, *yret;				/* return pixel coords (absolute) */
+void
+get_outpost_loc(int x, int y, int frame_num, int *xret, int *yret)
 {
 	Special *s = &cv->special[(int) MAPPER];
 	Mapper *m = (Mapper *) s->record;
@@ -1080,9 +1094,8 @@ int *xret, *yret;				/* return pixel coords (absolute) */
 	*yret = cp->y + y * BOX_HEIGHT;
 }
 
-int get_blips(num_blip_infos, blip_info)
-int *num_blip_infos;
-Blip_info blip_info[];
+int
+get_blips(int *num_blip_infos, Blip_info blip_info[])
 {
 	Special *s, *ns;
 	Radar *r;
@@ -1138,10 +1151,11 @@ Blip_info blip_info[];
 ** Puts information about all visible vehicles (excluding your own)
 ** into the vehicle_info array.
 */
-void get_vehicles(num_vehicle_infos, vehicle_info)
-int *num_vehicle_infos;
-Vehicle_info vehicle_info[];	/* Must have size >= MAX_VEHICLES */
+void
+get_vehicles(int *num_vehicle_infos, Vehicle_info vehicle_info[])
 {
+	/* vehicle_info[] -  Must have size >= MAX_VEHICLES */
+
 	Vehicle *v;
 	Vehicle_info *v_info;
 	Picture *pic;
@@ -1210,8 +1224,8 @@ Vehicle_info vehicle_info[];	/* Must have size >= MAX_VEHICLES */
 /*
 ** Puts information about the current vehicle into the vehicle_info structure.
 */
-void get_self(v_info)
-Vehicle_info *v_info;
+void
+get_self(Vehicle_info *v_info)
 {
 	int tur;
 	Picture *pic;
@@ -1247,10 +1261,10 @@ Vehicle_info *v_info;
 /*
 ** Puts information about all visible bullets into the bullet_info array.
 */
-void get_bullets(num_bullet_infos, bullet_info)
-int *num_bullet_infos;
-Bullet_info bullet_info[];		/* Must have size >= MAX_BULLETS */
+void
+get_bullets(int *num_bullet_infos, Bullet_info bullet_info[])
 {
+	/* bullet_info[] -	Must have size >= MAX_BULLETS */
 	extern Bset *bset;
 	Bullet *b;
 	Bullet_info *b_info;
@@ -1300,8 +1314,8 @@ Bullet_info bullet_info[];		/* Must have size >= MAX_BULLETS */
 /*
 ** Returns the team number for the given vehicle id.
 */
-Team team(vid)
-ID vid;
+Team
+team(ID vid)
 {
 	int i, retval;
 
@@ -1318,7 +1332,8 @@ ID vid;
 /*
 ** Returns the number of vehicles currently in the maze.
 */
-int number_vehicles()
+int
+number_vehicles(void)
 {
 	check_time();
 	return num_veh_alive;
@@ -1327,8 +1342,8 @@ int number_vehicles()
 /*
 ** Puts the important settings into the given settings structure.
 */
-void get_settings(si)
-Settings_info *si;
+void
+get_settings(Settings_info *si)
 {
 	check_time();
 	*si = settings.si;			/* structure copy */
@@ -1344,7 +1359,8 @@ Settings_info *si;
 
 /* amount of money the vehicle has */
 
-int get_money()
+int
+get_money(void)
 {
 	check_time();
 	return (cv->owner->money);
@@ -1353,7 +1369,8 @@ int get_money()
 
 /* how much one unit of fuel costs */
 
-int get_fuel_cost()
+int
+get_fuel_cost(void)
 {
 	check_time();
 	return engine_stat[cv->vdesc->engine].fuel_cost;
@@ -1362,7 +1379,8 @@ int get_fuel_cost()
 
 /* how much one unit of armor costs */
 
-int get_armor_cost()
+int
+get_armor_cost(void)
 {
 	check_time();
 	return armor_stat[cv->armor.type].cost * body_stat[cv->vdesc->body].size;
@@ -1371,8 +1389,8 @@ int get_armor_cost()
 
 /* how much one bullet for the indicated weapon costs */
 
-int get_ammo_cost(wn)
-WeaponNum wn;
+int
+get_ammo_cost(WeaponNum wn)
 {
 	check_time();
 	if (!legal_weapon(wn)) {
@@ -1392,9 +1410,8 @@ WeaponNum wn;
 ** If delay is TRUE, the discs will move in next frame's direction.
 **
 */
-void throw_discs(dspeed, delay)
-FLOAT dspeed;
-Boolean delay;
+void
+throw_discs(FLOAT dspeed, Boolean delay)
 {
 	if (dspeed < 0.0)
 		dspeed = 0.0;
@@ -1408,8 +1425,8 @@ Boolean delay;
 ** Spins all discs owned by vehicle in the specified direction
 ** dir can be one of COUNTERCLOCKWISE, CLOCKWISE, or TOGGLE.
 */
-void spin_discs(dir)
-Spin dir;
+void
+spin_discs(Spin dir)
 {
 	set_disc_orbit(cv, dir);
 	check_time();
@@ -1418,7 +1435,7 @@ Spin dir;
 /*
 ** Returns the number of discs owned by the vehicle
 */
-int num_discs()
+int num_discs(void)
 {
 	check_time();
 	return (cv->num_discs);
@@ -1427,10 +1444,9 @@ int num_discs()
 /*
 ** Puts information about all visible discs into the disc_info array.
 */
-void get_discs(num_disc_infos, disc_info)
-int *num_disc_infos;
-Disc_info disc_info[];			/* Must have size >= MAX_DISCS */
+void get_discs(int *num_disc_infos, Disc_info *disc_info)
 {
+	/* Disc_info disc_info[] --	Must have size >= MAX_DISCS */
 	extern Bset *bset;
 	Bullet *b;
 	Disc_info *b_info;
@@ -1492,7 +1508,8 @@ Disc_info disc_info[];			/* Must have size >= MAX_DISCS */
 /*
 ** Returns number of messages waiting to be read.
 */
-int messages()
+int
+messages(void)
 {
 	check_time();
 	return ((cv->next_message - cv->current_prog->next_message + MAX_MESSAGES)
@@ -1504,10 +1521,8 @@ int messages()
 ** Only MAX_DATA_LEN-1 bytes of the data are put into the message,
 ** to ensure that a text message will be null-terminated.
 */
-void send_msg(recipient, opcode, data)
-Byte recipient;
-Opcode opcode;
-Byte *data;
+void
+send_msg(Byte recipient, Opcode opcode, Byte *data)
 {
 	cv->sending.sender = cv->number;
 	cv->sending.recipient = recipient;
@@ -1522,8 +1537,8 @@ Byte *data;
 /* Copies the information from the next received messsage into the given
    message.  Returns FALSE if there are no messages pending.  */
 
-Boolean receive_msg(m)
-Message *m;
+Boolean
+receive_msg(Message *m)
 {
 	Program *p = cv->current_prog;
 
@@ -1544,7 +1559,8 @@ Message *m;
 /*
 ** Returns the current amount of fuel in the vehicle
 */
-FLOAT fuel()
+FLOAT
+fuel(void)
 {
 	check_time();
 	return (cv->fuel);
@@ -1553,7 +1569,8 @@ FLOAT fuel()
 /*
 ** Returns the maximum amount of fuel the vehicle can hold
 */
-FLOAT max_fuel()
+FLOAT
+max_fuel(void)
 {
 	check_time();
 	return (cv->max_fuel);
@@ -1562,7 +1579,8 @@ FLOAT max_fuel()
 /*
 ** Returns the heat of the vehicle
 */
-int heat()
+int
+heat(void)
 {
 	check_time();
 	return (cv->heat);
@@ -1571,7 +1589,8 @@ int heat()
 /*
 ** Returns the number of heat sinks in the vehicle
 */
-int heat_sinks()
+int
+heat_sinks(void)
 {
 	check_time();
 	return (cv->vdesc->heat_sinks);
@@ -1580,8 +1599,8 @@ int heat_sinks()
 /*
 ** Tells whether or not the vehicle has a particular special
 */
-Boolean has_special(st)
-SpecialType st;
+Boolean
+has_special(SpecialType st)
 {
 	check_time();
 
@@ -1593,8 +1612,8 @@ SpecialType st;
  *                          -ane
  */
 
-SpecialStatus query_special(st)
-SpecialType st;
+SpecialStatus
+query_special(SpecialType st)
 {
 	check_time();
 
@@ -1608,9 +1627,8 @@ SpecialType st;
  * Only valid inputs are SP_on and SP_off.
  */
 
-SpecialStatus switch_special(st, action)
-SpecialType st;
-unsigned int action;
+SpecialStatus
+switch_special(SpecialType st, int action)
 {
 	check_time();
 
@@ -1626,7 +1644,7 @@ unsigned int action;
 /*
 ** Returns the animation frame number
 */
-int frame_number()
+int frame_number(void)
 {
 	check_time();
 	return frame;
@@ -1635,7 +1653,7 @@ int frame_number()
 /*
 ** Returns number of kills the vehicle has accrued this battle
 */
-int num_kills()
+int num_kills(void)
 {
 	check_time();
 	return (cv->owner->kills);
@@ -1644,7 +1662,7 @@ int num_kills()
 /*
 ** Returns score of the vehicle
 */
-int score()
+int score(void)
 {
 	check_time();
 	return (cv->owner->score);
@@ -1654,7 +1672,7 @@ int score()
 ** This function will not return until the next frame of execution,
 ** so calling it means giving up your remaining cpu time for this frame.
 */
-void done()
+void done(void)
 {
 	stop_program();
 }
@@ -1674,8 +1692,8 @@ void *argp;						/* this pointer is passed to it */
 	cv->current_prog->cleanup_arg = argp;
 }
 
-int aim_smart_weapon(x, y)
-int x, y;
+void
+aim_smart_weapon(int x, int y)
 {
 	cv->target.x = x;
 	cv->target.y = y;
@@ -1690,8 +1708,9 @@ int x, y;
 
 #define SGN(a)  (((a)<0) ? -1 : 1)
 
-void rdf_map(map)
-Box map[][GRID_HEIGHT];
+void
+rdf_map(Box **map)
+/* Box map[][GRID_HEIGHT]; */
 {
 	int i, j;
 	int first_veh, end_veh;

@@ -13,7 +13,7 @@
 #endif
 
 /* lowlib.c */
-#ifdef __bsdi__
+#if 1 || defined(__bsdi__)
 #define Angle double
 #define ID int
 #endif
@@ -42,10 +42,16 @@ extern Angle aim_turret P_((TurretNum num, int dx, int dy));
 extern Boolean weapon_on P_((WeaponNum num));
 extern int turn_on_weapon P_((WeaponNum num));
 extern int turn_off_weapon P_((WeaponNum num));
-extern int toggle_weapon P_((WeaponNum num));
+extern void toggle_weapon P_((WeaponNum));
 extern WeaponStatus fire_weapon P_((WeaponNum num));
 extern int num_weapons P_((void));
 extern int get_weapon P_((WeaponNum num, Weapon_info *winfo));
+extern int get_tread_type P_((void));
+extern int get_bumper_type P_((void));
+extern int get_vehicle_cost P_((void));
+extern int get_engine_type P_((void));
+extern int get_handling P_((void));
+extern int get_suspension_type P_((void));
 extern int weapon_time P_((WeaponNum num));
 extern int weapon_ammo P_((WeaponNum num));
 extern int armor P_((Side num));
@@ -72,9 +78,7 @@ extern void spin_discs P_((Spin dir));
 extern int num_discs P_((void));
 extern void get_discs P_((int *num_disc_infos, Disc_info disc_info[]));
 extern int messages P_((void));
-#ifndef __bsdi__
-extern void send_msg P_((Byte recipient, Opcode opcode, Byte * data));
-#endif
+extern void send_msg P_((Byte, Opcode, Byte *));
 extern Boolean receive_msg P_((Message *m));
 extern FLOAT fuel P_((void));
 extern FLOAT max_fuel P_((void));
