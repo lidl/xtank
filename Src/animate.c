@@ -17,7 +17,7 @@
 #include "proto.h"
 
 extern int frame;
-extern struct CLFkr command_options;
+extern CLFkr command_options;
 extern int num_combatants;
 extern Combatant combatant[MAX_VEHICLES];
 

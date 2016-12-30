@@ -139,7 +139,7 @@ wait_for_real_counter(void)
 #else
 
 
-extern struct CLFkr command_options;	/* options for how xtank starts / exits */
+extern CLFkr command_options;	/* options for how xtank starts / exits */
 
 void
 start_real_counter(int time)

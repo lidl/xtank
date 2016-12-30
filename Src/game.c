@@ -31,7 +31,7 @@ extern int num_terminals;
 extern Settings settings;
 extern Map real_map;
 extern int frame;
-extern struct CLFkr command_options;
+extern CLFkr command_options;
 
 
 TeamData teamdata[MAX_TEAMS];

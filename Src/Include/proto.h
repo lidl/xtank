@@ -6,6 +6,8 @@
 ** $Id$
 */
 
+#include "tanktypes.h"
+#include "clfkr.h"
 #include "bullet.h"
 #include "menu.h"
 #include "setup.h"
@@ -299,9 +301,7 @@ int point_in_vehicle P_((Vehicle *, double, double));
 /* main.c */
 void debugger_break P_((void));
 int main P_((int argc, char *argv[]));
-#ifdef CLFkr
-int InitConfigStruct P_((struct CLFkr *ConfigRunning));
-#endif
+int InitConfigStruct P_((CLFkr *ConfigRunning));
 
 /* malloc.c */
 char *my_malloc P_((unsigned size));

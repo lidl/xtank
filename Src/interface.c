@@ -62,7 +62,7 @@ extern char *version1;
 extern char *version2;
 extern char *version3;
 
-extern struct CLFkr command_options;
+extern CLFkr command_options;
 
 /* Added in a '1' for the new combatants menu (HAK 2/93) */
 static int whichlevel[MAX_MENUS] =

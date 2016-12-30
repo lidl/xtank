@@ -56,8 +56,7 @@ Vehicle *live_vehicles[MAX_VEHICLES];	/* pointers into actual_vehicles[], the
 Vehicle *dead_vehicles[MAX_VEHICLES];	/* pointers into actual_vehicles[], the
 					   first "num_veh_dead" entries are
 					   valid */
-struct CLFkr command_options;	/* options for how xtank starts and exits */
-
+CLFkr command_options;	/* options for how xtank starts and exits */
 
 extern char *version1;
 extern char *version2;
@@ -282,10 +281,8 @@ char *argv[];
 	return (0);
 }
 
-
-
-int InitConfigStruct(ConfigRunning)
-struct CLFkr *ConfigRunning;
+int
+InitConfigStruct(CLFkr *ConfigRunning)
 {
 	ConfigRunning->AutoExit = FALSE;
 	ConfigRunning->AutoStart = FALSE;
