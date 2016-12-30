@@ -22,6 +22,7 @@
 
 #ifdef UNIX
 #include <sys/param.h>
+#include <sys/stat.h>
 #ifdef NEED_DIRENT_H
 #include <dirent.h>
 #endif
@@ -42,9 +43,8 @@ extern char *side_entries[];
 ** Loads the vehicle description from the file "[vehiclesdir]/[name].v".
 ** Returns one of DESC_LOADED, DESC_NOT_FOUND, DESC_BAD_FORMAT.
 */
-new_load_vdesc(d, name)
-Vdesc *d;
-char *name;
+static int
+new_load_vdesc(Vdesc *d, char *name)
 {
 	extern char pathname[], vehiclesdir[];
 	extern int num_vehicle_objs;
@@ -160,8 +160,8 @@ char *Mnames[NUM_MOUNTS];
 char *Snames[MAX_SIDES];
 
 #define BSZ 80
-char *abbrev_of(str)
-char *str;
+static char *
+abbrev_of(char *str)
 {
 	char buf[BSZ];
 	char *sp, *bp;
@@ -182,7 +182,8 @@ char *str;
 	return bp;
 }
 
-void init_Wnames()
+void
+init_Wnames(void)
 {
 	int i;
 

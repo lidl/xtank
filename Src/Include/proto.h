@@ -412,20 +412,16 @@ void display_msg P_((int));
 
 /* newconsole.c */
 static int idx2armor P_((int, int *));
-static void con_init P_((Vehicle *v, char *record));
+static void con_init P_((Vehicle *, char *));
 SpecialStatus special_dummy P_((Vehicle *, char *, int));
 SpecialStatus special_console P_((Vehicle *, char *, int));
 static void display_bar P_((int, int, int, int, int, int, int *, int, int, int, Boolean, Boolean));
 
 /* newfile.c */
-#ifdef Vdesc
-int new_load_vdesc P_((Vdesc *d, char *name));
-#endif
-char *abbrev_of P_((char *str));
+static int new_load_vdesc P_((Vdesc *, char *));
+static char *abbrev_of P_((char *));
 void init_Wnames P_((void));
-#ifdef Vdesc
-int SaveVehicleFormat1 P_((Vdesc *d));
-#endif
+int SaveVehicleFormat1 P_((Vdesc *));
 
 /* players.c */
 int init_players P_((void));
