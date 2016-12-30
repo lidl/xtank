@@ -10,6 +10,7 @@
 #include "clfkr.h"
 #include "bullet.h"
 #include "menu.h"
+#include "mdesign.h"
 #include "setup.h"
 #include "terminal.h"
 #include "vehicle.h"
@@ -367,28 +368,28 @@ static void draw_wall P_((BoxC *loc, Wall wl, int color));
 static void show_dot P_((BoxC *loc));
 
 /* menu.c */
-int menu_sys_window P_((Menu_int *menuobj, int wdw));
-int menu_bare_make P_((Menu_int *menuobj, int menuid, char *title, int size, int width, int xtop, int ytop, int fntcode, int has_bar, int use_escher, int center));
-int menu_set_fields P_((Menu_int *menuobj, int menuid, int val));
-int menu_resize P_((Menu_int *menuobj, int menuid, int newsize));
-int menu_new_width P_((Menu_int *menuobj, int menuid, int newwid));
-int menu_display_internal P_((Menu_int *menuobj, int menuid));
-int menu_display_frame P_((Menu_int *menuobj, int menuid));
-int menu_display P_((Menu_int *menuobj, int menuid));
-int menu_erase P_((Menu_int *menuobj, int menuid));
-int menu_erase_internal P_((Menu_int *menuobj, int menuid));
-int menu_redraw P_((Menu_int *menuobj, int menuid));
-int in_sbar P_((Menu_int *menuobj, int menuid, int x, int y));
-int menu_resolve_coord P_((Menu_int *menuobj, int menuid, int y));
-int menu_adjust P_((Menu_int *menuobj, int menuid, Event *ev));
-int menu_hit_in_border P_((Menu_int *menuobj, int menuid, int x, int y));
-int menu_hit_p P_((Menu_int *menuobj, Event *ev, int *p_menuid, int *selec, int *just_scrolled));
-int menu_track_mouse P_((Menu_int *menuobj, int menuid, int y));
-int menu_highlight P_((int w, Menu *m, int item));
-int menu_system_expose P_((Menu_int *menuobj));
-int menu_unhighlight P_((Menu_int *menuobj, int menuid));
-int menu_sys_display P_((Menu_int *menuobj));
-int menu_sys_erase P_((Menu_int *menuobj));
+void menu_sys_window P_((Menu_int *menuobj, int wdw));
+void menu_bare_make P_((Menu_int *menuobj, int menuid, char *title, int size, int width, int xtop, int ytop, int fntcode, int has_bar, int use_escher, int center));
+void menu_set_fields P_((Menu_int *menuobj, int menuid, int val));
+void menu_resize P_((Menu_int *menuobj, int menuid, int newsize));
+static void menu_new_width P_((Menu_int *menuobj, int menuid, int newwid));
+static void menu_display_internal P_((Menu_int *menuobj, int menuid));
+static void menu_display_frame P_((Menu_int *menuobj, int menuid));
+void menu_display P_((Menu_int *menuobj, int menuid));
+void menu_erase P_((Menu_int *menuobj, int menuid));
+static void menu_erase_internal P_((Menu_int *menuobj, int menuid));
+void menu_redraw P_((Menu_int *menuobj, int menuid));
+static int in_sbar P_((Menu_int *menuobj, int menuid, int x, int y));
+static int menu_resolve_coord P_((Menu_int *menuobj, int menuid, int y));
+static void menu_adjust P_((Menu_int *menuobj, int menuid, Event *ev));
+static int menu_hit_in_border P_((Menu_int *menuobj, int menuid, int x, int y));
+void menu_hit_p P_((Menu_int *menuobj, Event *ev, int *p_menuid, int *selec, int *just_scrolled));
+static int menu_track_mouse P_((Menu_int *menuobj, int menuid, int y));
+static void menu_highlight P_((int w, Menu *m, int item));
+void menu_system_expose P_((Menu_int *menuobj));
+void menu_unhighlight P_((Menu_int *menuobj, int menuid));
+void menu_sys_display P_((Menu_int *menuobj));
+void menu_sys_erase P_((Menu_int *menuobj));
 int menu_hit P_((Menu_int *menuobj, int x, int y));
 
 /* message.c */
@@ -506,10 +507,8 @@ SpecialStatus special_repair P_((Vehicle *v, char *record, unsigned int action))
 #endif
 
 /* scroll.c */
-#ifdef scrollbar
-int draw_scrollbar P_((scrollbar *sbar));
+void draw_scrollbar P_((scrollbar *sbar));
 int drag_scrollbar P_((scrollbar *sbar, int mx, int my, unsigned int button));
-#endif
 
 /* setup.c */
 int standard_combatants P_((void));

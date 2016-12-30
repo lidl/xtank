@@ -12,8 +12,8 @@
 #include "gr.h"
 #include "proto.h"
 
-draw_scrollbar(sbar)
-scrollbar *sbar;
+void
+draw_scrollbar(scrollbar *sbar)
 {
 	FLOAT fspan, fpos;
 	int pspan, ppos;
@@ -45,10 +45,8 @@ scrollbar *sbar;
 
 /* Update scrollbar for mouse click, move bar, return TRUE if contents of menu
    need to be re-drawn, else FALSE */
-int drag_scrollbar(sbar, mx, my, button)
-scrollbar *sbar;
-int mx, my;
-unsigned int button;
+int
+drag_scrollbar(scrollbar *sbar, int mx, int my, unsigned int button)
 {
 	FLOAT fpos;
 	int new_pos;

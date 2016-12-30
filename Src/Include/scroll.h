@@ -6,6 +6,9 @@
 ** $Id$
 */
 
+#ifndef _SCROLL_H_
+#define _SCROLL_H_
+
 #define MAXSPAN 23
 
 typedef struct {
@@ -16,3 +19,5 @@ typedef struct {
 	int span;		/* #of items that fit in the onscreen menu */
 	int total;		/* #of items that fit in the virtual menu */
 } scrollbar;
+
+#endif /* !_SCROLL_H_ */

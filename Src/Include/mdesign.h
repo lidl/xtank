@@ -6,6 +6,9 @@
 ** $Id$
 */
 
+#ifndef _MDESIGN_H_
+#define _MDESIGN_H_
+
 /* Padding on each side of the maze in boxes */
 #define PAD 2
 
@@ -31,15 +34,14 @@
 #define INPUT_Y  46
 #define MD_FONT  M_FONT
 
-
 typedef unsigned int Wall;
 
-  typedef struct {
-	  int x, y;					/* coordinates of a place in terms of boxes */
-  }
-BoxC;
+typedef struct {
+	int x, y;	/* coordinates of a place in terms of boxes */
+} BoxC;
 
-  typedef struct {
-	  int x, y;					/* coordinates of a place in terms of pixels */
-  }
-PixC;
+typedef struct {
+	int x, y;	/* coordinates of a place in terms of pixels */
+} PixC;
+
+#endif /* !_MDESIGN_H_ */

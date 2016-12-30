@@ -15,9 +15,8 @@
 
 /* This function sets the window for the Menu System
  */
-menu_sys_window(menuobj, wdw)
-Menu_int *menuobj;
-int wdw;
+void
+menu_sys_window(Menu_int *menuobj, int wdw)
 {
 	menuobj->wdw = wdw;
 }
@@ -26,18 +25,22 @@ int wdw;
  * menuing "system" it is going to be in and its menuid, a number assigned
  * by the programmer to the menu...
  */
-menu_bare_make(menuobj, menuid, title, size, width, xtop, ytop, fntcode,
-			   has_bar, use_escher, center)
-Menu_int *menuobj;				/* Object holding all menus of a "system" */
-int menuid;						/* integer id number that the menu will be */
-char *title;					/* Title of menu, or "" if none */
-int size;						/* number of elements (choices) in the menu */
-int width;						/* a width setting */
-int xtop, ytop;					/* upper left x,y coordinates of menu */
-int fntcode;					/* font id */
-int has_bar;					/* has scrollbar */
-int use_escher;					/* use escher menus */
-int center;						/* center text */
+void
+menu_bare_make(Menu_int *menuobj, int menuid, char *title,
+	int size, int width, int xtop, int ytop, int fntcode,
+	int has_bar, int use_escher, int center)
+	/*
+	** menuobj	- Object holding all menus of a "system"
+	** menuid	- integer id number that the menu will be
+	** title	- Title of menu, or "" if none
+	** size		- number of elements (choices) in the menu
+	** width	- a width setting
+	** xtop, ytop	- upper left x,y coordinates of menu
+	** fntcode	- font id
+	** has_bar	- has scrollbar
+	** use_escher	- use escher menus
+	** center	- center text
+	*/
 {
 	Menu *m;					/* Temporary menu holder */
 	int i;						/* Temporary counter for setting menus */
@@ -83,10 +86,8 @@ int center;						/* center text */
 	menu_resize(menuobj, menuid, size);
 }
 
-menu_set_fields(menuobj, menuid, val)
-Menu_int *menuobj;
-int menuid;
-int val;
+void
+menu_set_fields(Menu_int *menuobj, int menuid, int val)
 {
 	Menu *m;
 
@@ -102,10 +103,8 @@ int val;
 	m->nwidth = (val & MENU_WIDTH) > 0;
 }
 
-menu_resize(menuobj, menuid, newsize)
-Menu_int *menuobj;
-int menuid;
-int newsize;
+void
+menu_resize(Menu_int *menuobj, int menuid, int newsize)
 {
 	Menu *m;
 
@@ -124,10 +123,8 @@ int newsize;
 	m->sbar.h = m->height;
 }
 
-menu_new_width(menuobj, menuid, newwid)
-Menu_int *menuobj;
-int menuid;
-int newwid;
+static void
+menu_new_width(Menu_int *menuobj, int menuid, int newwid)
 {
 	Menu *m;
 
@@ -142,9 +139,8 @@ int newwid;
 	}
 }
 
-menu_display_internal(menuobj, menuid)
-Menu_int *menuobj;				/* The menu "system" in use */
-int menuid;						/* menu identifier */
+static void
+menu_display_internal(Menu_int *menuobj, int menuid)
 {
 	Menu *m;
 	int i, top, height;
@@ -188,9 +184,8 @@ int menuid;						/* menu identifier */
 	return;
 }
 
-menu_display_frame(menuobj, menuid)
-Menu_int *menuobj;				/* The menu "system" in use */
-int menuid;						/* menu identifier */
+static void
+menu_display_frame(Menu_int *menuobj, int menuid)
 {
 	Menu *m;
 	int width;
@@ -223,9 +218,8 @@ int menuid;						/* menu identifier */
 /* This fuction displays a given menu on the screen..
  * That's all it does... nothing fancy
  */
-menu_display(menuobj, menuid)
-Menu_int *menuobj;				/* The menu "system" in use */
-int menuid;						/* menu identifier */
+void
+menu_display(Menu_int *menuobj, int menuid)
 {
 	int longest, i;				/* The longest input line, counter */
 	Menu *m;					/* make life happier */
@@ -265,9 +259,8 @@ int menuid;						/* menu identifier */
 /* erases a menu displayed on the screen
  */
 
-menu_erase(menuobj, menuid)
-Menu_int *menuobj;
-int menuid;
+void
+menu_erase(Menu_int *menuobj, int menuid)
 {
 	Menu *m;
 	int width;
@@ -301,9 +294,8 @@ int menuid;
 	flush_output();
 }
 
-menu_erase_internal(menuobj, menuid)
-Menu_int *menuobj;
-int menuid;
+static void
+menu_erase_internal(Menu_int *menuobj, int menuid)
 {
 	Menu *m;
 
@@ -322,25 +314,20 @@ int menuid;
 	flush_output();
 }
 
-menu_redraw(menuobj, menuid)
-Menu_int *menuobj;
-int menuid;
+void
+menu_redraw(Menu_int *menuobj, int menuid)
 {
-
 #ifdef DEBUG
 	(void) fprintf(stderr, "Redrawing menu %d: %s\n",
 				   menuid, menuobj->menus[menuid].title);
 #endif
-
 	menu_erase(menuobj, menuid);
 	menu_display(menuobj, menuid);
 	return;
 }
 
-int in_sbar(menuobj, menuid, x, y)
-Menu_int *menuobj;
-int menuid;
-int x, y;
+static int
+in_sbar(Menu_int *menuobj, int menuid, int x, int y)
 {
 	Menu *m;
 	scrollbar *sbar;
@@ -362,9 +349,9 @@ int x, y;
 
 }
 
-menu_resolve_coord(menuobj, menuid, y)	/* returns index to real item */
-Menu_int *menuobj;
-int menuid, y;
+/* returns index to real item */
+static int
+menu_resolve_coord(Menu_int *menuobj, int menuid, int y)
 {
 	int select;					/* which item was selected, if any */
 	int slot;					/* index through items *shown* */
@@ -392,10 +379,8 @@ int menuid, y;
 	return select;
 }
 
-menu_adjust(menuobj, menuid, ev)
-Menu_int *menuobj;
-int menuid;
-Event *ev;
+static void
+menu_adjust(Menu_int *menuobj, int menuid, Event *ev)
 {
 	int delta, new_offset, pos;
 	Menu *m;
@@ -437,10 +422,8 @@ Event *ev;
 	return;
 }
 
-menu_hit_in_border(menuobj, menuid, x, y)
-Menu_int *menuobj;
-int menuid;
-int x, y;
+static int
+menu_hit_in_border(Menu_int *menuobj, int menuid, int x, int y)
 {
 	Menu *m;
 	int retval = FALSE;
@@ -461,12 +444,12 @@ int x, y;
 	return (retval);
 }
 
-menu_hit_p(menuobj, ev, p_menuid, selec, just_scrolled)
-Menu_int *menuobj;
-Event *ev;
-int *p_menuid;					/* menuid will be returned, or Menu_Null */
-int *selec;						/* which item was selected, if any */
-int *just_scrolled;
+void
+menu_hit_p(Menu_int *menuobj, Event *ev, int *p_menuid, int *selec, int *just_scrolled)
+/*
+** *p_menuid	- menuid will be returned, or Menu_Null
+** *selec	- which item was selected, if any
+*/
 {
 	Menu *m;
 	int x, y, menuid;
@@ -522,9 +505,8 @@ int *just_scrolled;
 	*p_menuid = MENU_NULL;
 }
 
-menu_track_mouse(menuobj, menuid, y)
-Menu_int *menuobj;
-int menuid, y;
+static int
+menu_track_mouse(Menu_int *menuobj, int menuid, int y)
 {
 	Menu *m;
 	int w;
@@ -592,10 +574,8 @@ int menuid, y;
 
 /* Takes item as nth menu item.. not nth field */
 
-menu_highlight(w, m, item)
-int w;
-Menu *m;
-int item;
+static void
+menu_highlight(int w, Menu *m, int item)
 {
 	if (m->has_bar) {
 		item -= m->sbar.pos;
@@ -607,8 +587,8 @@ int item;
 					 DRAW_XOR, MENU_FORE);
 }
 
-menu_system_expose(menuobj)		/* Does NOT clear the screen.... */
-Menu_int *menuobj;
+void
+menu_system_expose(Menu_int *menuobj)	/* Does NOT clear the screen.... */
 {
 	int i;
 
@@ -617,9 +597,8 @@ Menu_int *menuobj;
 			menu_display(menuobj, i);
 }
 
-menu_unhighlight(menuobj, menuid)
-Menu_int *menuobj;
-int menuid;
+void
+menu_unhighlight(Menu_int *menuobj, int menuid)
 {
 	int i;
 	Menu *m;
@@ -634,8 +613,8 @@ int menuid;
 		}
 }
 
-menu_sys_display(menuobj)
-Menu_int *menuobj;
+void
+menu_sys_display(Menu_int *menuobj)
 {
 	int i;
 
@@ -643,8 +622,8 @@ Menu_int *menuobj;
 		menu_display(menuobj, i);
 }
 
-menu_sys_erase(menuobj)
-Menu_int *menuobj;
+void
+menu_sys_erase(Menu_int *menuobj)
 {
 	int i;
 
@@ -653,9 +632,8 @@ Menu_int *menuobj;
 			menu_erase(menuobj, i);
 }
 
-menu_hit(menuobj, x, y)
-Menu_int *menuobj;
-int x, y;						/* x and y location of the mouse */
+int
+menu_hit(Menu_int *menuobj, int x, int y)
 {
 	int menuid;
 
