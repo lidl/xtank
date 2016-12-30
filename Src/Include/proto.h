@@ -393,32 +393,22 @@ void menu_sys_erase P_((Menu_int *menuobj));
 int menu_hit P_((Menu_int *menuobj, int x, int y));
 
 /* message.c */
-int init_msg_sys P_((void));
-int init_msg_terminal P_((int));
-int init_msg_game P_((void));
-int display_game P_((unsigned int status));
+void init_msg_sys P_((void));
+void init_msg_terminal P_((int));
+void init_msg_game P_((void));
+void display_game P_((int));
 void send_message P_((Vehicle *));
 void set_message_data P_((Vehicle *, Event *));
-#ifdef Event
 int message_input P_((Event *event));
 int map_input P_((Event *event));
-#endif
-#ifdef Vehicle
-int display_sending P_((void));
-int init_messages P_((Vehicle *v));
-int send_death_message P_((Vehicle *victim, Vehicle *killer));
-#endif
-int dispatch_message P_((Message *));
-#ifdef Message
-#ifdef Vehicle
-int receive_message P_((Vehicle *v, Message *m));
-#endif
-int format_message P_((Message *m, char *disp));
-#endif
-#ifdef Opcode
+static void display_sending P_((void));
+void init_messages P_((Vehicle *));
+void send_death_message P_((Vehicle *victim, Vehicle *killer));
+void dispatch_message P_((Message *));
+static void receive_message P_((Vehicle *v, Message *m));
+static int format_message P_((Message *, char *));
 void compose_message P_((Byte sender, Byte sendee, Opcode opcode, Byte * data));
-#endif
-int display_msg P_((unsigned int status));
+void display_msg P_((int));
 
 /* newconsole.c */
 int idx2armor P_((int idx, int *sidep));

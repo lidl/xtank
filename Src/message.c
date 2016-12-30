@@ -203,7 +203,8 @@ static char *send_entries[] =
 /*
 ** Initializes the entries arrays for the recipient and vehicle menus.
 */
-init_msg_sys()
+void
+init_msg_sys(void)
 {
 	extern char *teams_entries[];
 	int i;
@@ -218,8 +219,8 @@ init_msg_sys()
 ** Initializes the message menu system and makes the recipient and opcode menus
 ** for the specified terminal number.
 */
-init_msg_terminal(num)
-int num;
+void
+init_msg_terminal(int num)
 {
 	Menu_int *sys;
 
@@ -241,7 +242,8 @@ int num;
 ** vehicles.  Resizes the vehicle menu to fit the new list.  Sets highlights
 ** on the menus to recipient "All", opcode "Text".
 */
-init_msg_game()
+void
+init_msg_game(void)
 {
 	extern int num_terminals;
 	extern Terminal *terminal[];
@@ -265,8 +267,8 @@ init_msg_game()
 /*
 ** Displays the menus and sending message in the game window.
 */
-display_game(status)
-unsigned int status;
+void
+display_game(int status)
 {
 	/* Check for being exposed */
 	check_expose(GAME_WIN, status);
@@ -288,8 +290,8 @@ unsigned int status;
 ** Handles input events in message window.  This includes clicks on menus
 ** and keystrokes for editing messages.
 */
-message_input(event)
-Event *event;
+int
+message_input(Event *event)
 {
 	Vehicle *v = term->vehicle;
 	Message *m;
@@ -398,8 +400,8 @@ Event *event;
 ** Interprets mouse clicks as locations if sending message opcode data
 ** type is a location. Sets data of sending message to clicked location.
 */
-map_input(event)
-Event *event;
+int
+map_input(Event *event)
 {
 	Vehicle *v = term->vehicle;
 
@@ -420,7 +422,7 @@ Event *event;
 
 #ifdef KEYPAD_DETECT
 
-	if ((event->type == EVENT_KEY)) {
+	if (event->type == EVENT_KEY) {
 		switch (event->key) {
 		  case '1':
 		  case '2':
@@ -529,7 +531,8 @@ set_message_data(Vehicle *v, Event *event)
 /*
 ** Displays the sending message of the current terminal.
 */
-display_sending()
+static void
+display_sending(void)
 {
 	char disp[DLEN];
 
@@ -540,8 +543,8 @@ display_sending()
 /*
 ** Initializes the message system of the specified vehicle.
 */
-init_messages(v)
-Vehicle *v;
+void
+init_messages(Vehicle *v)
 {
 	int i;
 
@@ -571,8 +574,8 @@ send_message(Vehicle *v)
 ** Sends a death message from commentator saying that the victim was killed
 ** by the killer.
 */
-send_death_message(victim, killer)
-Vehicle *victim, *killer;
+void
+send_death_message(Vehicle *victim, Vehicle *killer)
 {
 	Message m;
 
@@ -593,8 +596,8 @@ Vehicle *victim, *killer;
 /*
 ** Dispatches a message to the recipient vehicles.
 */
-dispatch_message(m)
-Message *m;
+void
+dispatch_message(Message *m)
 {
 	int rec, i;
 	int sender_dead;
@@ -680,9 +683,8 @@ Message *m;
 /*
 ** Receives a the specified message for the specified vehicle.
 */
-receive_message(v, m)
-Vehicle *v;
-Message *m;
+static void
+receive_message(Vehicle *v, Message *m)
 {
 	/* * Increment the number of new messages received this frame, copy * the
 	   message onto the list, and increment the next message index. * All
@@ -731,8 +733,8 @@ Message *m;
 ** The most recently received message is highlighted and is followed by a
 ** blank line.
 */
-display_msg(status)
-unsigned int status;
+void
+display_msg(int status)
 {
 	Vehicle *v = term->vehicle;
 	char disp[DLEN];
@@ -860,9 +862,8 @@ unsigned int status;
 ** Formats message into a string    {sender}->{recipient} {opcode} {data}
 ** Returns length of string.
 */
-format_message(m, disp)
-Message *m;
-char *disp;
+static int
+format_message(Message *m, char *disp)
 {
 	extern char team_char[];
 	Byte *data;
@@ -1005,10 +1006,8 @@ char *disp;
 /*
 ** Composes a message with the given information and dispatches it.
 */
-void compose_message(sender, sendee, opcode, data)
-Byte sender, sendee;
-Opcode opcode;
-Byte *data;
+void
+compose_message(Byte sender, Byte sendee, Opcode opcode, Byte *data)
 {
 	Message m;
 	int i;

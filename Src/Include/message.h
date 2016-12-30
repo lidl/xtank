@@ -70,7 +70,4 @@ typedef Byte ID;				/* vehicle identification */
 Message;
 
 
-extern void compose_message();
-
-
-#endif /* ndef _MESSAGE_H_ */
+#endif /* !_MESSAGE_H_ */

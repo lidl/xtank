@@ -44,6 +44,7 @@ extern int turn_on_weapon P_((WeaponNum num));
 extern int turn_off_weapon P_((WeaponNum num));
 extern void toggle_weapon P_((WeaponNum));
 extern WeaponStatus fire_weapon P_((WeaponNum num));
+extern void map_fire_weapon P_((WeaponNum num));
 extern int num_weapons P_((void));
 extern int get_weapon P_((WeaponNum num, Weapon_info *winfo));
 extern int get_tread_type P_((void));
