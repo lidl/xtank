@@ -9,10 +9,17 @@
 #ifndef _XTANK_H_
 #define _XTANK_H_
 
+#include <stdlib.h>
 #include <stdio.h>
-#if defined(SYSV) || defined(SVR4)
+
+#if defined(SYSV) || defined(SVR4) || defined(__FreeBSD__)
+#define NEED_STRING_H
+#endif
+
+#if defined(NEED_STRING_H)
 #include <string.h>
-#else
+#endif
+#if defined(NEED_STRINGS_H)
 #include <strings.h>
 #endif
 
