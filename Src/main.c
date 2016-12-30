@@ -6,7 +6,6 @@
 ** $Id$
 */
 
-#include "malloc.h"
 #include "xtank.h"
 #include "bullet.h"
 #include "clfkr.h"
@@ -17,7 +16,6 @@
 #else
 #define debug(str)
 #endif
-
 
 char team_char[] = "NROYGBV";
 
@@ -62,16 +60,15 @@ extern char *version1;
 extern char *version2;
 extern char *version3;
 
-
-void debugger_break()
+void
+debugger_break(void)
 {
 	;							/* this is a good place to but a breakpoint */
 }
 
 
-int main(argc, argv)
-int argc;
-char *argv[];
+int
+main(int argc, char *argv[])
 {
 	extern int num_terminals;
 	extern char displayname[], video_error_str[];
@@ -85,11 +82,6 @@ char *argv[];
 	{
 		extern char *network_error_str[];
 
-#if !defined(_IBMR2) && !defined(__alpha)
-		extern char *malloc();
-
-#endif
-
 		/* Get environment variables */
 		debug("Getting environment variables");
 		get_environment();
@@ -102,7 +94,7 @@ char *argv[];
 			debug("Checking internet addresses");
 			ret = check_internet(argc - 1, argv + 1);
 			if (ret) {
-				fprintf(stderr, network_error_str[ret]);
+				fprintf(stderr, "%s", network_error_str[ret]);
 				fprintf(stderr, "\n");
 				if (ret == 5) {
 					fprintf(stderr, "You can't play xtank with terminals that are far\n");
@@ -258,7 +250,7 @@ char *argv[];
 
 #ifdef SOUND
 	init_sounds();
-#endif SOUND
+#endif /* SOUND */
 
 	/* Load descriptions after determining num_vehicle_objs */
 	debug("Loading vehicle and maze descriptions");
