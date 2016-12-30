@@ -7,7 +7,6 @@
 */
 
 #include "common.h"
-#include "malloc.h"
 #include "xtank.h"
 #include "vstructs.h"
 #include "sysdep.h"

@@ -7,7 +7,6 @@
 */
 
 #include <math.h>
-#include "malloc.h"
 #include <stdio.h>
 #include "xtank.h"
 #include "loc.h"

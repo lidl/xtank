@@ -8,7 +8,6 @@
 
 #include <string.h>
 
-#include "malloc.h"
 #include "xtank.h"
 #include "screen.h"
 #include "graphics.h"

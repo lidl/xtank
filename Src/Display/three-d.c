@@ -6,7 +6,6 @@
 ** $Id$
 */
 
-#include "malloc.h"
 #include "sysdep.h"
 #include "terminal.h"
 #include "proto.h"

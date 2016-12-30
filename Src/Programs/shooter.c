@@ -8,7 +8,6 @@
 
 #include <xtanklib.h>
 #include "sysdep.h"
-#include "malloc.h"
 #include <stdio.h>
 #if defined(i860)
 #undef drem

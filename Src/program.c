@@ -6,7 +6,6 @@
 ** $Id$
 */
 
-#include "malloc.h"
 #include <assert.h>
 #include "xtanklib.h"
 #include "xtank.h"

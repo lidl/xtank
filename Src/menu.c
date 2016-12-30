@@ -7,7 +7,6 @@
 */
 
 #include "sysdep.h"
-#include "malloc.h"
 #include <stdio.h>
 #include "common.h"
 #include "graphics.h"

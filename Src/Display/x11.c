@@ -6,7 +6,6 @@
 ** $Id$
 */
 
-#include "malloc.h"
 #include <stdio.h>
 #ifdef SVR4
 #include <string.h>

@@ -6,7 +6,6 @@
 ** $Id$
 */
 
-#include "malloc.h"
 #include <stdio.h>
 
 #if defined(SYSV) || defined(SVR4)

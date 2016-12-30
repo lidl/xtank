@@ -28,7 +28,6 @@
 #include <sys/stat.h>	/* for chmod() */
 
 #include "tanklimits.h"
-#include "malloc.h"
 #include <assert.h>
 #include "xtank.h"
 #include "graphics.h"

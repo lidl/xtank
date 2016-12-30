@@ -7,7 +7,6 @@
 */
 
 #include "sysdep.h"
-#include "malloc.h"
 
 #ifdef X10
 #include "x10.c"

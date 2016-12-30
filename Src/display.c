@@ -23,7 +23,6 @@
 #define USE_BATCHED_POINTS
 #endif
 
-#include "malloc.h"
 #include "screen.h"
 #include "graphics.h"
 #include "gr.h"

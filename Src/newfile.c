@@ -9,7 +9,6 @@
 #include <string.h>
 #include <ctype.h>
 #include "tanklimits.h"
-#include "malloc.h"
 #include <assert.h>
 #include "xtank.h"
 #include "graphics.h"

@@ -12,7 +12,6 @@
 \****************************************/
 
 #include "sysdep.h"
-#include "malloc.h"
 #include "xtanklib.h"
 #include <math.h>
 #include "sysdep.h"

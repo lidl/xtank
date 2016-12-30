@@ -10,7 +10,6 @@
 ** This is an xtank program designed to talk with bored players.
 */
 
-#include "malloc.h"
 #include <stdio.h>
 #include "xtanklib.h"
 

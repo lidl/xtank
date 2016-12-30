@@ -6,7 +6,6 @@
 ** $Id$
 */
 
-#include "malloc.h"
 #include <ctype.h>
 #include "xtank.h"
 #include "bullet.h"

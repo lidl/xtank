@@ -11,7 +11,6 @@
 ** up much cpu time.
 */
 
-#include "malloc.h"
 #include "xtanklib.h"
 #include <math.h>
 #include <stdio.h>

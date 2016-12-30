@@ -12,7 +12,7 @@
                     collision.c cosell.c disc.c display.c escher.c \
                     explosion.c file.c game.c gr.c highlib.c \
                     hit.c hud.c icounter.c init.c input.c interface.c \
-                    intersect.c lowlib.c main.c malloc.c mapper.c maze.c \
+                    intersect.c lowlib.c main.c mapper.c maze.c \
                     mdesign.c menu.c message.c newconsole.c \
                     newradar.c program.c radar.c repair.c scroll.c setup.c \
                     setups.c status.c sysdep.c unix.c update.c \
@@ -23,7 +23,7 @@
                     collision.o cosell.o disc.o display.o escher.o \
                     explosion.o file.o game.o gr.o highlib.o \
                     hit.o hud.o icounter.o init.o input.o interface.o \
-                    intersect.o lowlib.o main.o malloc.o mapper.o maze.o \
+                    intersect.o lowlib.o main.o mapper.o maze.o \
                     mdesign.o menu.o message.o newconsole.o \
                     newradar.o program.o radar.o repair.o scroll.o setup.o \
                     setups.o status.o sysdep.o unix.o update.o \
@@ -34,7 +34,7 @@
                     Include/disc.h Include/game.h Include/globals.h \
                     Include/gr.h Include/graphics.h Include/icounter.h \
                     Include/interface.h Include/loc.h Include/lowlib.h \
-                    Include/malloc.h Include/map.h Include/maze.h \
+                    Include/map.h Include/maze.h \
                     Include/mdesign.h Include/menu.h Include/message.h \
                     Include/object.h Include/outpost.h Include/program.h \
                     Include/screen.h Include/scroll.h Include/settings.h \

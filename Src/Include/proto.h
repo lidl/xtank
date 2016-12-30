@@ -303,9 +303,6 @@ void debugger_break P_((void));
 int main P_((int argc, char *argv[]));
 int InitConfigStruct P_((CLFkr *ConfigRunning));
 
-/* malloc.c */
-char *my_malloc P_((unsigned size));
-
 /* mapper.c */
 #ifdef SpecialStatus
 SpecialStatus special_mapper P_((Vehicle *v, char *record, unsigned int action));

@@ -6,7 +6,6 @@
 ** $Id$
 */
 
-#include "malloc.h"
 #include "sysdep.h"
 #include "icounter.h"
 #include "common.h"

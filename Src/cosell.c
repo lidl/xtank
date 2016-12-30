@@ -13,7 +13,6 @@
 
 #include <stdlib.h>
 
-#include "malloc.h"
 #include "xtank.h"
 #include "cosell.h"
 #include "bullet.h"

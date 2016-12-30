@@ -6,7 +6,6 @@
 ** $Id$
 */
 
-#include "malloc.h"
 #include "xtank.h"
 #include "xtanklib.h"
 #include "screen.h"

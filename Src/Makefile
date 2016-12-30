@@ -36,7 +36,7 @@ LDADD+= -lefence
 SRCS=	actions.c animate.c box.c camo.c collision.c cosell.c \
 	disc.c display.c escher.c explosion.c file.c game.c gr.c \
 	highlib.c hit.c hud.c icounter.c init.c input.c interface.c \
-	intersect.c lowlib.c main.c malloc.c mapper.c maze.c \
+	intersect.c lowlib.c main.c mapper.c maze.c \
 	mdesign.c menu.c message.c newconsole.c newfile.c newradar.c \
 	players.c program.c radar.c repair.c scroll.c setup.c \
 	setups.c status.c sysdep.c unix.c update.c util.c vdesign.c \

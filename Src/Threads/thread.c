@@ -7,7 +7,6 @@
 */
 
 #include "sysdep.h"
-#include "malloc.h"
 #include "thread.h"
 #include <stdio.h>
 #include <assert.h>
