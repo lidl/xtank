@@ -304,14 +304,10 @@ int main P_((int argc, char *argv[]));
 int InitConfigStruct P_((CLFkr *ConfigRunning));
 
 /* mapper.c */
-#ifdef SpecialStatus
-SpecialStatus special_mapper P_((Vehicle *v, char *record, unsigned int action));
-#endif
-#ifdef Box
-int draw_full_map P_((Box map[GRID_WIDTH][GRID_HEIGHT]));
-int draw_symbol P_((Landmark_info *s));
-#endif
-int full_mapper P_((unsigned int status));
+SpecialStatus special_mapper P_((Vehicle *, char *, int));
+static void draw_full_map P_((Box map[GRID_WIDTH][GRID_HEIGHT]));
+static void draw_symbol P_((Landmark_info *s));
+void full_mapper P_((int));
 
 /* maze.c */
 int setup_maze P_((void));

@@ -43,10 +43,8 @@ extern int team_color_bright[];
 /*
 ** Handles all mapper actions for the specified vehicle.
 */
-SpecialStatus special_mapper(v, record, action)
-Vehicle *v;
-char *record;
-unsigned int action;
+SpecialStatus
+special_mapper(Vehicle *v, char *record, int action)
 {
 	Mapper *m = (Mapper *) record;
 	Landmark_info *s;
@@ -211,8 +209,8 @@ unsigned int action;
 /*
 ** Draws all walls and landmarks in specified map onto the map window.
 */
-draw_full_map(map)
-Box map[GRID_WIDTH][GRID_HEIGHT];
+static void
+draw_full_map(Box map[GRID_WIDTH][GRID_HEIGHT])
 {
 	int x, y, line_x, line_y;
 	Landmark_info sym;
@@ -247,8 +245,8 @@ Box map[GRID_WIDTH][GRID_HEIGHT];
 /*
 ** XORs the symbol s onto the map.
 */
-draw_symbol(s)
-Landmark_info *s;
+static void
+draw_symbol(Landmark_info *s)
 {
 	extern Object *landmark_obj[];
 	Picture *pic;
@@ -276,8 +274,8 @@ Landmark_info *s;
 /*
 ** Displays the entire map. Highlights the location of the terminal.
 */
-full_mapper(status)
-unsigned int status;
+void
+full_mapper(int status)
 {
 	if (status == ON) {
 		draw_full_map(real_map);
