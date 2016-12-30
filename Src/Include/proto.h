@@ -310,18 +310,15 @@ static void draw_symbol P_((Landmark_info *s));
 void full_mapper P_((int));
 
 /* maze.c */
-int setup_maze P_((void));
-void make_maze P_((Mdesc *d));
-int build_mdesc P_((Mdesc *d, Game type, char *name, char *designer, char *desc));
-int clear_mdesc P_((Mdesc *d));
-int process_maze P_((void));
-int make_random_maze_walls P_((void));
-int remove_walls P_((int percent));
-int make_dest_walls P_((int percent));
-#ifdef FLOAT
-int set_box_types P_((int num_prob, FLOAT prob[]));
-#endif
-
+void setup_maze P_((void));
+void make_maze P_((Mdesc *));
+void build_mdesc P_((Mdesc *, Game, char *, char *, char *));
+void clear_mdesc P_((Mdesc *));
+void process_maze P_((void));
+void make_random_maze_walls P_((void));
+void remove_walls P_((int));
+void make_dest_walls P_((int));
+void set_box_types P_((int, FLOAT *));
 
 /* mdesign.c */
 static int handle_key P_((Event *event));

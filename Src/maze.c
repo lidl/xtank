@@ -18,7 +18,8 @@ extern Map real_map;
 ** Puts a maze into the box array.  If there is a maze name, it uses
 ** that maze.  Otherwise a random one is created.
 */
-setup_maze()
+void
+setup_maze(void)
 {
 	extern Maze maze;
 	extern int num_terminals;
@@ -126,10 +127,8 @@ make_maze(Mdesc *d)
 /*
 ** Makes a mdesc structure from the current maze.
 */
-build_mdesc(d, type, name, designer, desc)
-Mdesc *d;
-Game type;
-char *name, *designer, *desc;
+void
+build_mdesc(Mdesc *d, Game type, char *name, char *designer, char *desc)
 {
 	Byte temp[GRID_WIDTH * GRID_HEIGHT * 4];
 	Box *b;
@@ -208,8 +207,8 @@ char *name, *designer, *desc;
 /*
 ** Clears a maze desc by freeing the strings and setting type to COMBAT_GAME.
 */
-clear_mdesc(d)
-Mdesc *d;
+void
+clear_mdesc(Mdesc *d)
 {
 	d->type = COMBAT_GAME;
 	nullify(d->name);
@@ -224,7 +223,8 @@ Mdesc *d;
 ** array.  If oupost strength is set to 0, outposts are removed from the
 ** maze.  Otherwise, their strenghts are determined.
 */
-process_maze()
+void
+process_maze(void)
 {
 	extern Maze maze;
 	Box *b;
@@ -271,7 +271,8 @@ process_maze()
 ** the types and teams of all boxes to 0, and determines insideness
 ** for each box.
 */
-make_random_maze_walls()
+void
+make_random_maze_walls(void)
 {
 	static Box empty_box =
 	{0, NORMAL, 0};
@@ -421,8 +422,8 @@ make_random_maze_walls()
 /*
 ** Decreases the number of walls in the maze by the specified percentage.
 */
-remove_walls(percent)
-int percent;
+void
+remove_walls(int percent)
 {
 	int i, j;
 
@@ -438,8 +439,8 @@ int percent;
 /*
 ** Make destructible walls at the specified percentage.
 */
-make_dest_walls(percent)
-int percent;
+void
+make_dest_walls(int percent)
 {
 	Box *b;
 	int i, j;
@@ -459,9 +460,8 @@ int percent;
 /*
 ** Gives boxes different types, according to the given probability array.
 */
-set_box_types(num_prob, prob)
-int num_prob;
-FLOAT prob[];
+void
+set_box_types(int num_prob, FLOAT prob[])
 {
 	FLOAT number, pick;
 	LandmarkType type;
