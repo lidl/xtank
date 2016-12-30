@@ -20,9 +20,8 @@ extern int team_color[];
 
 static Mdesc design_mdesc;
 
-
-static int handle_key(event)
-Event *event;
+static int
+handle_key(Event *event)
 {
 	PixC ploc;
 	BoxC bloc;
@@ -189,8 +188,8 @@ design_maze(void)
 	clear_window(HELP_WIN);
 }
 
-handle_button(event)
-Event *event;
+static int
+handle_button(Event *event)
 {
 	int num_events;
 	Boolean finished;
@@ -208,6 +207,8 @@ Event *event;
 		  break;
 	  case EVENT_RBUTTON:
 		  change_maze(&loc, DESTROY_WALL);
+		  break;
+	  default:
 		  break;
 	}
 
@@ -232,6 +233,8 @@ Event *event;
 			  loc.y = event->y;
 			  change_maze(&loc, CONTINUE);
 			  break;
+		  default:
+			  break;
 		}
 	} while (finished == FALSE);
 
@@ -246,7 +249,8 @@ Event *event;
 /*
 ** Shows the maze, the instructions, and info about the mdesc.
 */
-mdesign_show_anim()
+static void
+mdesign_show_anim(void)
 {
 	clear_window(ANIM_WIN);
 	display_mdesc_maze();
@@ -258,7 +262,8 @@ mdesign_show_anim()
 /*
 ** Draws all the walls, landmarks, and teams in the maze.
 */
-display_mdesc_maze()
+void
+display_mdesc_maze(void)
 {
 	BoxC loc;
 
@@ -291,7 +296,8 @@ display_mdesc_info(Mdesc *d)
 #define hprint(str,x,y) \
   (display_mesg2(HELP_WIN,str,x,y,S_FONT))
 
-mdesign_show_help()
+static void
+mdesign_show_help(void)
 {
 	hprint("WALLS & TEAMS", 0, 0);
 	hprint("left    make wall", 0, 1);
@@ -328,7 +334,8 @@ mdesign_show_help()
 /*
 ** Clears the input area.
 */
-mdesign_clear_input()
+static void
+mdesign_clear_input(void)
 {
 	int top, height;
 
@@ -344,9 +351,8 @@ mdesign_clear_input()
 ** CONTINUE as an action.  Attempts to figure out what walls should be
 ** drawn based on the previous location of the pointer.
 */
-change_maze(loc, action)
-PixC *loc;
-int action;						/* was short */
+static void
+change_maze(PixC *loc, int action)
 {
 	static int cur_action;
 	static Wall cur_wall;
@@ -436,7 +442,8 @@ int action;						/* was short */
 /*
 ** Clears the maze, the name, the description, and the type.
 */
-unmake_maze()
+static void
+unmake_maze(void)
 {
 	static Box empty_box =
 	{0, NORMAL, 0};
@@ -454,7 +461,8 @@ unmake_maze()
 ** saves the maze description, puts it on the mdesc list, and makes it the
 ** maze in the settings.
 */
-mdesign_save()
+static void
+mdesign_save(void)
 {
 	Game type;
 	char name[80], desc[256];
@@ -493,7 +501,8 @@ mdesign_save()
 /*
 ** Prompts user for name of maze and tries to load it.
 */
-mdesign_load()
+static void
+mdesign_load(void)
 {
 	char name[80];
 
@@ -510,9 +519,8 @@ mdesign_load()
 	mdesign_clear_input();
 }
 
-make_landmark(loc, type)
-BoxC *loc;
-LandmarkType type;
+static void
+make_landmark(BoxC *loc, LandmarkType type)
 {
 	if (!check_box(loc))
 		return;
@@ -524,8 +532,8 @@ LandmarkType type;
 		show_landmark(loc);
 }
 
-show_landmark(loc)
-BoxC *loc;
+static void
+show_landmark(BoxC *loc)
 {
 	extern Object *landmark_obj[];
 	Picture *pic;
@@ -539,9 +547,8 @@ BoxC *loc;
 	draw_picture(ANIM_WIN, ploc.x, ploc.y, pic, DRAW_COPY, WHITE);
 }
 
-set_team(loc, teamnum)
-BoxC *loc;
-int teamnum;
+static void
+set_team(BoxC *loc, int teamnum)
 {
 	if (!check_box(loc))
 		return;
@@ -550,8 +557,8 @@ int teamnum;
 	show_box(loc);
 }
 
-set_teleport_code(loc)
-BoxC *loc;
+static void
+set_teleport_code(BoxC *loc)
 {
 	int code;
 
@@ -575,8 +582,8 @@ BoxC *loc;
 /*
 ** Shows team only if non-zero. Shows only north and west walls.
 */
-show_box_fast(loc)
-BoxC *loc;
+static void
+show_box_fast(BoxC *loc)
 {
 	extern Object *random_obj[];
 	Box *b;
@@ -610,8 +617,8 @@ BoxC *loc;
 /*
 ** Shows the team, landmark, and all four walls of a box.
 */
-show_box(loc)
-BoxC *loc;
+static void
+show_box(BoxC *loc)
 {
 	extern Object *random_obj[];
 	Picture *pic;
@@ -647,8 +654,8 @@ BoxC *loc;
 /*
 ** Redraws walls around a square that have been covered up by the team pattern.
 */
-show_surrounding_walls(loc)
-BoxC *loc;
+static void
+show_surrounding_walls(BoxC *loc)
 {
 	BoxC iloc;
 
@@ -669,7 +676,8 @@ BoxC *loc;
 		show_wall(&iloc, NORTH_WALL);
 }
 
-move_area()
+static void
+move_area(void)
 {
 	BoxC vertices[2];
 	Box temp_maze[GRID_WIDTH][GRID_HEIGHT];
@@ -682,7 +690,8 @@ move_area()
 	put_area(vertices, temp_maze, &new_start);
 }
 
-copy_area()
+static void
+copy_area(void)
 {
 	BoxC vertices[2];
 	Box temp_maze[GRID_WIDTH][GRID_HEIGHT];
@@ -694,7 +703,8 @@ copy_area()
 	put_area(vertices, temp_maze, &new_start);
 }
 
-erase_area()
+static void
+erase_area(void)
 {
 	BoxC vertices[2];
 
@@ -702,8 +712,8 @@ erase_area()
 	kill_area(vertices);
 }
 
-place_area_request(loc)
-BoxC *loc;
+static void
+place_area_request(BoxC *loc)
 {
 	PixC ploc;
 	int num_events;
@@ -728,10 +738,8 @@ BoxC *loc;
 	mdesign_clear_input();
 }
 
-read_area(vertices, temp_maze)
-BoxC vertices[2];
-Box temp_maze[GRID_WIDTH][GRID_HEIGHT];
-
+static void
+read_area(BoxC *vertices, Box temp_maze[GRID_WIDTH][GRID_HEIGHT])
 {
 	int i, j;
 
@@ -740,9 +748,8 @@ Box temp_maze[GRID_WIDTH][GRID_HEIGHT];
 			temp_maze[i][j] = real_map[i][j];
 }
 
-kill_area(vertices)
-BoxC vertices[2];
-
+static void
+kill_area(BoxC *vertices)
 {
 	int i, j;
 	BoxC loc;
@@ -768,11 +775,8 @@ BoxC vertices[2];
 		}
 }
 
-put_area(old_vertices, temp_maze, new_start)
-BoxC old_vertices[2];
-Box temp_maze[GRID_WIDTH][GRID_HEIGHT];
-BoxC *new_start;
-
+static void
+put_area(BoxC *old_vertices, Box temp_maze[GRID_WIDTH][GRID_HEIGHT], BoxC *new_start)
 {
 	int i, j;
 	int maxi, maxj;
@@ -823,8 +827,8 @@ BoxC *new_start;
 **   [0] is the upper left corner
 **   [1] is the lower right corner
 */
-select_area(bvertices)
-BoxC bvertices[2];
+static void
+select_area(BoxC *bvertices)
 {
 	Event event;
 	int num_events;
@@ -901,8 +905,8 @@ BoxC bvertices[2];
 	mdesign_clear_input();
 }
 
-xor_rectangle(start, end)
-PixC *start, *end;
+static void
+xor_rectangle(PixC *start, PixC *end)
 {
 	int width, height;
 
@@ -916,7 +920,8 @@ PixC *start, *end;
 ** walls as if they are not there.
 ** Returns FALSE if the maze extends beyond the allowable area.
 */
-figure_insideness()
+static int
+figure_insideness(void)
 {
 	int i, j;
 	BoxC boxes[GRID_WIDTH * GRID_HEIGHT];
@@ -982,8 +987,8 @@ figure_insideness()
 /*
 ** Prompts user to click inside the maze, and sets the bloc to it.
 */
-get_inside_spot(bloc)
-BoxC *bloc;
+static void
+get_inside_spot(BoxC *bloc)
 {
 	Event event;
 	int num_events;
@@ -1012,10 +1017,8 @@ BoxC *bloc;
 ** Puts the box at (x,y) into the maze and adds it to the boxes list
 ** if it wasn't already in the maze.
 */
-add_to_maze(x, y, boxes, size)
-int x, y;
-BoxC *boxes;
-int *size;
+static void
+add_to_maze(int x, int y, BoxC *boxes, int *size)
 {
 	BoxC temp;
 
@@ -1030,8 +1033,8 @@ int *size;
 /*
 ** Returns TRUE if pixel location is inside maze area, otherwise FALSE.
 */
-check_pixel(loc)
-PixC *loc;
+static int
+check_pixel(PixC *loc)
 {
 	if ((loc->x < X_OFFSET + PAD * DES_BOX_WIDTH) ||
 		(loc->x > X_OFFSET + (GRID_WIDTH - PAD) * DES_BOX_WIDTH) ||
@@ -1046,8 +1049,8 @@ PixC *loc;
 ** Returns TRUE if pixel location is inside maze area or on right or bottom
 ** border, otherwise FALSE.
 */
-check_pixel_extra(loc)
-PixC *loc;
+static int
+check_pixel_extra(PixC *loc)
 {
 	if ((loc->x < X_OFFSET + PAD * DES_BOX_WIDTH) ||
 		(loc->x > X_OFFSET + (GRID_WIDTH - PAD) * DES_BOX_WIDTH + DES_BOX_WIDTH / 2) ||
@@ -1061,8 +1064,8 @@ PixC *loc;
 /*
 ** Returns TRUE if box location is inside maze area, otherwise FALSE.
 */
-check_box(loc)
-BoxC *loc;
+static int
+check_box(BoxC *loc)
 {
 	if (loc->x < PAD || loc->x >= GRID_WIDTH - PAD ||
 		loc->y < PAD || loc->y >= GRID_HEIGHT - PAD)
@@ -1074,9 +1077,8 @@ BoxC *loc;
 /*
 ** Converts grid coordinates to pixel coordinates.
 */
-box_to_pix(bloc, ploc)
-BoxC *bloc;
-PixC *ploc;
+static void
+box_to_pix(BoxC *bloc, PixC *ploc)
 {
 	ploc->x = bloc->x * DES_BOX_WIDTH + X_OFFSET;
 	ploc->y = bloc->y * DES_BOX_HEIGHT + Y_OFFSET;
@@ -1085,9 +1087,8 @@ PixC *ploc;
 /*
 ** Converts pixel coordinates to grid coordinates.
 */
-pix_to_box(ploc, bloc)
-BoxC *bloc;
-PixC *ploc;
+static void
+pix_to_box(PixC *ploc, BoxC *bloc)
 {
 	bloc->x = (ploc->x - X_OFFSET) / DES_BOX_WIDTH;
 	bloc->y = (ploc->y - Y_OFFSET) / DES_BOX_HEIGHT;
@@ -1096,9 +1097,8 @@ PixC *ploc;
 /*
 ** Checks to see if the wall is modifiable.
 */
-check_wall(loc, wl)
-BoxC *loc;
-Wall wl;
+static int
+check_wall(BoxC *loc, Wall wl)
 {
 	/* First handle special case walls along right and bottom edge */
 	if (((loc->x == GRID_WIDTH - PAD) && (loc->y >= PAD) &&
@@ -1110,39 +1110,34 @@ Wall wl;
 		return check_box(loc);
 }
 
-make_wall(loc, wl)
-BoxC *loc;
-Wall wl;
+static void
+make_wall(BoxC *loc, Wall wl)
 {
 	real_map[loc->x][loc->y].flags |= wl;
 	real_map[loc->x][loc->y].flags &= ~(wl << 2);
 }
 
-make_destructible(loc, wl)
-BoxC *loc;
-Wall wl;
+static void
+make_destructible(BoxC *loc, Wall wl)
 {
 	real_map[loc->x][loc->y].flags |= wl;
 	real_map[loc->x][loc->y].flags |= wl << 2;
 }
 
-unmake_wall(loc, wl)
-BoxC *loc;
-Wall wl;
+static void
+unmake_wall(BoxC *loc, Wall wl)
 {
 	real_map[loc->x][loc->y].flags &= ~wl;
 }
 
-show_wall(loc, wl)
-BoxC *loc;
-Wall wl;
+static void
+show_wall(BoxC *loc, Wall wl)
 {
 	draw_wall(loc, wl, WHITE);
 }
 
-unshow_wall(loc, wl)
-BoxC *loc;
-Wall wl;
+static void
+unshow_wall(BoxC *loc, Wall wl)
 {
 	BoxC iloc;
 
@@ -1168,10 +1163,8 @@ Wall wl;
 	}
 }
 
-draw_wall(loc, wl, color)
-BoxC *loc;
-Wall wl;
-int color;
+static void
+draw_wall(BoxC *loc, Wall wl, int color)
 {
 	PixC ploc;
 
@@ -1198,8 +1191,8 @@ int color;
 /*
 ** Draw the intersections of walls.
 */
-show_dot(loc)
-BoxC *loc;
+static void
+show_dot(BoxC *loc)
 {
 	PixC ploc;
 
