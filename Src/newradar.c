@@ -16,7 +16,7 @@
 #include "proto.h"
 #ifdef SOUND
 #include "sound.h"
-#endif SOUND
+#endif /* SOUND */
 
 extern Map real_map;
 
@@ -31,7 +31,7 @@ extern Map real_map;
 #define BLIP_SIZE 5				/* 7, 5, 3, 1 */
 #define shft ((7 - BLIP_SIZE)/2)
 
-#define THRESHOLD 0.00001
+#define NR_THRESHOLD 0.00001
 
 extern int frame;
 
@@ -40,10 +40,8 @@ extern int frame;
  * that reads out of the blip info instead of calculating from
  * the absolute vehicle position
  */
-
-nr_draw_number(v, c)
-Vehicle *v;
-Coord *c;
+static void
+nr_draw_number(Vehicle *v, Coord *c)
 {
 	char buf[2];
 
@@ -59,10 +57,8 @@ Coord *c;
  * intervening redisplay, though an update is OK.
  */
 
-SpecialStatus special_new_radar(v, record, action)
-Vehicle *v;
-char *record;
-unsigned int action;
+SpecialStatus
+special_new_radar(Vehicle *v, char *record, int action)
 {
 	int veh, veh2, x, y;
 	newRadar *r;
@@ -113,7 +109,7 @@ unsigned int action;
 								 (long) v->loc->x, (long) v->loc->y);
 				  dist_2 *= dist_2;
 
-				  if ((bv->rcs / dist_2) > THRESHOLD) {
+				  if ((bv->rcs / dist_2) > NR_THRESHOLD) {
 					  b->draw_radar = TRUE;
 					  b->draw_loc.x = grid2map(bv->loc->grid_x) + shft + MAP_BOX_SIZE / 4;
 					  b->draw_loc.y = grid2map(bv->loc->grid_y) + shft + MAP_BOX_SIZE / 4;
@@ -129,7 +125,7 @@ unsigned int action;
 						  }
 					  }
 					  /* want him to be able to see emmiters from 2x illiuminated distance. */
-				  } else if ((bv->normal_rcs / (dist_2 * .25)) > THRESHOLD) {
+				  } else if ((bv->normal_rcs / (dist_2 * .25)) > NR_THRESHOLD) {
 					  if (!b->draw_friend) {
 						  if (v->loc->grid_x != bv->loc->grid_x
 							  || v->loc->grid_y != bv->loc->grid_y) {
@@ -162,14 +158,16 @@ unsigned int action;
 		  for (veh = 0; veh < MAX_VEHICLES; veh++) {
 			  b = &r->blip[veh];
 			  bv = &actual_vehicles[veh];
-			  if (b->drawn_radar)
-				  if (b->drawn_friend)
+			  if (b->drawn_radar) {
+				  if (b->drawn_friend) {
 					  nr_draw_number(bv, &b->drawn_loc);
-				  else {
+				  } else {
 					  draw_filled_square(MAP_WIN, b->drawn_loc.x, b->drawn_loc.y, BLIP_SIZE, DRAW_XOR, CUR_COLOR);
-					  if (action == SP_erase)
+					  if (action == SP_erase) {
 						  r->map[b->drawn_grid.x][b->drawn_grid.y] = NULL;
+					  }
 				  }
+			  }
 			  if (action == SP_erase)
 				  b->drawn_radar = FALSE;
 		  }
@@ -226,10 +224,8 @@ unsigned int action;
 	}
 }
 
-special_taclink(v, record, action)
-Vehicle *v;
-char *record;
-unsigned int action;
+SpecialStatus
+special_taclink(Vehicle *v, char *record, int action)
 {
 	int veh, veh2, x, y;
 	newRadar *r;
@@ -593,8 +589,8 @@ unsigned int action;
 	}
 }
 
-nr_t_redisplay(r)
-newRadar *r;
+static void
+nr_t_redisplay(newRadar *r)
 {
 	int veh;
 	newBlip *b;

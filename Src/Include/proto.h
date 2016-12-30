@@ -423,6 +423,12 @@ static char *abbrev_of P_((char *));
 void init_Wnames P_((void));
 int SaveVehicleFormat1 P_((Vdesc *));
 
+/* newradar.c */
+static void nr_draw_number P_((Vehicle *, Coord *));
+SpecialStatus special_new_radar P_((Vehicle *, char *, int));
+SpecialStatus special_taclink P_((Vehicle *, char *, int));
+static void nr_t_redisplay P_((newRadar *));
+
 /* players.c */
 int init_players P_((void));
 
