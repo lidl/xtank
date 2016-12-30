@@ -22,14 +22,13 @@
 
 #ifdef UNIX
 #include <sys/param.h>
-#if !defined(__hpux) && (!defined(sun) || !defined(SVR4))
-#include <sys/dir.h>
-#endif
-#endif
-
-#if defined(SYSV) || defined(SVR4)
+#ifdef NEED_DIRENT_H
 #include <dirent.h>
 #endif
+#ifdef NEED_SYS_DIR_H
+#include <sys/dir.h>
+#endif
+#endif /* UNIX */
 
 #include "vstructs.h"
 

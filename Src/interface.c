@@ -22,17 +22,13 @@
 
 #ifdef UNIX
 #include <sys/param.h>
+#ifdef NEED_DIRENT_H
 #include <dirent.h>
-
-#if 0
-#if defined(sun) && defined(SVR4)
-#include <dirent.h>
-#else
+#endif
+#ifdef NEED_SYS_DIR_H
 #include <sys/dir.h>
 #endif
-#endif
-#endif /* 0 */
-
+#endif /* UNIX */
 
 #include <stdlib.h>		/* for malloc(), free() */
 #include <string.h>		/* for strdup() */

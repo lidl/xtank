@@ -16,6 +16,10 @@
 #define NEED_STRING_H
 #endif
 
+#if defined(__FreeBSD__)
+#define NEED_DIRENT_H
+#endif
+
 #if defined(NEED_STRING_H)
 #include <string.h>
 #endif

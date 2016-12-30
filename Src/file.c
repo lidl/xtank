@@ -6,21 +6,21 @@
 ** $Id$
 */
 
+#include "xtank.h"
+
 #ifdef UNIX
 #include <sys/param.h>
+#ifdef NEED_DIRENT_H
 #include <dirent.h>
-#if 0
+#endif
+#ifdef NEED_SYS_DIR_H
+#include <sys/dir.h>
+#endif
 #ifdef linux
 #define MAXNAMLEN NAME_MAX
 #endif
-#if !defined(__hpux) && (!defined(sun) || !defined(SVR4))
-#include <sys/dir.h>
-#endif
-#endif
-#if defined(SVR4) || defined(SYSV)
-#include <dirent.h>
-#endif
-#endif
+#endif /* UNIX */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -29,7 +29,6 @@
 
 #include "tanklimits.h"
 #include <assert.h>
-#include "xtank.h"
 #include "graphics.h"
 #include "gr.h"
 #include "vdesc.h"
