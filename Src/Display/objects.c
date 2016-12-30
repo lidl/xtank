@@ -7,7 +7,7 @@
 */
 
 #include "tanklimits.h"
-#include "malloc.h"
+#include "tanktypes.h"
 #include "xtank.h"
 #include "graphics.h"
 #include "gr.h"
@@ -67,21 +67,6 @@ Object *landmark_obj[MAX_LANDMARK_OBJS];
 
 int num_random_objs;
 Object *random_obj[MAX_RANDOM_OBJS];
-
-#ifdef X10
-typedef unsigned short Bits;
-
-#endif
-
-#ifdef X11
-typedef Byte Bits;
-
-#endif
-
-#ifdef AMIGA
-typedef unsigned short Bits;
-
-#endif
 
 int object_error;
 

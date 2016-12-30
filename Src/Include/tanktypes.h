@@ -24,6 +24,18 @@ typedef unsigned char Byte;
 typedef unsigned int Flag;		/* a set of bits */
 typedef FLOAT Angle;
 
+#ifdef X10
+typedef unsigned short Bits;
+#endif
+
+#ifdef X11
+typedef Byte Bits;
+#endif
+
+#ifdef AMIGA
+typedef unsigned short Bits;
+#endif
+
 typedef struct {
 	short x, y;
 } Coord;
