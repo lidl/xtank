@@ -20,7 +20,7 @@
 #include "proto.h"
 #ifdef SOUND
 #include "sound.h"
-#endif SOUND
+#endif /* SOUND */
 
 extern int team_color_bright[];
 extern char team_char[];
@@ -28,11 +28,10 @@ extern Map real_map;
 extern Settings settings;
 extern int frame;
 
-
 /* create turrets for the given vehicle */
 
-void make_turrets(v)
-Vehicle *v;
+static void
+make_turrets(Vehicle *v)
 {
 	extern Object *turret_obj[];
 	Turret *t;
@@ -64,9 +63,8 @@ Vehicle *v;
 
 /* allocate the specials for a vehicle */
 
-void make_specials(v, which)
-Vehicle *v;
-Flag which;
+static void
+make_specials(Vehicle *v, Flag which)
 {
 	extern SpecialStatus special_console(), special_mapper(), special_radar(),
 	  special_new_radar(), special_taclink(), special_camo(), special_stealth(),
@@ -142,9 +140,8 @@ Flag which;
 	}
 }
 
-
-void unmake_specials(v)
-Vehicle *v;
+static void
+unmake_specials(Vehicle *v)
 {
 	Special *s;
 	int i;
@@ -160,12 +157,10 @@ Vehicle *v;
 	}
 }
 
-
 /* allocate a new vehicle */
 
-Vehicle *make_vehicle(d, c)
-Vdesc *d;						/* what kind it should be */
-Combatant *c;					/* who's going to use it */
+Vehicle *
+make_vehicle(Vdesc *d, Combatant *c)
 {
 	extern Object *vehicle_obj[];
 	Vehicle *v;
@@ -225,9 +220,8 @@ Combatant *c;					/* who's going to use it */
 
 
 /* the specified vehicle is dead forever, so deallocate it */
-
-unmake_vehicle(v)
-Vehicle *v;
+void
+unmake_vehicle(Vehicle *v)
 {
 	int i;
 
@@ -247,9 +241,8 @@ Vehicle *v;
 
 
 /* bring the given vehicle (back) to life */
-
-int activate_vehicle(v)
-Vehicle *v;
+int
+activate_vehicle(Vehicle *v)
 {
 	Weapon *w;
 	Combatant *c = v->owner;
@@ -542,10 +535,8 @@ Terminal *trm;
 
 /* kills the specified vehicle, complete with game effects.  This gets called
    as a result of vehicle damage. */
-
-kill_vehicle(victim, killer)
-Vehicle *victim;
-Vehicle *killer;				/* can be NULL */
+void
+kill_vehicle(Vehicle *victim, Vehicle *killer) /* killer can be NULL */
 {
 	int points;
 	extern FLOAT rnd_interval();
@@ -569,7 +560,7 @@ Vehicle *killer;				/* can be NULL */
 	if (killer) {
 #ifdef SOUND
 		play_owner(killer, KILLER_SOUND);
-#endif SOUND
+#endif /* SOUND */
 		points = 1000.0 * victim->vdesc->cost / killer->vdesc->cost;
 		if (!SAME_TEAM(killer, victim)) {
 			if (settings.si.game == STQ_GAME) {

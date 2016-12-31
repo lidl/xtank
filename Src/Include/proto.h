@@ -570,20 +570,16 @@ int compute_vdesc P_((Vdesc *));
 void init_vdesign P_((void));
 
 /* vehicle.c */
-#ifdef Vehicle
-void make_turrets P_((Vehicle *v));
-void make_specials P_((Vehicle *v, Flag which));
-void unmake_specials P_((Vehicle *v));
+static void make_turrets P_((Vehicle *));
+static void make_specials P_((Vehicle *, Flag));
+static void unmake_specials P_((Vehicle *));
 Vehicle *make_vehicle P_((Vdesc *d, Combatant *c));
 void inactivate_vehicle P_((Vehicle *victim));
 void explode_vehicle P_((Vehicle *victim));
-#endif
-#ifdef Terminal
 void make_observer P_((Terminal *trm));
-#endif
-int kill_vehicle P_((Vehicle *victim, Vehicle *killer));
-int unmake_vehicle P_((Vehicle *v));
-int activate_vehicle P_((Vehicle *v));
+void kill_vehicle P_((Vehicle *, Vehicle *));
+void unmake_vehicle P_((Vehicle *));
+int activate_vehicle P_((Vehicle *));
 
 /* x11.c */
 int open_graphics P_((void));
