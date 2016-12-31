@@ -17,11 +17,8 @@ extern int frame;
 
 #define FUEL_SWAP 1
 
-/*ARGSUSED*/
-SpecialStatus special_repair(v, record, action)
-Vehicle *v;
-char *record;
-unsigned int action;
+SpecialStatus
+special_repair(Vehicle *v, char *record, int action)
 {
 	int *side, *max_side;
 	int i;

@@ -479,9 +479,7 @@ void full_radar P_((int));
 static void draw_char P_((Loc *, char, int));
 
 /* repair.c */
-#if defined(SpecialStatus) && defined(Vehicle)
-SpecialStatus special_repair P_((Vehicle *v, char *record, unsigned int action));
-#endif
+SpecialStatus special_repair P_((Vehicle *, char *, int));
 
 /* scroll.c */
 void draw_scrollbar P_((scrollbar *sbar));
