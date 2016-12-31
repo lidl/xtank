@@ -206,13 +206,12 @@ void bul_hit_outpost P_((Bullet *b, Box *bbox, int grid_x, int grid_y));
 int bul_hit_wall P_((Bullet *b, int grid_x, int grid_y, WallSide dir));
 void bounce_bullet P_((Bullet *b, WallSide dir, double dx, double dy));
 int damage_vehicle P_((Vehicle *v, Vehicle *damager, int damage, double angle, int height));
-#if defined(Vehicle) && defined(WallSide) && defined(Box)
-#endif
 void assign_speed P_((Vector *vec, double xsp, double ysp));
 void bounce_vehicles P_((Vehicle *v1, Vehicle *v2, int dx, int dy, double elast));
 void bounce_vehicle_wall P_((Vehicle *v, int dx, int dy, double elast));
 int damage_wall P_((int x, int y, WallSide dir, int damage));
 Side find_affected_side P_((Vehicle *v, double angle));
+void hit_blast P_((int, Bullet *, int, int, void *, void *, void *));
 
 /* icounter.c */
 void setup_counter P_((void));
@@ -558,19 +557,17 @@ void free_everything P_((void));
 long idist P_((long, long, long, long));
 
 /* vdesign.c */
-int design_vehicle P_((void));
-int init_vdesign_interface P_((void));
-#ifdef Vdesc
-int vdesign_specials_hil P_((Vdesc *d));
-void vdesign_load P_((Vdesc *d));
-void vdesign_save P_((Vdesc *d));
-int vdesign_interface P_((Vdesc *d));
-int erase_vdesign_menus P_((int mu));
-int init_vdesc P_((Vdesc *d));
-#endif
+void design_vehicle P_((void));
+static void init_vdesign_interface P_((void));
+static void vdesign_specials_hil P_((Vdesc *));
+static void vdesign_load P_((Vdesc *));
+static void vdesign_save P_((Vdesc *));
+static void vdesign_interface P_((Vdesc *));
+static void erase_vdesign_menus P_((int));
+static void init_vdesc P_((Vdesc *));
 void display_vdesc P_((Vdesc *d, int status));
 int compute_vdesc P_((Vdesc *));
-int init_vdesign P_((void));
+void init_vdesign P_((void));
 
 /* vehicle.c */
 #ifdef Vehicle

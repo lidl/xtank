@@ -14,6 +14,7 @@
 #include "terminal.h"
 #include "vehicleparts.h"
 #include "bullet.h"
+#include "lowlib.h"
 #include "proto.h"
 
 extern Terminal *term;
@@ -29,7 +30,6 @@ extern Terminal *term;
 #define VEH_X     600
 #define VEH_Y     330
 #define VEHICLE_SIZE  70
-
 #define VDESIGN_FONT  L_FONT
 #endif
 
@@ -39,7 +39,6 @@ extern Terminal *term;
 #define VEHICLE_SIZE  40
 #define VDESIGN_FONT  S_FONT
 #endif
-
 
 #define vprint(str,x,y) \
   (display_mesg2(ANIM_WIN,str,x,y,VDESIGN_FONT))
@@ -172,6 +171,7 @@ Special_stat special_stat[MAX_SPECIALS] =
 #undef  QQ
 };
 
+#if 0
 void creat_harm(void *, void *, Angle);
 void creat_mort(void *, void *, Angle);
 
@@ -180,8 +180,8 @@ void creat_mort(void *, void *, Angle);
 void update_seeker(void *);
 void update_harm(void *);
 void update_mortar(void *);
-
 void hit_blast(int, void *, int, int, void *, void *, void *);
+#endif
 
 Weapon_stat weapon_stat[VMAX_WEAPONS] =
 {
@@ -206,7 +206,6 @@ Tread_stat tread_stat[MAX_TREADS] =
 #include "tread-defs.h"			/* read this file for an explanation */
 #undef QQ
 };
-
 
 static char *main_entries[] =
 {
@@ -254,7 +253,8 @@ static Boolean input_drawn = FALSE;	/* spl@houston.geoquest.slb.com */
 /*
 ** Allows user to design a vehicle.
 */
-design_vehicle()
+void
+design_vehicle(void)
 {
 	Vdesc *d;
 
@@ -270,7 +270,8 @@ design_vehicle()
 /*
 ** Initializes the vdesign interface menus.
 */
-init_vdesign_interface()
+static void
+init_vdesign_interface(void)
 {
 	menu_sys_window(&menu_sys, ANIM_WIN);
 
@@ -304,8 +305,8 @@ init_vdesign_interface()
 /*
 ** Sets up the correct highlighting on the specials menu
 */
-vdesign_specials_hil(d)
-Vdesc *d;
+static void
+vdesign_specials_hil(Vdesc *d)
 {
 	int i;
 
@@ -318,8 +319,8 @@ Vdesc *d;
 /*
 ** Prompts user for vehicle name, loads that vehicle into the specified vdesc.
 */
-void vdesign_load(d)
-Vdesc *d;
+static void
+vdesign_load(Vdesc *d)
 {
 	char name[80];
 
@@ -348,8 +349,8 @@ Vdesc *d;
 ** Checks if vehicle can be saved, if so, asks for a name, and saves
 ** the vehicle description.
 */
-void vdesign_save(d)
-Vdesc *d;
+static void
+vdesign_save(Vdesc *d)
 {
 	char name[80];
 
@@ -382,8 +383,8 @@ Vdesc *d;
 /*
 ** Displays menus and prompts for all the parts of a vehicle.
 */
-vdesign_interface(d)
-Vdesc *d;
+static void
+vdesign_interface(Vdesc *d)
 {
 	Event ev;
 	char temp[256];
@@ -596,8 +597,8 @@ Vdesc *d;
 /*
 ** Erases all menus on equal or higher levels than the specified menu.
 */
-erase_vdesign_menus(mu)
-int mu;
+static void
+erase_vdesign_menus(int mu)
 {
 	int level, i;
 
@@ -612,8 +613,8 @@ int mu;
 /*
 ** Sets the values in the vehicle description to a standard set.
 */
-init_vdesc(d)
-Vdesc *d;
+static void
+init_vdesc(Vdesc *d)
 {
 	int i;
 
@@ -659,8 +660,8 @@ Vdesc *d;
 ** Computes the vehicle's parameters from the vehicle description.
 ** Returns problems flag.
 */
-compute_vdesc(d)
-Vdesc *d;
+int
+compute_vdesc(Vdesc *d)
 {
 	int total_armor, size;
 	int i, mnt;
@@ -950,7 +951,8 @@ display_vdesc(Vdesc *d, int status)
 /*
 ** Puts the proper strings into the menus.
 */
-init_vdesign()
+void
+init_vdesign(void)
 {
 	int i;
 	char temp[100];
