@@ -23,11 +23,8 @@ extern _XQEvent *_qfree;
  * Synchronize multiple displays with errors and events, optionally
  * discarding pending events.
  */
-XMultiSync(dpys, num_dpys, discard)
-Display *dpys[];
-int num_dpys;
-int discard;
-
+void
+XMultiSync(Display *dpys[], int num_dpys, int discard)
 {
 	register Display *dpy;
 	xGetInputFocusReply rep;

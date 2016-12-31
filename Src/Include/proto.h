@@ -29,9 +29,7 @@ int transform_3d P_((int *, int *));
 int toggle_3d P_((int));
 
 /* XMultiSync.c */
-#ifdef Display
 int XMultiSync P_((Display *dpys[], int num_dpys, int discard));
-#endif
 
 /* actions.c */
 void adjust_loc P_((Loc *loc, int dx, int dy));
