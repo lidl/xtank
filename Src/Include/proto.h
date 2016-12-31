@@ -548,16 +548,14 @@ void update_specials P_((void));
 void update_screen_locs P_((void));
 
 /* util.c */
-int init_random P_((void));
-int rnd P_((int mx));
-#ifdef FLOAT
-FLOAT rnd_interval P_((double mn, double mx));
-#endif
-int display_mesg P_((int w, char *string, int row, int font));
-int display_mesg2 P_((int w, char *string, int column, int row, int font));
-int display_mesg1 P_((int w, char *string, int column, int row, int font, int color));
-int free_everything P_((void));
-long idist P_((long x1, long y1, long x2, long y2));
+void init_random P_((void));
+int rnd P_((int));
+FLOAT rnd_interval P_((FLOAT, FLOAT));
+void display_mesg P_((int, char *, int, int));
+int display_mesg2 P_((int, char *, int, int, int));
+int display_mesg1 P_((int, char *, int, int, int, int));
+void free_everything P_((void));
+long idist P_((long, long, long, long));
 
 /* vdesign.c */
 int design_vehicle P_((void));

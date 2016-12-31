@@ -16,16 +16,15 @@
 #ifdef UNIX
 #include <sys/types.h>
 #include <sys/time.h>
+#include <stdlib.h>		/* for random(), calloc() */
+
 #ifdef MOTOROLA
 #define RANDOM     rand
 #else /* MOTOROLA */
 #define RANDOM     random
 #endif /* MOTOROLA */
-#define SEEDRANDOM (void) srandom
-extern long random();
-extern int srandom();
-
-#endif /* def UNIX */
+#define SEEDRANDOM srandom
+#endif /* UNIX */
 
 #ifdef AMIGA
 #include <time.h>
@@ -33,30 +32,22 @@ extern int srandom();
 #define SEEDRANDOM srand
 #endif
 
-
 extern Terminal *term;
-
 
 /*
 ** Initializes random number generator.
 */
-init_random()
+void
+init_random(void)
 {
-#if defined(__alpha)
-	/* ints and longs are different lengths on alphas */
-	extern int time();
-#else
-	extern long time();
-#endif
-
 	SEEDRANDOM((int) time((long *) NULL));
 }
 
 /*
 ** Returns a random integer from 0 to mx-1.
 */
-rnd(mx)
-int mx;
+int
+rnd(int mx)
 {
 	if (mx > 0)
 		return (RANDOM() % mx);
@@ -67,8 +58,8 @@ int mx;
 /*
 ** Returns a random FLOAT from mn to mx.
 */
-FLOAT rnd_interval(mn, mx)
-FLOAT mn, mx;
+FLOAT
+rnd_interval(FLOAT mn, FLOAT mx)
 {
 	long r;
 
@@ -83,19 +74,12 @@ FLOAT mn, mx;
 /*
 ** Displays a string in a window at the beginning of the specified row.
 */
-display_mesg(w, string, row, font)
-int w;
-char *string;
-int row;
-int font;
+void
+display_mesg(int w, char *string, int row, int font)
 {
 	static int color_arr[256];
 	static Boolean inited = FALSE;
 
-#if !defined(_IBMR2) && !defined(__alpha)
-	extern char *calloc();
-
-#endif
 	int i;
 
 	if (!inited) {
@@ -139,23 +123,14 @@ int font;
 /*
 ** Displays a string in a window starting at the specified row and column.
 */
-display_mesg2(w, string, column, row, font)
-int w;
-char *string;
-int column;
-int row;
-int font;
+int
+display_mesg2(int w, char *string, int column, int row, int font)
 {
 	draw_text_rc(w, column, row, string, font, WHITE);
 }
 
-display_mesg1(w, string, column, row, font, color)
-int w;
-char *string;
-int column;
-int row;
-int font;
-int color;
+int
+display_mesg1(int w, char *string, int column, int row, int font, int color)
 {
 	draw_text_rc(w, column, row, string, font, color);
 }
@@ -164,7 +139,8 @@ int color;
 /*
 ** Frees all allocated storage in preparation for exiting program.
 */
-free_everything()
+void
+free_everything(void)
 {
 	extern int num_terminals;
 	extern Terminal *terminal[];
@@ -185,8 +161,8 @@ free_everything()
  * than (9/8) + one bit uncertainty. -ane
  */
 
-long idist(x1, y1, x2, y2)
-long x1, y1, x2, y2;
+long
+idist(long x1, long y1, long x2, long y2)
 {
 	if ((x2 -= x1) < 0)
 		x2 = -x2;
