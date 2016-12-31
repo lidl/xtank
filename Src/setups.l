@@ -21,6 +21,7 @@
 #include "interface.h"
 #include "terminal.h"
 #include "vstructs.h"
+#include "proto.h"
 
 #define BUFLEN 256
 #define SEP ",\t"
@@ -30,8 +31,16 @@ extern Settings settings;
 extern int num_terminals;
 extern Terminal *terminal[];
 
-char *yval(), *strtoke();
-void cv_str(), cv_kw2i(), cv_bool(), cv_int(), cv_flt(), cv_maze(), cv_force();
+/* function prototypes */
+char *yval(void);
+char *strtoke(char *in, char *sep);
+void cv_str(char *val, char **store);
+void cv_kw2i(char *val, int *ival, char *arr[], int max);
+void cv_bool(char *val, int *bool);
+void cv_int(char *val, int *ival);
+void cv_flt(char *val, FLOAT *fval);
+void cv_maze(char *val, Mdesc **maze);
+void cv_force(char *val, int state);
 
 %}
 
@@ -46,7 +55,7 @@ f		{B}[0-9]+("."[0-9]*)?
 \n							{ }
 ^xtank:[ \t]+114336$		{ }
 ^Maze{s}/\n					{ cv_maze(yval(), &settings.mdesc); }
-^Game{s}/\n					{ cv_kw2i(yval(), &settings.si.game,games_entries);}
+^Game{s}/\n					{ cv_kw2i(yval(), &settings.si.game,games_entries, MAX_GAMES);}
 ^Point\ Bullets{b}/\n		{ cv_bool(yval(), &settings.point_bullets); }
 ^Ricochet{b}/\n				{ cv_bool(yval(), &settings.si.ricochet); }
 ^Rel\ Fire{b}/\n			{ cv_bool(yval(), &settings.si.rel_shoot); }
@@ -174,7 +183,8 @@ V#[0-9]+{s}$				{
 
 %%
 
-char *yval()
+char *
+yval(void)
 {
 	char *cp;
 
@@ -187,9 +197,8 @@ char *yval()
 	return cp;
 }
 
-void cv_maze(val, maze)
-char *val;
-Mdesc **maze;
+void
+cv_maze(char *val, Mdesc **maze)
 {
 	int iCtr;
 	extern int num_mdescs;
@@ -217,18 +226,14 @@ Mdesc **maze;
 	}
 }
 
-void cv_str(val, store)
-char *val;
-char **store;
+void
+cv_str(char *val, char **store)
 {
 	*store = strdup(val);
 }
 
-void cv_kw2i(val, ival, arr, max)
-char *val;
-int *ival;
-char *arr[];
-int max;
+void
+cv_kw2i(char *val, int *ival, char *arr[], int max)
 {
 	for(*ival = 0; *ival < max; *ival += 1) {
 		if (!strcmp(arr[*ival], val)) return;
@@ -238,9 +243,8 @@ int max;
 	return;
 }
 
-void cv_force(val, state)
-char *val;
-int state;
+void
+cv_force(char *val, int state)
 {
 	extern char force_states[];
 	int i;
@@ -255,9 +259,8 @@ int state;
 	fprintf(stderr, "Couldn't force %s to %d\n", val, state);
 }
 
-void cv_bool(val, bool)
-char *val;
-int *bool;
+void
+cv_bool(char *val, int *bool)
 {
 	*bool = (*val == '1');
 
@@ -267,16 +270,14 @@ int *bool;
 	fprintf(stderr, "')!\n");
 }
 
-void cv_flt(val, fval)
-char *val;
-FLOAT *fval;
+void
+cv_flt(char *val, FLOAT *fval)
 {
 	*fval = atof(val);
 }
 
-void cv_int(val, ival)
-char *val;
-int *ival;
+void
+cv_int(char *val, int *ival)
 {
 	*ival = atoi(val);
 }
@@ -323,8 +324,8 @@ load_settings(char *pcFileName)
 }
 
 /* Like ANSI strtok, but won't return an empty string */
-char *strtoke(in, sep)
-char *in, *sep;
+char *
+strtoke(char *in, char *sep)
 {
 	char *res;
 

@@ -10,13 +10,14 @@
 #define _GAME_H_
 
 /* the different games that can be played */
-  typedef enum {
-	  COMBAT_GAME,
-	  WAR_GAME,
-	  ULTIMATE_GAME,
-	  CAPTURE_GAME,
-	  RACE_GAME,
-	  STQ_GAME
-  } Game;
+typedef enum {
+	COMBAT_GAME,
+	WAR_GAME,
+	ULTIMATE_GAME,
+	CAPTURE_GAME,
+	RACE_GAME,
+	STQ_GAME,
+	MAX_GAMES
+} Game;
 
 #endif /* _GAME_H_ */
