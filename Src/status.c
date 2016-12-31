@@ -27,15 +27,14 @@
 #define BAR_HEIGHT  13
 #define BAR_SPACING 7
 
-  typedef struct {
-	  int kills;
-	  int minarmor;
-	  int fuel;
-	  int ammo;
-	  Vehicle *vehicle;
-	  Flag dead;
-  }
-Vstatus;
+typedef struct {
+	int kills;
+	int minarmor;
+	int fuel;
+	int ammo;
+	Vehicle *vehicle;
+	Flag dead;
+} Vstatus;
 
 int num_stati;
 Vstatus vstati[MAX_VEHICLES];	/* indexed by vehicle number */
@@ -48,7 +47,8 @@ FLOAT armor_scale, fuel_scale, ammo_scale;
 ** It computes the maxima and scaling factors for the bar graphs based
 ** on the armor, fuel, and ammo values of the battling vehicles.
 */
-init_status()
+void
+init_status(void)
 {
 	Vstatus *vs;
 	int i;
@@ -82,8 +82,8 @@ init_status()
 ** Initializes the appropriate vstatus structure for the given vehicle.
 ** Exposes the appropriate status window.
 */
-init_vehicle_status(v)
-Vehicle *v;
+void
+init_vehicle_status(Vehicle *v)
 {
 	Vstatus *vs;
 	extern int num_terminals;
@@ -104,8 +104,8 @@ Vehicle *v;
 /*
 ** This function handles display for all of the status windows.
 */
-display_status(disptype)
-unsigned int disptype;
+void
+display_status(unsigned int disptype)
 {
 	int i;
 
@@ -117,9 +117,8 @@ unsigned int disptype;
 /*
 ** This function handles display for a particular status window.
 */
-display_status_win(num, disptype)
-int num;
-unsigned int disptype;
+void
+display_status_win(int num, unsigned int disptype)
 {
 	int minarmor, totammo;
 	Vstatus *vs;
@@ -175,8 +174,8 @@ unsigned int disptype;
 	}
 }
 
-draw_status_from_scratch(v)
-Vehicle *v;
+static void
+draw_status_from_scratch(Vehicle *v)
 {
 	Vstatus *vs;
 	int vnum;
@@ -218,12 +217,8 @@ Vehicle *v;
 ** Displays the new value, either from scratch, or incrementally,
 ** and updates the old value.
 */
-update(section, vnum, old, new, fromscratch, color)
-int section;
-int vnum;
-int *old, new;
-unsigned int fromscratch;
-int color;
+static void
+update(int section, int vnum, int *old, int new, unsigned int fromscratch, int color)
 {
 	int dispold, dispnew;
 	int diff;
@@ -291,8 +286,8 @@ int color;
 	}
 }
 
-draw_dead_symbol(num)
-int num;
+static void
+draw_dead_symbol(int num)
 {
 	/* Draw a big X through the window to indicate that the vehicle is dead */
 	draw_line(STAT_WIN + num, 0, 0, STAT_WIN_WIDTH, STAT_WIN_HEIGHT, DRAW_XOR, WHITE);
@@ -302,8 +297,8 @@ int num;
 /*
 ** Returns the minimum armor of the front, back, left, and right sides.
 */
-compute_minarmor(v)
-Vehicle *v;
+static int
+compute_minarmor(Vehicle *v)
 {
 	int *side, mn, i;
 
@@ -320,8 +315,8 @@ Vehicle *v;
 /*
 ** Returns the sum of the ammo of all weapons in the specified vehicle.
 */
-compute_totammo(v)
-Vehicle *v;
+static int
+compute_totammo(Vehicle *v)
 {
 	int i, total;
 

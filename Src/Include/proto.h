@@ -502,21 +502,15 @@ void game_cleanup P_((void));
 int all_terms P_((Vehicle *veh, void (*func) ()));
 
 /* status.c */
-int init_status P_((void));
-#ifdef Vehicle
-int init_vehicle_status P_((Vehicle *v));
-#endif
-int display_status P_((unsigned int disptype));
-int display_status_win P_((int num, unsigned int disptype));
-#ifdef Vehicle
-int draw_status_from_scratch P_((Vehicle *v));
-#endif
-int update P_((int section, int vnum, int *old, int new, unsigned int fromscratch, int color));
-int draw_dead_symbol P_((int num));
-#ifdef Vehicle
-int compute_minarmor P_((Vehicle *v));
-int compute_totammo P_((Vehicle *v));
-#endif
+void init_status P_((void));
+void init_vehicle_status P_((Vehicle *));
+void display_status P_((unsigned int));
+void display_status_win P_((int num, unsigned int));
+static void draw_status_from_scratch P_((Vehicle *));
+static void update P_((int, int, int *, int, unsigned int, int));
+static void draw_dead_symbol P_((int));
+static int compute_minarmor P_((Vehicle *));
+static int compute_totammo P_((Vehicle *));
 
 /* thread.c */
 #ifdef Thread
