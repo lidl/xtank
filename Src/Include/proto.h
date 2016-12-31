@@ -429,7 +429,7 @@ static void nr_t_redisplay P_((newRadar *));
 /* players.c */
 void init_players P_((void));
 
-/* objects.c */
+/* Display/objects.c */
 int make_objects P_((void));
 Object *make_object P_((Object *obj, Bits **bitmap));
 void free_objects P_((void));
@@ -579,7 +579,7 @@ void kill_vehicle P_((Vehicle *, Vehicle *));
 void unmake_vehicle P_((Vehicle *));
 int activate_vehicle P_((Vehicle *));
 
-/* x11.c */
+/* Display/x11.c (included from Display/graphics.c */
 void open_graphics P_((void));
 void close_graphics P_((void));
 void reset_video P_((void));
