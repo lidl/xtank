@@ -10,12 +10,15 @@
 ** $Id$
 */
 
+%option noyywrap
+
 %{
 #ifdef YY_DECL
 #undef YY_DECL
 #endif
-#define YY_DECL yylex(d) Vdesc *d;
+#define YY_DECL int yylex(d) Vdesc *d;
 
+#include <ctype.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -30,6 +33,7 @@
 /* For "UNDEFINED" */
 #include "interface.h"
 #include "terminal.h"
+#include "proto.h"
 
 #define BUFLEN 256
 #define SEP ",\t"
