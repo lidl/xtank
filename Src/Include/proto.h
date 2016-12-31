@@ -482,8 +482,8 @@ static void draw_char P_((Loc *, char, int));
 SpecialStatus special_repair P_((Vehicle *, char *, int));
 
 /* scroll.c */
-void draw_scrollbar P_((scrollbar *sbar));
-int drag_scrollbar P_((scrollbar *sbar, int mx, int my, unsigned int button));
+void draw_scrollbar P_((scrollbar *));
+int drag_scrollbar P_((scrollbar *, int, int, unsigned int));
 
 /* setup.c */
 int standard_combatants P_((void));
