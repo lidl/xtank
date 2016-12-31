@@ -14,6 +14,7 @@
 #define _GRAPHICS_H_
 
 #include "common.h"
+#include "vehicleparts.h"
 #include "object.h"
 
   typedef struct {

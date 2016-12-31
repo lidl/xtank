@@ -14,7 +14,6 @@
 #define _OBJECT_H_
 
 #include "tanktypes.h"
-#include "xtanklib.h"
 #include "tanklimits.h"
 
 

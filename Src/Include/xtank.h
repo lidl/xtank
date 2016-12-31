@@ -33,6 +33,7 @@
 
 #include <math.h>
 #include "screen.h"
+#include "vdesc.h"			/* needed for Weapon */
 #include "xtanklib.h"			/* many important things here */
 
 #ifdef AMIGA

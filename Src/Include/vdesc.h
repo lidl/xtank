@@ -10,42 +10,40 @@
 #define _VDESC_H_
 
 #include "tanktypes.h"
-#include "object.h"
+#include "tanklimits.h"
 #include "vehicleparts.h"
+#include "loc.h"
+#include "object.h"
 
-
-  typedef struct {
-	  Angle angle;				/* angle that the turret is pointing */
-	  Angle desired_angle;		/* angle driver wants turret to point */
-	  Spin angle_flag;			/* which way the turret is rotating */
-	  Angle turn_rate;			/* how fast the turret can rotate */
-	  int rot;					/* picture to show on the screen */
-	  int old_rot;				/* picture to erase from the screen */
-	  Object *obj;				/* pointer to object for the turret */
+typedef struct {
+	Angle angle;			/* angle that the turret is pointing */
+	Angle desired_angle;		/* angle driver wants turret to point */
+	Spin angle_flag;		/* which way the turret is rotating */
+	Angle turn_rate;		/* how fast the turret can rotate */
+	int rot;			/* picture to show on the screen */
+	int old_rot;			/* picture to erase from the screen */
+	Object *obj;			/* pointer to object for the turret */
 #ifdef TEST_TURRETS
-	  Coord end;				/* show end of turret in x,y relative to mount point */
-	  Coord old_end;			/* erase end of turret in x,y relative to mount point */
+	Coord end;	/* show end of turret in x,y relative to mount point */
+	Coord old_end;	/* erase end of turret in x,y relative to mount point */
 #endif /* TEST_TURRETS */
-  }
-Turret;
+} Turret;
 
-  typedef struct {
-	  WeaponType type;			/* weapon type (determines bullet type) */
-	  int hits;					/* # hit points left in weapon */
-	  MountLocation mount;		/* location where weapon is mounted */
-	  int reload_counter;		/* # frames until next shot can be fired */
-	  int ammo;					/* number of ammo units left in weapon */
-	  Flag status;				/* status of weapon (on/off,no_ammo) */
-	  int refill_counter;		/* # frames until next shot can refilled */
-  }
-Weapon;
+typedef struct {
+	WeaponType type;	/* weapon type (determines bullet type) */
+	int hits;		/* # hit points left in weapon */
+	MountLocation mount;	/* location where weapon is mounted */
+	int reload_counter;	/* # frames until next shot can be fired */
+	int ammo;		/* number of ammo units left in weapon */
+	Flag status;		/* status of weapon (on/off,no_ammo) */
+	int refill_counter;	/* # frames until next shot can refilled */
+} Weapon;
 
-  typedef struct {
-	  int type;
-	  int side[MAX_SIDES];
-	  int max_side;
-  }
-Armor;
+typedef struct {
+	int type;
+	int side[MAX_SIDES];
+	int max_side;
+} Armor;
 
 /* describes a vehicle design */
   typedef struct {
@@ -79,5 +77,4 @@ Armor;
   }
 Vdesc;
 
-
-#endif /* ndef _VDESC_H_ */
+#endif /* !_VDESC_H_ */

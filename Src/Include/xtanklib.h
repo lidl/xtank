@@ -16,11 +16,11 @@
 #include "message.h"
 #include "team.h"
 #include "tanklimits.h"
+#include "vdesc.h"
 #include "vehicleparts.h"
 #include "game.h"
 #include "program.h"
 #include "settings.h"
-
 
 /* the different types of terrain boxes can have */
   typedef enum {
@@ -279,5 +279,4 @@ Disc_info;
 
 #include "lowlib.h"
 
-
-#endif /* _XTANKLIB_H_ */
+#endif /* !_XTANKLIB_H_ */

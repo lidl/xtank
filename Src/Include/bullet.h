@@ -13,6 +13,7 @@
 #ifndef _BULLET_H_
 #define _BULLET_H_
 
+#include "vehicleparts.h"
 #include "object.h"
 #include "vehicle.h"
 #include "tanktypes.h"
