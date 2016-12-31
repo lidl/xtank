@@ -10,14 +10,14 @@
 ** Comment: supplemental functions for lacking systems
 */
 
-/* these don't have strdup() in their c library, so here's a function */
-#if defined(ultrix) || defined(sequent) || defined(hp300) || defined(sparc) || defined(NeXT)
+/* if you don't have strdup() in your c library, here's a function */
+#ifdef NEED_STRDUP
 #include <stdio.h>
 
-char *strdup(s1)
-char *s1;
+char *
+strdup(char *s1)
 {
-	char *newstr = NULL;
+	char *newstr;
 
 	newstr = (char *) malloc(strlen(s1) + 1);
 	if (newstr) {
@@ -27,24 +27,27 @@ char *s1;
 		return (NULL);
 	}
 }
-#endif
+#endif /* NEED_STRDUP */
 
-#if defined(sequent)
-double rint(double x) {
+#ifdef NEED_RINT
+double
+rint(double x) {
 	if ((double) (x - (int) x) < 0.5) {
 		return((int)x);
 	} else {
 		return((int)x + 1);
 	}
 }
-#endif
+#endif /* NEED_RINT */
 
 /* stop the senseless input parsing */
-int yywrap() {
+int
+yywrap(void) {
 	return(1);
 }
 
-int barf_o_rama()
+int
+barf_o_rama(void)
 {
 	/* Some stupid C compilers complain when there is nothing */
 	/* in a .c file, so here's a stupid function, just for    */
