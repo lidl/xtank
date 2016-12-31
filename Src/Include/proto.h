@@ -430,7 +430,7 @@ SpecialStatus special_taclink P_((Vehicle *, char *, int));
 static void nr_t_redisplay P_((newRadar *));
 
 /* players.c */
-int init_players P_((void));
+void init_players P_((void));
 
 /* objects.c */
 int make_objects P_((void));

@@ -16,7 +16,8 @@ extern int number_of_machines;
 extern char **machine_names, **machine_entries;
 extern char pathname[];
 
-init_players()
+void
+init_players(void)
 {
 	FILE *fp;
 	char filename[MAXPATHLEN], buffer[MAX_LENGTH + 1];
