@@ -13,9 +13,8 @@
 /*
 ** Displays the walls, bullets and vehicles in the animation window.
 */
-/*ARGSUSED*/
-display_anim_3d(status)
-unsigned int status;
+void
+display_anim_3d(int status)
 {
 }
 
@@ -23,26 +22,23 @@ unsigned int status;
 /*
 ** Initializes the 3d aspect ratio and view distance of the specified terminal.
 */
-/*ARGSUSED*/
-init_terminal_3d(t)
-Terminal *t;
+void
+init_terminal_3d(Terminal *t)
 {
 }
 
 /*
 ** Transforms a (dx,dy) from screen coordinates to maze coordinates.
 */
-/*ARGSUSED*/
-transform_3d(dx, dy)
-int *dx, *dy;
+void
+transform_3d(int *dx, int *dy)
 {
 }
 
 /*
 ** Toggles 3d, wide view, distance view, extend walls, and clipping.
 */
-/*ARGSUSED*/
-toggle_3d(mask)
-int mask;
+void
+toggle_3d(int mask)
 {
 }

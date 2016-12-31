@@ -23,10 +23,10 @@
 #endif
 
 /* three-d.c */
-int display_anim_3d P_((int));
-int init_terminal_3d P_((Terminal *));
-int transform_3d P_((int *, int *));
-int toggle_3d P_((int));
+void display_anim_3d P_((int));
+void init_terminal_3d P_((Terminal *));
+void transform_3d P_((int *, int *));
+void toggle_3d P_((int));
 
 /* XMultiSync.c */
 int XMultiSync P_((Display *dpys[], int num_dpys, int discard));
@@ -431,11 +431,11 @@ void init_players P_((void));
 
 /* Display/objects.c */
 int make_objects P_((void));
-Object *make_object P_((Object *obj, Bits **bitmap));
+Object *make_object P_((Object *, Bits **));
 void free_objects P_((void));
 void free_object P_((Object *obj));
 void rotate_objects P_((void));
-void rotate_object P_((Object *obj, Bits **bitmap));
+void rotate_object P_((Object *, Bits **));
 
 /* program.c */
 void set_current_vehicle P_((Vehicle *));
