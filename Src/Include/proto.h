@@ -424,9 +424,9 @@ void init_Wnames P_((void));
 int SaveVehicleFormat1 P_((Vdesc *));
 
 /* newradar.c */
-static void nr_draw_number P_((Vehicle *, Coord *));
 SpecialStatus special_new_radar P_((Vehicle *, char *, int));
 SpecialStatus special_taclink P_((Vehicle *, char *, int));
+static void nr_draw_number P_((Vehicle *, Coord *));
 static void nr_t_redisplay P_((newRadar *));
 
 /* players.c */
@@ -474,23 +474,9 @@ SpecialStatus special_hud P_((Vehicle *v, char *record, unsigned int action));
 #endif /* !NO_HUD */
 
 /* radar.c */
-#if defined(SpecialStatus) && defined(Vehicle)
-SpecialStatus special_radar P_((Vehicle *v, char *record, unsigned int action));
-#endif
-int full_radar P_((unsigned int status));
-#ifdef Loc
-int draw_char P_((Loc *loc, int c, int color));
-#endif
-#ifdef Vehicle
-#ifdef Coord
-int nr_draw_number P_((Vehicle *v, Coord *c));
-#endif
-SpecialStatus special_new_radar P_((Vehicle *v, char *record, unsigned int action));
-int special_taclink P_((Vehicle *v, char *record, unsigned int action));
-#endif
-#ifdef newRadar
-int nr_t_redisplay P_((newRadar *r));
-#endif
+SpecialStatus special_radar P_((Vehicle *, char *, int));
+void full_radar P_((int));
+static void draw_char P_((Loc *, char, int));
 
 /* repair.c */
 #if defined(SpecialStatus) && defined(Vehicle)

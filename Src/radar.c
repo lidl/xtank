@@ -16,7 +16,7 @@
 #include "proto.h"
 #ifdef SOUND
 #include "sound.h"
-#endif SOUND
+#endif /* SOUND */
 
 extern Map real_map;
 
@@ -275,11 +275,8 @@ static int radar_num_swept[24] =
 	7, 8, 7, 7, 7, 8, 7, 8, 7, 7, 7, 8, 7, 8, 7, 7, 7, 8, 7, 8, 7, 7, 7, 8
 };
 
-
-SpecialStatus special_radar(v, record, action)
-Vehicle *v;
-char *record;
-unsigned int action;
+SpecialStatus
+special_radar(Vehicle *v, char *record, int action)
 {
 	Radar *r;
 	Blip *b;
@@ -375,7 +372,7 @@ unsigned int action;
 #endif /* !NO_CAMO */
 #ifdef SOUND
 					  play_owner(v, BLIP_SOUND);
-#endif SOUND
+#endif /* SOUND */
 					  b = &r->blip[r->num_blips++];
 					  b->x = grid2map(x) + MAP_BOX_SIZE / 4;
 					  b->y = grid2map(y) + MAP_BOX_SIZE / 4;
@@ -469,8 +466,8 @@ unsigned int action;
 /*
 ** Puts numbers of vehicles on the map, and moves them around.
 */
-full_radar(status)
-unsigned int status;
+void
+full_radar(int status)
 {
 	Vehicle *v;
 	int i;
@@ -499,10 +496,8 @@ unsigned int status;
 /*
 ** Xors the character c on the full map at location loc.
 */
-draw_char(loc, c, color)
-Loc *loc;
-char c;
-int color;
+static void
+draw_char(Loc *loc, char c, int color)
 {
 	int x, y;
 	char buf[2];
