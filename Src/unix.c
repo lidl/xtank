@@ -7,24 +7,12 @@
 */
 
 #include <stdio.h>
-
-#if defined(SYSV) || defined(SVR4)
-#include <string.h>
-#else
-#include <strings.h>
-#endif
-
-#include "xtank.h"
 #include <sys/types.h>
 #include <sys/file.h>
+#include <unistd.h>		/* for lseek() */
+
+#include "xtank.h"
 #include "proto.h"
-
-#if !defined(SYSV) && !defined(SVR4) && !defined(NeXT) && !defined(__alpha)
-extern char *index(), *rindex();
-
-#endif
-
-extern off_t lseek();
 
 #ifndef UNIX
 #undef DYNALOAD
@@ -43,7 +31,6 @@ char *network_error_str[6] =
 	"Cannot determine location of client",
 	"Client is too far away on the network"
 };
-
 #endif
 
 #ifdef CHECKNET
@@ -64,9 +51,8 @@ char *network_error_str[6] =
 **      5       client is not on the same subnet as the server
 */
 
-check_internet(num_clients, client)
-int num_clients;
-char **client;
+int
+check_internet(int num_clients, char **client)
 {
 	char server_addr[5];
 	char client_addr[MAX_CLIENTS][5];
@@ -131,9 +117,8 @@ char **client;
 #else /* CHECKNET */
 
 /*ARGSUSED*/
-check_internet(num_clients, client)
-int num_clients;
-char **client;
+int
+check_internet(int num_clients, char **client)
 {
 	return 0;
 }
@@ -153,7 +138,9 @@ char **client;
 #define USE_DLOPEN
 #endif
 
-#ifndef USE_DLOPEN
+#ifdef USE_DLOPEN
+# include <dlfcn.h>
+#else /* USE_DLOPEN */
 # ifdef mips
 #  include <sys/exec.h>
 #  include <nlist.h>
@@ -166,9 +153,7 @@ char **client;
 #   include <a.out.h>
 #  endif
 # endif
-#else /* USE_DLOPEN */
-#include <dlfcn.h>
-#endif
+#endif /* USE_DLOPEN */
 
 #include <sys/param.h>
 
@@ -462,10 +447,8 @@ struct exec *hdr;				/* Pointer to exec struct which is filled in */
 
 #elif defined(USE_DLOPEN)
 
-compile_module(module_name, symbol, code, error_name, output_name)
-char *module_name;
-char **symbol, **code;
-char *output_name, *error_name;
+int
+compile_module(char *module_name, char **symbol, char **code, char *error_name, char *output_name)
 {
 	extern char *executable_name, pathname[], programsdir[];
 	extern char headersdir[];
@@ -474,7 +457,7 @@ char *output_name, *error_name;
 	void *dl_handle;
 
 	/* Chop off everything from the . on to make the rest easier */
-	if (p = rindex(module_name, '.')) {
+	if ((p = rindex(module_name, '.'))) {
 		*p = '\0';
 	} else {
 		return 1;
@@ -744,11 +727,8 @@ AOUTHDR *hdr;
 
 #else /* DYNALOAD */
 
-/*ARGSUSED*/
-compile_module(module_name, symbol, code, error_name, output_name)
-char *module_name;
-char **symbol, **code;
-char *output_name, *error_name;
+int
+compile_module(char *module_name, char **symbol, char **code, char *error_name, char *output_name)
 {
 	return 1;
 }

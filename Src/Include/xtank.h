@@ -27,6 +27,10 @@
 #include <strings.h>
 #endif
 
+#if defined(__FreeBSD__) || defined(__alpha) || defined(__osf__)
+#define USE_DLOPEN
+#endif
+
 #include <math.h>
 #include "screen.h"
 #include "xtanklib.h"			/* many important things here */
