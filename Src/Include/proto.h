@@ -486,24 +486,20 @@ void draw_scrollbar P_((scrollbar *));
 int drag_scrollbar P_((scrollbar *, int, int, unsigned int));
 
 /* setup.c */
-int standard_combatants P_((void));
+void standard_combatants P_((void));
 int choose_program P_((void));
-int robot_combatants P_((void));
-int player_combatants P_((void));
-int customized_combatants P_((void));
-int init_terms P_((void));
-int init_combatants P_((void));
+void robot_combatants P_((void));
+void player_combatants P_((void));
+void customized_combatants P_((void));
+void init_terms P_((void));
+void init_combatants P_((void));
 int play_game P_((void));
 int setup_game P_((Boolean));
-#ifdef Combatant
-int setup_combatant P_((Combatant *c));
-#endif
-#ifdef Vehicle
-int setup_terminal P_((int num, Vehicle *v));
-int place_vehicle P_((Vehicle *v));
-int game_cleanup P_((void));
+int setup_combatant P_((Combatant *));
+void setup_terminal P_((int, Vehicle *));
+int place_vehicle P_((Vehicle *));
+void game_cleanup P_((void));
 int all_terms P_((Vehicle *veh, void (*func) ()));
-#endif
 
 /* status.c */
 int init_status P_((void));

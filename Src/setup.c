@@ -21,8 +21,9 @@
 #include "proto.h"
 #ifdef SOUND
 #include "sound.h"
-#endif SOUND
+#endif /* SOUND */
 
+#include <stdlib.h>		/* for random() */
 
 extern Map real_map;
 extern Boolean game_paused;
@@ -33,12 +34,7 @@ extern Terminal *terminal[];
 extern Terminal *term;
 extern Engine_stat engine_stat[];
 
-#if defined(_IBMR2)
-extern long random();
-
 #define rnd(max)  (random() % (max))
-#endif
-
 
 int num_combatants;
 Combatant combatant[MAX_VEHICLES];
@@ -49,7 +45,8 @@ Boolean game_running = False;
 /*
 ** Sets up a combatant for each player and 5 + difficulty/2 robots.
 */
-standard_combatants()
+void
+standard_combatants(void)
 {
 	Combatant *c;
 	int i;
@@ -78,7 +75,8 @@ standard_combatants()
 /*
 ** Chooses a program based on difficulty and game settings.
 */
-choose_program()
+int
+choose_program(void)
 {
 	return 1;
 }
@@ -86,7 +84,8 @@ choose_program()
 /*
 ** Sets up 5 + difficulty robot combatants on different teams.
 */
-robot_combatants()
+void
+robot_combatants(void)
 {
 	Combatant *c;
 	int i;
@@ -105,7 +104,8 @@ robot_combatants()
 /*
 ** Sets up a combatant for each player.
 */
-player_combatants()
+void
+player_combatants(void)
 {
 	Combatant *c;
 	int i;
@@ -124,7 +124,8 @@ player_combatants()
 /*
 ** Sets up a customized combatants list from the combatants grid.
 */
-customized_combatants()
+void
+customized_combatants(void)
 {
 	Combatant *c;
 	int i;
@@ -137,7 +138,8 @@ customized_combatants()
 	}
 }
 
-init_terms()
+void
+init_terms(void)
 {
 	int i;
 	extern int num_terminals;
@@ -154,7 +156,8 @@ init_terms()
 /*
 ** Initializes the number, score, kills, deaths, and money of all combatants.
 */
-init_combatants()
+void
+init_combatants(void)
 {
 	extern Vdesc *vdesc;
 	extern Prog_desc *prog_desc[];
@@ -213,7 +216,8 @@ init_combatants()
 ** Animates a game until it is finished, and then cleans up allocated stuff.
 ** Returns final status of the game.
 */
-int play_game()
+int
+play_game(void)
 {
 	unsigned int status;
 	int i;
@@ -246,7 +250,7 @@ int play_game()
 
 #ifdef SOUND
 		play_all(START_SOUND);
-#endif SOUND
+#endif /* SOUND */
 
 		do {
 			status = animate();
@@ -254,7 +258,7 @@ int play_game()
 
 #ifdef SOUND
 		play_all(END_SOUND);
-#endif SOUND
+#endif /* SOUND */
 
 		game_running = False;
 
@@ -288,7 +292,6 @@ int play_game()
 int
 setup_game(Boolean newgame)
 {
-	extern void disc_init_history();
 	int i;
 
 	frame = 0;
@@ -345,9 +348,8 @@ setup_game(Boolean newgame)
 
 /* Makes and initializes a vehicle for the specified combatant.  Returns
    GAME_RUNNING if successful, GAME_FAILED if vehicle could not be set up.  */
-
-setup_combatant(c)
-Combatant *c;
+int
+setup_combatant(Combatant *c)
 {
 	extern Vdesc *vdesc;
 	extern Vehicle *make_vehicle();
@@ -371,10 +373,8 @@ Combatant *c;
 
 
 /* sets up the given terminal */
-
-setup_terminal(num, v)
-int num;
-Vehicle *v;						/* vehicle it'll control (or NULL) */
+void
+setup_terminal(int num, Vehicle *v)
 {
 	int i;
 
@@ -409,8 +409,8 @@ Vehicle *v;						/* vehicle it'll control (or NULL) */
 ** If those are all taken, random coordinates are used.
 ** Returns -1 if vehicle could not be placed.
 */
-place_vehicle(v)
-Vehicle *v;
+int
+place_vehicle(Vehicle *v)
 {
 	extern Maze maze;
 	Vector *vector;
@@ -419,7 +419,7 @@ Vehicle *v;
 	int num_starts;
 	Coord *start;
 	int grid_x, grid_y;
-	int tries, num, random;
+	int tries, num, rand;
 
 	/* Check if the desired box is in the maze, and unoccupied.  If not,
        start picking random boxes until we find one that is.  Once we find a
@@ -432,12 +432,15 @@ Vehicle *v;
 	start = maze.start[v->team];
 	tries = 0;
 	num = 0;
-	random = rnd(num_starts);
+	/* XXX - kludge to avoid division by zero */
+	if (num_starts == 0)
+		num_starts = 1;
+	rand = rnd(num_starts);
 	for (;;) {
 		/* Take the next start location, or a random one if there are none */
 		if (num < num_starts) {
-			grid_x = start[(num + random) % num_starts].x;
-			grid_y = start[(num + random) % num_starts].y;
+			grid_x = start[(num + rand) % num_starts].x;
+			grid_y = start[(num + rand) % num_starts].y;
 			num++;
 		} else {
 			grid_x = rnd(GRID_WIDTH);
@@ -493,8 +496,8 @@ Vehicle *v;
 
 
 /* clean up after a game, unmaking all the vehicles */
-
-game_cleanup()
+void
+game_cleanup(void)
 {
 	extern void inactivate_vehicle();
 	int i;
@@ -511,10 +514,8 @@ game_cleanup()
 
 
 /* apply func to all the terminals attached to the given vehicle */
-
-int all_terms(veh, func)
-Vehicle *veh;
-void (*func) ();
+int
+all_terms(Vehicle *veh, void (*func)())
 {
 	int ctri;
 	extern Terminal *terminal[];
