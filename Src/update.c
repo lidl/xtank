@@ -31,8 +31,7 @@ extern Tread_stat tread_stat[];
 /*
 ** Computes the state of the specified vehicle for one frame.
 */
-update_vehicle(v)
-Vehicle *v;
+void update_vehicle(Vehicle *v)
 {
 	Loc *loc, *old_loc;
 	Vector *vector;
@@ -205,8 +204,8 @@ Vehicle *v;
    algorthim I tried was less fun.  Hovertreads should be treated separately,
    but are not.  */
 
-update_vector(v)
-Vehicle *v;
+void
+update_vector(Vehicle *v)
 {
 	Vector *vector = &v->vector;
 	FLOAT roll_speed;			/* how fast vehicle is rolling forward */
@@ -367,8 +366,8 @@ Vehicle *v;
 /*
 ** Computes the rotation (0 to 16) from the heading (-PI to PI).
 */
-update_rotation(v)
-Vehicle *v;
+void
+update_rotation(Vehicle *v)
 {
 	int views;
 
@@ -378,8 +377,8 @@ Vehicle *v;
 	  views;
 }
 
-update_turret(t)
-Turret *t;
+static void
+update_turret(Turret *t)
 {
 	FLOAT delta_angle;
 	int views;
@@ -421,7 +420,8 @@ Turret *t;
 /*
 ** Computes new locations for all the bullets, and removes dead ones.
 */
-update_bullets()
+void
+update_bullets(void)
 {
 	Loc *loc, *old_loc;
 	Bullet *b;
@@ -513,8 +513,8 @@ update_bullets()
 	}
 }
 
-void update_mortar(b)
-Bullet *b;
+void
+update_mortar(Bullet *b)
 {
 	int temp;
 
@@ -529,8 +529,8 @@ Bullet *b;
 /*
 ** Looks for heat sources and moves towards them, leaving a trail of exhaust.
 */
-void update_seeker(b)
-Bullet *b;
+void
+update_seeker(Bullet *b)
 {
 	Loc *loc;
 	FLOAT accel, sp, sp2, axs, ays, xdir, ydir;
@@ -588,13 +588,12 @@ Bullet *b;
 	}
 }
 
-
 int traceharm = FALSE;
 
 #define HARM_ACC 4
 
-void update_harm(b)
-Bullet *b;
+void
+update_harm(Bullet *b)
 {
 	lCoord bCoord, vCoord;
 	float accel, sp, sp2, axs, ays, xdir, ydir;
@@ -623,7 +622,7 @@ Bullet *b;
 		best_dist = 1 * BOX_WIDTH;
 
 	if (traceharm)
-		printf("uh:   Initial best dist %i\n", best_dist);
+		printf("uh:   Initial best dist %li\n", best_dist);
 
 	/*
     * Look at each vehicle and determine it's brightness relative to
@@ -802,13 +801,11 @@ Bullet *b;
 	/* tac-link stuff has been generalized (HAK) */
 }
 
-
-
 /*
 ** Applies friction to disc in free flight, and computes its orbit when owned.
 */
-update_disc(b)
-Bullet *b;
+void
+update_disc(Bullet *b)
 {
 	FLOAT dx, dy;
 	FLOAT dist;
@@ -848,7 +845,8 @@ Bullet *b;
 /*
 ** Decrements explosion lives and removes dead explosions from the set.
 */
-update_explosions()
+void
+update_explosions(void)
 {
 	Exp *e;
 	int i;
@@ -870,7 +868,8 @@ update_explosions()
 /*
 ** Moves vehicle maze flags around when vehicles move from box to box.
 */
-update_maze_flags()
+void
+update_maze_flags(void)
 {
 	Vehicle *v;
 	Loc *loc, *old_loc;
@@ -896,7 +895,8 @@ update_maze_flags()
 /*
 ** Updates all specials for all vehicles.
 */
-update_specials()
+void
+update_specials(void)
 {
 	Vehicle *v;
 	int i, num;
@@ -912,7 +912,8 @@ update_specials()
 ** Updates the screen locations of the terminal, vehicles, bullets,
 ** and explosions for the current terminal.
 */
-update_screen_locs()
+void
+update_screen_locs(void)
 {
 	extern Terminal *term;
 	Vehicle *v;

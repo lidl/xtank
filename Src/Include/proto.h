@@ -38,6 +38,7 @@ void adjust_loc P_((Loc *loc, int dx, int dy));
 Bullet *make_bullet P_((Vehicle *, Loc *, WeaponType, Angle, lCoord *));
 int det_tow P_((Vehicle *));
 int turn_tow P_((Vehicle *, float direction));
+Boolean get_tele P_((Vehicle *, Bullet **));
 
 #ifdef _XTANKLIB_H_
 #ifdef FLOAT
@@ -47,7 +48,6 @@ void adjust_speed P_((FLOAT *speedx, FLOAT *speedy, double adjust));
 #endif
 #ifdef Vehicle
 #ifdef Bullet
-Boolean get_tele P_((Vehicle *v, Bullet **b));
 #endif
 #ifdef Bullet
 #endif
@@ -533,22 +533,19 @@ int compile_module P_((char *module_name, Prog_desc **symbol, char **code, char 
 #endif /* hp9000s800 */
 
 /* update.c */
-#ifdef Vehicle
-int update_vector P_((Vehicle *v));
-#endif
-#ifdef Turret
-int update_turret P_((Turret *t));
-#endif
-int update_bullets P_((void));
-#ifdef Bullet
-#endif
-int update_disc P_((Bullet *b));
-int update_vehicle P_((Vehicle *v));
-int update_explosions P_((void));
-int update_maze_flags P_((void));
-int update_rotation P_((Vehicle *v));
-int update_specials P_((void));
-int update_screen_locs P_((void));
+static void update_vector P_((Vehicle *));
+static void update_turret P_((Turret *));
+void update_bullets P_((void));
+void update_disc P_((Bullet *));
+void update_harm P_((Bullet *));
+void update_mortar P_((Bullet *));
+void update_seeker P_((Bullet *));
+void update_vehicle P_((Vehicle *));
+void update_explosions P_((void));
+void update_maze_flags P_((void));
+void update_rotation P_((Vehicle *));
+void update_specials P_((void));
+void update_screen_locs P_((void));
 
 /* util.c */
 int init_random P_((void));
