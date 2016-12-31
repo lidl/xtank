@@ -7,18 +7,13 @@
 */
 
 #include <stdio.h>
-#ifdef SVR4
 #include <string.h>
-#else
-#ifndef SYSV
-#include <strings.h>
-#endif
-#endif
 #include <ctype.h>
 #include "sysdep.h"
-#include "graphics.h"
+#include "graphics.h"			/* X11 stuff must come after this */
+
 #include <X11/Xos.h>
-#include <X11/Xutil.h>			/* X11 stuff must come last */
+#include <X11/Xutil.h>
 #include <X11/Xatom.h>
 #include <X11/Xresource.h>
 #ifdef KEYPAD_DETECT
@@ -27,19 +22,16 @@
 #include "proto.h"
 
 #ifdef lint
-  struct _XRegion {
-	  int x;
-  };							/* avoid lint complaint */
+struct _XRegion {
+	int x;
+};					/* avoid lint complaint */
 #endif
 
 #ifdef DEBUG_SYNC
 Boolean un_stingy = TRUE;
-
 #else /* DEBUG_SYNC */
 Boolean un_stingy = FALSE;
-
 #endif
-
 
 #ifdef NEED_AUX_FONT
 
@@ -51,9 +43,6 @@ extern char fontdir[], pathname[];
 #endif
 
 extern char *program_name;
-
-char *get_default();
-int get_num_default();
 
 #ifdef BATCH_LINES
 #ifdef BATCH_COLOR_LINES
@@ -69,17 +58,16 @@ int linesBatched = 0;
 int lineBatchColor = -1;		/* Must be a non-color */
 int lineBatchFunc = -20;
 int lineBatchWin = -20;
-
 #endif /* BATCH_COLOR_LINES */
-#endif
+#endif /* BATCH_LINES */
+
 #ifdef BATCH_POINTS
 XPoint pointBatch[MAX_COLORS][BATCHPDEPTH];
 int pointsBatched[MAX_COLORS] =
 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 int pointBatchFunc = -20;
 int pointBatchWin = -20;
-
-#endif
+#endif /* BATCH_POINTS */
 
 #define icon_width 64
 #define icon_height 14
@@ -131,21 +119,21 @@ static char *color_classes[MAX_COLORS] =
 
 static char *colorname[MAX_COLORS] =
 {
-	"Black",					/* background */
-	"White",					/* foreground */
-	"Red",						/* Red Team */
-	"#ffa144",				/* Orange Team */
-	"Yellow",					/* Yellow Team */
-	"Green",					/* Green Team */
+	"Black",			/* background */
+	"White",			/* foreground */
+	"Red",				/* Red Team */
+	"#ffa144",			/* Orange Team */
+	"Yellow",			/* Yellow Team */
+	"Green",			/* Green Team */
 #if !defined(_IBMR2)
-	"#879dff",				/* Blue Team */
+	"#879dff",			/* Blue Team */
 #else
-	"Blue",						/* IBM sucks rocks */
+	"Blue",				/* IBM sucks rocks */
 #endif
-	"orchid",					/* Violet Team */
-	"grey71",					/* Neutral Team */
-	"cyan",						/* Cursor, tink, commentator, radar */
-	"White",					/* dashed line color */
+	"orchid",			/* Violet Team */
+	"grey71",			/* Neutral Team */
+	"cyan",				/* Cursor, tink, commentator, radar */
+	"White",			/* dashed line color */
 };
 
 int team_color[] =
@@ -189,35 +177,36 @@ char video_error_str[256];
 *********************/
 
 /*
- * * Initializes everything dealing with graphics.
+ * Initializes everything dealing with graphics.
  */
-open_graphics()
+void
+open_graphics(void)
 {
-	int liteXerror();
-
 	XSetErrorHandler(liteXerror);
 }
 
 /*
- * * Frees all allocated storage for graphics.
+ * Frees all allocated storage for graphics.
  */
-close_graphics()
+void
+close_graphics(void)
 {
 }
 
 /*
- * * Reset the current video.
+ * Reset the current video.
  */
-reset_video()
+void
+reset_video(void)
 {
 	vid->last_expose_frame = 0;
 }
 
 /*
- * * Sets the current video.
+ * Sets the current video.
  */
-set_video(video)
-Video *video;
+void
+set_video(Video *video)
 {
 	vid = video;
 }
@@ -227,11 +216,12 @@ Video *video;
     return (Video *) NULL; }
 
 /*
- * * Makes a video structure, initializes it. * Returns a pointer to the
+ * Makes a video structure, initializes it.
+ * Returns a pointer to the
  * video or NULL if video could not be initialized.
  */
-Video *make_video(name)
-char *name;
+Video *
+make_video(char *name)
 {
 	Video *video;
 	int i;
@@ -272,17 +262,16 @@ char *name;
 	 */
 
 	DEST_WALL = get_num_default("color.dest_wall_index", "Color.Team",
-								(vid->planes > 1) ? GREY : DASHED);
+				    (vid->planes > 1) ? GREY : DASHED);
 
 	if (DEST_WALL < BLACK || DEST_WALL >= MAX_COLORS)
 		DEST_WALL = GREY;
 
 	RDF_SAFE = get_num_default("color.green_rdf", "Color.Team",
-							   (vid->planes > 1) ? GREEN : DASHED);
+				   (vid->planes > 1) ? GREEN : DASHED);
 
 	if (RDF_SAFE < BLACK || DEST_WALL >= MAX_COLORS)
 		RDF_SAFE = GREEN;
-
 
 	/* Do these with the tri-nary because they are bitfields and */
 	/* I don't want to deal with having some moron setting thier values */
@@ -298,9 +287,10 @@ char *name;
 }
 
 /*
- * * Makes a 1024x864 or 640x400 parent window for the application.
+ * Makes a 1024x864 or 640x400 parent window for the application.
  */
-make_parent()
+int
+make_parent(void)
 {
 	Window rw;
 	XSizeHints size;
@@ -334,8 +324,7 @@ make_parent()
 
 	rw = RootWindow(vid->dpy, DefaultScreen(vid->dpy));
 	vid->parent_id = XCreateSimpleWindow(vid->dpy, rw,
-										 size.x, size.y, size.width,
-										 size.height, 0, vid->fg, vid->bg);
+		size.x, size.y, size.width, size.height, 0, vid->fg, vid->bg);
 	if (vid->parent_id == NULL) {
 		video_error("Could not open parent window %s", "");
 		return 1;
@@ -343,7 +332,7 @@ make_parent()
 	icon = XCreateBitmapFromData(vid->dpy, rw, icon_bits, icon_width,
 								 icon_height);
 	XSetStandardProperties(vid->dpy, vid->parent_id, program_name,
-						   program_name, icon, NULL, 0, &size);
+				   program_name, icon, NULL, 0, &size);
 
 	classHint.res_name = "xtank";
 	classHint.res_class = "XTank";
@@ -366,7 +355,7 @@ make_parent()
 }
 
 /*
- * * Destroys the specified video.
+ * Destroys the specified video.
  */
 void
 close_video(Video *video)
@@ -376,10 +365,10 @@ close_video(Video *video)
 }
 
 /*
- * * Makes a window with the specified characteristics.
+ * Makes a window with the specified characteristics.
  */
-make_window(w, x, y, width, height, border)
-int w, x, y, width, height, border;
+int
+make_window(int w, int x, int y, int width, int height, int border)
 {
 	Window id;
 
@@ -405,9 +394,10 @@ int w, x, y, width, height, border;
 }
 
 /*
- * * Beep
+ * Beep
  */
-beep_window()
+void
+beep_window(void)
 {
 	if (vid->beep_flag) {
 		XBell(vid->dpy, 0);
@@ -415,10 +405,10 @@ beep_window()
 }
 
 /*
- * * Displays the window on the screen.
+ * Displays the window on the screen.
  */
-map_window(w)
-int w;
+void
+map_window(int w)
 {
 	/* Map the parent window just before mapping the first child */
 	if (w == 0)
@@ -428,20 +418,20 @@ int w;
 }
 
 /*
- * * Removes the window from the screen.
+ * Removes the window from the screen.
  */
-unmap_window(w)
-int w;
+void
+unmap_window(int w)
 {
 	XUnmapWindow(vid->dpy, vid->win[w].id);
 	vid->win[w].flags &= ~WIN_mapped;
 }
 
 /*
- * * Clears the window.
+ * Clears the window.
  */
-clear_window(w)
-int w;
+void
+clear_window(int w)
 {
 	XClearWindow(vid->dpy, vid->win[w].id);
 }
@@ -451,27 +441,21 @@ int w;
 ***********************/
 
 /* draw text in an arbitrary position in a window */
-
-draw_text_left(window, x, y, str, font, func, color)
-int window;
-int x, y;						/* upper left corner */
-char *str;
-int font, func, color;
+/* x, y - upper left corner */
+void
+draw_text_left(int window, int x, int y, char *str, int font, int func, int color)
 {
-	XDrawString(vid->dpy, vid->win[window].id, vid->text_gc[font][func][color],
-				x, y + fascent[font],
-				str, strlen(str));
+	XDrawString(vid->dpy, vid->win[window].id,
+		vid->text_gc[font][func][color],
+		x, y + fascent[font], str, strlen(str));
 }
 
 /* Use this routine to draw centered text in an arbitrary position in a window.
    The x coordinate specifies the center of the string to be drawn.  The y
    coordinate is at the top of the string.  */
 
-draw_text(w, x, y, str, font, func, color)
-int w;
-int x, y;
-char *str;
-int font, func, color;
+void
+draw_text(int w, int x, int y, char *str, int font, int func, int color)
 {
 	int len;
 
@@ -503,10 +487,10 @@ int font, func, color;
 				str, len);
 
 #endif /* NO_TEXT_CLIP */
-
 }
 
-int should_disp_name()
+int
+should_disp_name(void)
 {
 	int ret = vid->display_names_flag;
 
@@ -514,34 +498,32 @@ int should_disp_name()
 }
 
 /*
- * * Use this routine to write text in a text type window * The x and y
- * values in the word structure are interpreted as * a row and column in the
- * window.
+ * Use this routine to write text in a text type window
+ * The x and y values in the word structure are interpreted
+ * as a row and column in the window.
  */
-draw_text_rc(w, x, y, str, font, color)
-int w, x, y;
-char *str;
-int font, color;
+void
+draw_text_rc(int w, int x, int y, char *str, int font, int color)
 {
 	XDrawImageString(vid->dpy, vid->win[w].id,
-					 vid->text_gc[font][DRAW_COPY][color],
-					 LEFT_BORDER + fwidth[font] * x,
-					 TOP_BORDER + fheight[font] * y + fascent[font],
-					 str, strlen(str));
+			 vid->text_gc[font][DRAW_COPY][color],
+			 LEFT_BORDER + fwidth[font] * x,
+			 TOP_BORDER + fheight[font] * y + fascent[font],
+			 str, strlen(str));
 }
 
 /*
- * * Clears a rectangle of text rows and columns in a specified window.
+ * Clears a rectangle of text rows and columns in a specified window.
  */
-clear_text_rc(w, x, y, width, height, font)
-int w, x, y, width, height, font;
+void
+clear_text_rc(int w, int x, int y, int width, int height, int font)
 {
 	draw_filled_rect(w,
-					 LEFT_BORDER + x * fwidth[font],
-					 TOP_BORDER + y * fheight[font],
-					 width * fwidth[font],
-					 height * fheight[font],
-					 DRAW_COPY, BLACK);
+			 LEFT_BORDER + x * fwidth[font],
+			 TOP_BORDER + y * fheight[font],
+			 width * fwidth[font],
+			 height * fheight[font],
+			 DRAW_COPY, BLACK);
 }
 
 /******************
@@ -549,9 +531,10 @@ int w, x, y, width, height, font;
 ******************/
 
 /*
- * * Performs all graphics operations that have been queued up.
+ * Performs all graphics operations that have been queued up.
  */
-flush_output()
+void
+flush_output(void)
 {
 #ifdef USED_BATCHED_POINTS
 	flush_point_batch;
@@ -563,24 +546,21 @@ flush_output()
 }
 
 /*
- * * Performs all graphics operations and waits until all input is received.
+ * Performs all graphics operations and waits until all input is received.
  */
-sync_output(discard)
-Boolean discard;
+void
+sync_output(Boolean discard)
 {
 	XSync(vid->dpy, discard);
 }
 
 #ifdef MULTI_SYNC
 /*
- * * Synchronizes all the given video displays. * Currently the number of
- * videos is limited to 10.
+ * Synchronizes all the given video displays.
+ * Currently the number of videos is limited to 10.
  */
-multi_sync(video, num_videos, discard)
-Video *video[];
-int num_videos;
-Boolean discard;
-
+void
+multi_sync(Video *video[], int num_videos, Boolean discard)
 {
 	Display *dpys[MAX_TERMINALS];
 	int i;
@@ -590,7 +570,6 @@ Boolean discard;
 
 	XMultiSync(dpys, num_videos, discard);
 }
-
 #endif
 
 #ifdef KEYPAD_DETECT
@@ -606,23 +585,18 @@ Boolean discard;
  * Sun Keypad KeySym Decoder, returns char of decoded Numeric Keypad 
  *
  ****************************************************************************/
-
 char
-  XDecodeSunKeypad(keysym)
-KeySym keysym;
+XDecodeSunKeypad(KeySym keysym)
 {
-  /*
-   * Only decodes Numeric Keys
-   */
-  char val;
+	/* Only decodes Numeric Keys */
+	char val;
   
-  if (keysym >= XK_KP_0 && keysym <= XK_KP_9) 
-    {
-      val = (char) (keysym - XK_KP_0 + (int) '0');
-    }
-  else
-    val = (char) 0;
-  return (val);
+	if (keysym >= XK_KP_0 && keysym <= XK_KP_9) {
+		val = (char) (keysym - XK_KP_0 + (int) '0');
+	} else {
+		val = (char) 0;
+	}
+	return (val);
 }
 
 /****************************************************************************
@@ -632,8 +606,7 @@ KeySym keysym;
  ****************************************************************************/
 
 KeySym
-  XMapSunKeypad(event)
-XKeyEvent *event;
+XMapSunKeypad(XKeyEvent *event)
 {
   typedef struct 
     {
@@ -845,11 +818,10 @@ get_events(int *num_events, Event *event)
 }
 
 /*
- * * Causes EVENT_MOVED to be enabled or disabled in get_events().
+ * Causes EVENT_MOVED to be enabled or disabled in get_events().
  */
-follow_mouse(w, status)
-int w;
-Boolean status;
+void
+follow_mouse(int w, Boolean status)
 {
 	if (status == TRUE)
 		vid->input_mask |= PointerMotionMask;
@@ -860,7 +832,7 @@ Boolean status;
 }
 
 /*
- * * Causes EVENT_*BUTTONUP to be enabled or disabled in get_events().
+ * Causes EVENT_*BUTTONUP to be enabled or disabled in get_events().
  */
 void
 button_up(int w, Boolean status)
@@ -887,10 +859,10 @@ XrmRepresentation res_type;
 XrmValue xrmv;
 
 /*
- * * Gets default resources, allocates colors, loads in fonts and makes the
- * gcs.
+ * Gets default resources, allocates colors, loads in fonts and makes the gcs.
  */
-make_gcs()
+static int
+make_gcs(void)
 {
 	Window rw;
 	XGCValues values;
@@ -1018,7 +990,7 @@ make_gcs()
 	}
 	rw = RootWindow(vid->dpy, scr);
 
-	/* * Turn off graphics exposures, to avoid getting an event for each *
+	/* Turn off graphics exposures, to avoid getting an event for each *
        XCopyArea with a pixmap.  X is totally brain damaged. */
 	values.graphics_exposures = False;
 	for (i = 0; i < MAX_COLORS; i++) {
@@ -1128,8 +1100,8 @@ make_gcs()
 /* This sets up the font path to contain the directories that have the
  * fonts this program needs.
  */
-set_font_path(fontdir)
-char *fontdir;
+static void
+set_font_path(char *fontdir)
 {
 	int i, font_length;
 	char **font_path = XGetFontPath(vid->dpy, &font_length);
@@ -1150,7 +1122,6 @@ char *fontdir;
 	if (font_path)
 		XFreeFontPath(font_path);
 }
-
 #endif
 
 #define cross_width 16
@@ -1214,9 +1185,10 @@ static unsigned char lr_mask[] =
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 /*
- * * Makes all cursors.
+ * Makes all cursors.
  */
-make_cursors()
+static int
+make_cursors(void)
 {
 	int ret = 0;
 
@@ -1233,11 +1205,10 @@ make_cursors()
 }
 
 /*
- * * Makes a cursor.
+ * Makes a cursor.
  */
-make_cursor(c, width, height, xhot, yhot, bits, mask)
-int c, width, height, xhot, yhot;
-char bits[], mask[];
+static int
+make_cursor(int c, int width, int height, int xhot, int yhot, char bits[], char mask[])
 {
 	XColor fcol, bcol, junk_col;
 	Colormap cmap;
@@ -1281,10 +1252,10 @@ char bits[], mask[];
 }
 
 /*
- * * Sets the current cursor.
+ * Sets the current cursor.
  */
-set_cursor(c)
-int c;
+void
+set_cursor(int c)
 {
 	int i;
 
@@ -1297,20 +1268,19 @@ int c;
 }
 
 /*
- * * Returns height of the specified font.
+ * Returns height of the specified font.
  */
-font_height(font)
-int font;
+int
+font_height(int font)
 {
 	return (fheight[font]);
 }
 
 /*
- * * Returns width of the string in the specified font.
+ * Returns width of the string in the specified font.
  */
-font_string_width(str, font)
-char *str;
-int font;
+int
+font_string_width(char *str, int font)
 {
 	return (fwidth[font] * strlen(str));
 }
@@ -1327,9 +1297,8 @@ Video *oldvid = NULL;   /* It's a global now.  Temporary hack (HAK 2/93) */
 /*
  * Makes the picture from the bitmap and the size given in the picture.
  */
-make_picture(pic, bitmap)
-Picture *pic;
-char *bitmap;
+int
+make_picture(Picture *pic, char *bitmap)
 {
 	Pixmap temp, pix;
 	unsigned int w, h;
@@ -1416,20 +1385,19 @@ char *bitmap;
 }
 
 /*
- * * Frees the picture.
+ * Frees the picture.
  */
-free_picture(pic)
-Picture *pic;
+void
+free_picture(Picture *pic)
 {
 	XFreePixmap(vid->dpy, vid->pixid[pic->pixmap]);
 }
 
 /*
- * * Puts a copy of pic rotated 90 degrees into rot_pic.
+ * Puts a copy of pic rotated 90 degrees into rot_pic.
  */
-Byte *rotate_pic_90(pic, rot_pic, bitmap)
-Picture *pic, *rot_pic;
-Byte *bitmap;
+Byte *
+rotate_pic_90(Picture *pic, Picture *rot_pic, Byte *bitmap)
 {
 	Byte *rot_bitmap;
 	int by_line, rot_by_line, num_bytes, rot_num_bytes;
@@ -1558,11 +1526,10 @@ unsigned char reverse_byte[256] =
 };
 
 /*
- * * Puts a copy of pic rotated 180 degrees into rot_pic.
+ * Puts a copy of pic rotated 180 degrees into rot_pic.
  */
-Byte *rotate_pic_180(pic, rot_pic, bitmap)
-Picture *pic, *rot_pic;
-Byte *bitmap;
+Byte *
+rotate_pic_180(Picture *pic, Picture *rot_pic, Byte *bitmap)
 {
 	Byte *rot_bitmap;
 	int num_bytes;
@@ -1578,8 +1545,8 @@ Byte *bitmap;
 	num_bytes = ((pic->width + 7) >> 3) * pic->height;
 	rot_bitmap = (Byte *) malloc((unsigned) (num_bytes * sizeof(Byte)));
 
-	/* * Scan across each source scanline in the bitmap starting * from the
-	   bottom right corner and working left and up. * Reverse the source
+	/* Scan across each source scanline in the bitmap starting from the
+	   bottom right corner and working left and up. Reverse the source
 	   bytes, shift, and OR into the destination. */
 	lshift = pic->width & 0x7;
 	rshift = 8 - lshift;
@@ -1603,9 +1570,8 @@ Byte *bitmap;
 	return rot_bitmap;
 }
 
-int liteXerror(dpy, err)
-Display *dpy;
-XErrorEvent *err;
+XErrorHandler
+liteXerror(Display *dpy, XErrorEvent *err)
 {
 	char buf[1024];
 
@@ -1623,8 +1589,8 @@ XErrorEvent *err;
 /*******************************/
 /* Get User Defaults           */
 /*******************************/
-char *get_default(itemname, itemclass, defaultstr)
-char *itemname, *itemclass, *defaultstr;
+char *
+get_default(char *itemname, char *itemclass, char *defaultstr)
 {
 	char *ptr;
 
@@ -1644,9 +1610,7 @@ char *itemname, *itemclass, *defaultstr;
 	return (ptr);
 }
 
-int get_num_default(itemname, itemclass, defaultnum)
-char *itemname, *itemclass;
-int defaultnum;
+int get_num_default(char *itemname, char *itemclass, int defaultnum)
 {
 	char *ptr;
 	int retval;

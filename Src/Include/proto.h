@@ -580,56 +580,42 @@ void unmake_vehicle P_((Vehicle *));
 int activate_vehicle P_((Vehicle *));
 
 /* x11.c */
-int open_graphics P_((void));
-int close_graphics P_((void));
-int reset_video P_((void));
-int set_video P_((Video *video));
-#ifdef Video
-Video *make_video P_((char *name));
-#endif
+void open_graphics P_((void));
+void close_graphics P_((void));
+void reset_video P_((void));
+void set_video P_((Video *));
+Video *make_video P_((char *));
 void close_video P_((Video *));
 int make_parent P_((void));
-int make_window P_((int w, int x, int y, int width, int height, int border));
-int beep_window P_((void));
-int map_window P_((int w));
-int unmap_window P_((int w));
-int clear_window P_((int w));
-int draw_text_left P_((int window, int x, int y, char *str, int font, int func, int color));
-int draw_text P_((int w, int x, int y, char *str, int font, int func, int color));
+int make_window P_((int, int, int, int, int, int));
+void beep_window P_((void));
+void map_window P_((int));
+void unmap_window P_((int));
+void clear_window P_((int));
+void draw_text_left P_((int, int, int, char *, int, int, int));
+void draw_text P_((int, int, int, char *, int, int, int));
 int should_disp_name P_((void));
-int draw_text_rc P_((int w, int x, int y, char *str, int font, int color));
-int clear_text_rc P_((int w, int x, int y, int width, int height, int font));
-int flush_output P_((void));
-#ifdef Boolean
-#endif
-int sync_output P_((Boolean discard));
-#if defined(Video) && defined(Boolean)
-int multi_sync P_((Video *video[], int num_videos, Boolean discard));
-#endif
-#ifdef Event
-#endif
-int get_events P_((int *, Event *));
-int follow_mouse P_((int w, Boolean status));
+void draw_text_rc P_((int, int, int, char *, int, int));
+void clear_text_rc P_((int, int, int, int, int, int));
+void flush_output P_((void));
+void sync_output P_((Boolean));
+void multi_sync P_((Video **, int, Boolean));
+void get_events P_((int *, Event *));
+void follow_mouse P_((int, Boolean));
 void button_up P_((int w, Boolean status));
-int make_gcs P_((void));
-int set_font_path P_((char *fontdir));
-int make_cursors P_((void));
-int make_cursor P_((int c, int width, int height, int xhot, int yhot, char bits[], char mask[]));
-int set_cursor P_((int c));
-int font_height P_((int font));
-int font_string_width P_((char *str, int font));
-#ifdef Picture
-int make_picture P_((Picture *pic, char *bitmap));
-int free_picture P_((Picture *pic));
-#ifdef Byte
-Byte *rotate_pic_90 P_((Picture *pic, Picture *rot_pic, Byte * bitmap));
-Byte *rotate_pic_180 P_((Picture *pic, Picture *rot_pic, Byte * bitmap));
-#endif
-#endif
-#if defined(Display) && defined(XErrorEvent)
-int liteXerror P_((Display *dpy, XErrorEvent *err));
-#endif
-char *get_default P_((char *itemname, char *itemclass, char *defaultstr));
-int get_num_default P_((char *itemname, char *itemclass, int defaultnum));
+static int make_gcs P_((void));
+static void set_font_path P_((char *));
+static int make_cursors P_((void));
+static int make_cursor P_((int, int, int, int, int, char *, char *));
+void set_cursor P_((int));
+int font_height P_((int));
+int font_string_width P_((char *, int));
+int make_picture P_((Picture *, char *));
+void free_picture P_((Picture *));
+Byte *rotate_pic_90 P_((Picture *, Picture *, Byte *));
+Byte *rotate_pic_180 P_((Picture *, Picture *, Byte *));
+XErrorHandler liteXerror P_((Display *, XErrorEvent *));
+char *get_default P_((char *, char *, char *));
+int get_num_default P_((char *, char *, int));
 
 #undef P_
