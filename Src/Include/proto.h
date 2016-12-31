@@ -441,17 +441,17 @@ void rotate_objects P_((void));
 void rotate_object P_((Object *obj, Bits **bitmap));
 
 /* program.c */
-int set_current_vehicle P_((Vehicle *));
-int init_prog_descs P_((void));
-int init_specials P_((Vehicle *));
-int zap_specials P_((Vehicle *));
-int init_programs P_((Vehicle *));
-int run_program P_((Program *));
-int stop_program P_((void));
-int make_programs P_((Vehicle *, int, int *));
+void set_current_vehicle P_((Vehicle *));
+void init_prog_descs P_((void));
+void init_specials P_((Vehicle *));
+void zap_specials P_((Vehicle *));
+void init_programs P_((Vehicle *));
+static int run_program P_((Program *));
+void stop_program P_((void));
+void make_programs P_((Vehicle *, int, int *));
 int find_pdesc P_((char *, int *));
-int check_time P_((void));
-int run_all_programs P_((void));
+void check_time P_((void));
+void run_all_programs P_((void));
 
 #ifndef NO_CAMO
 #ifdef Vehicle

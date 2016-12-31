@@ -7,8 +7,8 @@
 */
 
 #include <assert.h>
-#include "xtanklib.h"
 #include "xtank.h"
+#include "xtanklib.h"
 #include "thread.h"
 #include "icounter.h"
 #include "vehicle.h"
@@ -39,7 +39,7 @@ extern Settings settings;
 Clock current_time, end_time;
 
 Prog_desc *prog_desc[MAX_PDESCS];
-int num_prog_descs = 0;
+int num_prog_descs;
 
 /* Pointer to the program scheduler's thread */
 Thread *scheduler_thread;
@@ -48,6 +48,7 @@ Thread *scheduler_thread;
 ** Changes the current vehicle pointer to the specified vehicle.
 ** All xtanklib functions act on the current vehicle.
 */
+void
 set_current_vehicle(Vehicle *v)
 {
 	cv = v;
@@ -56,14 +57,20 @@ set_current_vehicle(Vehicle *v)
 /*
 ** Initializes the array of program descriptions at startup time.
 */
-init_prog_descs()
+void
+init_prog_descs(void)
 {
 	int iCtr;
 	extern Prog_desc
-	  kamikaze_prog, drone_prog, warrior_prog, eliza_prog, Buddy_prog,
-	  Flipper_prog, artful_prog, spot_prog, Diophantine_prog, Dio_prog,	/* New with 1.2g & not all that tested: */
-	  Pzkw_I_prog, dum_maze_prog, roadrunner_prog, Guard_prog, RacerX_prog,	/* New with 1.3b & extensively tested */
-	  tagman_prog, Bootlegger_prog, gnat_prog, rdfbot_prog, mmtf_prog;
+		kamikaze_prog, drone_prog, warrior_prog, eliza_prog,
+		Buddy_prog, Flipper_prog, artful_prog, spot_prog,
+		Diophantine_prog, Dio_prog,
+	/* New programs with 1.2g and not all that tested: */
+		Pzkw_I_prog, dum_maze_prog, roadrunner_prog,
+		Guard_prog, RacerX_prog,
+	/* New programs with 1.3b and extensively tested: */
+		tagman_prog, Bootlegger_prog, gnat_prog,
+		rdfbot_prog, mmtf_prog;
 
 	num_prog_descs = 0;
 	prog_desc[num_prog_descs++] = &kamikaze_prog;
@@ -93,11 +100,10 @@ init_prog_descs()
 	for (iCtr = 0; iCtr < num_prog_descs; iCtr++) {
 		prog_desc[iCtr]->filename = (char *) 0;
 	}
-
 }
 
-init_specials(v)
-Vehicle *v;
+void
+init_specials(Vehicle *v)
 {
 	int i, j;
 	Mapper *m = (Mapper *) v->special[(int) MAPPER].record;
@@ -138,7 +144,8 @@ Vehicle *v;
 					s->y = j;
 				}
 			}
-	} else {					/* clear out any old map memories */
+	} else {
+		/* clear out any old map memories */
 		if (m)
 			bzero((char *) m, sizeof(*m));
 	}
@@ -176,9 +183,8 @@ Vehicle *v;
  *
  */
 
-
-zap_specials(v)
-Vehicle *v;
+void
+zap_specials(Vehicle *v)
 {
 	int i;
 
@@ -192,13 +198,20 @@ Vehicle *v;
 /*
 ** Initializes all programs for the specified vehicle.
 */
-init_programs(v)
-Vehicle *v;
+void
+init_programs(Vehicle *v)
 {
 	Program *prog;
 	int i;
 
-#ifdef __bsdi__
+	/*
+	** XXX - I think is desirable for all systems.  When pthreads
+	** are in use, the start function for the thread may be
+	** executed before the function to create the thread has
+	** resumed running.  This ensures that lowlib calls will get
+	** the correct vehicle.
+	*/
+#if 1 || defined (__bsdi__)
 	/* Set the current vehicle pointer to this vehicle for xtanklib */
 	set_current_vehicle(v);
 #endif
@@ -235,7 +248,8 @@ Vehicle *v;
 /*
 ** Runs all the programs that should be run during a frame of execution.
 */
-run_all_programs()
+void
+run_all_programs(void)
 {
 	extern frame;
 	Vehicle *v;
@@ -258,8 +272,7 @@ run_all_programs()
 			if (prog->total_time <= frame * PROGRAM_ALLOT)
 				run_program(prog);
 
-			/* Nullify the current program pointer once the program is
-	       finished */
+			/* Nullify the current program pointer once the program is finished */
 			v->current_prog = (Program *) NULL;
 		}
 	}
@@ -268,8 +281,8 @@ run_all_programs()
 /*
 ** Runs the specified program and returns the amount of time it took to run.
 */
-int run_program(prog)
-Program *prog;
+static int
+run_program(Program *prog)
 {
 	/* Start up interval counter to time programs */
 	clear_clock();
@@ -298,7 +311,8 @@ Program *prog;
 ** If there is no current program, or the current program has not run
 ** for long enough, check_time does nothing.
 */
-check_time()
+void
+check_time(void)
 {
 	/* If there is a program running */
 	if (cv->current_prog != (Program *) NULL) {
@@ -317,7 +331,8 @@ check_time()
 /*
 ** Stops the current program, upping elapsed_prog_time to PROGRAM_ALLOT.
 */
-stop_program()
+void
+stop_program(void)
 {
 	Clock temp;
 
@@ -341,10 +356,8 @@ stop_program()
 /*
 ** Makes the specified programs for the specified vehicle.
 */
-make_programs(v, num_progs, prog_num)
-Vehicle *v;
-int num_progs;
-int prog_num[];
+void
+make_programs(Vehicle *v, int num_progs, int *prog_num)
 {
 	int num, i;
 
@@ -364,9 +377,8 @@ int prog_num[];
 	}
 }
 
-int find_pdesc(prog_name, index_return)
-int *index_return;
-char *prog_name;
+int
+find_pdesc(char *prog_name, int *index_return)
 {
 	int i;
 
