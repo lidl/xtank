@@ -10,7 +10,10 @@
 #include "xtanklib.h"
 #include <math.h>
 
-static void main();
+static void main(void);
+static void spot_get_unstuck(void);
+static void spot_attack_closest(int *, FLOAT *);
+static void spot_spin(FLOAT);
 
 Prog_desc spot_prog = {
 	"spot",
@@ -34,11 +37,12 @@ typedef struct
 	int right;
 } Armor_on;
 
-static void main()
+static void
+main(void)
 {
 	extern int num_veh_alive;
-    int dist = 9999;
-    FLOAT ang = 0.0;
+	int dist = 9999;
+	FLOAT ang = 0.0;
 
 	while (1)
 	{
@@ -57,7 +61,8 @@ static void main()
 ** Gets the vehicle unstuck from an obstacle.  Call it if you think you
 ** ran into something.
 */
-spot_get_unstuck()
+static void
+spot_get_unstuck(void)
 {
 	int framenum = frame_number();
 	FLOAT curangle = heading();
@@ -79,9 +84,8 @@ spot_get_unstuck()
 ** Shoots all weapons at that vehicle, regardless of whether
 ** or not it is in range, or the turrets are rotated yet.
 */
-spot_attack_closest(dist, ang)
-int *dist;
-FLOAT *ang;
+static void
+spot_attack_closest(int *dist, FLOAT *ang)
 {
     int veh_cnt;		/* the number of vehicles I can see */
     Vehicle_info vehicle[MAX_VEHICLES];	/* the array of vehicles I can see */
@@ -133,18 +137,18 @@ FLOAT *ang;
     set_rel_drive(5.0);
 }
 
-spot_spin(ang)
-FLOAT ang;
+static void
+spot_spin(FLOAT ang)
 {
 	Armor_on arm;
 	int highest;
 
 	set_abs_drive(0.0);
 
-    highest = armor(FRONT);
-    arm.back = armor(BACK);
-    arm.left = armor(LEFT);
-    arm.right = armor(RIGHT);
+	highest = armor(FRONT);
+	arm.back = armor(BACK);
+	arm.left = armor(LEFT);
+	arm.right = armor(RIGHT);
 
 	if (highest < arm.back)
 		highest = arm.back;
