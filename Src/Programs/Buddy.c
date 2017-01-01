@@ -20,15 +20,16 @@
 
 #include "xtanklib.h"
 #include <math.h>
+#include <stdio.h>
+#include <string.h>
 #include "Buddy.h"
 
 /* Buddy_show_off(size)
 **
 ** Tells everybody how studly I am.
 */
-static Inline
-  Buddy_show_off(size)
-int size;
+static void Inline
+Buddy_show_off(int size)
 {
 	char text[MAX_DATA_LEN];
 
@@ -40,9 +41,8 @@ int size;
 **
 ** Initializes the Binfo structure.
 */
-static Inline
-  Buddy_init_bi(bi)
-Binfo *bi;
+static void Inline
+Buddy_init_bi(Binfo *bi)
 {
 	get_settings(&bi->settings);
 	if (bi->settings.full_map)
@@ -67,8 +67,8 @@ Binfo *bi;
 ** Complains that I haven't been given the full map,
 ** and refuses to play any more.
 */
-static Inline
-  Buddy_sulk()
+static void Inline
+Buddy_sulk(void)
 {
 	char text[MAX_DATA_LEN];
 
@@ -84,9 +84,8 @@ static Inline
 **
 ** Initializes the internal maze representation.
 */
-static Inline
-  Buddy_initialize_maze(bi)
-Binfo *bi;
+static void Inline
+Buddy_initialize_maze(Binfo *bi)
 {
 	int i, j;
 
@@ -97,13 +96,14 @@ Binfo *bi;
 	}
 }
 
-/* main()
+/* Buddy_main()
 **
 ** The main procedure.
 ** Initializes stuff and then goes through an infinite loop until the
 ** game is reset for whatever reason.
 */
-static void main()
+static void
+Buddy_main(void)
 {
 	Binfo bi;					/* Everything you ever wanted to know */
 
@@ -161,8 +161,8 @@ static void main()
 **   If I do know where the disc is, and someone asked, tell them.
 **   If someone told me where the disc is, store this information.
 */
-static Buddy_deal_with_messages(bi)
-Binfo *bi;
+static void
+Buddy_deal_with_messages(Binfo *bi)
 {
 	int i;						/* counter */
 	int msgs;					/* number of messages in queue */
@@ -208,8 +208,8 @@ Binfo *bi;
 **   We know everything about the current maze.
 **   There is only one enemy_goal.
 */
-static Buddy_find_goals(bi)
-Binfo *bi;
+static void
+Buddy_find_goals(Binfo *bi)
 {
 	int i;						/* counter */
 	Goal_info *gi;				/* current goal I'm looking at */
@@ -260,9 +260,8 @@ Binfo *bi;
 ** Buddy_throw_at_goal will attempt to throw between the two
 ** points.
 */
-static Buddy_set_open_goal_locs(bi, gi)
-Binfo *bi;
-Goal_info *gi;
+static void
+Buddy_set_open_goal_locs(Binfo *bi, Goal_info *gi)
 {
 	Location *g1, *g2;
 
@@ -321,8 +320,8 @@ Goal_info *gi;
 ** This routine is only called in case of some internal error.
 ** And that never happens, right?
 */
-static Buddy_panic(bi)
-Binfo *bi;
+static void
+Buddy_panic(Binfo *bi)
 {
 	char buf[MAX_DATA_LEN];
 
@@ -341,9 +340,8 @@ Binfo *bi;
 **   Preventing enemy vehicles from stealing the disc.
 **   Clearing the disc if I'm in trouble.
 */
-static Inline
-  Buddy_deal_with_disc(bi)
-Binfo *bi;
+static void Inline
+Buddy_deal_with_disc(Binfo *bi)
 {
 	Buddy_go_to_goal(bi);
 	if (bi->discowned)
@@ -360,9 +358,8 @@ Binfo *bi;
 ** goals (as stored by Buddy_set_open_goal_locs) and attempts to pass
 ** into them.
 */
-static Inline
-  Buddy_throw_at_goal(bi)
-Binfo *bi;
+static void Inline
+Buddy_throw_at_goal(Binfo *bi)
 {
 	int i;						/* counter */
 	Boolean cp1, cp2;			/* clear path to loc 1?  loc 2? */
@@ -386,9 +383,8 @@ Binfo *bi;
 **
 ** Goes to the enemy goal, taking the shortest path.
 */
-static Inline
-  Buddy_go_to_goal(bi)
-Binfo *bi;
+static void Inline
+Buddy_go_to_goal(Binfo *bi)
 {
 	int mx, my;					/* My location on the grid */
 
@@ -415,9 +411,8 @@ Binfo *bi;
 **   Am I double-teamed?
 **   Is my teammate open? (no enemies near him)
 */
-static Buddy_maybe_pass(bi, mindistsqr)
-Binfo *bi;
-int mindistsqr;
+static void
+Buddy_maybe_pass(Binfo *bi, int mindistsqr)
 {
 	int i;						/* counter; current vehicle */
 	int dx, dy;					/* deltas to current vehicle */
@@ -458,8 +453,8 @@ int mindistsqr;
 ** Makes sure no one steals the disc.
 ** Also sets bi->men_on, the number of enemy vehicles near me.
 */
-static Buddy_play_keep_away(bi)
-Binfo *bi;
+static void
+Buddy_play_keep_away(Binfo *bi)
 {
 	int i;						/* counter; current vehicle */
 	int dx, dy;					/* deltas of current vehicle */
@@ -506,8 +501,8 @@ Binfo *bi;
 ** Unless I'm real close to a goal, I find out a good area to throw
 ** the disc in, and then throw it in that direction.
 */
-static Buddy_clear_the_disc(bi)
-Binfo *bi;
+static void
+Buddy_clear_the_disc(Binfo *bi)
 {
 	Location loc1, loc2;		/* endpoints of range */
 
@@ -525,9 +520,8 @@ Binfo *bi;
 ** I look ahead two squares towards the goal, and try to throw in
 ** that general direction.
 */
-static Buddy_get_clear_range(bi, loc1, loc2)
-Binfo *bi;
-Location *loc1, *loc2;
+static int
+Buddy_get_clear_range(Binfo *bi, Location *loc1, Location *loc2)
 {
 	int mx, my;					/* my grid coordinate */
 	int gx, gy;					/* next square in path to goal */
@@ -662,10 +656,8 @@ Location *loc1, *loc2;
 **
 ** Throws the disc at the location loc with speed speed.
 */
-static Buddy_throw_at_loc(bi, loc, spd)
-Binfo *bi;
-Location *loc;
-float spd;
+static void
+Buddy_throw_at_loc(Binfo *bi, Location *loc, float spd)
 {
 	Vehicle_info *me;			/* me */
 	Disc_info *disc;			/* the disc */
@@ -746,10 +738,8 @@ float spd;
 ** so I have to be careful that the disc can actually get where I'm
 ** throwing it.
 */
-static Buddy_throw_in_range(bi, loc1, loc2, tricky, spd)
-Binfo *bi;
-Location *loc1, *loc2;
-float spd;
+static void
+Buddy_throw_in_range(Binfo *bi, Location *loc1, Location *loc2, int tricky, float spd)
 {
 	Vehicle_info *me;			/* me */
 	Disc_info *disc;			/* the disc */
@@ -908,8 +898,8 @@ float spd;
 ** know where it is.  It causes me to move towards the center of
 ** mass of all other vehicles.
 */
-static Buddy_find_the_action(bi)
-Binfo *bi;
+static void
+Buddy_find_the_action(Binfo *bi)
 {
 	int i;						/* counter; current blip */
 	int blips;					/* number of blips seen */
@@ -959,9 +949,8 @@ Binfo *bi;
 ** a destination.  It is called repeatedly with successive squares
 ** in the path.
 */
-static Buddy_move_into_box(bi, gx, gy)
-Binfo *bi;
-int gx, gy;
+static void
+Buddy_move_into_box(Binfo *bi, int gx, int gy)
 {
 	int dx, dy;					/* deltas from me to location */
 
@@ -990,8 +979,8 @@ int gx, gy;
 ** Causes me to chase the disc, only if it is unowned or
 ** enemy controlled.  Otherwise, I head towards the enemy goal.
 */
-static Buddy_go_get_the_disc(bi)
-Binfo *bi;
+static void
+Buddy_go_get_the_disc(Binfo *bi)
 {
 	int dx, dy;					/* deltas to disc location */
 	int distsq;					/* square of distance to disc */
@@ -1110,10 +1099,8 @@ Binfo *bi;
 ** possible path.  This function is generally called when I want to go
 ** to that box, but there's something in the way.
 */
-static Inline
-  Buddy_go_to_box(bi, gx, gy)
-Binfo *bi;
-int gx, gy;
+static void Inline
+Buddy_go_to_box(Binfo *bi, int gx, int gy)
 {
 	int mx, my;					/* My location */
 
@@ -1136,9 +1123,8 @@ int gx, gy;
 ** Puts the information about that path (and all others of that distance
 ** or less) in the scrap maze.
 */
-static Buddy_compute_path_to_square(bi, x1, y1, x2, y2)
-Binfo *bi;
-int x1, y1, x2, y2;
+static int
+Buddy_compute_path_to_square(Binfo *bi, int x1, int y1, int x2, int y2)
 {
 	int i, j;					/* counters */
 
@@ -1183,11 +1169,9 @@ int x1, y1, x2, y2;
 ** By tracing these locations, one will eventually end up at the original
 ** square.
 */
-static Buddy_compute_path(bi, x1, y1, x2, y2, maze, maxdepth)
-Binfo *bi;
-int x1, y1, x2, y2;
-Mazebox maze[GRID_WIDTH][GRID_HEIGHT];
-int maxdepth;
+static int
+Buddy_compute_path(Binfo *bi, int x1, int y1, int x2, int y2,
+	Mazebox maze[GRID_WIDTH][GRID_HEIGHT], int maxdepth)
 {
 	int num_on_edge = 1;		/* number of squares on the edge of the fill */
 	int next_num_on_edge;		/* number of squares for next iteration */
@@ -1284,8 +1268,8 @@ int maxdepth;
 ** It causes me to continue going in my current direction but to
 ** avoid walls.
 */
-static Buddy_wander(bi)
-Binfo *bi;
+static void
+Buddy_wander(Binfo *bi)
 {
 	int mx, my;					/* my location */
 	Angle dir;					/* my heading */

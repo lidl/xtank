@@ -68,27 +68,25 @@
 
 /* Structs */
 
-  typedef struct {				/* Information about goals */
-	  Location loc;				/* Location of goal  */
-	  Team team;				/* Team the goal is on */
-  }
-Goal_info;
+typedef struct {		/* Information about goals */
+	Location loc;		/* Location of goal  */
+	Team team;		/* Team the goal is on */
+} Goal_info;
 
-  typedef struct {				/* Info for calculating shortest paths */
-	  char nextx, nexty;		/* The next box I should travel to */
-	  Boolean seen;				/* If I know how to get from here to my
+typedef struct {		/* Info for calculating shortest paths */
+	char nextx, nexty;	/* The next box I should travel to */
+	Boolean seen;		/* If I know how to get from here to my
 				   destination */
-	  char dist;				/* Distance from here to the destination */
-  }
-Mazebox;
+	char dist;		/* Distance from here to the destination */
+} Mazebox;
 
 /* Binfo contains all data which would otherwise be global.  We need
    to keep it in one structure and pass it around from function to
    function so that multiple copies of Buddy don't use the same data. */
 
-  typedef struct {
-	  Angle desireddir;			/* what angle I'd like to go at */
-	  float maxspeed;			/* max possible speed */
+typedef struct {
+	Angle desireddir;	/* what angle I'd like to go at */
+	float maxspeed;		/* max possible speed */
 
 	  /* Here I store everything I know about the world */
 	  Vehicle_info vinfo[MAX_VEHICLES];
@@ -126,44 +124,45 @@ Mazebox;
 	  Location goal_locs_1[4];
 	  Location goal_locs_2[4];
 
-	  Vehicle_info me;			/* What I am is what I am */
+	  Vehicle_info me;		/* What I am is what I am */
 
-	  int frame;				/* Current frame of the game */
-	  int next_frame;			/* Frame after this */
+	  int frame;			/* Current frame of the game */
+	  int next_frame;		/* Frame after this */
 
-	  int discowned;			/* How many discs I own */
-	  Spin spin;				/* What way I'm spinning discs */
-	  int mode;					/* What state I'm in */
-	  int men_on;				/* Enemy vehicles near me */
-	  int closestgoal;			/* Closest goal to me */
-	  int enemy_goal;			/* Number of enemy goal */
-	  Boolean throwing;			/* If I'm in the middle of throwing,
-                                   don't be distracted */
-  }
-Binfo;
+	  int discowned;		/* How many discs I own */
+	  Spin spin;			/* What way I'm spinning discs */
+	  int mode;			/* What state I'm in */
+	  int men_on;			/* Enemy vehicles near me */
+	  int closestgoal;		/* Closest goal to me */
+	  int enemy_goal;		/* Number of enemy goal */
+	Boolean throwing;		/* If I'm in the middle of throwing,
+					   don't be distracted */
+} Binfo;
 
-static void main();				/* the main routine */
-static Buddy_sulk();
-static Buddy_deal_with_messages();
-static Buddy_find_goals();
-static Buddy_set_open_goal_locs();
-static Buddy_panic();
-static Buddy_deal_with_disc();
-static Buddy_throw_at_goal();
-static Buddy_go_to_goal();
-static Buddy_maybe_pass();
-static Buddy_play_keep_away();
-static Buddy_throw_at_loc();
-static Buddy_throw_in_range();
-static Buddy_find_the_action();
-static Buddy_move_into_box();
-static Buddy_go_get_the_disc();
-static Buddy_go_to_box();
-static Buddy_compute_path_to_square();
-static Buddy_compute_path();
-static Buddy_wander();
-static Buddy_clear_the_disc();
-static Buddy_get_clear_range();
+/* Function prototypes */
+static void Buddy_main(void);
+static void Buddy_clear_the_disc(Binfo *);
+static int Buddy_compute_path(Binfo *, int, int, int, int,
+        Mazebox maze[GRID_WIDTH][GRID_HEIGHT], int);
+static int Buddy_compute_path_to_square(Binfo *, int, int, int, int);
+static void Buddy_deal_with_disc(Binfo *);
+static void Buddy_deal_with_messages(Binfo *);
+static void Buddy_find_goals(Binfo *);
+static void Buddy_find_the_action(Binfo *);
+static int Buddy_get_clear_range(Binfo *, Location *, Location *);
+static void Buddy_go_get_the_disc(Binfo *);
+static void Buddy_go_to_box(Binfo *, int, int);
+static void Buddy_go_to_goal(Binfo *);
+static void Buddy_maybe_pass(Binfo *, int);
+static void Buddy_move_into_box(Binfo *, int, int);
+static void Buddy_panic(Binfo *);
+static void Buddy_play_keep_away(Binfo *);
+static void Buddy_set_open_goal_locs(Binfo *, Goal_info *);
+static void Buddy_throw_at_goal(Binfo *);
+static void Buddy_throw_at_loc(Binfo *, Location *, float);
+static void Buddy_throw_in_range(Binfo *, Location *, Location *, int, float);
+static void Buddy_wander(Binfo *);
+static void Buddy_sulk(void);
 
 Prog_desc Buddy_prog =
 {
@@ -176,5 +175,5 @@ Give him a tank with a mapper and radar.  I recommend Ultimate7.",
 	"Dan Schmidt",
 	PLAYS_ULTIMATE | USES_TEAMS | USES_MESSAGES,
 	8,
-	main
+	Buddy_main
 };								/* The data about the Buddy program */
