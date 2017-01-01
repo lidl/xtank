@@ -23,10 +23,10 @@
 #include "xtanklib.h" 
 #include "special.h"
 #include "xtank.h"
-#include "string.h"
-#include "math.h"
-#include "stdio.h"
-#include "varargs.h"
+#include <string.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdarg.h>
 
 #include "assert.h"
 
@@ -49,11 +49,11 @@
 
 /*****************************************************************************/
 /*                                                                           */
-/* BAD THINGS WE ASSUME(You now what they say about assuming things!?!)      */
+/* BAD THINGS WE ASSUME  (You now what they say about assuming things!?!)    */
 /*                                                                           */
 /* 1)  Vehicles numbers are from 0 to MAX_VEHICLES-1                         */
 /* 2)  MOUNT_TURRETn == n-1 for (n = 1; n < MAX_TURRETS; n++)                */
-/* 3)  the neutral team number is 0                                          */
+/* 3)  The neutral team number is 0                                          */
 /* 4)  You're reasonably familiar with C(just a jest :))                     */
 /*                                                                           */
 /*****************************************************************************/
@@ -332,7 +332,6 @@ Environment;
 #else
 # define PROTO(s) ()
 #endif
-# define PROTO(s) ()  /*HAK*/
 
 /* tagman.c */
 static int HuntAndKill PROTO((Environment *pEnv));
@@ -365,11 +364,11 @@ static int HandleLocalLandMark PROTO((Environment *pEnv));
 static int VectorsCross PROTO((Coor x1, Coor y1, DOUBLE xs1, DOUBLE ys1, Coor x2, Coor y2, DOUBLE xs2, DOUBLE ys2));
 static void ProcessMessages PROTO((Environment *pEnv, int iMaxProcess));
 static int CanGo PROTO((Vehicle_info *pstMyVehicle, Coor xOff, Coor yOff));
-static self_clear_path PROTO((Location *start, int delta_x, int delta_y));
+static int self_clear_path PROTO((Location *start, int delta_x, int delta_y));
 static int IsGoalBox PROTO((Environment *pEnv, int x, int y));
 static void NoticeLandmark PROTO((Environment *pEnv, int x, int y));
 static void NoteSurroundings PROTO((Environment *pEnv));
-static navigate PROTO((Environment *pEnv, int (*destfunc )(), int through_unseen));
+static int navigate PROTO((Environment *pEnv, int (*destfunc )(), int through_unseen));
 static Angle recursive_short_cut PROTO((Environment *pEnv, int gx, int gy, int depth));
 static void FollowRoute PROTO((Environment *pEnv));
 #ifdef DEBUG_TIME
@@ -381,10 +380,10 @@ static void HandleWeapons PROTO((Environment *pEnv));
 static void PositionTurrets PROTO((Environment *pEnv));
 static void MainLoop PROTO((Environment *pEnv));
 static void TagmanMain PROTO((void));
-static int FriendliesReplenishing PROTO((Environment *pEnv, Location    *pLoc));
+static int FriendliesReplenishing PROTO((Environment *pEnv, Location *pLoc));
 static void PositionTurret PROTO((Environment *pEnv, int iTurret));
 static void Frantic PROTO((Environment *pEnv));
-static void BarfBarf();
+static void BarfBarf PROTO((Byte, ...));
 static void VehicleInfo2Message PROTO((Vehicle_info *pstVehicle, Byte *pbBuffer));
 static void Message2VehicleInfo PROTO((Byte *pbBuffer, Vehicle_info *pstVehicle));
 static FLOAT GetDodgeSpeed PROTO((Environment *pEnv, FLOAT fDefault));
@@ -2710,15 +2709,14 @@ DOUBLE xs2, ys2;					/* speeds of second vector */
 }
 
 
-static void BarfBarf(recipent, va_alist)
-Byte recipent;
-va_dcl
+static void
+BarfBarf(Byte recipent, ...)
 {
 	va_list args;
 	char msg[88];
 	char *fmt;
 
-	va_start(args);
+	va_start(args, recipent);
 	fmt = va_arg(args, char *);
 	(void) vsprintf(msg, fmt, args);
 	send_msg(recipent, OP_TEXT, msg);
@@ -2726,9 +2724,8 @@ va_dcl
 }
 
 
-static void ProcessMessages(pEnv, iMaxProcess)
-Environment *pEnv;
-int iMaxProcess;
+static void
+ProcessMessages(Environment *pEnv, int iMaxProcess)
 {
 	Byte abData[MAX_DATA_LEN];
 	int bHaveShot = FALSE;
@@ -2899,7 +2896,7 @@ int iMaxProcess;
 						"Barf Barf!",
 						"8 bit brain, 1 bit bus.",
 						"You look tired.",
-						"I've faught better bugs.",
+						"I've fought better bugs.",
 						"Shoot first, die last.",
 						"Shoot last, die first.",
 						"You weren't trying.",
