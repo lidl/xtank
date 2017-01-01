@@ -71,7 +71,23 @@ typedef struct
     int destination_length, cur_weapon;
 } Everything;
 
-static void main();
+/* prototypes */
+static void main(void);
+static int warrior_clear_path(Everything *, Location *, Location *);
+static void warrior_fire(Everything *all);
+static WallSide warrior_combat_dir(Everything *all);
+static void warrior_get_vehicles(Everything *all);
+static void warrior_move(Everything *all);
+static void warrior_yellow_target(Everything *all);
+static WallSide warrior_combat_dir(Everything *all);
+static void warrior_combat_target(Everything *all);
+static void warrior_plot_course(Everything *all, int x, int y, int x1, int y1);
+static void warrior_mode(Everything *all);
+static void warrior_try_to_go(Everything *all, FLOAT angl, FLOAT spd);
+static void warrior_generic_move(Everything *all);
+static void warrior_set_dest(Everything *all, WallSide dir);
+static void warrior_new_square(Everything *all);
+static void warrior_handle_crash(Everything *all);
 
 Prog_desc warrior_prog = {
 	"warrior",
@@ -83,7 +99,8 @@ Prog_desc warrior_prog = {
 	main
 };
 
-static void main()
+static void
+main(void)
 {
     int frame;
     Everything all;
@@ -238,9 +255,8 @@ static void main()
     }
 }
 
-
-WallSide warrior_explore_dir(all)
-Everything *all;
+static WallSide
+warrior_explore_dir(Everything *all)
 {
     WallSide dir;
     int total, chances[4], x, y, choice, i;
@@ -320,9 +336,8 @@ Everything *all;
 	return (dir);
 }
 
-
-WallSide warrior_yellow_dir(all)
-Everything *all;
+static WallSide
+warrior_yellow_dir(Everything *all)
 {
     if (all->destination_length == 0)
     {
@@ -332,9 +347,8 @@ Everything *all;
         return (all->destination_dir[--(all->destination_length)]);
 }
 
-
-WallSide warrior_combat_dir(all)
-Everything *all;
+static WallSide
+warrior_combat_dir(Everything *all)
 {
     WallSide dir;
     int total, chances[4], x, y, choice, i, x1, y1, dx, dy;
@@ -458,9 +472,8 @@ Everything *all;
     return (dir);
 }
 
-
-warrior_move(all)
-Everything *all;
+static void
+warrior_move(Everything *all)
 {
     WallSide dir;
 
@@ -492,9 +505,8 @@ Everything *all;
         all->timing.next_move = all->frame + 25;
 }
 
-
-warrior_yellow_target(all)
-Everything *all;
+static void
+warrior_yellow_target(Everything *all)
 {
 	int max_dist, target, i, dist;
 
@@ -523,10 +535,8 @@ Everything *all;
 						all->blip[target].x, all->blip[target].y);
 }
 
-
-warrior_set_dest(all, dir)
-Everything *all;
-WallSide dir;
+static void
+warrior_set_dest(Everything *all, WallSide dir)
 {
 	all->dest = all->loc;
 	all->last_dir = dir;
@@ -554,9 +564,8 @@ WallSide dir;
 	}
 }
 
-
-warrior_new_square(all)
-Everything *all;
+static void
+warrior_new_square(Everything *all)
 {
 	int i, j, x, y;
 
@@ -582,9 +591,8 @@ Everything *all;
 		}
 }
 
-
-warrior_generic_move(all)
-Everything *all;
+static void
+warrior_generic_move(Everything *all)
 {
     /* this is what get's called every frame (I hope) it checks for
        collisions, and other "special cases" otherwise, it heads for the
@@ -636,10 +644,8 @@ Everything *all;
     }
 }
 
-
-warrior_try_to_go(all, angl, spd)
-Everything *all;
-FLOAT angl, spd;
+static void
+warrior_try_to_go(Everything *all, FLOAT angl, FLOAT spd)
 {
 	/* theta is amount we need to turn */
 	FLOAT theta;
@@ -666,9 +672,8 @@ FLOAT angl, spd;
 	all->last_speed = spd;
 }
 
-
-warrior_mode(all)
-Everything *all;
+static void
+warrior_mode(Everything *all)
 {
 	/* this should be one of the "smarter" parts of the program, but right
 	   now it's pretty dumb */
@@ -676,9 +681,8 @@ Everything *all;
 		all->mode = EXPLORING;
 }
 
-
-warrior_handle_crash(all)
-Everything *all;
+static void
+warrior_handle_crash(Everything *all)
 {
 	/* movement scheduler during a crash */
 	switch (all->crashed)
@@ -699,10 +703,8 @@ Everything *all;
 	--(all->crashed);
 }
 
-
-warrior_plot_course(all, x, y, x1, y1)
-Everything *all;
-int x, y, x1, y1;
+static void
+warrior_plot_course(Everything *all, int x, int y, int x1, int y1)
 {
     /* plots a course from x,y to x1,y1, trying to find close to the shortest
        path, while staying within scanned territory */
@@ -862,9 +864,8 @@ int x, y, x1, y1;
 	all->maze_search[data_x[i]][data_y[i]] = (unsigned char) NULL_DIRECTION;
 }
 
-
-warrior_combat_target(all)
-Everything *all;
+static void
+warrior_combat_target(Everything *all)
 {
 	int min_dist, dist, i, dx, dy;
 
@@ -882,9 +883,8 @@ Everything *all;
 	}
 }
 
-
-warrior_get_vehicles(all)
-Everything *all;
+static void
+warrior_get_vehicles(Everything *all)
 {
 	int i;
 
@@ -898,9 +898,8 @@ Everything *all;
 	}
 }
 
-
-warrior_fire(all)
-Everything *all;
+static void
+warrior_fire(Everything *all)
 {
 	int target, i;
 	int dx, dy, temp, vtx, vty, vt, a, b, c, t;
@@ -981,9 +980,8 @@ Everything *all;
 **
 ** This code is optimized, but I'm sure someone could improve on it.
 */
-warrior_clear_path(all, start, finish)
-Everything *all;
-Location *start, *finish;
+static int
+warrior_clear_path(Everything *all, Location *start, Location *finish)
 {
 	int start_x, start_y, finish_x, finish_y;
 	int dx, dy, lattice_dx, lattice_dy;
