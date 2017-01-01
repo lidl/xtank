@@ -292,27 +292,21 @@ flag is on the EXTRA_DEFINES line in the Imakefile.Config file.
 	the newsgroups about this -- ask your system administrator to
 	turn this on.
 
--DTHREAD_SVR4
-	This threading package interfaces to the standard SVR4 system
+-DTHREAD_SWAPCONTEXT
+	This threading package interfaces to the standard Unix system
 	threading calls, getcontext()/swapcontext().  This has been
 	proven to work on an OKIstation 7330.  (It's based on an 40Mhz
 	i860, but never made it to market, really...)  Others have
 	reported getting this working under some of the x86 ports of
-	the SVR4 system.  Sun's Solaris 2.2 will compile OK, but there
+	the Unix system.  Sun's Solaris 2.2 will compile OK, but there
 	seems to be a bug in the thread process creation.  Since I have
 	no access to a system that runs Solaris, I cannot debug this
 	problem.
 
 -DTHREAD_POSIX
 	This threading package is written to the POSIX specification
-	for threads.  It has not been tested, and is not known to
-	work.  Feedback would be appreciated.
-
--DTHREAD_MP
-	This is the original Xtank threading package, which is based on
-	the code done at MIT originally.  This code is a perversion
-	based on setjmp()/longjmp() and works a little too well for its
-	own good.
+	for threads (aka "pthreads").  It has not been tested, and is
+	not known to work.  Feedback would be appreciated.
 
 -DTHREAD_NULL
 	This is the null threading package.  If none of the other

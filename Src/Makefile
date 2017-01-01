@@ -20,7 +20,7 @@ CFLAGS0+= -DX11 -DUNIX -DS1024x864 -DKEYPAD_DETECT -DSTINGY_REDRAW \
 	-DCODE_SIZE=0x20000 -DSTACK_SIZE=0x8000 \
 	-DNEW_LIMITS -DSLOWER
 
-CFLAGS0+= -DDYNALOAD -DMULTI_SYNC
+CFLAGS0+= -DDYNALOAD -DMULTI_SYNC -DTHREAD_SWAPCONTEXT
 
 CFLAGS1+= -DXTANK_DIR="\"${.CURDIR}/..\""
 
@@ -42,6 +42,7 @@ SRCS=	actions.c animate.c box.c camo.c collision.c cosell.c \
 	setups.c status.c sysdep.c unix.c update.c util.c vdesign.c \
 	vehicle.c version.c lex.zz.c
 SRCS+=	XMultiSync.c graphics.c objects.c three-d.c
+SRCS+=	threadglue.c thread.c
 SRCS+=	Bootlegger.c Buddy.c Dio.c Diophantine.c Flipper.c Guard.c \
 	Pzkw_I.c RacerX.c artful.c drone.c dum_maze.c eliza.c gnat.c \
 	hud3.c kamikaze.c mmtf.c rdfbot.c roadrunner.c runner.c \

@@ -15,6 +15,7 @@
 #include "terminal.h"
 #include "vehicle.h"
 #include "graphics.h"
+#include "thread.h"
 
 #if 1 || defined(__STDC__) || defined(__cplusplus)
 #define P_(s) s
@@ -38,22 +39,7 @@ int det_tow P_((Vehicle *));
 int turn_tow P_((Vehicle *, float direction));
 Boolean get_tele P_((Vehicle *, Bullet **));
 
-#ifdef _XTANKLIB_H_
-#ifdef FLOAT
 void adjust_speed P_((FLOAT *speedx, FLOAT *speedy, double adjust));
-#endif
-#ifdef Loc
-#endif
-#ifdef Vehicle
-#ifdef Bullet
-#endif
-#ifdef Bullet
-#endif
-#endif
-#ifdef Bullet
-#endif
-#ifdef Vehicle
-#endif
 void do_special P_((Vehicle *, SpecialType, int));
 void move_view P_((int dx, int dy));
 int next_live_tank P_((void));
@@ -64,7 +50,6 @@ void display_pause_message P_((void));
 void pause_game P_((Boolean state));
 void set_game_speed P_((int spd));
 void check_game_speed P_((void));
-#endif
 void explode P_((Bullet *b, int damage));
 void expl_area P_((Bullet *b));
 
@@ -86,8 +71,6 @@ void outpost_loc P_((Box *b, Loc *oloc, int grid_x, int grid_y));
 int change_box P_((Box *b, int x, int y));
 
 /* collision.c */
-#ifdef Vehicle
-#endif
 void coll_bullets_maze P_((void));
 void coll_bullets_vehicles P_((void));
 void coll_vehicles_vehicles P_((void));
@@ -96,18 +79,12 @@ void coll_vehicle_walls P_((Vehicle *v));
 /* cosell.c */
 int comment P_((int op, int dat, Vehicle *vh1, Vehicle *vh2, Bullet *db));
 
-#ifdef _XTANKLIB_H_
 /* disc.c */
 void disc_init_history P_((void));
-#ifdef Bullet
-#ifdef Vehicle
 void disc_new_owner P_((Bullet *b, Vehicle *vh1));
-#endif
 Vehicle *disc_cur_owner P_((Bullet *b));
 Vehicle *disc_last_owner P_((Bullet *b));
 Vehicle *disc_old_owner P_((Bullet *b));
-#endif
-#endif
 void set_disc_orbit P_((Vehicle *, Spin));
 void set_disc_owner P_((Bullet *, Vehicle *));
 int get_disc_team P_((Bullet *));
@@ -118,8 +95,6 @@ void set_disc_team P_((Bullet *, int));
 void display_terminal P_((unsigned int status, int lastterm));
 void display_anim P_((unsigned int status, int lastterm));
 void display_vehicle P_((Vehicle *v, unsigned int status));
-#ifdef Vehicle
-#endif
 void display_turrets P_((Vehicle *v, unsigned int status));
 void display_bullets P_((unsigned int status, int lastterm));
 void display_explosions P_((unsigned int status));
@@ -129,8 +104,6 @@ void display_cons P_((unsigned int status));
 void display_help P_((unsigned int status));
 void display_pics P_((void));
 void init_box_names P_((void));
-#ifdef Object
-#endif
 void draw_objs P_((Object **, Boolean, int, int, int, int, int, int));
 void draw_obj P_((Object *, int, int, int, int));
 void draw_picture_string P_((Object *, int, char *, int, int, int));
@@ -450,25 +423,14 @@ int find_pdesc P_((char *, int *));
 void check_time P_((void));
 void run_all_programs P_((void));
 
-#ifndef NO_CAMO
-#ifdef Vehicle
 /* camo.c */
-SpecialStatus special_stealth P_((Vehicle *v, char *record, unsigned int action));
-SpecialStatus special_camo P_((Vehicle *v, char *record, unsigned int action));
-SpecialStatus special_rdf P_((Vehicle *v, char *record, unsigned int action));
-#endif
-#endif /* !NO_CAMO */
+SpecialStatus special_stealth P_((Vehicle *, char *, int));
+SpecialStatus special_camo P_((Vehicle *, char *, int));
+SpecialStatus special_rdf P_((Vehicle *, char *, int));
 
-#ifndef NO_HUD
 /* hud.c */
-#ifdef Angle
 void draw_armor P_((int armor, Angle ang));
-#endif
-#ifdef Vehicle
-SpecialStatus special_hud P_((Vehicle *v, char *record, unsigned int action));
-#endif
-
-#endif /* !NO_HUD */
+SpecialStatus special_hud P_((Vehicle *, char *, int));
 
 /* radar.c */
 SpecialStatus special_radar P_((Vehicle *, char *, int));
@@ -510,13 +472,11 @@ static int compute_minarmor P_((Vehicle *));
 static int compute_totammo P_((Vehicle *));
 
 /* thread.c */
-#ifdef Thread
-Thread *thread_setup P_((void));
-Thread *thread_init P_((char *buf, unsigned int bufsize, Thread *(*func) ()));
-#endif
+XtankThread *thread_setup P_((void));
+XtankThread *thread_init P_((char *buf, unsigned int bufsize, XtankThread *(*func)(void)));
 
 /* threadglue.c */
-int init_threader P_((void));
+void init_threader P_((void));
 
 /* unix.c */
 int check_internet P_((int num_clients, char **client));

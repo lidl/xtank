@@ -16,12 +16,13 @@
 
 /* Pointer to the program scheduler's thread */
 /* this is a global located in program.c */
-extern Thread *scheduler_thread;
+extern XtankThread *scheduler_thread;
 
 /*
 ** Initializes the threader and signal handler at the beginning of a battle.
 */
-init_threader()
+void
+init_threader(void)
 {
 
 	/* Initialize threading system */
@@ -33,15 +34,11 @@ init_threader()
 	syntax error - if this define is used, choose another
 #endif
 
-#ifdef THREAD_MP
-#define THREADING_DEFINED
-#endif
-
 #ifdef THREAD_SUNLWP
 #define THREADING_DEFINED
 #endif
 
-#ifdef THREAD_SVR4
+#ifdef THREAD_SWAPCONTEXT
 #define THREADING_DEFINED
 #endif
 

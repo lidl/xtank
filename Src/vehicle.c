@@ -370,7 +370,7 @@ Vehicle *victim;
 			prog->cleanup = NULL;
 		}
 		if (prog->thread != NULL) {
-			thread_kill((Thread *) prog->thread);
+			thread_kill((XtankThread *) prog->thread);
 			prog->thread = NULL;
 		}
 	}

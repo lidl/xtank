@@ -30,9 +30,9 @@ extern Settings settings;
 
 /* stack space programs get */
 #ifndef THREAD_POSIX
-#define THREAD_TOTALSIZE (sizeof(Thread) + STACK_SIZE)
+#define THREAD_TOTALSIZE (sizeof(XtankThread) + STACK_SIZE)
 #else
-#define THREAD_TOTALSIZE (sizeof(Thread))
+#define THREAD_TOTALSIZE (sizeof(XtankThread))
 #endif
 
 /* Clock values to time robot program execution */
@@ -42,7 +42,7 @@ Prog_desc *prog_desc[MAX_PDESCS];
 int num_prog_descs;
 
 /* Pointer to the program scheduler's thread */
-Thread *scheduler_thread;
+XtankThread *scheduler_thread;
 
 /*
 ** Changes the current vehicle pointer to the specified vehicle.
@@ -226,8 +226,9 @@ init_programs(Vehicle *v)
 				rorre("init_programs(): malloc failed");
 		}
 		assert(prog->thread == NULL);
-		prog->thread = (char *) thread_init(prog->thread_buf, THREAD_TOTALSIZE,
-										  (Thread *(*)()) prog->desc->func);
+		prog->thread = (char *)
+			thread_init(prog->thread_buf, THREAD_TOTALSIZE,
+			(XtankThread *(*)()) prog->desc->func);
 
 #ifdef THREADING_DEFINED
 		if (prog->thread == NULL)
@@ -293,7 +294,7 @@ run_program(Program *prog)
 #ifdef __bsdi__
 	fprintf(stderr,"Switching to %s\n", cv->owner->name);
 #endif
-	thread_switch((Thread *) prog->thread);
+	thread_switch((XtankThread *) prog->thread);
 
 	/* Stop the interval timer */
 	stop_counter();
