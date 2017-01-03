@@ -16,38 +16,48 @@
 #include <stdio.h>
 #include "sysdep.h"
 
-static void main();
+static void drone_main(void);
+static int drone_find(Location *myloc, Vehicle_info *t, Team my_team);
+static void drone_move_to_box(Location *myloc, int targ_x, int targ_y);
+static void drone_shoot(Location *myloc, Vehicle_info *t, int ammo_speed);
+extern int rnd(int mx);
 
 Prog_desc drone_prog = {
 	"drone",
 	"Vanguard",
-	"Wanders towards enemies and attacks them.  This program is designed to \
-use a small amount of processing time, improving speed of games with many \
-robots.",
+	"Wanders towards enemies and attacks them.  This program is \
+designed to use a small amount of processing time, improving speed \
+of games with many robots.",
 	"Terry Donahue",
 	PLAYS_COMBAT | DOES_SHOOT | DOES_EXPLORE,
 	2,
-	main
+	drone_main
 };
 
 #define ENEMY_NONE   0
 #define ENEMY_RADAR  1
 #define ENEMY_SCREEN 2
 
-static void main()
+static void
+drone_main(void)
 {
     Vehicle_info enemy;
+    Vehicle_info self;
     Location myloc;
     Weapon_info winfo;
     int find_count, move_count;
     int find_thresh, move_thresh;
     int enemy_flag;
+    Team my_team;
 
     /* Initialize counters */
     find_count = 0;
     find_thresh = 4;
     move_count = 0;
     move_thresh = 10;
+
+    get_self(&self);
+    my_team = self.team;
 
 /* for debugging threads */
 #ifdef __bsdi__
@@ -71,7 +81,7 @@ fprintf(stderr,"drone_main() entered\n");
 	/* Find the nearest enemy */
 	if (find_count++ > find_thresh)
 	{
-	    enemy_flag = drone_find(&myloc, &enemy);
+	    enemy_flag = drone_find(&myloc, &enemy, my_team);
 	    find_count = 0;
 	}
 	/* Try to shoot at enemy if on screen and we have a weapon */
@@ -103,9 +113,8 @@ fprintf(stderr,"drone_main() entered\n");
 ** a clear path to it into t and returns ENEMY_SCREEN.  If no
 ** such vehicle, returns ENEMY_NONE.
 */
-drone_find(myloc, t)
-Location *myloc;
-Vehicle_info *t;
+static int
+drone_find(Location *myloc, Vehicle_info *t, Team my_team)
 {
 	Vehicle_info vinfo[MAX_VEHICLES];
 	int num_vinfos;
@@ -120,6 +129,10 @@ Vehicle_info *t;
 	for (i = 0; i < num_vinfos; i++)
 	{
 		v = &vinfo[i];
+
+		/* ignore vehicles that are on the same team */
+		if ((my_team == v->team) && (my_team != NEUTRAL))
+			continue;
 
 		/* ignore vehicles that have no clear path to them */
 		if (!clear_path(myloc, &v->loc))
@@ -144,10 +157,8 @@ Vehicle_info *t;
 /*
 ** Shoots at vehicle t with all weapons.  Uses quick leading fan algorithm.
 */
-drone_shoot(myloc, t, ammo_speed)
-Location *myloc;
-Vehicle_info *t;
-int ammo_speed;
+static void
+drone_shoot(Location *myloc, Vehicle_info *t, int ammo_speed)
 {
 	int dx, dy;
 	FLOAT lead_factor;
@@ -171,12 +182,11 @@ int ammo_speed;
 /*
 ** Wanders towards the box with coordinates (targ_x,targ_y).
 */
-drone_move_to_box(myloc, targ_x, targ_y)
-Location *myloc;
-int targ_x, targ_y;
+static void
+drone_move_to_box(Location *myloc, int targ_x, int targ_y)
 {
-    static box_x[4] = {BOX_WIDTH / 2, BOX_WIDTH, BOX_WIDTH / 2, 0};
-    static box_y[4] = {0, BOX_HEIGHT / 2, BOX_HEIGHT, BOX_HEIGHT / 2};
+    static int box_x[4] = {BOX_WIDTH / 2, BOX_WIDTH, BOX_WIDTH / 2, 0};
+    static int box_y[4] = {0, BOX_HEIGHT / 2, BOX_HEIGHT, BOX_HEIGHT / 2};
     int grid_x, grid_y;
     int i, choices, dir, pick;
     FLOAT spd, ang;
