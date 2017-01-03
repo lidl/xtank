@@ -177,6 +177,7 @@
 */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 #include <xtanklib.h>
 #include <vstructs.h>
@@ -192,7 +193,7 @@
 #define ProgName  "Gnat"
 #endif 
 
-static void gnat_main();
+static void gnat_main(void);
 static Settings_info settings; 
 
 Prog_desc ProgDesc =
@@ -656,8 +657,8 @@ static char text[80];
 
 /*** Check on our armor condition. */
 
-static void check_armor(vars)
-  GnatVars *vars;
+static void
+check_armor(GnatVars *vars)
 {
   int side, fnum, value;
   int crit_type;
@@ -732,8 +733,8 @@ static void check_armor(vars)
 
 /*** Check on our ammunition condition by type. ***/
 
-static void check_ammo(vars)
-  GnatVars *vars;
+static void
+check_ammo(GnatVars *vars)
 {
   int wp;
   int value, total;
@@ -787,8 +788,8 @@ static void check_ammo(vars)
 
 /*** Check on our fuel. ***/
 
-static void check_fuel(vars)
-  GnatVars *vars;
+static void
+check_fuel(GnatVars *vars)
 {
   int value;
 
@@ -804,8 +805,8 @@ static void check_fuel(vars)
 
 /*** Return True if we are moving backwards. ***/
 
-static Boolean moving_backwards(us)
-  Vehicle_info *us;
+static Boolean
+moving_backwards(Vehicle_info *us)
 {
   float direction;
 
@@ -818,8 +819,8 @@ static Boolean moving_backwards(us)
 
 /*** Put the current path information in the old gradient buffer. ***/
 
-static Boolean push_path(vars)
-  GnatVars *vars;
+static Boolean
+push_path(GnatVars *vars)
 {
   int i, j;
 
@@ -837,8 +838,8 @@ static Boolean push_path(vars)
 
 /*** Pop the current path information in the old gradient buffer. ***/
 
-static void pop_path(vars)
-  GnatVars *vars;
+static void
+pop_path(GnatVars *vars)
 {
   int i, j;
 
@@ -851,9 +852,8 @@ static void pop_path(vars)
 
 /*** Check if our vehicle can pass from point to point w/o hitting walls. ***/
 
-static Boolean clear_tank_path(beg, end, size)
-  Location *beg, *end;
-  int size;
+static Boolean
+clear_tank_path(Location *beg, Location *end, int size)
 {
   Location b, e;
 
@@ -905,9 +905,8 @@ static Boolean clear_tank_path(beg, end, size)
 
 /*** Weapon arming and firing procedures. ***/
 
-static Boolean discharge_weapon(vars, wp)
-  GnatVars *vars;
-  int wp;
+static Boolean
+discharge_weapon(GnatVars *vars, int wp)
 {
   Boolean fired;
 
@@ -924,8 +923,8 @@ static Boolean discharge_weapon(vars, wp)
 
 /*** Toggle the armament to maximize reloading while readying for enemy. ***/
 
-static void toggle_ammo(vars)
-  GnatVars *vars;
+static void
+toggle_ammo(GnatVars *vars)
 {
   int wp;
   int max_ammo, max_num;
@@ -960,8 +959,8 @@ static void toggle_ammo(vars)
 
 /*** Rethink our current action by making it N/A and resetting path. ***/
 
-static void rethink(vars)
-  GnatVars *vars;
+static void
+rethink(GnatVars *vars)
 {
   vars->action = NoAction;
   vars->path_ok = False;
@@ -971,10 +970,9 @@ static void rethink(vars)
 
 /*** Update depot information. ***/
 
-static Boolean update_depot_info(vars, type, x, y, discovered)
-  GnatVars *vars;
-  int type, x, y;
-  Boolean discovered;   /* Not second hand info. */
+static Boolean
+update_depot_info(GnatVars *vars, int type, int x, int y, Boolean discovered)
+  /* Boolean discovered;    Not second hand info. */
 {
   int i;
   Boolean new_info;
@@ -1064,8 +1062,8 @@ static Boolean update_depot_info(vars, type, x, y, discovered)
 
 /*** Update current map and landmark information. ***/
 
-static void check_map(vars)
-  GnatVars *vars;
+static void
+check_map(GnatVars *vars)
 {
   int x, y, dx, dy, min_dist, min_x, min_y;
   int type;
@@ -1111,8 +1109,8 @@ static void check_map(vars)
 
 /*** Check the geography: Our position, map, etc. ***/
 
-static void check_geography(vars)
-  GnatVars *vars;
+static void
+check_geography(GnatVars *vars)
 {
   int i, j, x, y;
   Location loc;
@@ -1141,7 +1139,7 @@ static void check_geography(vars)
 	vars->old_us.loc.grid_y == vars->last_y[1]) {
 #ifdef DEBUG_GNAT
       send_msg(RECIPIENT_ALL, OP_TEXT, "Rocking.");
-#endif DEBUG_GNAT
+#endif
       rethink(vars);
     }
 
@@ -1173,8 +1171,8 @@ static void check_geography(vars)
 
 /*** Update blip memory. ***/
 
-static void check_radar(vars)
-  GnatVars *vars;
+static void
+check_radar(GnatVars *vars)
 {
   Blip_info blips[MAX_BLIPS];
   int blip_updated[MAX_BLIPS], num_blips;
@@ -1242,9 +1240,8 @@ static void check_radar(vars)
 
 /*** Determine maze area and unreachable outside areas; store in bool_map. ***/
 
-static void fill_maze(vars, init_x, init_y)
-  GnatVars *vars;
-  int init_x, init_y;
+static void
+fill_maze(GnatVars *vars, int init_x, int init_y)
 {
   int x, y;
   int dx, dy;
@@ -1253,7 +1250,7 @@ static void fill_maze(vars, init_x, init_y)
 
 #ifdef DEBUG_GNAT
   send_msg(RECIPIENT_ALL, OP_TEXT, "Filling maze.");
-#endif DEBUG_GNAT
+#endif
 
   top = 1;
   bottom = 0;
@@ -1296,8 +1293,8 @@ static void fill_maze(vars, init_x, init_y)
 
 /*** Initialization.  Find out what we have. ***/
 
-static void gnat_init(vars)
-  GnatVars *vars;
+static void
+gnat_init(GnatVars *vars)
 {
   int i, j;
   int vw, vh;
@@ -1474,10 +1471,8 @@ static void gnat_init(vars)
 
 /*** Send message to friendly tanks. ***/
 
-static void send_to_friends(vars, type, recipient)
-  GnatVars *vars;
-  MessageTypes type;
-  Byte recipient;
+static void
+send_to_friends(GnatVars *vars, MessageTypes type, Byte recipient)
 {
   int i, b;
   int total_depots, depots_sent;
@@ -1578,8 +1573,8 @@ static void send_to_friends(vars, type, recipient)
 
 /*** Communicate with friendly tanks. ***/
 
-static void check_friends(vars)
-  GnatVars *vars;
+static void
+check_friends(GnatVars *vars)
 {
   int i, j, b, type, x, y, friend;
   Boolean new_info;
@@ -1661,8 +1656,8 @@ static void check_friends(vars)
 
 /*** Check priorities for depot use. ***/
 
-static Boolean depot_priority(vars)
-  GnatVars *vars;
+static Boolean
+depot_priority(GnatVars *vars)
 {
   int i, dx, dy, dist;
   int fdist[MAX_VEHICLES];
@@ -1712,12 +1707,10 @@ typedef enum {
 
 } ToleranceAmount;
 
-static Boolean found_path(vars, target_x, target_y, path_needs, severity)
-  GnatVars *vars;
-  int target_x, target_y;
-  ToleranceAmount path_needs;
-  int severity;  /* Of xenophobia that is. */
+static Boolean
+found_path(GnatVars *vars, int target_x, int target_y, ToleranceAmount path_needs, int severity)
 {
+  /* int severity;  Of xenophobia that is. */
   int e, x, y, score;
   int dx, dy;
   int bottom, top;
@@ -1858,10 +1851,8 @@ static Boolean found_path(vars, target_x, target_y, path_needs, severity)
 
 /*** Go through difference tolerances under fast mapping. ***/
 
-static Boolean found_fast_path(vars, target_x, target_y, avoid)
-  GnatVars *vars;
-  int target_x, target_y;
-  Boolean avoid;
+static Boolean
+found_fast_path(GnatVars *vars, int target_x, int target_y, Boolean avoid)
 {
   Boolean got_path;
   int x, y;
@@ -1892,8 +1883,7 @@ static Boolean found_fast_path(vars, target_x, target_y, avoid)
 
 /*** Grows gradient map from target coordinate optimally & incrementally. ***/
 
-static void find_opt_path(vars)
-  GnatVars *vars;
+static void find_opt_path(GnatVars *vars)
 {
   int iterations;
   int e, x, y, score;
@@ -2078,11 +2068,13 @@ static void find_opt_path(vars)
 
 /*** Return best movement heading based on current gradient map. ***/
 
-static Boolean best_move_heading(vars, allow_dest, move_heading, through_dest)
-  GnatVars *vars;
+static Boolean
+best_move_heading(GnatVars *vars, Boolean allow_dest, Angle *move_heading, Boolean *through_dest)
+#if 0
   Boolean allow_dest;      /* Whether we can move through DEST_WALL.     */
   Angle *move_heading;     /* The best heading which is on our path.     */
   Boolean *through_dest;   /* If returns TRUE, moving through DEST_WALL. */
+#endif
 {
   Location tloc;
   int i, j, k, x, y, dx, dy, dist;
@@ -2225,8 +2217,8 @@ static Boolean best_move_heading(vars, allow_dest, move_heading, through_dest)
 
 /*** See if there is a friend in need, and go to him. ***/
 
-static Boolean aid_friend(vars)
-  GnatVars *vars;
+static Boolean
+aid_friend(GnatVars *vars)
 {
   int i, dx, dy, fnum;
   int neediest, score, best_score;
@@ -2281,8 +2273,8 @@ static Boolean aid_friend(vars)
 
 /*** Protect our weakest sides from incoming fire. ***/
 
-static void protect_sides(vars)
-  GnatVars *vars;
+static void
+protect_sides(GnatVars *vars)
 {
   int i, dx, dy;
   int left, right, front, back;
@@ -2391,8 +2383,8 @@ static void protect_sides(vars)
 static Angle dodge_angles[8] = {   0.0,  -45.0,   45.0,  -90.0,  90.0,
 				-135.0,  135.0,  180.0 };
 
-static void dodge_ivectors(vars)
-  GnatVars *vars;
+static void
+dodge_ivectors(GnatVars *vars)
 {
   int try, max_tries;
   int min_try, min_damage, damage, mine_damage;
@@ -2723,8 +2715,8 @@ static void dodge_ivectors(vars)
 
 /*** Initialize the intercept grid and boundaries. ***/
 
-static void init_igrid(vars)
-  GnatVars *vars;
+static void
+init_igrid(GnatVars *vars)
 {
   int i, x, y;
   int f, eti;
@@ -2796,12 +2788,12 @@ static void init_igrid(vars)
   if (vars->east_x + vars->west_x + 1 >= MaxISize) {
     fprintf(stderr, "**** EAST + WEST >= MaxISize ****\n");
     fflush(stderr);
-    send_msg(RECIPIENT_ALL, OP_TEXT, "EAST + WEST >= MaxISize");
+    send_msg(RECIPIENT_ALL, OP_TEXT, (Byte *)"EAST + WEST >= MaxISize");
   }
   if (vars->south_y + vars->north_y + 1 >= MaxISize) {
     fprintf(stderr, "**** SOUTH + NORTH >= MaxISize ****\n");
     fflush(stderr);
-    send_msg(RECIPIENT_ALL, OP_TEXT, "SOUTH + NORTH >= MaxISize");
+    send_msg(RECIPIENT_ALL, OP_TEXT, (Byte *)"SOUTH + NORTH >= MaxISize");
   }
 
   for (i = 0; i < IEti; i++)
@@ -2817,13 +2809,12 @@ static void init_igrid(vars)
 
 /*** Add an intercepting vector to the intercept grid. ***/
 
-static Boolean add_ivector(vars, x, y, vx, vy, dvx, dvy, damage, allowed_time)
-  GnatVars *vars;
-  int x, y;
-  float vx, vy;
+static Boolean
+add_ivector(GnatVars *vars, int x, int y, float vx, float vy, float dvx, float dvy, int damage, int allowed_time)
+#if 0
   float dvx, dvy;   /* Only tanks will have acceleration. */
-  int damage;
   int allowed_time; /* If < 0, its a tank. */
+#endif
 {
   int i, j;
   int dx, dy;
@@ -2998,8 +2989,8 @@ static Boolean add_ivector(vars, x, y, vx, vy, dvx, dvy, damage, allowed_time)
 
 /*** Process battlefield info: Look for possible intercepting bullets. */
 
-static void process_bullets(vars)
-  GnatVars *vars;
+static void
+process_bullets(GnatVars *vars)
 {
   int i, fnum, id,  damage;
   int t, dx, dy, dist;
@@ -3142,8 +3133,8 @@ static void process_bullets(vars)
 
 /*** Process battlefield info: Look for visible/intercepting tanks. */
 
-static void process_tanks(vars)
-  GnatVars *vars;
+static void
+process_tanks(GnatVars *vars)
 {
   int i, j, dx, dy, dist;
   int fnum, damage;
@@ -3361,8 +3352,8 @@ static void process_tanks(vars)
 
 /*** Check battlefield for hostile or friendly objects. ***/
 
-static void check_battlefield(vars)
-  GnatVars *vars;
+static void
+check_battlefield(GnatVars *vars)
 {
   int i, j, x, y, e, fnum;
 
@@ -3469,8 +3460,8 @@ static void check_battlefield(vars)
 
 /*** Check if any external (scroll) force is keeping us from moving. ***/
 
-static void check_for_scrolls(vars)
-  GnatVars *vars;
+static void
+check_for_scrolls(GnatVars *vars)
 {
   int i;
   LandmarkType type;
@@ -3565,9 +3556,8 @@ static void check_for_scrolls(vars)
 
 /*** Heat seeker friendly fire prevention procedure. ***/
 
-static Boolean bad_missile_shot(vars, missile_angle)
-  GnatVars *vars;
-  Angle missile_angle;
+static Boolean
+bad_missile_shot(GnatVars *vars, Angle missile_angle)
 {
   int f, frame_num;
   int dx, dy;
@@ -3603,10 +3593,8 @@ static Boolean bad_missile_shot(vars, missile_angle)
 
 /*** Spot the nearest landmark of a given type. ***/
 
-static found_depot(vars, type, flee)
-  GnatVars *vars;
-  LandmarkType type;
-  Boolean flee;
+static int
+found_depot(GnatVars *vars, LandmarkType type, Boolean flee)
 {
   int i, j, dx, dy, dist;
   int best_depot, best_dist;
@@ -3707,8 +3695,8 @@ static found_depot(vars, type, flee)
 
 /*** Load from a depot. ***/
 
-static void load_from_depot(vars)
-  GnatVars *vars;
+static void
+load_from_depot(GnatVars *vars)
 {
   int dx, dy, dist;
   LandmarkType type;
@@ -3778,8 +3766,8 @@ static void load_from_depot(vars)
 
 /*** Move tank using the precomputed gradient map. ***/
 
-static void move_to_dest(vars)
-  GnatVars *vars;
+static void
+move_to_dest(GnatVars *vars)
 {
   int dx, dy;
   Angle angle, opt_angle;
@@ -3835,8 +3823,8 @@ static void move_to_dest(vars)
 
 /*** Explore the maze. ***/
 
-static void set_to_explore(vars)
-  GnatVars *vars;
+static void
+set_to_explore(GnatVars *vars)
 {
   int x, y, dx, dy;
   int heading_x, heading_y;
@@ -3903,8 +3891,8 @@ static void set_to_explore(vars)
 
 /*** See if we can pummel enemy from a distance. ***/
 
-static Boolean can_mortar(vars)
-  GnatVars *vars;
+static Boolean
+can_mortar(GnatVars *vars)
 {
   int i;
   int dx, dy, dist;
@@ -3982,8 +3970,8 @@ static Boolean can_mortar(vars)
 
 /*** Lay in a course for enemy if one is there. ***/
 
-static Boolean pursue_enemy(vars)
-  GnatVars *vars;
+static Boolean
+pursue_enemy(GnatVars *vars)
 {
   int i, j, dx, dy, dist, target_proximity;
   int min, min_dist;
@@ -4121,8 +4109,8 @@ static Boolean pursue_enemy(vars)
 
 /*** Weapon targeting and pursuit procedure. ***/
 
-static void fire_control(vars)
-  GnatVars *vars;
+static void
+fire_control(GnatVars *vars)
 {
   Location us;               /* Can actually vary with turret position. */
   Boolean targeting_outpost;
@@ -4698,8 +4686,8 @@ static void fire_control(vars)
 
 /*** COMBAT COMMAND CENTRAL. ***/
 
-static void combat_control(vars)
-  GnatVars *vars;
+static void
+combat_control(GnatVars *vars)
 {
   int i, flee;
   int fnum;
@@ -5033,8 +5021,8 @@ static void combat_control(vars)
 
 /*** RACE COMMAND CENTRAL ***/
 
-static void race_control(vars)
-  GnatVars *vars;
+static void
+race_control(GnatVars *vars)
 {
   do {
 
@@ -5144,15 +5132,15 @@ static void race_control(vars)
 
 /*** Cleanup function. ***/
 
-static void clean_up(vars)
-  GnatVars *vars;
+static void clean_up(GnatVars *vars)
 {
   free((char *) vars);
 }
 
 /*** The main loop accessable to the xtank program. ***/
 
-static void gnat_main()
+static void
+gnat_main(void)
 {
   GnatVars *vars;
 
