@@ -2528,7 +2528,13 @@ dodge_ivectors(GnatVars *vars)
 	  opt_dir[deg] += 3;
 	  deg = (deg + 1) % 24;
 	}
-	if (vars->enemies[i].rspeed < 0) {  /* Boogie is gaining. */
+/*
+** XXX - 20170103
+** I changed this, as I'm pretty sure that since i will always be 11
+** after the above loop, the wrong check was being made.
+*/
+//	if (vars->enemies[i].rspeed < 0) {  /* Boogie is gaining. */
+	if (vars->enemies[vars->victim].rspeed < 0) {  /* Boogie is gaining. */
 	  deg = (RadTo15Deg(vars->enemies[vars->victim].pos_angle + 
 			    PI/2) - 1) % 24;
 	  for (j = 0; j < 3; j++) {
