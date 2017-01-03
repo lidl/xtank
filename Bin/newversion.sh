@@ -1,23 +1,25 @@
-#!/bin/sh -
+#!/bin/sh
 #
 # Copyright 1992, 1993 by Pix Technologies Corp.
 #
-# $Id$
-#
+
+version=1.6.0
+
 if [ $# = 1 ]; then
-    TARGET=$1
+	TARGET=$1
 else
-    TARGET=unknown
+	TARGET=unknown
 fi
-if [ ! -r .version ]; then
-        /bin/echo 0 > .version
+bfile=.buildnumber
+if [ ! -r "${bfile}" ]; then
+	echo 0 > ${bfile}
 fi
-touch .version
-v=`cat .version` u=${USER-root} d=`pwd` h=`hostname` t=`date`
+touch ${bfile}
+b=$(cat ${bfile}) u=${USER-root} d=$(pwd) h=$(hostname) t=$(date)
 
 FILE=version.c
 
-/bin/echo "char *version1 = \"Xtank Pix.COM Release 1.6.0\";" > ${FILE}
-/bin/echo "char *version2 = \"Build #${v}: (${TARGET}) ${t}\";" >> ${FILE}
-/bin/echo "char *version3 = \"${u}@${h}:${d}\";" >> ${FILE}
-/bin/echo `expr ${v} + 1` > .version
+echo "char *version1 = \"Xtank Release ${version}\";" > ${FILE}
+echo "char *version2 = \"Build #${b}: (${TARGET}) ${t}\";" >> ${FILE}
+echo "char *version3 = \"${u}@${h}:${d}\";" >> ${FILE}
+echo $(expr ${b} + 1) > ${bfile}
