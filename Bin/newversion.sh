@@ -17,7 +17,7 @@ v=`cat .version` u=${USER-root} d=`pwd` h=`hostname` t=`date`
 
 FILE=version.c
 
-/bin/echo "char *version1 = \"Xtank Pix.COM Release 1.4f\";" > ${FILE}
+/bin/echo "char *version1 = \"Xtank Pix.COM Release 1.6.0\";" > ${FILE}
 /bin/echo "char *version2 = \"Build #${v}: (${TARGET}) ${t}\";" >> ${FILE}
 /bin/echo "char *version3 = \"${u}@${h}:${d}\";" >> ${FILE}
 /bin/echo `expr ${v} + 1` > .version
