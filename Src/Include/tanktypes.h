@@ -54,4 +54,14 @@ typedef enum {
 	TOGGLE = 2
 } Spin;
 
+typedef enum {
+	SP_nonexistent,
+	SP_off,
+	SP_on,
+	SP_broken,
+	real_MAX_SPEC_STATS
+} SpecialStatus;
+
+#define MAX_SPEC_STATS ((int)real_MAX_SPEC_STATS)
+
 #endif /* _TANKTYPES_H_ */
