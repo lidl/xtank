@@ -91,11 +91,9 @@ extern int num_kills P_((void));
 extern int score P_((void));
 extern void done P_((void));
 extern void set_cleanup_func P_((void (*funcp) (), void *argp));
-#ifdef __bsdi__
-#undef Angle
-#endif
 extern void creat_mort P_((Weapon *, Loc *, Angle));
 extern void creat_harm P_((Weapon *, Loc *, Angle));
+extern SpecialStatus switch_special(SpecialType st, int action);
 
 /* highlib.c */
 extern void turn_all_turrets P_((Angle));
