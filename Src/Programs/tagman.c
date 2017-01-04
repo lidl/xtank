@@ -20,7 +20,7 @@
 
 #define HAS_TURRET4
 
-#include "xtanklib.h" 
+#include "xtanklib.h"
 #include "special.h"
 #include "xtank.h"
 #include <string.h>
@@ -66,10 +66,10 @@ typedef int Speed;
 #define NODIR		(WEST+1)
 
 /* the maximum possible number of boxes in the map */
-#define MAX_BOXES	(GRID_WIDTH * GRID_HEIGHT)	
+#define MAX_BOXES	(GRID_WIDTH * GRID_HEIGHT)
 
 /* how deep to search for short cuts in the navigator's route */
-#define SHORT_CUT_DEPTH	5	
+#define SHORT_CUT_DEPTH	5
 
 #define map_wall_north(x,y) map_north_result(pEnv->my_map[x][y].flags)
 #define map_wall_south(x,y) map_north_result(pEnv->my_map[x][y+1].flags)
@@ -86,7 +86,7 @@ typedef enum
 	South = SOUTH,
 	West  = WEST,
 	Nodir = NODIR
-}               
+}
 Direction;
 
 /* information I may want to keep on a on a map box */
@@ -94,7 +94,7 @@ typedef struct
 {
 	Boolean         seen;	/* iff we have ever seen this box */
 	Direction       navdir;	/* direction (used by navigator)  */
-} 
+}
 BoxNotes;
 
 /*********************************************************************/
@@ -103,9 +103,9 @@ BoxNotes;
 /* that there are no namespace conflicts with the rest of Xtank.     */
 /*********************************************************************/
 
-static int  aiDamage[] = { 2, 3, 4, 2, 3, 4, 3, 4, 5, 
-						     4, 6, 8, 6, 3, 6, 8, 8, 8,
-						     4, 6, 8, 6, 3, 6, 8, 8, 8};
+static int  aiDamage[] = { 2, 3, 4, 2, 3, 4, 3, 4, 5,
+			     4, 6, 8, 6, 3, 6, 8, 8, 8,
+			     4, 6, 8, 6, 3, 6, 8, 8, 8};
 
 static int PercentOfLandmark[] =
 {
@@ -129,7 +129,7 @@ static int PercentOfLandmark[] =
 	50,
 	50,
 	50,
-	50 
+	50
 };
 
 static int MaxBodySide[] =
@@ -159,20 +159,20 @@ static int MaxBodySide[] =
 
 #ifdef UNUSED
 /* convert a direction into a heading angle */
-static Angle    dir2angle[] = 
+static Angle    dir2angle[] =
 {
 	3 * PI / 2,		/* North */
-	0,			    /* East  */
+	0,			/* East  */
 	PI / 2,			/* South */
-	PI,			    /* West  */
-	0,			    /* Nodir */
+	PI,			/* West  */
+	0,			/* Nodir */
 };
 #endif
 
 /* convert a direction into differences in x and y coordinates */
-static Coord    dir2delta[] = 
+static Coord    dir2delta[] =
 {
-    { 0, -1},		/* North */
+	{ 0, -1},		/* North */
 	{ 1,  0},		/* East  */
 	{ 0,  1},		/* South */
 	{-1,  0},		/* West  */
@@ -183,7 +183,7 @@ static Coord    dir2delta[] =
  * convert a direction into the pixel coordinates of the side of the box that
  * will be the exit
  */
-static Coord    dir2exit[] = 
+static Coord    dir2exit[] =
 {
 	{BOX_WIDTH / 2, 1},	                /* North (top center)    */
 	{BOX_WIDTH - 1, BOX_HEIGHT / 2},	/* East  (right center)  */
@@ -193,7 +193,7 @@ static Coord    dir2exit[] =
 };
 
 /* convert a direction to its opposite */
-static Direction dir2opposite[] = 
+static Direction dir2opposite[] =
 {
 	South,			/* [North] */
 	West,			/* [East]  */
@@ -204,7 +204,7 @@ static Direction dir2opposite[] =
 
 
 /* convert a direction to its adjacent direction */
-static Direction dir2clockwise[] = 
+static Direction dir2clockwise[] =
 {
 	East,			/* [North] */
 	South,			/* [East]  */
@@ -215,7 +215,7 @@ static Direction dir2clockwise[] =
 
 
 /* convert a direction to its adjacent direction */
-static Direction dir2counterclockwise[] = 
+static Direction dir2counterclockwise[] =
 {
 	West,			/* [North] */
 	North,			/* [East]  */
@@ -224,17 +224,17 @@ static Direction dir2counterclockwise[] =
 	Nodir,			/* [Nodir] */
 };
 
-typedef enum 
+typedef enum
 {
 	CURRENT,
 	CLOSEST
-} 
+}
 Search_mode;
 
-typedef enum 
-{ 
-	ENGAGE, 
-	DIS_ENGAGE, 
+typedef enum
+{
+	ENGAGE,
+	DIS_ENGAGE,
 	WANDER,
 	REPLENISH,
 	GOTO,
@@ -243,7 +243,7 @@ typedef enum
 	RAMMING,
 	RESTART,
 	max_statuses
-} 
+}
 Status_code;
 
 typedef struct
@@ -256,11 +256,11 @@ typedef struct
 #ifdef CHECK_LAST_FIRE
 	int   iLastFire;
 #endif
-} 
+}
 TurretInfo;
 
 
-typedef struct 
+typedef struct
 {
     Status_code   iStatus;
 	int           iGoal;
@@ -273,13 +273,13 @@ typedef struct
 	int           iBetters;
 #endif
 	Location      stPrevLoc;	/* previous location */
-    Location      prev_loc;		/* previous location */
-    Boolean       have_route;	/* iff the navigator found a route */
-    Boolean       bGoalLocated;	/* iff we have ever seen our goal */
-    Box (*my_map)[GRID_HEIGHT];	/* my personal map of the world (provided by
+	Location      prev_loc;		/* previous location */
+	Boolean       have_route;	/* iff the navigator found a route */
+	Boolean       bGoalLocated;	/* iff we have ever seen our goal */
+	Box (*my_map)[GRID_HEIGHT];	/* my personal map of the world (provided by
 				                   Xtank itself) */
-    BoxNotes boxnotes[GRID_WIDTH][GRID_HEIGHT];	/* my notes on each map box */
-    Coord         dest_wall;    /* box coordinates of the first destructible
+	BoxNotes boxnotes[GRID_WIDTH][GRID_HEIGHT];	/* my notes on each map box */
+	Coord         dest_wall;    /* box coordinates of the first destructible
 				                   wall in our path */
 	Frame         frCurrent;
 	Frame         frPrevious;
@@ -294,36 +294,36 @@ typedef struct
 	Coor          iDestY;
 	int           iSpecTarget;
 	int           iTargetVehicle;
-    Settings_info stGameSettings;
-    Vehicle_info  stMyVehicle;
-    int           iNumWeapons;
-    Weapon_info   stMyWeapons[MAX_WEAPONS];
-    int           iNumVehicles;
-    int           iTurnDir;
+	Settings_info stGameSettings;
+	Vehicle_info  stMyVehicle;
+	int           iNumWeapons;
+	Weapon_info   stMyWeapons[MAX_WEAPONS];
+	int           iNumVehicles;
+	int           iTurnDir;
 	float         fDriveSpeed;
 	float         fDistance;
 	int           iDistance;
-	float         fClosePercent;	
+	float         fClosePercent;
 	Angle         aTurn;
 	int           iStills;
 	int           aiStills[MAX_STILLS][4];
 	int           iAvgAmmoRange;
 	TurretInfo    Turret[MAX_TURRETS];
-    Vehicle_info  stVehicles[MAX_VEHICLES];
+	Vehicle_info  stVehicles[MAX_VEHICLES];
 	Byte          aabIntendedLoc[MAX_VEHICLES][((MAX_DATA_LEN + 1)>>1)<<1];
 	Frame         afFromFrame[MAX_VEHICLES];
-    Boolean       bHaveTarget;	    /* whether I have something to shoot */
+	Boolean       bHaveTarget;    /* whether I have something to shoot */
 	Boolean       bAlwaysRam;
 	Boolean       bTargetIsVehicle; /* whether the target is a vehicle   */
 	Boolean       bLayMines;
-    Boolean       bHaveNewRadar;
-    Boolean       bHaveRadar;
+	Boolean       bHaveNewRadar;
+	Boolean       bHaveRadar;
 	Boolean       bHaveTacLink;
-    Vehicle_info  target;	    /* who I'm going to attack */
+	Vehicle_info  target;	    /* who I'm going to attack */
 	Frame         fTargetTime;
-    Vehicle_info  prevTarget;
+	Vehicle_info  prevTarget;
 	Frame         fprevTime;
-} 
+}
 Environment;
 
 
@@ -374,7 +374,7 @@ static void FollowRoute PROTO((Environment *pEnv));
 #ifdef DEBUG_TIME
 static void check_clock PROTO((Environment *pEnv));
 #else
-#define check_clock(A) 
+#define check_clock(A)
 #endif
 static void HandleWeapons PROTO((Environment *pEnv));
 static void PositionTurrets PROTO((Environment *pEnv));
@@ -390,26 +390,26 @@ static FLOAT GetDodgeSpeed PROTO((Environment *pEnv, FLOAT fDefault));
 static void SendEnemyAt PROTO((Environment *pEnv, Vehicle_info *pstVehicle, Boolean bSpace));
 static int OutOfAmmo PROTO((Boolean bCountDroppedWeapons));
 static int MyVehicleIsClosest PROTO((Environment *pEnv));
-static int FindEnemy PROTO((Environment *pEnv));
+static void FindEnemy PROTO((Environment *pEnv));
 static int MyGetBlips PROTO((Environment *pEnv, int *piNumBlips, Blip_info *abiBlips));
 
 #undef PROTO
 
-Prog_desc FILE_PROG = 
+Prog_desc FILE_PROG =
 {
     PROGRAM_NAME,
     "Disgorge",
-    "Uses relative fire and team tactics to distribute quality poundage to \nits opponents. When it cannot fire upon opponents it uses RacerX modified code\ncare of RPotter.\nShould be placed in a vehicle with some turret-mounted weapons \nand a mapper. \nIt works better when all weapons on the turret are the same.\n", 
-    "Matthew T. Senft(senft@pix.net)", 
-    PLAYS_COMBAT | PLAYS_RACE | DOES_EXPLORE | DOES_SHOOT 
-	| USES_TEAMS | USES_MINES | USES_SLICKS | USES_SIDE_MOUNTS | USES_MESSAGES, 
+    "Uses relative fire and team tactics to distribute quality poundage to \nits opponents. When it cannot fire upon opponents it uses RacerX modified code\ncare of RPotter.\nShould be placed in a vehicle with some turret-mounted weapons \nand a mapper. \nIt works better when all weapons on the turret are the same.\n",
+    "Matthew T. Senft(senft@pix.net)",
+    PLAYS_COMBAT | PLAYS_RACE | DOES_EXPLORE | DOES_SHOOT
+	| USES_TEAMS | USES_MINES | USES_SLICKS | USES_SIDE_MOUNTS | USES_MESSAGES,
     4,
     TagmanMain
 };
 
 
-static int HuntAndKill(pEnv)
-Environment *pEnv;
+static int
+HuntAndKill(Environment *pEnv)
 {
     int iRetCode;
 
@@ -438,13 +438,11 @@ Environment *pEnv;
 	return (iRetCode);
 }
 
-static int Fight(pEnv, bShootAlways)
-Environment *pEnv;
-int bShootAlways;
+static int Fight(Environment *pEnv, int bShootAlways)
 {
 	int    bShotAtTarget = FALSE;
 	int    bTurretCanHit[MAX_TURRETS];
-    int    iCtr;
+	int    iCtr;
 	int    iTurret;
 	Coor   xUs      = pEnv->stMyVehicle.loc.x;
 	Coor   yUs      = pEnv->stMyVehicle.loc.y;
@@ -505,7 +503,7 @@ int bShootAlways;
 		if (pEnv->frCurrent - pEnv->Turret[iTurret].iLastFire <
 			pEnv->Turret[iTurret].iMinReload)
 		{
-			aBestAngle = ATAN2(yTarget - yUs - yTurret, 
+			aBestAngle = ATAN2(yTarget - yUs - yTurret,
 							   xTarget - xUs - xTurret);
 			turn_turret(iTurret, aBestAngle);
 			bTurretCanHit[iTurret] = FALSE;
@@ -515,7 +513,7 @@ int bShootAlways;
 
         if (fDistance < DIRECT_SHOT_DISTANCE)
 		{
-			aBestAngle = ATAN2(yTarget - yUs - yTurret, 
+			aBestAngle = ATAN2(yTarget - yUs - yTurret,
 							   xTarget - xUs - xTurret);
 			bTurretCanHit[iTurret] = TRUE;
 			pEnv->bLayMines = TRUE;
@@ -547,14 +545,14 @@ int bShootAlways;
 								   iErrorMargin);
 			}
 
-            bTurretCanHit[iTurret] =  TargetSolution(pEnv, xvUs, yvUs, 
-									  xUs + xTurret, 
-									  yUs + yTurret, 
+            bTurretCanHit[iTurret] =  TargetSolution(pEnv, xvUs, yvUs,
+									  xUs + xTurret,
+									  yUs + yTurret,
 						              xvTarget, yvTarget, xTarget, yTarget,
-				                      iErrorMargin, 
-						              pEnv->Turret[iTurret].iAvgAmmoLifetime, 
-						              pEnv->Turret[iTurret].iAvgAmmoSpeed, 
-					                  pEnv->stMyVehicle.turret_angle[iTurret], 
+				                      iErrorMargin,
+						              pEnv->Turret[iTurret].iAvgAmmoLifetime,
+						              pEnv->Turret[iTurret].iAvgAmmoSpeed,
+					                  pEnv->stMyVehicle.turret_angle[iTurret],
 									  aTurretView, &aBestAngle);
 		}
 
@@ -566,7 +564,7 @@ int bShootAlways;
 		}
 		else
 		{
-			aBestAngle = ATAN2(yTarget - yUs - yTurret, 
+			aBestAngle = ATAN2(yTarget - yUs - yTurret,
 							   xTarget - xUs - xTurret);
 			turn_turret(iTurret, aBestAngle);
 		}
@@ -578,9 +576,9 @@ int bShootAlways;
 	    if (pEnv->stMyWeapons[iCtr].type != MINE &&
 			pEnv->stMyWeapons[iCtr].type != SLICK)
 	    {
-			if ((pEnv->stMyWeapons[iCtr].mount == MOUNT_RIGHT && 
+			if ((pEnv->stMyWeapons[iCtr].mount == MOUNT_RIGHT &&
 				 pEnv->iStatus == ENGAGE && pEnv->iTurnDir == -1) ||
-			    (pEnv->stMyWeapons[iCtr].mount == MOUNT_LEFT && 
+			    (pEnv->stMyWeapons[iCtr].mount == MOUNT_LEFT &&
 				 pEnv->iStatus == ENGAGE && pEnv->iTurnDir == 1))
 			{
 #ifdef OLD_WAY_SHOOT
@@ -618,7 +616,7 @@ int bShootAlways;
 				}
 			}
 			else
-			if (pEnv->stMyWeapons[iCtr].mount == MOUNT_FRONT && 
+			if (pEnv->stMyWeapons[iCtr].mount == MOUNT_FRONT &&
 				(pEnv->iStatus == RAMMING || bShootAlways))
 			{
 #ifdef OLD_WAY_SHOOT
@@ -627,7 +625,7 @@ int bShootAlways;
 	            fire_weapon(iCtr);
 			}
 			else
-			if (pEnv->stMyWeapons[iCtr].mount == MOUNT_BACK && 
+			if (pEnv->stMyWeapons[iCtr].mount == MOUNT_BACK &&
 				(pEnv->iStatus == DIS_ENGAGE))
 			{
 #ifdef OLD_WAY_SHOOT
@@ -658,7 +656,7 @@ int bShootAlways;
 		    if (SIGN(xNewUs - xNewTarget) == iSignX &&
 		        SIGN(yNewUs - yNewTarget) == iSignY)
 			{
-                pEnv->aTurn = fixed_angle(ATAN2(yNewTarget - yNewUs, 
+                pEnv->aTurn = fixed_angle(ATAN2(yNewTarget - yNewUs,
 											    xNewTarget - xNewUs));
 		        xNewUs     += xvUs;
 		        yNewUs     += yvUs;
@@ -687,7 +685,7 @@ int bShootAlways;
 		{
 #define PREEMPT_MOVE
 #ifdef PREEMPT_MOVE
-        pEnv->aTurn = fixed_angle(ATAN2((yTarget + yvTarget) - (yUs + yvUs), 
+        pEnv->aTurn = fixed_angle(ATAN2((yTarget + yvTarget) - (yUs + yvUs),
     									(xTarget + xvTarget) - (xUs + xvUs)));
 #endif
 			pEnv->iTimeOut++;
@@ -715,7 +713,7 @@ int bShootAlways;
 			pEnv->iTimeOut++;
 #define PREEMPT_MOVE
 #ifdef PREEMPT_MOVE
-        pEnv->aTurn = fixed_angle(ATAN2((yTarget + yvTarget) - (yUs + yvUs), 
+        pEnv->aTurn = fixed_angle(ATAN2((yTarget + yvTarget) - (yUs + yvUs),
     									(xTarget + xvTarget) - (xUs + xvUs)));
 #endif
 		}
@@ -730,7 +728,7 @@ int bShootAlways;
 		    pEnv->fClosePercent = 0.43;
 		}
 		else
-		if (fDistance < iAvgAmmoRange * 0.9 
+		if (fDistance < iAvgAmmoRange * 0.9
 #define USE_TIMEOUTS
 #ifdef USE_TIMEOUTS
 			&& pEnv->iTimeOut > 2
@@ -740,7 +738,7 @@ int bShootAlways;
 		    pEnv->fClosePercent = 0.30;
 		}
 		else
-		if (fDistance < iAvgAmmoRange * 1.1 
+		if (fDistance < iAvgAmmoRange * 1.1
 #ifdef USE_TIMEOUTS
 			&& pEnv->iTimeOut > 3
 #endif
@@ -749,7 +747,7 @@ int bShootAlways;
 		    pEnv->fClosePercent = 0.15;
 		}
 		else
-		if (fDistance >= iAvgAmmoRange * 1.1 
+		if (fDistance >= iAvgAmmoRange * 1.1
 #ifdef USE_TIMEOUTS
 			&& pEnv->iTimeOut > 4
 #endif
@@ -764,23 +762,23 @@ int bShootAlways;
 	}
 
 	pEnv->aTurn += pEnv->iTurnDir * PI * pEnv->fClosePercent;
-    pEnv->aTurn = fixed_angle(pEnv->aTurn);
+	pEnv->aTurn = fixed_angle(pEnv->aTurn);
 
 #ifdef DEBUG_CLOSE_ANGLE
-	printf("[%d]Dist %f, Close %f, TimeOut %d, AmmoRange %d\n", 
+	printf("[%d]Dist %f, Close %f, TimeOut %d, AmmoRange %d\n",
 		   pEnv->stMyVehicle.id, fDistance,
 		   pEnv->fClosePercent, pEnv->iTimeOut, pEnv->iAvgAmmoRange);
 #endif
 
-    check_clock(pEnv);
+	check_clock(pEnv);
 
 	return (bShotAtTarget);
 }
 
-static int TargetSolution(pEnv, xvUs, yvUs, xUs, yUs, 
-	        			  xvTarget, yvTarget, xTarget, yTarget,
-				          iErrorMargin, iAmmoLifetime, iAmmoSpeed, 
-				          aCurrent, aRange, pBestAngle)
+static int TargetSolution(pEnv, xvUs, yvUs, xUs, yUs,
+	  xvTarget, yvTarget, xTarget, yTarget,
+          iErrorMargin, iAmmoLifetime, iAmmoSpeed,
+          aCurrent, aRange, pBestAngle)
 Environment *pEnv;
 Speed xvUs;
 Speed yvUs;
@@ -817,16 +815,16 @@ Angle *pBestAngle;
 	int iErrorDiff;
 
 #ifdef DEBUG_TARGET_SOLUTIONS
-	    pEnv->iCalls++;
+	pEnv->iCalls++;
 #endif
 
-	for (iCtr = 0; iCtr < iAmmoLifetime; iCtr++, 
+	for (iCtr = 0; iCtr < iAmmoLifetime; iCtr++,
 #ifdef FOR_FUTURE_USE
 			 xFutureUs += xvUs,
-	         yFutureUs += yvUs, 
+	         yFutureUs += yvUs,
 #endif
 			 xImpact   += xvTarget - xvUs,
-	         yImpact   += yvTarget - yvUs) 
+	         yImpact   += yvTarget - yvUs)
 
 	{
 #ifdef PREDICT_ACCELERATION
@@ -836,9 +834,9 @@ Angle *pBestAngle;
 		{
 			int iTimeDiff = pEnv->fTargetTime - pEnv->fprevTime;
 
-			xvTarget += (pEnv->target.xspeed - pEnv->prevTarget.xspeed) / 
+			xvTarget += (pEnv->target.xspeed - pEnv->prevTarget.xspeed) /
 						iTimeDiff;
-			yvTarget += (pEnv->target.yspeed - pEnv->prevTarget.yspeed) / 
+			yvTarget += (pEnv->target.yspeed - pEnv->prevTarget.yspeed) /
 						iTimeDiff;
 		}
 #endif
@@ -846,14 +844,13 @@ Angle *pBestAngle;
 	    pEnv->iIterations++;
 #endif
 		aNewAngle = fixed_angle(ATAN2(yImpact - yUs, xImpact - xUs));
-    
+
 #ifdef CHECK_ANGLE
         aDifference = aNewAngle - aCurrent;
 		if (aDifference < 0)
 		{
 			aDifference = -aDifference;
 		}
-		
 		if (aDifference < aRange)
 #endif
 		{
@@ -868,14 +865,14 @@ Angle *pBestAngle;
 
 		    xBullet = xUs + iAmmoSpeed * trigCos * iCtr;
 		    yBullet = yUs + iAmmoSpeed * trigSin * iCtr;
-    
+
             iError = ABS(xBullet - xImpact);
             if (iError < ABS(yBullet - yImpact))
 			{
                  iError = ABS(yBullet - yImpact);
 			}
 
-		    if (iError < iBestError) 
+		    if (iError < iBestError)
 		    {
 				int bPrevFoundSolution = bFoundSolution;
 #ifdef DEBUG_TARGET_SOLUTIONS
@@ -893,15 +890,15 @@ Angle *pBestAngle;
 #ifdef DEBUG_TARGET_SOLUTIONS
 	                pEnv->iClearPathCalls++;
 #endif
-                    memcpy(&lDestination, &pEnv->stMyVehicle.loc, 
+                    memcpy(&lDestination, &pEnv->stMyVehicle.loc,
 						   sizeof(Location));
-                    DeltaLoc(&lDestination, 
-							 xBullet - xUs + xvUs * iCtr, 
+                    DeltaLoc(&lDestination,
+							 xBullet - xUs + xvUs * iCtr,
 							 yBullet - yUs + yvUs * iCtr);
                     if (MyClearPath(&pEnv->stMyVehicle.loc, &lDestination))
 #else
 					if (1)
-#endif	
+#endif
 					{
 #ifdef DEBUG_TARGET_SOLUTIONS
 	                pEnv->iClearPaths++;
@@ -920,15 +917,15 @@ Angle *pBestAngle;
 
                                 iNumStill--;
 
-								for (iTimeCtr = 1; 
-									 iTimeCtr <= iCtr && bGoForIt; 
+								for (iTimeCtr = 1;
+									 iTimeCtr <= iCtr && bGoForIt;
 									 iTimeCtr++)
 								{
-									iDiffX = xUs +(xvUs + iAmmoSpeed * trigCos) 
-											 * iTimeCtr - 
+									iDiffX = xUs +(xvUs + iAmmoSpeed * trigCos)
+											 * iTimeCtr -
 											 pEnv->aiStills[iNumStill][0];
-									iDiffY = yUs +(yvUs + iAmmoSpeed * trigSin) 
-											 * iTimeCtr - 
+									iDiffY = yUs +(yvUs + iAmmoSpeed * trigSin)
+											 * iTimeCtr -
 											 pEnv->aiStills[iNumStill][1];
 
 									if (iDiffX * iDiffX + iDiffY * iDiffY <
@@ -992,28 +989,29 @@ Angle *pBestAngle;
 }
 
 
-static void cleanup(pEnv)
-Environment *pEnv;
+static void
+cleanup(Environment *pEnv)
 {
     /* free all dynamically allocated memory */
 
 	if (pEnv)
 	{
 #ifdef DEBUG_TARGET_SOLUTIONS
-        printf("[%d]Calls:%d Zeros:%d Iterations:%d Betters:%d ClearPathCalls:%d ClearPaths:%d\n", 
-			   pEnv->stMyVehicle.id,
+        printf("[%d]Calls:%d Zeros:%d Iterations:%d Betters:%d ClearPathCalls:%d ClearPaths:%d\n",
+		   pEnv->stMyVehicle.id,
 	           pEnv->iCalls,
 	           pEnv->iZeros,
-	           pEnv->iIterations, 
-			   pEnv->iBetters,
-			   pEnv->iClearPathCalls, 
-			   pEnv->iClearPaths); 
+	           pEnv->iIterations,
+		   pEnv->iBetters,
+		   pEnv->iClearPathCalls,
+		   pEnv->iClearPaths);
 #endif
         free((char *)pEnv);
 	}
 }
 
-static void TagmanMain()
+static void
+TagmanMain(void)
 {
     Environment *pEnv = NULL;
 	int bInitialized;
@@ -1022,14 +1020,14 @@ static void TagmanMain()
 
     if (bInitialized)
 	{
-        while (TRUE) 
+        while (TRUE)
         {
 		    MainLoop(pEnv);
         }
 	}
 	else
 	{
-        while (TRUE) 
+        while (TRUE)
         {
 		    done();
         }
@@ -1037,8 +1035,8 @@ static void TagmanMain()
 }
 
 
-static void MainLoop(pEnv)
-Environment *pEnv;
+static void
+MainLoop(Environment *pEnv)
 {
 		pEnv->bHaveTarget = FALSE;
 
@@ -1077,7 +1075,7 @@ Environment *pEnv;
 				    }
 					else
 				    if (NeedArmor(
-							pEnv->stGameSettings.pay_to_play ? 0.25 : 0.1) && 
+							pEnv->stGameSettings.pay_to_play ? 0.25 : 0.1) &&
 						get_money() >= 490)
 				    {
 				          pEnv->iGoal = ARMOR;
@@ -1111,7 +1109,7 @@ Environment *pEnv;
 				    }
 				}
 			    break;
-    
+
 		    case DIS_ENGAGE:
                 GetBasics(pEnv);
 			    Acquire(pEnv, CLOSEST);
@@ -1125,7 +1123,7 @@ Environment *pEnv;
 			    Move(pEnv);
 				ProcessMessages(pEnv, 4);
 			    break;
-    
+
 			case SEEK:
 		    case GOTO:
 		    case WANDER:
@@ -1186,7 +1184,6 @@ Environment *pEnv;
 				                    break;
 			                    }
 	                        }
-							
 			                Move(pEnv);
 				            ProcessMessages(pEnv, 11);
 					        PositionTurrets(pEnv);
@@ -1290,7 +1287,6 @@ Environment *pEnv;
                     TurnOnAllWeapons();
 				}
 			    break;
-		    	
 		    default:
 				StartWandering(pEnv);
 			    break;
@@ -1299,15 +1295,15 @@ Environment *pEnv;
 }
 
 
-static void Frantic(pEnv)
-Environment *pEnv;
+static void
+Frantic(Environment *pEnv)
 {
     int   aiArmor[6];
 	int   iArmorSide;
     Angle aToTarget = fixed_angle(
 		ATAN2(pEnv->target.loc.y - pEnv->stMyVehicle.loc.y,
               pEnv->target.loc.x - pEnv->stMyVehicle.loc.x));
-	   
+
 	if (pEnv->bHaveTarget)
 	{
         aToTarget = fixed_angle(
@@ -1339,8 +1335,8 @@ Environment *pEnv;
 					continue;
 				}
 
-				if (IsApproaching(pBullet->loc.x, pBullet->loc.y, 
-								  pBullet->xspeed, pBullet->yspeed, 
+				if (IsApproaching(pBullet->loc.x, pBullet->loc.y,
+								  pBullet->xspeed, pBullet->yspeed,
 								  OurX, OurY))
 				{
                     aToTarget = fixed_angle(
@@ -1361,9 +1357,9 @@ Environment *pEnv;
 	aiArmor[RIGHT] = armor(RIGHT);
 	aiArmor[FRONT] = armor(FRONT);
 	aiArmor[BACK]  = armor(BACK);
-    
+
 #define BETTER_ARMOR(S1, S2) (aiArmor[(S1)] > aiArmor[(S2)] ? (S1) : (S2))
-    
+
 	iArmorSide =
 		BETTER_ARMOR(BETTER_ARMOR(LEFT, RIGHT), BETTER_ARMOR(FRONT, BACK));
 
@@ -1410,8 +1406,8 @@ Environment *pEnv;
 }
 
 
-static void StartGoto(pEnv)
-Environment *pEnv;
+static void
+StartGoto(Environment *pEnv)
 {
 	pEnv->iStatus    = GOTO;
 	pEnv->have_route = FALSE;
@@ -1426,8 +1422,8 @@ Environment *pEnv;
 }
 
 
-static void StartSeek(pEnv)
-Environment *pEnv;
+static void
+StartSeek(Environment *pEnv)
 {
     Status_code iOrigStatus = pEnv->iStatus;
 
@@ -1441,7 +1437,6 @@ Environment *pEnv;
 	    abData[1] = 0;
 
 	    send_msg(MAX_VEHICLES + pEnv->stMyVehicle.team, OP_WHERE_IS, abData);
-		
 	    if (!navigate(pEnv, unseen_box, FALSE))
 	    {
 			if (iOrigStatus == SEEK)
@@ -1458,8 +1453,8 @@ Environment *pEnv;
 	PositionTurrets(pEnv);
 }
 
-static void StartEngage(pEnv)
-Environment *pEnv;
+static void
+StartEngage(Environment *pEnv)
 {
 	pEnv->iTurnDir   = (armor(LEFT) > armor(RIGHT)) ? 1 : -1;
 	pEnv->have_route = FALSE;
@@ -1473,16 +1468,16 @@ Environment *pEnv;
 	}
 	pEnv->iTimeOut   = 0;
 
-    pEnv->fDriveSpeed = 9.0;
+	pEnv->fDriveSpeed = 9.0;
 	set_rel_drive(pEnv->fDriveSpeed);
 
-    HuntAndKill(pEnv);
+	HuntAndKill(pEnv);
 
 	SendEnemyAt(pEnv, &pEnv->target, FALSE);
 }
 
-static void StartWandering(pEnv)
-Environment *pEnv;
+static void
+StartWandering(Environment *pEnv)
 {
 	Byte abData[MAX_DATA_LEN];
 	int x;
@@ -1496,12 +1491,12 @@ Environment *pEnv;
 	abData[1] = pEnv->stMyVehicle.loc.grid_y;
 	abData[2] = 0;
 
-    if (pEnv->frCurrent && 
+    if (pEnv->frCurrent &&
 		pEnv->frCurrent - pEnv->frLastOpen >= MIN_OPEN_SPACING)
 	{
         fAmmoPercent = 0.0;
 
-	    if (pEnv->iStatus != SEEK && 
+	    if (pEnv->iStatus != SEEK &&
 			(iWeaponNum = iWeaponNumOrig = pEnv->iNumWeapons))
 	    {
 			if (get_money() >= 50)
@@ -1509,7 +1504,7 @@ Environment *pEnv;
 	            for (;iWeaponNum-- > 0;)
 	            {
 		            get_weapon(iWeaponNum, &winfo);
-			        fAmmoPercent += ((float)weapon_ammo(iWeaponNum) / 
+			        fAmmoPercent += ((float)weapon_ammo(iWeaponNum) /
 							         (float)winfo.max_ammo);
 	            }
 			    if (fAmmoPercent / (float)iWeaponNumOrig < 0.50)
@@ -1543,8 +1538,8 @@ Environment *pEnv;
 					continue;
 				}
 				else
-		        if (armor(side) < max_armor(side) * 
-					(pEnv->stGameSettings.restart ? 
+		        if (armor(side) < max_armor(side) *
+					(pEnv->stGameSettings.restart ?
 					 (pEnv->stGameSettings.pay_to_play ? 0.5 : 0.25) : 0.85))
 		        {
 				    pEnv->iGoal = ARMOR;
@@ -1619,13 +1614,13 @@ Environment *pEnv;
 			if (iNumBlips)
 			{
 				int iRandomIndex = frand((float)iNumBlips);
-    
+
 	            pEnv->iDestX = BlipInfo[iRandomIndex].x;
 	            pEnv->iDestY = BlipInfo[iRandomIndex].y;
 
-				bChooseRandom = (pEnv->iDestX == 
+				bChooseRandom = (pEnv->iDestX ==
 								 pEnv->stMyVehicle.loc.grid_x &&
-				                 pEnv->iDestY == 
+				                 pEnv->iDestY ==
 								 pEnv->stMyVehicle.loc.grid_y);
 		    }
 		}
@@ -1636,7 +1631,7 @@ Environment *pEnv;
 	        pEnv->iDestY = (int)frand((float)GRID_HEIGHT);
 		}
 #ifdef DEBUG_WANDER_DESTINATION
-	BarfBarf(RECIPIENT_ALL, "Lets go %s %d,%d", 
+	BarfBarf(RECIPIENT_ALL, "Lets go %s %d,%d",
 			 (bChooseRandom) ? "Random" : "Blip",
 	         pEnv->iDestX, pEnv->iDestY);
 #endif
@@ -1665,8 +1660,8 @@ Environment *pEnv;
 }
 
 
-static void GetBasics(pEnv)
-Environment *pEnv;
+static void
+GetBasics(Environment *pEnv)
 {
 	pEnv->stPrevLoc = pEnv->stMyVehicle.loc;
 	pEnv->frPrevious = pEnv->frCurrent;
@@ -1682,9 +1677,7 @@ Environment *pEnv;
 }
 
 
-static void Acquire(pEnv, what)
-Environment *pEnv;
-Search_mode what;
+static void Acquire(Environment *pEnv, Search_mode what)
 {
     int  iCtr;
 	Coor xUs;
@@ -1742,7 +1735,7 @@ Search_mode what;
 					pEnv->bLayMines = TRUE;
 				}
 
-				if (IsClosing(xUs, yUs, xvUs, yvUs, 
+				if (IsClosing(xUs, yUs, xvUs, yvUs,
                               xIt, yIt,
                               pEnv->stVehicles[iCtr].xspeed,
                               pEnv->stVehicles[iCtr].yspeed))
@@ -1768,7 +1761,6 @@ Search_mode what;
 							iTarget = iCtr;
 				        }
 						break;
-						
                     case CURRENT:
 						if (pEnv->target.id == pEnv->stVehicles[iCtr].id)
 						{
@@ -1776,8 +1768,8 @@ Search_mode what;
 							iTarget = iCtr;
 							pEnv->iDistance = iDistance;
 						}
-						break; 
-				} 
+						break;
+				}
 				if (bHaveTarget && what == CURRENT)
 				{
 					break;
@@ -1795,11 +1787,11 @@ Search_mode what;
 					int iNumStill = pEnv->iStills;
 					int iSide = MaxBodySide[pEnv->stVehicles[iCtr].body];
 
-					pEnv->aiStills[iNumStill][0] = 
+					pEnv->aiStills[iNumStill][0] =
 					    pEnv->stVehicles[iCtr].loc.x;
-					pEnv->aiStills[iNumStill][1] = 
+					pEnv->aiStills[iNumStill][1] =
 						pEnv->stVehicles[iCtr].loc.y;
-					pEnv->aiStills[iNumStill][2] = 
+					pEnv->aiStills[iNumStill][2] =
 						iSide * iSide / 4 + 1;
 					pEnv->iStills++;
 				}
@@ -1811,17 +1803,17 @@ Search_mode what;
 	    {
 				Location lDestination;
 
-                pEnv->bTargetIsVehicle = TRUE; 
-                if (VectorsCross(xUs, yUs, xvUs, yvUs, 
-                         pEnv->stVehicles[iCtr].loc.x, 
-						 pEnv->stVehicles[iCtr].loc.y, 
-						 pEnv->stVehicles[iCtr].xspeed, 
-						 pEnv->stVehicles[iCtr].yspeed)) 
+                pEnv->bTargetIsVehicle = TRUE;
+                if (VectorsCross(xUs, yUs, xvUs, yvUs,
+                         pEnv->stVehicles[iCtr].loc.x,
+						 pEnv->stVehicles[iCtr].loc.y,
+						 pEnv->stVehicles[iCtr].xspeed,
+						 pEnv->stVehicles[iCtr].yspeed))
 		        {
 			        pEnv->bLayMines = TRUE;
 				}
 
-			    memcpy(&lDestination, &(pEnv->stVehicles[iCtr].loc), 
+			    memcpy(&lDestination, &(pEnv->stVehicles[iCtr].loc),
 					   sizeof(Location));
                 DeltaLoc(&lDestination, 0,
 					      pEnv->stVehicles[iCtr].yspeed);
@@ -1830,9 +1822,9 @@ Search_mode what;
 					pEnv->stVehicles[iCtr].yspeed = 0;
 				}
 
-			    memcpy(&lDestination, &(pEnv->stVehicles[iCtr].loc), 
+			    memcpy(&lDestination, &(pEnv->stVehicles[iCtr].loc),
 					   sizeof(Location));
-                DeltaLoc(&lDestination, 
+                DeltaLoc(&lDestination,
 					      pEnv->stVehicles[iCtr].xspeed, 0);
                 if (!MyClearPath(&pEnv->stVehicles[iCtr].loc, &lDestination))
 			    {
@@ -1840,7 +1832,7 @@ Search_mode what;
 				}
 
 assert(iTarget >= 0 && iTarget < pEnv->iNumVehicles);
-		    memcpy(&pEnv->target, &pEnv->stVehicles[iTarget], 
+		    memcpy(&pEnv->target, &pEnv->stVehicles[iTarget],
 		           sizeof(Vehicle_info));
 	    }
 
@@ -1854,13 +1846,8 @@ assert(iTarget >= 0 && iTarget < pEnv->iNumVehicles);
     pEnv->bHaveTarget = bHaveTarget;
 }
 
-static int IsApproaching(xThem, yThem, xvThem, yvThem, xUs, yUs)
-int xThem; 
-int yThem; 
-int xvThem; 
-int yvThem;
-int xUs; 
-int yUs; 
+static int
+IsApproaching(int xThem, int yThem, int xvThem, int yvThem, int xUs, int yUs)
 {
     Angle aVelocity;
 	Angle aSpace;
@@ -1873,15 +1860,8 @@ int yUs;
 }
 
 
-static int IsClosing(xUs, yUs, xvUs, yvUs, xThem, yThem, xvThem, yvThem)
-int xUs; 
-int yUs; 
-int xvUs; 
-int yvUs; 
-int xThem; 
-int yThem; 
-int xvThem; 
-int yvThem;
+static int
+IsClosing(int xUs, int yUs, int xvUs, int yvUs, int xThem, int yThem, int xvThem, int yvThem)
 {
     int dx1 = xUs - xThem;
     int dy1 = yUs - yThem;
@@ -1893,10 +1873,9 @@ int yvThem;
     return (iDiff2 < iDiff1);
 }
 
-static void Move(pEnv)
-Environment *pEnv;
+static void Move(Environment *pEnv)
 {
-    Location lDestination;
+	Location lDestination;
 
 #define DONT_ALWAYS_DODGE
 #ifdef DONT_ALWAYS_DODGE
@@ -1916,8 +1895,8 @@ Environment *pEnv;
 		case ENGAGE:
 	        turn_vehicle(pEnv->aTurn);
 			memcpy(&lDestination, &pEnv->stMyVehicle.loc, sizeof(Location));
-            DeltaLoc(&lDestination, 
-					  BOX_WIDTH * SIGN(COS(pEnv->aTurn)), 
+            DeltaLoc(&lDestination,
+					  BOX_WIDTH * SIGN(COS(pEnv->aTurn)),
 					  BOX_HEIGHT * SIGN(SIN(pEnv->aTurn)));
             if (MyClearPath(&pEnv->stMyVehicle.loc, &lDestination))
 			{
@@ -1931,28 +1910,28 @@ Environment *pEnv;
 
 		case DIS_ENGAGE:
 	        turn_vehicle(pEnv->aTurn);
-			if (CanGo(&pEnv->stMyVehicle, 
-					  BOX_WIDTH * SIGN(COS(pEnv->aTurn)), 
+			if (CanGo(&pEnv->stMyVehicle,
+					  BOX_WIDTH * SIGN(COS(pEnv->aTurn)),
 					  BOX_HEIGHT * SIGN(SIN(pEnv->aTurn))))
 			{
 	            set_rel_drive(9.0);
 			}
 			else
 			{
-				pEnv->aTurn = fixed_angle(pEnv->aTurn + 
+				pEnv->aTurn = fixed_angle(pEnv->aTurn +
 										  PI / 3.0 * (float)pEnv->iTurnDir);
 	            turn_vehicle(pEnv->aTurn);
 			}
 			break;
 
 		case SEEK:
-			if (IsGoalBox(pEnv, pEnv->stMyVehicle.loc.grid_x, 
+			if (IsGoalBox(pEnv, pEnv->stMyVehicle.loc.grid_x,
 			    		  pEnv->stMyVehicle.loc.grid_y))
 			{
 	            set_rel_drive(0.0);
 				pEnv->iStatus = REPLENISH;
-			} 
-			else 
+			}
+			else
 			{
 	            if (pEnv->have_route)
 			    {
@@ -1987,12 +1966,12 @@ Environment *pEnv;
                         if (FriendliesReplenishing(pEnv, &lDest))
 #endif
 			            {
-	                        pEnv->fDriveSpeed = SQRT(iDist * tread_acc() * 
+	                        pEnv->fDriveSpeed = SQRT(iDist * tread_acc() *
 								pEnv->stGameSettings.normal_friction);
-				            pEnv->fDriveSpeed = MAX(pEnv->fDriveSpeed, 
+				            pEnv->fDriveSpeed = MAX(pEnv->fDriveSpeed,
 										            2 * MIN_CLOSING_SPEED_ABS);
 
-						    pEnv->fDriveSpeed = 9.0 * pEnv->fDriveSpeed / 
+						    pEnv->fDriveSpeed = 9.0 * pEnv->fDriveSpeed /
 											max_speed();
 			            }
 #ifdef OLDWAY
@@ -2000,9 +1979,9 @@ Environment *pEnv;
 						{
 	                        pEnv->fDriveSpeed = SQRT(BOX_WIDTH / 2.0 *
 						    tread_acc() * pEnv->stGameSettings.normal_friction);
-				            pEnv->fDriveSpeed = MAX(pEnv->fDriveSpeed, 
+				            pEnv->fDriveSpeed = MAX(pEnv->fDriveSpeed,
 										            MIN_CLOSING_SPEED_ABS);
-						    pEnv->fDriveSpeed = 9.0 * pEnv->fDriveSpeed / 
+						    pEnv->fDriveSpeed = 9.0 * pEnv->fDriveSpeed /
 											max_speed();
                         }
 #endif
@@ -2014,7 +1993,7 @@ Environment *pEnv;
 
                     pEnv->fDriveSpeed = MIN(9.0, pEnv->fDriveSpeed);
 #ifdef DEBUG_SEEK_SPEED
-						    printf("[%d]In calc speed %f\n", 
+						    printf("[%d]In calc speed %f\n",
 								   pEnv->stMyVehicle.id, pEnv->fDriveSpeed);
 #endif
 		            FollowRoute(pEnv);
@@ -2030,7 +2009,7 @@ Environment *pEnv;
 		case WANDER:
 		case GOTO:
 	        if (pEnv->have_route &&
-				!IsGoalBox(pEnv, pEnv->stMyVehicle.loc.grid_x, 
+				!IsGoalBox(pEnv, pEnv->stMyVehicle.loc.grid_x,
 			    			pEnv->stMyVehicle.loc.grid_y))
 			{
 	            pEnv->fDriveSpeed = 9.0;
@@ -2045,14 +2024,14 @@ Environment *pEnv;
 
 		case REPLENISH:
 		case REPAIRING:
+		default:
 			break;
 	}
 }
 
 
-static int FriendliesReplenishing(pEnv, pLoc)
-Environment *pEnv;
-Location    *pLoc;
+static int
+FriendliesReplenishing(Environment *pEnv, Location *pLoc)
 {
     int iRetCode = 0;
 
@@ -2060,7 +2039,7 @@ Location    *pLoc;
     {
         int iCtr = pEnv->iFriendliesInTheArea;
         int iCtr2;
-    
+
         for (iCtr2 = 0; iCtr && iCtr2 < pEnv->iNumVehicles; iCtr2++)
         {
             if (pEnv->stVehicles[iCtr2].team == pEnv->stMyVehicle.team)
@@ -2075,7 +2054,7 @@ Location    *pLoc;
 					if (AtBoxCenter(&pEnv->stVehicles[iCtr2]))
 #endif
 					{
-						iRetCode += 
+						iRetCode +=
 							PercentOfLandmark[pEnv->stVehicles[iCtr2].body];
 					}
 				}
@@ -2086,9 +2065,12 @@ Location    *pLoc;
 	return (iRetCode);
 }
 
-static Location *DeltaLoc(locp, delta_x, delta_y)
+static Location *
+DeltaLoc(Location *locp, int delta_x, int delta_y)
+#if 0
 Location *locp;		/* gets modified */
 int delta_x, delta_y;	/* in pixels */
+#endif
 {
     locp->x += delta_x;
     locp->y += delta_y;
@@ -2100,14 +2082,13 @@ int delta_x, delta_y;	/* in pixels */
     return(locp);
 }
 
-static int MyClearPath(lStart, locp)
-Location *lStart;
-Location *locp;
+static int
+MyClearPath(Location *lStart, Location *locp)
 {
-    int bRetCode;
+	int bRetCode;
 
-    if (locp->grid_x >= 0 && locp->grid_x < GRID_WIDTH && 
-		locp->grid_y >= 0 && locp->grid_y < GRID_HEIGHT) 
+	if (locp->grid_x >= 0 && locp->grid_x < GRID_WIDTH &&
+		locp->grid_y >= 0 && locp->grid_y < GRID_HEIGHT)
 	{
 		bRetCode = clear_path(lStart, locp);
 	}
@@ -2120,12 +2101,12 @@ Location *locp;
 }
 
 
-static int InitializeVariables(ppEnvironment)
-Environment **ppEnvironment;
+static int
+InitializeVariables(Environment **ppEnvironment)
 {
 	register int    x, y;
-    int bOk = FALSE;
-    int iCtr;
+	int bOk = FALSE;
+	int iCtr;
 	Environment *pEnv;
 
 
@@ -2156,7 +2137,7 @@ Environment **ppEnvironment;
     pEnv->iTurnDir             = -1;
 	pEnv->iGoal                = 99;
     pEnv->bHaveTarget          = FALSE;
-    pEnv->bTargetIsVehicle     = FALSE; 
+    pEnv->bTargetIsVehicle     = FALSE;
     pEnv->iSpecTarget          = FALSE;
     pEnv->iWasCalled           = FALSE;
 	pEnv->iFriendliesInTheArea = FALSE;
@@ -2225,7 +2206,7 @@ Environment **ppEnvironment;
 		    iMount == MOUNT_TURRET2 ||
 		    iMount == MOUNT_TURRET3
 #ifdef HAS_TURRET4
-		    || iMount == MOUNT_TURRET4 
+		    || iMount == MOUNT_TURRET4
 #endif
 			)
         {
@@ -2235,17 +2216,16 @@ Environment **ppEnvironment;
 				    			pEnv->stMyWeapons[iCtr].ammo_speed;
 
             pEnv->bAlwaysRam = FALSE;
-            pEnv->Turret[iMount].iMinReload = 
-				    MIN(pEnv->Turret[iMount].iMinReload, 
+            pEnv->Turret[iMount].iMinReload =
+				    MIN(pEnv->Turret[iMount].iMinReload,
 				    	pEnv->stMyWeapons[iCtr].reload);
 
             pEnv->iAvgAmmoRange += pEnv->stMyWeapons[iCtr].range;
-			
-            if (iNumWeapons) 
+            if (iNumWeapons)
 			{
-				if ((pEnv->Turret[iMount].iAvgAmmoSpeed    / iNumWeapons 
+				if ((pEnv->Turret[iMount].iAvgAmmoSpeed    / iNumWeapons
 						!= iAmmoSpeed) ||
-				    (pEnv->Turret[iMount].iAvgAmmoLifetime / iNumWeapons 
+				    (pEnv->Turret[iMount].iAvgAmmoLifetime / iNumWeapons
 						!= iAmmoLifetime))
 			    {
 				    BarfBarf(RECIPIENT_ALL, "Tagman would be better");
@@ -2290,7 +2270,7 @@ Environment **ppEnvironment;
 		if (pEnv->Turret[iCtr].iNumWeapons)
 		{
 		    pEnv->Turret[iCtr].aRate = turret_turn_rate(iCtr);
-			pEnv->Turret[iCtr].iAvgAmmoSpeed /= 
+			pEnv->Turret[iCtr].iAvgAmmoSpeed /=
 				pEnv->Turret[iCtr].iNumWeapons;
 		}
 	}
@@ -2323,8 +2303,10 @@ error_exit:
 
 
 /* return a random float in the range [0, max) */
-static FLOAT frand(maxr)
+static FLOAT frand(FLOAT maxr)
+#if 0
 FLOAT maxr;						/* maximum value */
+#endif
 {
 	extern long random();
 
@@ -2332,7 +2314,8 @@ FLOAT maxr;						/* maximum value */
 }
 
 
-static void TurnOffAllWeapons()
+static void
+TurnOffAllWeapons(void)
 {
 	WeaponNum wn;
 
@@ -2344,7 +2327,8 @@ static void TurnOffAllWeapons()
 }
 
 
-static void TurnOnAllWeapons()
+static void
+TurnOnAllWeapons(void)
 {
 	WeaponNum wn;
 
@@ -2356,15 +2340,21 @@ static void TurnOnAllWeapons()
 }
 
 
-static int NeedFuel(fraction)
+static int
+NeedFuel(DOUBLE fraction)
+#if 0
 DOUBLE fraction;				/* I need it if below this */
+#endif
 {
 	return (fuel() < max_fuel() * fraction);
 }
 
 
-static int NeedArmor(fraction)
+static int
+NeedArmor(DOUBLE fraction)
+#if 0
 DOUBLE fraction;				/* I need it if below this */
+#endif
 {
 	Side side;
 
@@ -2379,8 +2369,10 @@ DOUBLE fraction;				/* I need it if below this */
 }
 
 
-static int NeedAmmo(fraction)
+static int NeedAmmo(DOUBLE fraction)
+#if 0
 DOUBLE fraction;				/* I need it if below this */
+#endif
 {
 	int weapon;
 	Weapon_info winfo;
@@ -2395,18 +2387,18 @@ DOUBLE fraction;				/* I need it if below this */
 }
 
 
-static int AtBoxCenter(selfp)
-Vehicle_info *selfp;			/* self */
+static int
+AtBoxCenter(Vehicle_info *selfp)
 {
 	return (ABS(selfp->loc.box_x - BOX_WIDTH / 2) < LANDMARK_WIDTH / 2 &&
-			ABS(selfp->loc.box_y - BOX_HEIGHT / 2) < LANDMARK_HEIGHT / 2);
+		ABS(selfp->loc.box_y - BOX_HEIGHT / 2) < LANDMARK_HEIGHT / 2);
 }
 
 /* moves to the center of the current box (presumably a store).  Returns true
    if I am already there. */
 
-static int GotoBoxCenter(pEnv)
-Environment *pEnv;
+static int
+GotoBoxCenter(Environment *pEnv)
 {
     int iYoff;
     int iXoff;
@@ -2433,15 +2425,15 @@ Environment *pEnv;
 		}
         {
 			float fDriveSpeed;
-			int iPercentReplenishing = 
+			int iPercentReplenishing =
 				FriendliesReplenishing(pEnv, &pEnv->stMyVehicle.loc);
 
             if (iPercentReplenishing > 0)
 			{
 		turn_vehicle(ATAN2(BOX_HEIGHT / 2 - selfp->loc.box_y + iYoff,
 						   BOX_WIDTH / 2 - selfp->loc.box_x + iXoff));
-				if (iPercentReplenishing + 
-					PercentOfLandmark[pEnv->stMyVehicle.body] < 100 
+				if (iPercentReplenishing +
+					PercentOfLandmark[pEnv->stMyVehicle.body] < 100
 #define MUST_ALSO_BE_CLOSEST
 #ifdef MUST_ALSO_BE_CLOSEST
 					&& MyVehicleIsClosest(pEnv)
@@ -2481,8 +2473,8 @@ Environment *pEnv;
 	return (TRUE);
 }
 
-static int MyVehicleIsClosest(pEnv)
-Environment *pEnv;
+static int
+MyVehicleIsClosest(Environment *pEnv)
 {
     int iRetCode = TRUE;
     int iNumFound = 0;
@@ -2494,23 +2486,23 @@ Environment *pEnv;
     {
         int iCtr = pEnv->iFriendliesInTheArea;
         int iCtr2;
-    
+
         for (iCtr2 = 0; iCtr && iCtr2 < pEnv->iNumVehicles; iCtr2++)
         {
             if (pEnv->stVehicles[iCtr2].team == pEnv->stMyVehicle.team)
             {
 				iCtr--;
 
-				if (pEnv->stVehicles[iCtr2].loc.grid_x == 
+				if (pEnv->stVehicles[iCtr2].loc.grid_x ==
 						pEnv->stMyVehicle.loc.grid_x &&
-					pEnv->stVehicles[iCtr2].loc.grid_y == 
+					pEnv->stVehicles[iCtr2].loc.grid_y ==
 						pEnv->stMyVehicle.loc.grid_y)
 				{
 					if (!AtBoxCenter(&pEnv->stVehicles[iCtr2]))
 					{
-	                    iDiffX = pEnv->stVehicles[iCtr2].loc.box_x - 
+	                    iDiffX = pEnv->stVehicles[iCtr2].loc.box_x -
 									 BOX_WIDTH / 2;
-	                    iDiffY = pEnv->stVehicles[iCtr2].loc.box_y - 
+	                    iDiffY = pEnv->stVehicles[iCtr2].loc.box_y -
 									 BOX_HEIGHT / 2;
 					    if (iDiffX * iDiffX + iDiffY *iDiffY < iDist)
 					    {
@@ -2530,8 +2522,7 @@ Environment *pEnv;
 	return (iRetCode);
 }
 
-static int HandleOutpost(pEnv)
-Environment *pEnv;
+static int HandleOutpost(Environment *pEnv)
 {
     int bHaveTarget = FALSE;
 	int gridX, gridY;	/* current grid coords  */
@@ -2540,12 +2531,12 @@ Environment *pEnv;
 	gridX = pEnv->stMyVehicle.loc.grid_x;
 	gridY = pEnv->stMyVehicle.loc.grid_y;
 
-	for (nearX = MAX(0, gridX - 2); 
-		 nearX <= MIN(GRID_WIDTH - 1, gridX + 2); 
+	for (nearX = MAX(0, gridX - 2);
+		 nearX <= MIN(GRID_WIDTH - 1, gridX + 2);
 		 ++nearX)
 	{
-		for (nearY = MAX(0, gridY - 2); 
-			 nearY <= MIN(GRID_WIDTH - 1, gridY + 2); 
+		for (nearY = MAX(0, gridY - 2);
+			 nearY <= MIN(GRID_WIDTH - 1, gridY + 2);
 			 ++nearY)
 		{
 	        if (landmark(nearX, nearY) == OUTPOST)
@@ -2575,7 +2566,7 @@ Environment *pEnv;
 	if (bHaveTarget)
 	{
 		pEnv->target.id        = -1;
-        pEnv->bTargetIsVehicle = FALSE; 
+        pEnv->bTargetIsVehicle = FALSE;
 		bHaveTarget = Fight(pEnv, TRUE);
 	}
 
@@ -2584,8 +2575,8 @@ Environment *pEnv;
 
 /* do the appropriate thing with any landmark I might be on.  Returns true if
    something useful is being done. */
-static int HandleLocalLandMark(pEnv)
-Environment *pEnv;
+static int
+HandleLocalLandMark(Environment *pEnv)
 {
     Vehicle_info *selfp = &pEnv->stMyVehicle;			/* self */
 
@@ -2599,7 +2590,7 @@ Environment *pEnv;
 				    set_abs_drive(0.0);
 				    return (TRUE);
 			    }
-			    else 
+			    else
 			    if (NeedFuel(0.3))
 			    {
 				    GotoBoxCenter(pEnv);
@@ -2617,7 +2608,7 @@ Environment *pEnv;
 				    TurnOffAllWeapons();
 				    return (TRUE);
 			    }
-			    else 
+			    else
 			    if (NeedAmmo(0.9))
 			    {
 				    GotoBoxCenter(pEnv);
@@ -2635,7 +2626,7 @@ Environment *pEnv;
 				    set_abs_drive(0.0);
 				    return (TRUE);
 			    }
-			    else 
+			    else
 			    if (NeedArmor(0.9))
 			    {
 				    GotoBoxCenter(pEnv);
@@ -2658,7 +2649,7 @@ Environment *pEnv;
 				set_abs_drive(0.0);
 				return (TRUE);
 			}
-			else 
+			else
 			if (!NeedArmor(0.1) && !OutOfAmmo(FALSE) && !NeedFuel(0.1))
 			{
 				GotoBoxCenter(pEnv);
@@ -2674,19 +2665,19 @@ Environment *pEnv;
 
 
 static int VectorsCross(x1, y1, xs1, ys1, x2, y2, xs2, ys2)
-Coor   x1,  y1;					/* start of first vector */
-DOUBLE xs1, ys1;					/* speeds of first vector */
-Coor   x2,  y2;					/* start of second vector */
-DOUBLE xs2, ys2;					/* speeds of second vector */
+Coor   x1,  y1;				/* start of first vector */
+DOUBLE xs1, ys1;			/* speeds of first vector */
+Coor   x2,  y2;				/* start of second vector */
+DOUBLE xs2, ys2;			/* speeds of second vector */
 {
-	double tx, ty;				/* times until "collision" in x and y */
+	double tx, ty;			/* times until "collision" in x and y */
 
 	if (!xs1 && !ys1 && !xs2 && !ys2)
 	{
 		return (FALSE);
 	}
 
-    if (xs1 - xs2)
+	if (xs1 - xs2)
 	{
 	    tx = (x2 - x1) / (xs1 - xs2);
 	}
@@ -2695,7 +2686,7 @@ DOUBLE xs2, ys2;					/* speeds of second vector */
 		tx = (x1 == x2) ? 1 : 2;
 	}
 
-    if (ys1 - ys2)
+	if (ys1 - ys2)
 	{
 	    ty = (y2 - y1) / (ys1 - ys2);
 	}
@@ -2719,7 +2710,7 @@ BarfBarf(Byte recipent, ...)
 	va_start(args, recipent);
 	fmt = va_arg(args, char *);
 	(void) vsprintf(msg, fmt, args);
-	send_msg(recipent, OP_TEXT, msg);
+	send_msg(recipent, OP_TEXT, (Byte *) msg);
 	va_end(args);
 }
 
@@ -2760,11 +2751,11 @@ ProcessMessages(Environment *pEnv, int iMaxProcess)
 
 				abData[0] = mCurrent.data[0];
 
-	            for (x = 0; 
+	            for (x = 0;
 					 x < GRID_WIDTH && iNumFound < (MAX_DATA_LEN - 1)/2; ++x)
 	            {
-		            for (y = 0; 
-						 y < GRID_HEIGHT && iNumFound < (MAX_DATA_LEN - 1)/2; 
+		            for (y = 0;
+						 y < GRID_HEIGHT && iNumFound < (MAX_DATA_LEN - 1)/2;
 						 ++y)
 		            {
 					    if (pEnv->boxnotes[x][y].seen)
@@ -2788,7 +2779,7 @@ ProcessMessages(Environment *pEnv, int iMaxProcess)
 						iNumFound++;
 					}
 
-                    send_msg(MAX_VEHICLES + pEnv->stMyVehicle.team, 
+                    send_msg(MAX_VEHICLES + pEnv->stMyVehicle.team,
 				             OP_HERE_ARE, abData);
 				}
 			}
@@ -2799,7 +2790,7 @@ ProcessMessages(Environment *pEnv, int iMaxProcess)
 				int x;
 				int y;
 
-	            for (iNumFound = 0; 
+	            for (iNumFound = 0;
 					 iNumFound < (MAX_DATA_LEN - 1)/2; ++iNumFound)
 				{
 					x = mCurrent.data[1 + iNumFound * 2 + 0];
@@ -2822,21 +2813,21 @@ ProcessMessages(Environment *pEnv, int iMaxProcess)
 			}
 			else
 			if (oCurrent == OP_ATTACK && pEnv->iStatus == GOTO &&
-				pEnv->iCallerId == mCurrent.sender) 
+				pEnv->iCallerId == mCurrent.sender)
 			{
 				if (mCurrent.data[0] == mCurrent.recipient)
 				{
 					 pEnv->iStatus = WANDER;
 				}
 				else
-			    if (!pEnv->iSpecTarget) 
+			    if (!pEnv->iSpecTarget)
 				{
 						pEnv->iSpecTarget = TRUE;
 						pEnv->iTargetVehicle = mCurrent.data[0];
 				}
 			}
 			else
-			if (oCurrent == OP_OPEN && 
+			if (oCurrent == OP_OPEN &&
 				pEnv->bHaveTarget && pEnv->bTargetIsVehicle)
 			{
 				SendEnemyAt(pEnv, &pEnv->target, FALSE);
@@ -2912,11 +2903,11 @@ ProcessMessages(Environment *pEnv, int iMaxProcess)
 						"Was that it?",
 						"Fifty bucks john."
 					};
-				    int iRandomIndex = 
+					int iRandomIndex =
 						frand((float)sizeof(pcText)/sizeof(char *));
 
-                    send_msg(MAX_VEHICLES + team(mCurrent.data[0]), OP_TEXT, 
-							 pcText[iRandomIndex]);
+					send_msg(MAX_VEHICLES + team(mCurrent.data[0]), OP_TEXT,
+						(Byte *)pcText[iRandomIndex]);
 				}
 			}
 			else
@@ -2940,7 +2931,7 @@ ProcessMessages(Environment *pEnv, int iMaxProcess)
 							{
                             Message2VehicleInfo(mCurrent.data, &pEnv->target);
 
-                            DeltaLoc(&(pEnv->target.loc), 
+                            DeltaLoc(&(pEnv->target.loc),
 									 iFramesOld * mCurrent.data[6],
 									 iFramesOld * mCurrent.data[7]);
                             TurnOnAllWeapons();
@@ -3004,7 +2995,7 @@ ProcessMessages(Environment *pEnv, int iMaxProcess)
 							{
                             Message2VehicleInfo(mCurrent.data, &pEnv->target);
 
-                            DeltaLoc(&(pEnv->target.loc), 
+                            DeltaLoc(&(pEnv->target.loc),
 									 iFramesOld * mCurrent.data[6],
 									 iFramesOld * mCurrent.data[7]);
 						    Fight(pEnv, FALSE);
@@ -3031,16 +3022,13 @@ ProcessMessages(Environment *pEnv, int iMaxProcess)
 	}
 }
 
-static int CanGo(pstMyVehicle, xOff, yOff)
-Vehicle_info *pstMyVehicle;
-Coor xOff;
-Coor yOff;
+static int CanGo(Vehicle_info *pstMyVehicle, Coor xOff, Coor yOff)
 {
-    Location lDestination;
+	Location lDestination;
 
 	memcpy(&lDestination, &pstMyVehicle->loc, sizeof(Location));
-    DeltaLoc(&lDestination, xOff, yOff);
-    return (MyClearPath(&pstMyVehicle->loc, &lDestination));
+	DeltaLoc(&lDestination, xOff, yOff);
+	return (MyClearPath(&pstMyVehicle->loc, &lDestination));
 }
 
 
@@ -3049,10 +3037,13 @@ Coor yOff;
 /* decides if I can make the specified move without hitting a wall, taking */
 /* the vehicle size into account.  This is done by checking the paths of the */
 /* vehicle's bounding-box's corners. */
-static int self_clear_path(start, delta_x, delta_y)
+static int
+self_clear_path(Location *start, int delta_x, int delta_y)
+#if 0
 	Location       *start;	/* starting position of vehicle */
 	int             delta_x;
 	int             delta_y;	/* proposed move */
+#endif
 {
 	Location        s, f;	/* start and finish of a vehicle corner */
 	int             w, h;	/* width and height of this vehicle (changes
@@ -3112,9 +3103,10 @@ static int self_clear_path(start, delta_x, delta_y)
 
 
 /* decides if a box is a goal of my team.  Suitable to pass to navigate(). */
-static int IsGoalBox(pEnv, x, y)
-Environment *pEnv;
+static int IsGoalBox(Environment *pEnv, int x, int y)
+#if 0
 int  x, y;	/* grid coords of a box */
+#endif
 {
     int iRetCode = FALSE;
 
@@ -3127,7 +3119,7 @@ int  x, y;	/* grid coords of a box */
 
 		case SEEK:
 	        iRetCode =  (map_landmark(pEnv->my_map, x, y) == pEnv->iGoal &&
-		                (map_team(pEnv->my_map, x, y) == 
+		                (map_team(pEnv->my_map, x, y) ==
 						 pEnv->stMyVehicle.team ||
 		                 map_team(pEnv->my_map, x, y) == NEUTRAL));
 			break;
@@ -3141,9 +3133,11 @@ int  x, y;	/* grid coords of a box */
 }
 
 
-static void NoticeLandmark(pEnv, x, y)
-	Environment            *pEnv;
+static void
+NoticeLandmark(Environment *pEnv, int x, int y)
+#if 0
 	int             x, y;	/* box coordinates */
+#endif
 {
 	if (IsGoalBox(pEnv, x, y))
 	{
@@ -3152,8 +3146,8 @@ static void NoticeLandmark(pEnv, x, y)
 }
 
 
-static void NoteSurroundings(pEnv)
-	Environment            *pEnv;
+static void
+NoteSurroundings(Environment *pEnv)
 {
 	int             gx, gy;	/* current grid coords */
 	int             x, y;	/* coords of nearby box */
@@ -3182,13 +3176,13 @@ static void NoteSurroundings(pEnv)
 
 static int navigate(pEnv, destfunc, through_unseen)
 Environment *pEnv;
-int  (*destfunc) (); /* gets called with pEnv and x and y grid coordinates. */ 
+int  (*destfunc) (); /* gets called with pEnv and x and y grid coordinates. */
 					 /* Returns true if that box is a destination. */
 int  through_unseen; /* true if the search should proceed */
 					 /* even through boxes that have not been seen yet */
 {
 	/* used to implement breadth-first search through map */
-	Coord           queue[MAX_BOXES];	
+	Coord           queue[MAX_BOXES];
 	int             head, tail;	/* indexes into queue[] */
 	Coord          *cp;	/* data on box we're currently looking at */
 	register int    x, y;
@@ -3198,7 +3192,7 @@ int  through_unseen; /* true if the search should proceed */
 
 	/* mark all boxes as unsearched */
     {
-        BoxNotes *pbox; 
+        BoxNotes *pbox;
 	    for (x = 0; x < GRID_WIDTH; ++x)
 	    {
 			pbox = &pEnv->boxnotes[x][0];
@@ -3232,9 +3226,9 @@ int  through_unseen; /* true if the search should proceed */
 		{		/* found a destination? */
 			/* direction of path from this box */
 			/* (i.e the direction from which the search found this box) */
-			Direction dir;	
+			Direction dir;
 			/* direction by which we came to this box on the retrace */
-			Direction fromdir;	
+			Direction fromdir;
 
 			pEnv->iDestX = x;
 			pEnv->iDestY = y;
@@ -3257,7 +3251,7 @@ int  through_unseen; /* true if the search should proceed */
 				y += dir2delta[dir].y;
 
 				fromdir = dir2opposite[dir];	/* for next box */
-			} 
+			}
 			while (fromdir != Nodir);
 
 			pEnv->have_route = TRUE;
@@ -3326,10 +3320,12 @@ int  through_unseen; /* true if the search should proceed */
  * from my vehicle's current position to boxes later on in the route. Returns
  * the angle to go in (occaisonally BAD_ANGLE).
  */
-static Angle recursive_short_cut(pEnv, gx, gy, depth)
-Environment   *pEnv;
+static Angle
+recursive_short_cut(Environment *pEnv, int gx, int gy, int depth)
+#if 0
 int   gx, gy;	/* box to check out (initially the box my vehicle is in) */
 int   depth;	/* how many boxes down the path to search */
+#endif
 {
 	Angle           a;
 	Direction       dir;
@@ -3390,7 +3386,7 @@ int   depth;	/* how many boxes down the path to search */
 	 */
 	if (depth > 0)
 	{
-		a = recursive_short_cut(pEnv, 
+		a = recursive_short_cut(pEnv,
 								gx + dir2delta[dir].x, gy + dir2delta[dir].y,
 					            depth - 1);
 		if (a != BAD_ANGLE)
@@ -3417,11 +3413,11 @@ int   depth;	/* how many boxes down the path to search */
 
 
 /* follow the route that navigate() produced */
-static void FollowRoute(pEnv)
-	Environment            *pEnv;
+static void
+FollowRoute(Environment *pEnv)
 {
 	Angle           angle;
-    Location      lDestination;
+	Location      lDestination;
 
 	if (!pEnv->have_route)
 	{
@@ -3445,12 +3441,12 @@ static void FollowRoute(pEnv)
 	lDestination.x      = pEnv->iDestX * BOX_WIDTH  + BOX_WIDTH  / 2;
 	lDestination.y      = pEnv->iDestY * BOX_HEIGHT + BOX_HEIGHT / 2;
 
-    if (self_clear_path(&pEnv->stMyVehicle.loc, 
-		lDestination.x - pEnv->stMyVehicle.loc.x, 
+    if (self_clear_path(&pEnv->stMyVehicle.loc,
+		lDestination.x - pEnv->stMyVehicle.loc.x,
 		lDestination.y - pEnv->stMyVehicle.loc.y))
 	{
 #ifdef DEBUG_DIRECT_DRIVE
-		    printf("[%d] %d, %d\n", pEnv->stMyVehicle.id, 
+		    printf("[%d] %d, %d\n", pEnv->stMyVehicle.id,
 				pEnv->iDestX, pEnv->iDestY);
 #endif
 		turn_vehicle(ATAN2(lDestination.y - pEnv->stMyVehicle.loc.y,
@@ -3467,7 +3463,7 @@ static void FollowRoute(pEnv)
 	angle = recursive_short_cut(pEnv, pEnv->stMyVehicle.loc.grid_x,
 			             	    pEnv->stMyVehicle.loc.grid_y, SHORT_CUT_DEPTH);
 	if (angle == BAD_ANGLE)
-	{		
+	{
 		/* assume destructible wall */
 		int             gx = pEnv->stMyVehicle.loc.grid_x;
 		int             gy = pEnv->stMyVehicle.loc.grid_y;
@@ -3481,7 +3477,7 @@ static void FollowRoute(pEnv)
 #ifdef DEBUG_FOLLOW_ROUTE
 		    printf("[%d]I must have slid off course!\n",
 				   pEnv->stMyVehicle.id);
-#endif 
+#endif
 	        if (!navigate(pEnv, IsGoalBox, TRUE))
 			{
 		        if (!navigate(pEnv, unseen_box, FALSE))
@@ -3495,7 +3491,7 @@ static void FollowRoute(pEnv)
 			if (pEnv->have_route)
 			{
 #ifdef DEBUG_FOLLOW_ROUTE
-			    printf("\n@%d,%d going %d,%d[%d] %d", 
+			    printf("\n@%d,%d going %d,%d[%d] %d",
 					   pEnv->stMyVehicle.loc.grid_x,
 		               pEnv->stMyVehicle.loc.grid_y, dx, dy,
 				       pEnv->stMyVehicle.id, navdir);
@@ -3523,7 +3519,7 @@ static void FollowRoute(pEnv)
 			    }
 			}
 		}
-	} 
+	}
 	else
 	{
 		turn_vehicle(angle);
@@ -3537,8 +3533,8 @@ static void FollowRoute(pEnv)
 
 
 #ifdef DEBUG_TIME
-static void check_clock(pEnv)
-Environment            *pEnv;
+static void
+check_clock(Environment *pEnv)
 {
 	int             previous_frame;
 
@@ -3566,13 +3562,13 @@ Environment            *pEnv;
 #endif
 
 
-static void HandleWeapons(pEnv)
-Environment *pEnv;
+static void
+HandleWeapons(Environment *pEnv)
 {
 	BoxNotes   *np;
 
 	if (pEnv->dest_wall.x != -1)
-	{	
+	{
 		/* destructible wall in our path? */
 		/* target is middle of wall       */
 		if (!OutOfAmmo(FALSE))
@@ -3582,9 +3578,9 @@ Environment *pEnv;
 		    pEnv->target.loc.box_y  = dir2exit[np->navdir].y;
 		    pEnv->target.loc.grid_x = pEnv->dest_wall.x;
 		    pEnv->target.loc.grid_y = pEnv->dest_wall.y;
-		    pEnv->target.loc.x      = pEnv->target.loc.box_x + 
+		    pEnv->target.loc.x      = pEnv->target.loc.box_x +
 							          BOX_WIDTH * pEnv->target.loc.grid_x;
-		    pEnv->target.loc.y      = pEnv->target.loc.box_y + 
+		    pEnv->target.loc.y      = pEnv->target.loc.box_y +
 							          BOX_HEIGHT * pEnv->target.loc.grid_y;
             pEnv->target.xspeed     = 0;
             pEnv->target.yspeed     = 0;
@@ -3606,8 +3602,8 @@ Environment *pEnv;
 	}
 }
 
-static void PositionTurrets(pEnv)
-Environment *pEnv;
+static void
+PositionTurrets(Environment *pEnv)
 {
     Angle aAims[MAX_TURRETS];
 	int iNumTurrets = pEnv->stMyVehicle.num_turrets;
@@ -3620,7 +3616,7 @@ Environment *pEnv;
 		int yUs = pEnv->stMyVehicle.loc.grid_y;
 		int iNumBlips;
 		Blip_info BlipInfo[MAX_BLIPS];
-		
+
 		MyGetBlips(pEnv, &iNumBlips, BlipInfo);
 		{
 			if (iNumBlips)
@@ -3641,8 +3637,7 @@ Environment *pEnv;
 				           ABS(BlipInfo[iCtr].y - yUs) < iCtr2)
     			       {
 					       iNumTurrets--;
-    
-                           aAims[iNumTurrets] = 
+                           aAims[iNumTurrets] =
 								   fixed_angle(ATAN2(BlipInfo[iCtr].y - yUs,
 								                     BlipInfo[iCtr].x - xUs));
 			               turn_turret(iNumTurrets, aAims[iNumTurrets]);
@@ -3672,9 +3667,8 @@ Environment *pEnv;
 }
 
 
-static void PositionTurret(pEnv, iTurret)
-Environment *pEnv;
-int iTurret;
+static void
+PositionTurret(Environment *pEnv, int iTurret)
 {
     int xvUs = pEnv->stMyVehicle.xspeed;
     int yvUs = pEnv->stMyVehicle.yspeed;
@@ -3687,13 +3681,13 @@ int iTurret;
     switch (iTurret)
 	{
 		case 2:
-			turn_turret(1, fixed_angle(pEnv->stMyVehicle.heading - 
+			turn_turret(1, fixed_angle(pEnv->stMyVehicle.heading -
 							   		   pEnv->iTurnDir * aOffset));
 			break;
 
-        
+
 		case 1:
-			   turn_turret(1, fixed_angle(pEnv->stMyVehicle.heading + 
+			   turn_turret(1, fixed_angle(pEnv->stMyVehicle.heading +
 							   			  pEnv->iTurnDir * aOffset));
 			   break;
 
@@ -3705,9 +3699,8 @@ int iTurret;
 }
 
 
-static void VehicleInfo2Message(pstVehicle, pbBuffer)
-Vehicle_info *pstVehicle;
-Byte *pbBuffer;
+static void
+VehicleInfo2Message(Vehicle_info *pstVehicle, Byte *pbBuffer)
 {
     pbBuffer[0]  = (int) pstVehicle->loc.grid_x;
     pbBuffer[1]  = (int) pstVehicle->loc.grid_y;
@@ -3723,17 +3716,16 @@ Byte *pbBuffer;
 }
 
 
-static void Message2VehicleInfo(pbBuffer, pstVehicle)
-Byte *pbBuffer;
-Vehicle_info *pstVehicle;
+static void
+Message2VehicleInfo(Byte *pbBuffer, Vehicle_info *pstVehicle)
 {
-    pstVehicle->loc.grid_x  = (int)   pbBuffer[0]; 
+    pstVehicle->loc.grid_x  = (int)   pbBuffer[0];
     pstVehicle->loc.grid_y  = (int)   pbBuffer[1];
 	pstVehicle->loc.box_x   = (int)   pbBuffer[2];
     pstVehicle->loc.box_y   = (int)   pbBuffer[3];
-    pstVehicle->loc.x       = (int)   pstVehicle->loc.grid_x * BOX_WIDTH + 
+    pstVehicle->loc.x       = (int)   pstVehicle->loc.grid_x * BOX_WIDTH +
 									  pstVehicle->loc.box_x;
-    pstVehicle->loc.y       = (int)   pstVehicle->loc.grid_y * BOX_HEIGHT + 
+    pstVehicle->loc.y       = (int)   pstVehicle->loc.grid_y * BOX_HEIGHT +
 									  pstVehicle->loc.box_y;
     pstVehicle->xspeed      = (float) pbBuffer[6] - SPEED_BIAS;
     pstVehicle->yspeed      = (float) pbBuffer[7] - SPEED_BIAS;
@@ -3745,9 +3737,8 @@ Vehicle_info *pstVehicle;
 
 
 
-static FLOAT GetDodgeSpeed(pEnv, fDefault)
-Environment *pEnv;
-FLOAT fDefault;
+static FLOAT
+GetDodgeSpeed(Environment *pEnv, FLOAT fDefault)
 {
     int         iNumBullets;
 	int         iCtr;
@@ -3800,16 +3791,16 @@ X
 			switch (iCtr2)
 			{
 				case 0:
-					fSpeeds[0] = fCurSpeed - tread_acc() * 
+					fSpeeds[0] = fCurSpeed - tread_acc() *
 							pEnv->stGameSettings.normal_friction;
 					break;
 
 				case 1:
-					fSpeeds[1] = fCurSpeed; 
+					fSpeeds[1] = fCurSpeed;
 					break;
 
 				case 2:
-					fSpeeds[2] = fCurSpeed + acc(); 
+					fSpeeds[2] = fCurSpeed + acc();
 					break;
 			}
 
@@ -3894,28 +3885,29 @@ X /* */
 	}
 
 	if (fSpeed == fSpeeds[0])
-		if (fDefault < fSpeed) 
 	{
+		if (fDefault < fSpeed)
+		{
 X
-		fSpeed = fDefault;
-	}
-	else
-	if (fSpeed == fSpeeds[2])
-		if (fDefault > fSpeed)
-	{
+			fSpeed = fDefault;
+		}
+		else
+		{
+			if (fSpeed == fSpeeds[2]) {
+				if (fDefault > fSpeed)
+				{
 X
-		fSpeed = fDefault;
+					fSpeed = fDefault;
+				}
+			}
+		}
 	}
 
 	return (fSpeed);
 }
 
-
-
-static void SendEnemyAt(pEnv, pstVehicle, bSpace)
-Environment *pEnv;
-Vehicle_info *pstVehicle;
-Boolean bSpace;
+static void
+SendEnemyAt(Environment *pEnv, Vehicle_info *pstVehicle, Boolean bSpace)
 {
     Byte abData[MAX_DATA_LEN];
 	int  iSpacing = 1;
@@ -3933,13 +3925,13 @@ Boolean bSpace;
 
         VehicleInfo2Message(pstVehicle, abData);
 
-        send_msg(MAX_VEHICLES + pEnv->stMyVehicle.team, 
+        send_msg(MAX_VEHICLES + pEnv->stMyVehicle.team,
             OP_ENEMY_AT, abData);
     }
 }
 
-static int OutOfAmmo(bCountDroppedWeapons)
-Boolean bCountDroppedWeapons;
+static int
+OutOfAmmo(Boolean bCountDroppedWeapons)
 {
     int weapon;
     Weapon_info winfo;
@@ -3961,8 +3953,8 @@ Boolean bCountDroppedWeapons;
 }
 
 
-static int FindEnemy(pEnv)
-Environment *pEnv;
+static void
+FindEnemy(Environment *pEnv)
 {
 	int iNumBlips;
 	int iClosestDistance = 0;
@@ -3972,8 +3964,8 @@ Environment *pEnv;
 	Blip_info blip_info[MAX_BLIPS];
 	int iOurX  = pEnv->stMyVehicle.loc.grid_x;
 	int iOurY  = pEnv->stMyVehicle.loc.grid_y;
-                        
-    MyGetBlips(pEnv, &iNumBlips, blip_info);
+
+	MyGetBlips(pEnv, &iNumBlips, blip_info);
 	while (iNumBlips--)
 	{
 		bGoThere = FALSE;
@@ -4012,10 +4004,8 @@ Environment *pEnv;
 	}
 }
 
-static int MyGetBlips(pEnv, piNumBlips, abiBlips)
-Environment *pEnv;
-int *piNumBlips;
-Blip_info *abiBlips;
+static int
+MyGetBlips(Environment *pEnv, int *piNumBlips, Blip_info *abiBlips)
 {
     int iTry = 0;
 
@@ -4057,13 +4047,9 @@ Blip_info *abiBlips;
 	return (*piNumBlips);
 }
 
-
-static int unseen_box(pEnv, coX, coY)
-Environment *pEnv;
-Coor coX;
-Coor coY;
+static int
+unseen_box(Environment *pEnv, Coor coX, Coor coY)
 {
-    return (!pEnv->boxnotes[coX][coY].seen);
+	return (!pEnv->boxnotes[coX][coY].seen);
 }
-
 
