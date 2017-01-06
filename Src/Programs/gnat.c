@@ -176,6 +176,7 @@
 
 */
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -213,7 +214,6 @@ Prog_desc ProgDesc =
 
 #define CenterXofBox(x) ((x) * BOX_WIDTH + BOX_WIDTH / 2)
 #define CenterYofBox(y) ((y) * BOX_HEIGHT + BOX_HEIGHT / 2)
-#define LOG(x)          (float) (log((double) (x)))
 #define DegToRad(x)     (FULL_CIRCLE * (x) / 360.0)
 #define Deg15ToRad(x)   (FULL_CIRCLE * (x) / 24.0 + FULL_CIRCLE / 48.0)
 #define RadToDeg(x)     ((int) (fixed_angle((x)) * 360.0 / FULL_CIRCLE) % 360)
@@ -2395,7 +2395,7 @@ dodge_ivectors(GnatVars *vars)
   float cos_angle, sin_angle;
   float hit_ratio;
   int hit_wall, hit_mines;
-  int deg, opt_dir[24];
+  int deg, deg2, opt_dir[24];
   Boolean dest_wall, brake;
 
   if (vars->hover)
@@ -2437,7 +2437,15 @@ dodge_ivectors(GnatVars *vars)
 
     /* Favor heading in accordance with current velocity vector. */
 
-    deg = (RadTo15Deg(vars->vel_angle) - 3) % 24;
+    deg = (RadTo15Deg(vars->vel_angle - 3)) % 24;
+    assert(deg >= 0);
+    if (deg < 0) {
+       deg2 = (RadTo15Deg(vars->vel_angle - 3)) % 24;
+       fprintf(stderr, "fixed deg < 0 (%d) at line %d\n", deg, __LINE__);
+       deg = 0;
+       fprintf(stderr, "deg2 is (%d)\n", deg2);
+    }
+    assert(deg >= 0);
     for (i = 0; i < 7; i++) {
       opt_dir[deg]--;
       deg = (deg + 1) % 24;
@@ -2448,7 +2456,11 @@ dodge_ivectors(GnatVars *vars)
     for (i = 0; i < vars->num_enemies; i++)
       if (vars->enemies[i].in_sight && 
 	  (i != vars->victim || vars->withdraw)) {
-	deg = (RadTo15Deg(vars->enemies[i].pos_angle) - 5) % 24;
+	deg = (RadTo15Deg(vars->enemies[i].pos_angle - 5)) % 24;
+        assert(deg >= 0);
+	if (deg < 0) {
+	  deg = 0; fprintf(stderr, "fixed deg < 0 at line %d\n", __LINE__);
+	}
 	for (j = 0; j < 11; j++) {
 	  opt_dir[deg] += 3;
 	  deg = (deg + 1) % 24;
@@ -2457,12 +2469,20 @@ dodge_ivectors(GnatVars *vars)
 #ifdef DEBUG_GNAT
 	  send_msg(RECIPIENT_ALL, OP_TEXT, "Going round boogie.");
 #endif
-	  deg = (RadTo15Deg(vars->enemies[i].pos_angle + PI/2) - 1) % 24;
+	  deg = (RadTo15Deg(vars->enemies[i].pos_angle + PI/2 - 1)) % 24;
+          assert(deg >= 0);
+	  if (deg < 0) {
+	    deg = 0; fprintf(stderr, "fixed deg < 0 at line %d\n", __LINE__);
+	  }
 	  for (j = 0; j < 3; j++) {
 	    opt_dir[deg]--;
 	    deg = (deg + 1) % 24;
 	  }
-	  deg = (RadTo15Deg(vars->enemies[i].pos_angle - PI/2) - 1) % 24;
+	  deg = (RadTo15Deg(vars->enemies[i].pos_angle - PI/2 - 1)) % 24;
+          assert(deg >= 0);
+	  if (deg < 0) {
+	    deg = 0; fprintf(stderr, "fixed deg < 0 at line %d\n", __LINE__);
+	  }
 	  for (j = 0; j < 3; j++) {
 	    opt_dir[deg]--;
 	    deg = (deg + 1) % 24;
@@ -2472,7 +2492,11 @@ dodge_ivectors(GnatVars *vars)
 #ifdef DEBUG_GNAT
 	  send_msg(RECIPIENT_ALL, OP_TEXT, "Backing from boogie.");
 #endif
-	  deg = (RadTo15Deg(vars->enemies[i].pos_angle + PI) - 2) % 24;
+	  deg = (RadTo15Deg(vars->enemies[i].pos_angle + PI - 2)) % 24;
+	  assert(deg >= 0);
+	  if (deg < 0) {
+	    deg = 0; fprintf(stderr, "fixed deg < 0 at line %d\n", __LINE__);
+	  }
 	  for (j = 0; j < 5; j++) {
 	    opt_dir[deg]--;
 	    deg = (deg + 1) % 24;
@@ -2494,14 +2518,22 @@ dodge_ivectors(GnatVars *vars)
 	  if (map_landmark(vars->map, vars->enemies[t].loc.grid_x,
 			   vars->enemies[t].loc.grid_y) == ARMOR) {
 	    max_tries = 2;
-	    deg = (RadTo15Deg(vars->enemies[t].pos_angle) - 1) % 24;
+	    deg = (RadTo15Deg(vars->enemies[t].pos_angle - 1)) % 24;
+	    assert(deg >= 0);
+	    if (deg < 0) {
+	      deg = 0; fprintf(stderr, "fixed deg < 0 at line %d\n", __LINE__);
+	    }
 	    for (i = 0; i < 3; i++) {
 	      opt_dir[deg] -= 100;
 	      deg = (deg + 1) % 24;
 	    }
 	  }
 	  else {
-	    deg = (RadTo15Deg(vars->enemies[t].pos_angle) - 5) % 24;
+	    deg = (RadTo15Deg(vars->enemies[t].pos_angle - 5)) % 24;
+	    assert(deg >= 0);
+	    if (deg < 0) {
+	      deg = 0; fprintf(stderr, "fixed deg < 0 at line %d\n", __LINE__);
+	    }
 	    for (i = 0; i < 11; i++) {
 	      if (i < 4 || i > 6)
 		opt_dir[deg]--;
@@ -2512,7 +2544,11 @@ dodge_ivectors(GnatVars *vars)
 	else {
 	  dx = vars->enemies[t].loc.x - vars->us.loc.x;
 	  dy = vars->enemies[t].loc.y - vars->us.loc.y;
-	  deg = (RadTo15Deg(TAN(dy, dx)) - 3) % 24;
+	  deg = (RadTo15Deg(TAN(dy, dx) - 3)) % 24;
+	  assert(deg >= 0);
+	  if (deg < 0) {
+	    deg = 0; fprintf(stderr, "fixed deg < 0 at line %d\n", __LINE__);
+	  }
 	  for (i = 0; i < 7; i++) {
 	    opt_dir[deg] -= 2;
 	    deg = (deg + 1) % 24;
@@ -2520,14 +2556,18 @@ dodge_ivectors(GnatVars *vars)
 	}
       }
       else if (vars->enemies[vars->victim].in_sight) { 
-
 	/* Move away. */
 
-	deg = (RadTo15Deg(vars->enemies[vars->victim].pos_angle) - 5) % 24;
+	deg = (RadTo15Deg(vars->enemies[vars->victim].pos_angle - 5)) % 24;
+	assert(deg >= 0);
+	if (deg < 0) {
+	  deg = 0; fprintf(stderr, "fixed deg < 0 at line %d\n", __LINE__);
+	}
 	for (i = 0; i < 11; i++) {
 	  opt_dir[deg] += 3;
 	  deg = (deg + 1) % 24;
 	}
+
 /*
 ** XXX - 20170103
 ** I changed this, as I'm pretty sure that since i will always be 11
@@ -2536,13 +2576,21 @@ dodge_ivectors(GnatVars *vars)
 //	if (vars->enemies[i].rspeed < 0) {  /* Boogie is gaining. */
 	if (vars->enemies[vars->victim].rspeed < 0) {  /* Boogie is gaining. */
 	  deg = (RadTo15Deg(vars->enemies[vars->victim].pos_angle + 
-			    PI/2) - 1) % 24;
+			    PI/2 - 1)) % 24;
+	  assert(deg >= 0);
+	  if (deg < 0) {
+	    deg = 0; fprintf(stderr, "fixed deg < 0 at line %d\n", __LINE__);
+	  }
 	  for (j = 0; j < 3; j++) {
 	    opt_dir[deg]--;
 	    deg = (deg + 1) % 24;
 	  }
 	  deg = (RadTo15Deg(vars->enemies[vars->victim].pos_angle - 
-			    PI/2) - 1) % 24;
+			    PI/2 - 1)) % 24;
+	  assert(deg >= 0);
+	  if (deg < 0) {
+	    deg = 0; fprintf(stderr, "fixed deg < 0 at line %d\n", __LINE__);
+	  }
 	  for (j = 0; j < 3; j++) {
 	    opt_dir[deg]--;
 	    deg = (deg + 1) % 24;
@@ -2550,7 +2598,11 @@ dodge_ivectors(GnatVars *vars)
 	}
 	else {
 	  deg = (RadTo15Deg(vars->enemies[vars->victim].pos_angle + 
-			    PI) - 2) % 24;
+			    PI - 2)) % 24;
+	  assert(deg >= 0);
+	  if (deg < 0) {
+	    deg = 0; fprintf(stderr, "fixed deg < 0 at line %d\n", __LINE__);
+	  }
 	  for (j = 0; j < 5; j++) {
 	    opt_dir[deg]--;
 	    deg = (deg + 1) % 24;
@@ -2562,6 +2614,10 @@ dodge_ivectors(GnatVars *vars)
     /* Select best direction as our optimal heading. */
 
     min_try = try = RadTo15Deg(vars->vel_angle);
+    if (try < 0) {
+        min_try = try = 0; fprintf(stderr, "fixed try < 0 at line %d\n", __LINE__);
+    }
+
     min_damage = opt_dir[try];
     for (i = 0; i < 23; i++) {
       try = (try + 1) % 24;
@@ -3243,7 +3299,11 @@ process_tanks(GnatVars *vars)
       vars->enemies[enemy].vspeed = vspeed;
       vars->enemies[enemy].rspeed = rspeed;
       if (line_of_sight) {
-	angle_deg = (RadTo15Deg(pos_angle) - 3) % 24;
+	angle_deg = (RadTo15Deg(pos_angle - 3)) % 24;
+        assert(deg >= 0);
+        if (angle_deg < 0) {
+	    angle_deg = 0; fprintf(stderr, "fixed angle_deg < 0 at line %d\n", __LINE__);
+	}
 	for (deg = 0; deg < 7; deg++) {
 	  if (dist < vars->enemy_dist[angle_deg])
 	    vars->enemy_dist[angle_deg] = dist;
@@ -3383,7 +3443,7 @@ check_battlefield(GnatVars *vars)
 	vars->close_enemies++;
     
     /* Should we hit or run? */
-    
+
     if (vars->armor_cond <= Unstable || vars->ammo_cond <= Unstable ||
 	vars->fuel_cond == Critical ||
 	(vars->close_enemies > 1 && vars->action != AidFriend &&
@@ -3393,7 +3453,7 @@ check_battlefield(GnatVars *vars)
       vars->withdraw = False;
     
     /* To ram or not to ram? */
-    
+
     if (vars->rammer && vars->armor[FRONT] > vars->max_armor[FRONT] / 2 && 
 	vars->armor[LEFT] > vars->max_armor[LEFT] / 2 &&
 	vars->armor[RIGHT] > vars->max_armor[RIGHT] / 2 &&
@@ -3403,7 +3463,7 @@ check_battlefield(GnatVars *vars)
       vars->ram_him = False;
     
     /* Process hot spots, etc. */
-    
+
     if (vars->visible_enemies) {
       for (e = 0; e < vars->num_enemies; e++)
 	if (vars->enemies[e].in_sight) {
@@ -3447,17 +3507,18 @@ check_battlefield(GnatVars *vars)
       vars->max_side >= (vars->num_ivects * 6) &&
       (vars->critical_sides == 1 || vars->critical_sides == 2 ||
        (vars->min_side < MIN(20, vars->max_armor[vars->worst_side]) &&
-	vars->critical_sides == 0)))
+	vars->critical_sides == 0))) {
     protect_sides(vars);
-  else if (vars->num_ivects && !vars->ram_him &&
+  } else if (vars->num_ivects && !vars->ram_him &&
 	   (settings.game != RACE_GAME || vars->armor_cond != Maximum ||
 	    vars->mine_ahead)) {
     if (settings.game != RACE_GAME && 
 	(vars->possible_damage > vars->min_side / 4 ||
-	 (vars->boogie_too_fast && vars->withdraw)))
+	 (vars->boogie_too_fast && vars->withdraw))) {
       vars->movement = Panic;
-    else
+    } else {
       vars->movement = Evading;
+    }
     dodge_ivectors(vars);
   }
   else if (vars->movement == Evading || vars->movement == LastStand)
@@ -5141,6 +5202,7 @@ race_control(GnatVars *vars)
 static void clean_up(GnatVars *vars)
 {
   free((char *) vars);
+  vars = NULL;
 }
 
 /*** The main loop accessable to the xtank program. ***/

@@ -21,6 +21,6 @@ Guard		crashes instantly
 RacerX		unknown
 tagman		works well
 Bootlegger	works well
-gnat		crashes after a (short) while
+gnat		works well (needs code review to changes made)
 rdfbot		doesn't crash, doesn't do much
 mmtf		works
