@@ -1243,7 +1243,6 @@ do_num(int num, Boolean init)
 void
 display_settings(void)
 {
-	extern *bool_str[];
 	char temp[41];
 	int line;
 
