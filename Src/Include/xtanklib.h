@@ -9,6 +9,10 @@
 #ifndef _XTANKLIB_H_			/* prevent multiple inclusions */
 #define _XTANKLIB_H_
 
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
 #include "sysdep.h"
 #include "map.h"
 #include "screen.h"
