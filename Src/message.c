@@ -953,7 +953,7 @@ format_message(Message *m, char *disp)
 		  break;
 	  case DATA_LOCS:
 		  for (ictr = 1; ictr < 28; ictr += 2) {
-			  if (data[ictr] < GRID_WIDTH || data[ictr] < 0) {
+			  if (data[ictr] < GRID_WIDTH) {
 				  ictr -= 2;
 				  break;
 			  }
