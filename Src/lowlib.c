@@ -1709,8 +1709,7 @@ aim_smart_weapon(int x, int y)
 #define SGN(a)  (((a)<0) ? -1 : 1)
 
 void
-rdf_map(Box **map)
-/* Box map[][GRID_HEIGHT]; */
+rdf_map(Box map[][GRID_HEIGHT])
 {
 	int i, j;
 	int first_veh, end_veh;

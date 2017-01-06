@@ -93,7 +93,10 @@ extern void done P_((void));
 extern void set_cleanup_func P_((void (*funcp) (), void *argp));
 extern void creat_mort P_((Weapon *, Loc *, Angle));
 extern void creat_harm P_((Weapon *, Loc *, Angle));
+extern void rdf_map P_((Box map[][GRID_HEIGHT]));
 extern SpecialStatus switch_special(SpecialType st, int action);
+extern void aim_smart_weapon P_((int x, int y));
+
 
 /* highlib.c */
 extern void turn_all_turrets P_((Angle));
