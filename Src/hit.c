@@ -39,7 +39,7 @@ find_affected_side(Vehicle *v, double angle)
 	FLOAT rel_angle;
 
 
-	rel_angle = drem(v->vector.heading + PI / 4 - angle, 2 * PI);
+	rel_angle = remainder(v->vector.heading + PI / 4 - angle, 2 * PI);
 
 	if (rel_angle < -PI / 2)
 		s = BACK;

@@ -179,7 +179,7 @@ turn_vehicle(Angle desired_heading)
 	vector = &cv->vector;
 
 	/* make sure the desired heading is between -PI and PI */
-	vector->desired_heading = drem(desired_heading, 2 * PI);
+	vector->desired_heading = remainder(desired_heading, 2 * PI);
 
 	diff = vector->desired_heading - vector->heading;
 
@@ -408,7 +408,7 @@ turn_turret(TurretNum num, Angle angle)
 		t = &cv->turret[(int) num];
 
 		/* make sure desired angle is between -PI and PI */
-		t->desired_angle = drem(angle, 2 * PI);
+		t->desired_angle = remainder(angle, 2 * PI);
 
 		diff = t->desired_angle - t->angle;
 

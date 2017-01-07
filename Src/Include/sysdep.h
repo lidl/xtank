@@ -23,38 +23,6 @@
 #define ATAN2(Y,X) atan2((double)Y, (double)X)
 #endif
 
-#if 0
-/* drem() not available so add a wrapper around fmod() */
-#if !defined(drem)
-
-#if defined(fmod)
-static double temp_drem;
-
-#define drem(a,b) \
-	((temp_drem = fmod(a,b)) > (b)/2 ? temp_drem-(b) : temp_drem)
-
-#else /* !fmod */
-
-#define drem(a,b) \
-	(((double)(a))-(int)((((double)(a))/((double)(b)))+((double) 0.5))*(b))
-#endif /* !fmod */
-#endif /* !drem */
-
-#endif /* 0 */
-
-/* If you have no cbrt in your library, try this */
-/* also included linux -- not needed any more (it breaks too) */
-#if defined(sequent) || defined(__hpux)
-#define cbrt(n) pow(n, 1.0/3.0)
-#endif
-
-#if defined(mips) && defined(ultrix)
-/* DEC bites again - broken math.h */
-extern double fmod(), drem();
-
-/* There's a rumor that DEC's drem has a bug.  Consider using the macro above. */
-#endif
-
 /*
 ** Ultrix doesn't have a prototype for this, so we must.  Typical.
 */

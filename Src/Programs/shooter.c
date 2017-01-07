@@ -9,9 +9,6 @@
 #include <xtanklib.h>
 #include "sysdep.h"
 #include <stdio.h>
-#if defined(i860)
-#undef drem
-#endif
 #include <math.h>
 
 static void main();
@@ -172,8 +169,7 @@ shooter_shoot(sinfo, myloc, t)
 	    /* Forget shooting if you won't hit... */
 	    /* (I want a better algo..) */
             kludge = ang - turret_angle((TurretNum)i);
-	    ang = drem(kludge, (2.0 * PI)); /* Needs to become drem, I
-					       think */
+	    ang = remainder(kludge, (2.0 * PI));
 	    /* ang = (ang - turret_angle(i)) % 2.0*PI; */
 	    ang = (ang <= 0) ? -ang : ang;
 
