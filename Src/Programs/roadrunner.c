@@ -23,7 +23,7 @@
 #define gridx(x) (int)(x/BOX_WIDTH)
 #define gridy(y) (int)(y/BOX_HEIGHT)
 
-void roadrunner_main();
+static void roadrunner_main(void);
 
 Prog_desc roadrunner_prog = {
     "roadrunner",
@@ -45,8 +45,8 @@ typedef struct {
     char x, y;
 } Road_Maze;
 
-static WallSide rotate(dir)
-WallSide dir;
+static WallSide
+rotate(WallSide dir)
 {
     switch (dir) {
 	case NORTH:
@@ -56,13 +56,13 @@ WallSide dir;
 	case SOUTH:
 	    return WEST;
 	case WEST:
+	default:		/* silence compiler warning */
 	    return NORTH;
     }
 }
 
-static int fire(angle, me)
-FLOAT angle;
-Location me;
+static int
+fire(FLOAT angle, Location me)
 {
     turn_all_turrets(angle);
     angle = ((angle) < 0 ? (6.28 + angle) : (((angle)) > 6.28 ? (angle - 6.28) : (angle)));
@@ -78,9 +78,8 @@ Location me;
 }
 
 /* return the length of the road, if 0 no goal is found */
-static int calc_road(road, me)
-Road_Maze road[];
-Location me;
+static int
+calc_road(Road_Maze road[], Location me)
 {
     Raze_Maze maze[30][30];
     WallSide dir;
@@ -145,8 +144,8 @@ Location me;
 	return 0;
 }
 
-static int is_clear_path(x, y, go_x, go_y)
-int x, y, go_x, go_y;
+static int
+is_clear_path(int x, int y, int go_x, int go_y)
 {
     int dx, dy, gx, gy, depth;
     FLOAT A, Ba, Bs;
@@ -210,18 +209,19 @@ int x, y, go_x, go_y;
     return 1;
 }
 
-void siouxeyecide(message)
-char *message;
+static void
+siouxeyecide(char *message)
 {
 	if (message != NULL) {
-		send_msg(RECIPIENT_ALL, OP_TEXT, message);
+		send_msg(RECIPIENT_ALL, OP_TEXT, (Byte *) message);
 		for (;;) {
 			done();
 		}
 	}
 }
 
-void roadrunner_main()
+static void
+roadrunner_main(void)
 {
     Road_Maze road[900];
     int x, y, go_x, go_y, px, py, length, state, stop, frame, i;
@@ -246,7 +246,7 @@ void roadrunner_main()
 
     get_location(&me);
     if ((length = calc_road(road, me)) > 0) {
-	send_msg(RECIPIENT_ALL, OP_TEXT, "Meep! Meep!");
+	send_msg(RECIPIENT_ALL, OP_TEXT, (Byte *) "Meep! Meep!");
 	state = length;
 	px = 0;
 	py = 0;
