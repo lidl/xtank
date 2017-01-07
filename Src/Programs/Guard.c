@@ -13,20 +13,20 @@
 #include "xtanklib.h"
 #include <math.h>
 
-static void Guard_main();
+static void Guard_main(void);
 
 Prog_desc Guard_prog =
 {
 	"Guard",
 	"Guard",
-    "Basic strategy is to collide with the opponent.  Naturally, this only works if the opponent's vehicle is MUCH more expensive (and slower).  Avoids collisions with walls (*almost* all of the time) avoids collisions with others on the same team (most of the time) wanders aimlessly if it can't find an enemy; buys supplies if it stumbles across them and has nothing better to do; is not smart about going around walls or searching for supplies.",
+	"Basic strategy is to collide with the opponent.  Naturally, this only works if the opponent's vehicle is MUCH more expensive (and slower).  Avoids collisions with walls (*almost* all of the time) avoids collisions with others on the same team (most of the time) wanders aimlessly if it can't find an enemy; buys supplies if it stumbles across them and has nothing better to do; is not smart about going around walls or searching for supplies.",
 	"Robert Potter (potter@cs.rochester.edu)",
 	PLAYS_COMBAT | USES_TEAMS,
 	4,
 	Guard_main
 };
 
-
+/* macros */
 #define BRAKING_ACC (MAX_ACCEL * settings.normal_friction * tread_acc())
 #define SLIP_FACTOR (settings.normal_friction / settings.slip_friction)
 
@@ -34,32 +34,35 @@ Prog_desc Guard_prog =
 /* information about a particular vehicle */
 typedef struct
 {
-	Vehicle_info vi;			/* from most recent sighting */
-	Vehicle_info old_vi;		/* from previous sighting */
-	int frame;					/* frame number when last seen (-1 if never) */
-	int old_frame;				/* frame number when previously seen */
+	Vehicle_info vi;	/* from most recent sighting */
+	Vehicle_info old_vi;	/* from previous sighting */
+	int frame;		/* frame number when last seen (-1 if never) */
+	int old_frame;		/* frame number when previously seen */
 } VehicleData;
 
 /* everything I know, packaged into a structure so that it can be easily
    passed to subroutines (all this to avoid global data) */
 typedef struct
 {
-	Vehicle_info me;			/* information on my vehicle */
-	int frame;					/* current frame number (clock value) */
-	VehicleData v[MAX_VEHICLES];/* information on all vehicles, indexed by
-								   vehicle ID */
-	VehicleData *target;		/* what I want to attack (points into v[]) */
+	Vehicle_info me;	/* information on my vehicle */
+	int frame;		/* current frame number (clock value) */
+	VehicleData v[MAX_VEHICLES];/* information on all vehicles,
+					   indexed by vehicle ID */
+	VehicleData *target;	/* what I want to attack (points into v[]) */
 } All;
 
 static Settings_info settings;	/* can be global because it can be shared
-								   with other players */
+				   with other players */
 
 
 /* changes a location by the given x and y (in pixel, not grid units) */
 
-static void delta_loc(locp, delta_x, delta_y)
-Location *locp;					/* gets modified */
+static void
+delta_loc(Location *locp, int delta_x, int delta_y)
+#if 0
+Location *locp;				/* gets modified */
 int delta_x, delta_y;			/* in fine units */
+#endif
 {
 	locp->x += delta_x;
 	locp->y += delta_y;
@@ -70,22 +73,25 @@ int delta_x, delta_y;			/* in fine units */
 }
 
 
-/* decides if I can make the specified move without hitting a wall, taking the
-   vehicle size into account.  This is done by checking the paths of the
-   vehicle's bounding-box's corners. */
+/* decides if I can make the specified move without hitting a wall,
+   taking the vehicle size into account.  This is done by checking
+   the paths of the vehicle's bounding-box's corners. */
 
-static self_clear_path(start, delta_x, delta_y)
-Location *start;				/* starting position of vehicle */
-int delta_x, delta_y;			/* proposed move */
+static int
+self_clear_path(Location *start, int delta_x, int delta_y)
+#if 0
+Location *start;		/* starting position of vehicle */
+int delta_x, delta_y;		/* proposed move */
+#endif
 {
-	Location s, f;				/* start and finish of a vehicle corner */
-	int w, h;					/* width and height of this vehicle (changes
-								   with orientation) */
+	Location s, f;		/* start and finish of a vehicle corner */
+	int w, h;		/* width and height of this vehicle
+				   (changes with orientation) */
 
 	vehicle_size(&w, &h);
-	/* convert to difference from center of vehicle (assume that vehicle
-	   location is center of vehicle; it sucks that we can't get offset_x and
-	   offset_y) */
+	/* convert to difference from center of vehicle (assume that
+	   vehicle location is center of vehicle; it sucks that we
+	   can't get offset_x and offset_y) */
 	w = (w + 1) / 2;
 	h = (h + 1) / 2;
 
@@ -128,82 +134,26 @@ int delta_x, delta_y;			/* proposed move */
 /* return true if I must stop now to avoid hitting a wall (deals with slip
    squares but not scroll squares) */
 
-static will_hit_wall(vip)
-Vehicle_info *vip;				/* self */
+static int
+will_hit_wall(Vehicle_info *vip)
 {
-	FLOAT tus;					/* time-until-stop under full braking at the
-								   current speed (ignoring scroll squares) */
+	FLOAT tus;		/* time-until-stop under full braking at the
+				   current speed (ignoring scroll squares) */
 
 	tus = speed() / BRAKING_ACC;
 	if (landmark(vip->loc.grid_x, vip->loc.grid_y) == SLIP)
 		tus *= SLIP_FACTOR;
-	/* find out if a path is clear to the minimum distance I will go if I
-	   DON'T brake now */
+	/* find out if a path is clear to the minimum distance
+	   I will go if I DON'T brake now */
 	return !self_clear_path(&vip->loc,
-							(int) (vip->xspeed * (tus / 2 + TICKSZ)),
-							(int) (vip->yspeed * (tus / 2 + TICKSZ)));
+		(int) (vip->xspeed * (tus / 2 + TICKSZ)),
+		(int) (vip->yspeed * (tus / 2 + TICKSZ)));
 }
-
-#ifdef DONTNEED
-static int nowall(angle)
-FLOAT angle;
-{
-	Location loc;
-	int section;
-	FLOAT speed_vehicle;
-
-	speed_vehicle = speed();
-	printf("speed = %f\n", speed_vehicle);
-
-	if (speed_vehicle > 2.0 * acc())
-		return (1);
-	get_location(&loc);
-
-#define OLD
-
-#ifdef OLD
-	if (angle > 0 && angle < PI / 2)
-	{
-		section = EAST;
-	}
-	else if (angle < PI)
-	{
-		section = NORTH;
-	}
-	else if (angle < 3 * PI / 2)
-	{
-		section = SOUTH;
-	}
-	else
-		section = WEST;
-#else
-	if (angle > 0 && angle < PI / 4)
-	{
-		section = EAST;
-	}
-	else if (angle < 3 / 4 * PI)
-	{
-		section = NORTH;
-	}
-	else if (angle < 5 / 4 * PI)
-	{
-		section = WEST;
-	}
-	else if (angle < 7 / 4 * PI)
-		section = SOUTH;
-	else
-		section = EAST;
-#endif
-
-	return (1 != wall(section, loc.grid_x, loc.grid_y));
-}
-
-#endif
 
 /* figure out which vehicle to attack, return false if none is found */
 
-static get_target(allp)
-All *allp;
+static int
+get_target(All *allp)
 {
 	int dx, dy;
 	unsigned long min_range, range;
@@ -238,8 +188,8 @@ All *allp;
 	return (min_range == VERY_FAR) ? FALSE : TRUE;
 }
 
-static get_friend(allp)
-All *allp;
+static int
+get_friend(All *allp)
 {
 	int dx, dy;
 	unsigned long min_range;
@@ -273,16 +223,15 @@ All *allp;
 
 /* return a random float in the range [0, max) */
 
-static FLOAT frand(maxr)
-FLOAT maxr;						/* maximum value */
+static FLOAT
+frand(FLOAT maxr)
 {
-	extern long random();
-
 	return (random() & 0xffff) * maxr / 0x10000;
 }
 
 
-static void turn_off_all_weapons()
+static void
+turn_off_all_weapons(void)
 {
 	WeaponNum wn;
 
@@ -294,7 +243,8 @@ static void turn_off_all_weapons()
 }
 
 
-static void turn_on_all_weapons()
+static void
+turn_on_all_weapons(void)
 {
 	WeaponNum wn;
 
@@ -306,15 +256,15 @@ static void turn_on_all_weapons()
 }
 
 
-static need_fuel(fraction)
-double fraction;				/* I need it if below this */
+static int
+need_fuel(double fraction)
 {
 	return fuel() < max_fuel() * fraction;
 }
 
 
-static need_armor(fraction)
-double fraction;				/* I need it if below this */
+static int
+need_armor(double fraction)
 {
 	int side;
 
@@ -327,8 +277,8 @@ double fraction;				/* I need it if below this */
 }
 
 
-static need_ammo(fraction)
-double fraction;				/* I need it if below this */
+static int
+need_ammo(double fraction)
 {
 	int weapon;
 	Weapon_info winfo;
@@ -343,8 +293,8 @@ double fraction;				/* I need it if below this */
 }
 
 
-static at_box_center(selfp)
-Vehicle_info *selfp;			/* self */
+static int
+at_box_center(Vehicle_info *selfp)
 {
 	return (ABS(selfp->loc.box_x - BOX_WIDTH / 2) < LANDMARK_WIDTH / 2 &&
 			ABS(selfp->loc.box_y - BOX_HEIGHT / 2) < LANDMARK_HEIGHT / 2);
@@ -353,8 +303,8 @@ Vehicle_info *selfp;			/* self */
 /* moves to the center of the current box (presumably a store).  Returns true
    if I am already there. */
 
-static goto_box_center(selfp)
-Vehicle_info *selfp;			/* self */
+static int
+goto_box_center(Vehicle_info *selfp)
 {
 	if (!at_box_center(selfp))
 	{
@@ -371,8 +321,8 @@ Vehicle_info *selfp;			/* self */
 /* do the appropriate thing with any landmark I might be on.  Returns true if
    something useful is being done. */
 
-static handle_local_landmark(selfp)
-Vehicle_info *selfp;			/* self */
+static int
+handle_local_landmark(Vehicle_info *selfp)
 {
 	switch (landmark(selfp->loc.grid_x, selfp->loc.grid_y))
 	{
@@ -417,14 +367,16 @@ Vehicle_info *selfp;			/* self */
 				return TRUE;
 			}
 			break;
+		default:
+			break;
 	}
 	return FALSE;				/* didn't find anything to do */
 }
 
 
 /* updates information on all visible vehicles */
-static void look_vehicles(allp)
-All *allp;
+static void
+look_vehicles(All *allp)
 {
 	Vehicle_info vi[MAX_VEHICLES];
 	register VehicleData *vdp;
@@ -452,9 +404,8 @@ All *allp;
 	}
 }
 
-
-static void chase_target(allp)
-All *allp;
+static void
+chase_target(All *allp)
 {
 	double angle;
 	int tx, ty, dx, tsp;				/* anticipated location of target */
@@ -501,13 +452,16 @@ All *allp;
 }
 
 
-static vectors_cross(x1, y1, xs1, ys1, x2, y2, xs2, ys2)
-int x1, y1;						/* start of first vector */
-FLOAT xs1, ys1;					/* speeds of first vector */
-int x2, y2;						/* start of second vector */
-FLOAT xs2, ys2;					/* speeds of second vector */
+static int
+vectors_cross(int x1, int y1, FLOAT xs1, FLOAT ys1, int x2, int y2, FLOAT xs2, FLOAT ys2)
+#if 0
+int x1, y1;		/* start of first vector */
+FLOAT xs1, ys1;		/* speeds of first vector */
+int x2, y2;		/* start of second vector */
+FLOAT xs2, ys2;		/* speeds of second vector */
+#endif
 {
-	FLOAT tx, ty;				/* times until "collision" in x and y */
+	FLOAT tx, ty;	/* times until "collision" in x and y */
 
 	if (!xs1 && !ys1 && !xs2 && !ys2)
 		return FALSE;
@@ -519,11 +473,10 @@ FLOAT xs2, ys2;					/* speeds of second vector */
 			ABS(tx - ty) < 0.2);
 }
 
-
-static will_hit_vehicle(me, it)
-Vehicle_info *me;				/* assumed to be self */
-Vehicle_info *it;
+static int
+will_hit_vehicle(Vehicle_info *me, Vehicle_info *it)
 {
+	/* "me" is assumed to be self */
 	int tus;
 
 	tus = speed() / BRAKING_ACC + (TICKSZ << 1);
@@ -542,8 +495,8 @@ Vehicle_info *it;
 
 /* not perfect, but not overly conservative either */
 
-static void vehicle_collide_check(allp)
-All *allp;
+static void
+vehicle_collide_check(All *allp)
 {
 	int id;
 	VehicleData *vdp;
@@ -569,10 +522,10 @@ All *allp;
 	}
 }
 
-
-static void main_loop(allp)
-All *allp;
+static void main_loop(All *allp)
 {
+	done();		/* give up reset of first turn in games */
+
 	while (1)
 	{
 		/* get fresh data */
@@ -620,8 +573,8 @@ All *allp;
 	}
 }
 
-
-static void Guard_main()
+static void
+Guard_main(void)
 {
 	All all;
 	int i;
