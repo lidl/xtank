@@ -20,7 +20,14 @@
 #define NE 6
 #define E  7
 
-static void main();
+/* prototypes */
+static void artful_main(void);
+static void artful_get_unstuck(int *stuckframes);
+static int artful_dodge_walls(void);
+static void artful_dodge_bullets(void);
+static void artful_avoid(Bullet_info *b, int isabullet);
+static FLOAT artful_tw(FLOAT angle);
+static int artful_ok(FLOAT angle);
 
 Prog_desc artful_prog = {
 	"artful",
@@ -32,23 +39,21 @@ It's ultimate speed and manouverability make it  difficult to hit.Its one \
 	"Dan Schmidt",
 	USES_MESSAGES,
 	4,
-	main
+	artful_main
 };
-
-
-FLOAT artful_tw();
 
 static Location myloc;
 static FLOAT dir;
 static FLOAT myspeed;
 
-void message(string)
-char *string;
+static void
+message(char *string)
 {
 	send_msg(RECIPIENT_ALL, OP_TEXT, (Byte *)string);
 }
 
-static void main()
+static void
+artful_main(void)
 {
 	int i = 512;
 	int stuckframes = 0;
@@ -118,25 +123,26 @@ static void main()
 	}
 }
 
-artful_get_unstuck(stuckframes)
-int *stuckframes;
+static void
+artful_get_unstuck(int *stuckframes)
 {
 	turn_vehicle(dir + PI);
 	set_rel_drive(9.0);
 	*stuckframes = 3;
 }
 
-int artful_dodge_walls()
+static int
+artful_dodge_walls(void)
 {
 	int dirtype;
-    WallSide cturn;
+	WallSide cturn;
 	int x, y;
 
 	x = myloc.grid_x;
 	y = myloc.grid_y;
 
 	dirtype = (int) (dir * 4 / PI);
-    if (ABS(dirtype * PI / 4) - dir < .02)
+	if (ABS(dirtype * PI / 4) - dir < .02)
 		switch (dirtype)
 		{
 			case S:
@@ -343,7 +349,8 @@ int artful_dodge_walls()
 	return (1);
 }
 
-artful_dodge_bullets()
+static void
+artful_dodge_bullets(void)
 {
 	Bullet_info bullet_info[MAX_BULLETS + MAX_VEHICLES];
 	Vehicle_info vehicle_info[MAX_VEHICLES];
@@ -392,9 +399,8 @@ artful_dodge_bullets()
 		artful_avoid(&bullet_info[closestb], isabullet);
 }
 
-artful_avoid(b, isabullet)
-Bullet_info *b;
-int isabullet;
+static void
+artful_avoid(Bullet_info *b, int isabullet)
 {
 	FLOAT movedir;
 	FLOAT theta;
@@ -473,8 +479,8 @@ int isabullet;
 	}
 }
 
-FLOAT artful_tw(angle)
-FLOAT angle;
+static FLOAT
+artful_tw(FLOAT angle)
 {
 	FLOAT answer = angle;
 
@@ -483,8 +489,8 @@ FLOAT angle;
 	return (answer);
 }
 
-artful_ok(angle)
-FLOAT angle;
+static int
+artful_ok(FLOAT angle)
 {
 	if ((myloc.box_x < 100) && (wall(WEST, myloc.grid_x, myloc.grid_y))
 			&& (angle > PI / 2) && (angle < 3 * PI / 2))
