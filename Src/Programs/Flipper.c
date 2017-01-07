@@ -14,7 +14,9 @@
 #include "xtanklib.h"
 #include <math.h>
 
-static void main();
+static void Flipper_main(void);
+
+static Vehicle_info Evin[MAX_VEHICLES];
 
 Prog_desc Flipper_prog = {
 	"Flipper",
@@ -23,11 +25,10 @@ Prog_desc Flipper_prog = {
 	"Mike Shanzer",
 	USES_MESSAGES | PLAYS_COMBAT | DOES_SHOOT,	/* skills */
 	2,
-	main
+	Flipper_main
 };
 
-void fixangle(a)
-int *a;
+static void fixangle(int *a)
 {
 	while (*a > 360)
 		*a -= 360;
@@ -35,8 +36,7 @@ int *a;
 		*a += 360;
 }
 
-WallSide angledir(a)
-int a;
+static WallSide angledir(int a)
 {
 	if (a > 0 && a <= 90)
 		return NORTH;
@@ -47,9 +47,8 @@ int a;
 	return WEST;
 }
 
-static Vehicle_info Evin[MAX_VEHICLES];
-
-static void main()
+static void
+Flipper_main(void)
 {
 	Location Floc;
 	Vehicle_info Fvin;
