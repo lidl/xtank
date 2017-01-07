@@ -31,7 +31,7 @@
 
 static Vehicle_info my_vehicle;
 
-void dum_maze_main();
+static void dum_maze_main(void);
 
 Prog_desc dum_maze_prog = {
     "dum_maze",
@@ -50,8 +50,8 @@ Location me;
     return ATAN2((double) (y - me.y), (double) (x - me.x));
 }
 
-static WallSide left(dir)
-WallSide dir;
+static WallSide
+left(WallSide dir)
 {
     switch (dir) {
 	case NORTH:
@@ -61,11 +61,13 @@ WallSide dir;
 	case SOUTH:
 	    return EAST;
 	case WEST:
+	default:		/* silence compiler warning for NO_DIR */
 	    return SOUTH;
     }
 }
-static WallSide right(dir)
-WallSide dir;
+
+static WallSide
+right(WallSide dir)
 {
     switch (dir) {
 	case NORTH:
@@ -75,20 +77,19 @@ WallSide dir;
 	case SOUTH:
 	    return WEST;
 	case WEST:
+	default:		/* silence compiler warning for NO_DIR */
 	    return NORTH;
     }
 }
 
-static WallType wall_info(dir, me)
-WallSide dir;
-Location me;
+static WallType
+wall_info(WallSide dir, Location me)
 {
     return wall(dir, me.grid_x, me.grid_y);
 }
 
-static WallSide new_grid(dir, me)
-WallSide dir;
-Location me;
+static WallSide
+new_grid(WallSide dir, Location me)
 {
     if (wall_info(right(dir), me) != MAP_WALL)
 	dir = right(dir);
@@ -99,9 +100,9 @@ Location me;
     }
     return dir;
 }
-static Location go_towards(dir, me)
-WallSide dir;
-Location me;
+
+static Location
+go_towards(WallSide dir, Location me)
 {
     Location next;
     WallSide next_dir;
@@ -126,6 +127,8 @@ Location me;
 	    next.grid_x = me.grid_x - 1;
 	    next.x = (me.grid_x - 1) * BOX_HEIGHT + BOX_HEIGHT / 2;
 	    break;
+	case NO_DIR:
+	    break;
     }
 
     return next;
@@ -133,8 +136,8 @@ Location me;
 }
 
 
-static void fire(dir)
-WallSide dir;
+static void
+fire(WallSide dir)
 {
 
     switch (dir) {
@@ -149,11 +152,14 @@ WallSide dir;
 	    break;
 	case WEST:
 	    turn_all_turrets(3.14);
+	case NO_DIR:
+	    break;
     }
     fire_all_weapons();
 }
 
-void dum_maze_main()
+static void
+dum_maze_main(void)
 {
     int last_x, last_y, state, again;
     WallSide dir;
