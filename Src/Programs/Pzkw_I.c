@@ -34,29 +34,30 @@
 
 static Vehicle_info my_vehicle;
 
-void Pzkw_I_main();
+static void Pzkw_I_main(void);
 
 Prog_desc Pzkw_I_prog = {
-    "Pzkw_I",
-    "TT_25",
-    "Don't know yet",
-    "Hans Mejdah Jeppesen",
-    PLAYS_COMBAT | DOES_SHOOT | USES_TEAMS,
-    1,
-    Pzkw_I_main
+	"Pzkw_I",
+	"TT_25",
+	"Don't know yet",
+	"Hans Mejdah Jeppesen",
+	PLAYS_COMBAT | DOES_SHOOT | USES_TEAMS,
+	1,
+	Pzkw_I_main
 };
 
-static FLOAT angle_towards(x, y)/* return the approximated angle from robot
-				   to x,y */
-int x, y;
+/* return the approximated angle from robot to x,y */
+static FLOAT
+angle_towards(int x, int y)
 {
     Location myloc;
 
     get_location(&myloc);
     return ATAN2((double) (y - myloc.y), (double) (x - myloc.x));
 }
-static FLOAT angle_towards_grid(x, y)
-int x, y;
+
+static FLOAT
+angle_towards_grid(int x, int y)
 {
     Location myloc;
 
@@ -64,9 +65,8 @@ int x, y;
     return ATAN2((double) (y - myloc.grid_y), (double) (x - myloc.grid_x));
 }
 
-static FLOAT correct_for_walls(x, y, v)
-int x, y;
-FLOAT v;
+static FLOAT
+correct_for_walls(int x, int y, FLOAT v)
 {
     FLOAT w;
 
@@ -86,8 +86,9 @@ FLOAT v;
     return w;
 }
 
-static int drive_towards_blip(x, y)	/* return -1 if no blip */
-int *x, *y;
+/* returns 1 if no blip */
+static int
+drive_towards_blip(int *x, int *y)
 {
     int no_blip;
     Blip_info blip[MAX_BLIPS];
@@ -101,10 +102,10 @@ int *x, *y;
     return 0;
 }
 
-
-void Pzkw_I_main()
+static void
+Pzkw_I_main(void)
 {
-    Vehicle_info enemy;		/* -1 if freind spotted */
+    Vehicle_info enemy;		/* -1 if friend spotted */
     FLOAT angle;
     int i = 0;
     int loc_x, loc_y;
@@ -114,7 +115,7 @@ void Pzkw_I_main()
     char data[MAX_DATA_LEN];
 
     get_self(&my_vehicle);
-    send_msg(MAX_VEHICLES + my_vehicle.team, OP_ACK, "");
+    send_msg(MAX_VEHICLES + my_vehicle.team, OP_ACK, (Byte *) "");
     while (1) {
 	get_location(&me);
 	switch (state) {
@@ -127,10 +128,10 @@ void Pzkw_I_main()
 		    fire_all_weapons();
 		    while (messages()) {
 			receive_msg(&msg);
-			if ((msg.opcode == OP_ACK)) {
+			if (msg.opcode == OP_ACK) {
 			    data[0] = enemy.loc.grid_x;
 			    data[1] = enemy.loc.grid_y;
-			    send_msg(MAX_VEHICLES + my_vehicle.team, OP_LOCATION, data);;
+			    send_msg(MAX_VEHICLES + my_vehicle.team, OP_LOCATION, (Byte *) data);
 			    break;
 			}
 		    }
@@ -142,7 +143,7 @@ void Pzkw_I_main()
 		if (get_closest_enemy(&enemy)) {
 		    data[0] = me.grid_x;
 		    data[1] = me.grid_y;
-		    send_msg(MAX_VEHICLES + my_vehicle.team, OP_LOCATION, data);
+		    send_msg(MAX_VEHICLES + my_vehicle.team, OP_LOCATION, (Byte *) data);
 		    state = ATTACK;
 		} else {
 		    angle = angle_towards_grid(loc_x, loc_y);
@@ -164,7 +165,7 @@ void Pzkw_I_main()
 		    }
 		    while (messages()) {
 			receive_msg(&msg);
-			if ((msg.opcode == OP_LOCATION)) {
+			if (msg.opcode == OP_LOCATION) {
 			    loc_x = msg.data[0];
 			    loc_y = msg.data[1];
 			    state = HUNTS;
