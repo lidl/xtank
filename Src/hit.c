@@ -771,14 +771,14 @@ damage_vehicle(Vehicle *v, Vehicle *damager, int damage, double angle, int heigh
 				v->special[(SpecialType) NEW_RADAR].status == SP_off) && v->special[(SpecialType) NEW_RADAR].damage_flag == SPDF_clear) {
 				v->special[(SpecialType) NEW_RADAR].damage_flag = SPDF_break;
 				compose_message(SENDER_R2D2, v->number,
-								OP_TEXT, "New_radar array destroyed");
+								OP_TEXT, (Byte *) "New_radar array destroyed");
 			}
 		} else if (rnum > 25) {
 			if ((v->special[(SpecialType) RADAR].status == SP_on ||
 				v->special[(SpecialType) RADAR].status == SP_off) && v->special[(SpecialType) RADAR].damage_flag == SPDF_clear) {
 				v->special[(SpecialType) RADAR].damage_flag = SPDF_break;
 				compose_message(SENDER_R2D2, v->number,
-								OP_TEXT, "Radar radome destroyed");
+								OP_TEXT, (Byte *) "Radar radome destroyed");
 			}
 		}
 	}
@@ -804,13 +804,13 @@ damage_vehicle(Vehicle *v, Vehicle *damager, int damage, double angle, int heigh
 					  if (rnd(100) < 25) {
 						  v->heat_sinks = v->vdesc->heat_sinks / 2;
 						  compose_message(SENDER_R2D2, v->number,
-										  OP_TEXT, "1/2 heatsink capacity");
+										  OP_TEXT, (Byte *) "1/2 heatsink capacity");
 					  }
 				  } else if (v->heat_sinks != 0)	/* Any left ? */
 					  if (rnd(100) < 25) {	/* already damaged */
 						  v->heat_sinks = 0;
 						  compose_message(SENDER_R2D2, v->number,
-										  OP_TEXT, "Coolant system offline");
+										  OP_TEXT, (Byte *) "Coolant system offline");
 					  }
 			  }
 			  if (v->heat_sinks < 0)
@@ -822,13 +822,13 @@ damage_vehicle(Vehicle *v, Vehicle *damager, int damage, double angle, int heigh
 				  rnd(100) < 50) {
 				  v->special[(SpecialType) NEW_RADAR].damage_flag = SPDF_break;
 				  compose_message(SENDER_R2D2, v->number,
-								  OP_TEXT, "New_radar array destroyed");
+								  OP_TEXT, (Byte *) "New_radar array destroyed");
 			  } else if (((v->special[(SpecialType) RDF].status == SP_on ||
 						  v->special[(SpecialType) RDF].status == SP_off) && v->special[(SpecialType) NEW_RADAR].damage_flag == SPDF_clear) &&
 						 rnd(100) < 10) {
 				  v->special[(SpecialType) RDF].damage_flag = SPDF_break;
 				  compose_message(SENDER_R2D2, v->number,
-								  OP_TEXT, "RDF damaged");
+								  OP_TEXT, (Byte *) "RDF damaged");
 			  }
 			  break;
 		}
