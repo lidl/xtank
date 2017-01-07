@@ -72,7 +72,7 @@ typedef struct
 } Everything;
 
 /* prototypes */
-static void main(void);
+static void warrior_main(void);
 static int warrior_clear_path(Everything *, Location *, Location *);
 static void warrior_fire(Everything *all);
 static WallSide warrior_combat_dir(Everything *all);
@@ -96,11 +96,11 @@ Prog_desc warrior_prog = {
 	"Michael J Zehr",
 	PLAYS_COMBAT | DOES_SHOOT | DOES_EXPLORE,
 	5,
-	main
+	warrior_main
 };
 
 static void
-main(void)
+warrior_main(void)
 {
     int frame;
     Everything all;
@@ -561,6 +561,9 @@ warrior_set_dest(Everything *all, WallSide dir)
 			--(all->dest.grid_x);
 			all->dest.box_x = BOX_WIDTH - 25;
 			all->dest.box_y = HALF_HEIGHT;
+			break;
+		case NO_DIR:
+			break;
 	}
 }
 
@@ -594,14 +597,14 @@ warrior_new_square(Everything *all)
 static void
 warrior_generic_move(Everything *all)
 {
-    /* this is what get's called every frame (I hope) it checks for
-       collisions, and other "special cases" otherwise, it heads for the
+    /* This is what gets called every frame (I hope) - it checks for
+       collisions, and other "special cases".  Otherwise, it heads for the
        current all->dest the type of motion (straight, etc) depends on the
        current mode it assumes that there is a straight path to all->dest.
-       all->dest will be kept up to date by a movement routine which is
-       called periodically, and that will head for all->final_dest. this
-       routine will schedule the next call to the short movement routine once
-       again, mileage may vary ... */
+       The all->dest will be kept up to date by a movement routine which is
+       called periodically, and that will head for all->final_dest. This
+       routine will schedule the next call to the short movement routine...
+       Once again, mileage may vary ... */
 
     int dx, dy;
     FLOAT angle;
