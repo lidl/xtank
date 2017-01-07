@@ -7,7 +7,7 @@ Program:	Status:
 kamikaze	works
 drone		works well
 warrior		works (attacks teammates)
-eliza		doesn't crash, but doesn't do much (combat)
+eliza		doesn't crash, but only sends responses to received messages
 Buddy		doesn't crash, but doesn't do much (combat)
 Flipper		works
 artful		works

@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include "xtanklib.h"
 
-static void main();
+static void eliza_main(void);
 
 Prog_desc eliza_prog = {
 	"eliza",
@@ -22,7 +22,7 @@ Prog_desc eliza_prog = {
 	"Terry Donahue",
 	USES_MESSAGES,
 	1,
-	main
+	eliza_main
 };
 
 static int max_responses[MAX_OPCODES] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 17};
@@ -76,7 +76,8 @@ static char *response[MAX_OPCODES][17] = {
 	}
 };
 
-static void main()
+static void
+eliza_main(void)
 {
     Message m;
     int temp;
