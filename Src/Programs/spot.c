@@ -10,7 +10,7 @@
 #include "xtanklib.h"
 #include <math.h>
 
-static void main(void);
+static void spot_main(void);
 static void spot_get_unstuck(void);
 static void spot_attack_closest(int *, FLOAT *);
 static void spot_spin(FLOAT);
@@ -25,9 +25,8 @@ is quite effective for all it's simplicity; its weakness is its inability \
 	"Terry Donahue",
 	PLAYS_COMBAT | DOES_SHOOT,
 	2,
-	main
+	spot_main
 };
-
 
 typedef struct
 {
@@ -38,7 +37,7 @@ typedef struct
 } Armor_on;
 
 static void
-main(void)
+spot_main(void)
 {
 	extern int num_veh_alive;
 	int dist = 9999;
