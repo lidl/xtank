@@ -20,7 +20,7 @@
 #define abs(x) ((x)>0?(x):(-x))
 #define is(a,b) ((a)==(b)?(1):(0))
 
-void runner_main();
+static void runner_main(void);
 
 Prog_desc runner_prog = {
     "runner",
@@ -40,8 +40,8 @@ typedef struct {
     char x, y;
 } Road_Maze;
 
-static WallSide rotate(dir)
-WallSide dir;
+static WallSide
+rotate(WallSide dir)
 {
     switch (dir) {
 	case NORTH:
@@ -52,12 +52,13 @@ WallSide dir;
 	    return WEST;
 	case WEST:
 	    return NORTH;
+	default:
+	    return NORTH;	/* arbitrary direction */
     }
 }
 
-static int fire(angle, me)
-FLOAT angle;
-Location me;
+static int
+fire(FLOAT angle, Location me)
 {
     turn_all_turrets(angle);
     angle = ((angle) < 0 ? (6.28 + angle) : (((angle)) > 6.28 ? (angle - 6.28) : (angle)));
@@ -72,7 +73,8 @@ Location me;
 
 }
 
-void runner_main()
+static void
+runner_main(void)
 {
     Road_Maze road[901];
     Raze_Maze maze[30][30];
@@ -137,7 +139,7 @@ void runner_main()
 	}
 	road[length].x = me.grid_x;
 	road[length].y = me.grid_y;
-	send_msg(RECIPIENT_ALL, OP_TEXT, "DA DA, DA DAAA!!");
+	send_msg(RECIPIENT_ALL, OP_TEXT, (Byte *) "DA DA, DA DAAA!!");
 	state = length;
 	nx = road[state].x;
 	ny = road[state].y;
@@ -151,7 +153,7 @@ void runner_main()
 		y = BOX_HEIGHT * ny + BOX_HEIGHT / 2;
 		state--;
 		if (state == 0)
-		    send_msg(RECIPIENT_ALL, OP_TEXT, "I'LL WIN !.");
+		    send_msg(RECIPIENT_ALL, OP_TEXT, (Byte *) "I'LL WIN!");
 	    }
 	    angle = ATAN2((double) (y - me.y), (double) (x - me.x));
 	    turn_vehicle(angle);
@@ -160,6 +162,6 @@ void runner_main()
 	    done();
 	}
     } else
-	send_msg(RECIPIENT_ALL, OP_TEXT, "I refuse to run!.");
-    done;
+	send_msg(RECIPIENT_ALL, OP_TEXT, (Byte *) "I refuse to run!.");
+    done();
 }
