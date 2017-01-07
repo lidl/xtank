@@ -31,21 +31,22 @@ destructible walls.
 */
 
 #include <math.h>
+#include <stdio.h>
 #include <xtanklib.h>
 
 static void RacerX_main();		/* forward reference */
 
 Prog_desc RacerX_prog = {
-    "RacerX",
-    "Mach5",
-    "Heads for the goal by the 'shortest' route.  Works with or without \
+	"RacerX",
+	"Mach5",
+	"Heads for the goal by the 'shortest' route.  Works with or without \
 full-map, will shoot destructible walls (but doesn't realize they take \
 longer).  Does not shoot at enemies or pay any attention to landmarks. \
 Version 2.2.",
-    "Robert Potter (rpotter@grip.cis.upenn.edu)",
-    PLAYS_RACE | DOES_EXPLORE,
-    5,
-    RacerX_main
+	"Robert Potter (rpotter@grip.cis.upenn.edu)",
+	PLAYS_RACE | DOES_EXPLORE,
+	5,
+	RacerX_main
 };
 
 #define NODIR		(WEST+1)	/* (used as an array index, so Xtank's
@@ -143,9 +144,12 @@ static Settings_info settings;
 
 /* changes a location by the given x and y.  Returns locp. */
 
-static Location *delta_loc(locp, delta_x, delta_y)
+static Location *
+delta_loc(Location *locp, int delta_x, int delta_y)
+#if 0
     Location *locp;		/* gets modified */
     int delta_x, delta_y;	/* in pixels */
+#endif
 {
     locp->x += delta_x;
     locp->y += delta_y;
@@ -162,9 +166,12 @@ static Location *delta_loc(locp, delta_x, delta_y)
    vehicle size into account.  This is done by checking the paths of the
    vehicle's bounding-box's corners. */
 
-static self_clear_path(start, delta_x, delta_y)
+static int
+self_clear_path(Location *start, int delta_x, int delta_y)
+#if 0
     Location *start;		/* starting position of vehicle */
     int delta_x, delta_y;	/* proposed move */
+#endif
 {
     Location s, f;		/* start and finish of a vehicle corner */
     int w, h;			/* width and height of this vehicle (changes
@@ -211,30 +218,30 @@ static self_clear_path(start, delta_x, delta_y)
 
 /* decides if a box has been seen before.  Suitable to pass to navigate(). */
 
-static unseen_box(allp, x, y)
-    All *allp;
-    int x, y;			/* grid coords of a box */
+static int
+unseen_box(All *allp, int x, int y)
 {
+    /* int x, y - grid coords of a box */
     return !(allp->boxnotes[x][y].seen);
 }
 
 
 /* decides if a box is a goal of my team.  Suitable to pass to navigate(). */
 
-static goal(allp, x, y)
-    All *allp;
-    int x, y;			/* grid coords of a box */
+static int
+goal(All *allp, int x, int y)
 {
+    /* int x, y - grid coords of a box */
     return map_landmark(allp->my_map, x, y) == GOAL &&
 	(map_team(allp->my_map, x, y) == allp->me.team ||
 	 map_team(allp->my_map, x, y) == NEUTRAL);
 }
 
 
-static void notice_landmark(allp, x, y)
-    All *allp;
-    int x, y;			/* box coordinates */
+static void
+notice_landmark(All *allp, int x, int y)
 {
+    /* int x, y - box coordinates */
 #if 0
 	if (map_landmark(allp->my_map, x, y) != NORMAL) {
 		printf("racerx: see landmark %d at %d,%d\n",
@@ -251,8 +258,8 @@ static void notice_landmark(allp, x, y)
 }
 
 
-static void note_surroundings(allp)
-    All *allp;
+static void
+note_surroundings(All *allp)
 {
     int gx, gy;			/* current grid coords */
     int x, y;			/* coords of nearby box */
@@ -274,13 +281,15 @@ static void note_surroundings(allp)
 /* find a path from the current location to one that fits destfunc().  Leaves
    the result in the map and returns success in allp->have_route. */
 
-static navigate(allp, destfunc, through_unseen)
-    All *allp;
+static int
+navigate(All *allp, int (*destfunc)(), int through_unseen)
+#if 0
     int (*destfunc)();		/* gets called with allp and x and y grid
 				   coordinates.  Returns true if that box is a
 				   destination. */
     int through_unseen;		/* true if the search should proceed even
 				   through boxes that have not been seen yet */
+#endif
 {
     Coord queue[MAX_BOXES];	/* used to implement breadth-first search
 				   through map */
@@ -380,11 +389,13 @@ static navigate(allp, destfunc, through_unseen)
    my vehicle's current position to boxes later on in the route.  Returns the
    angle to go in (occaisonally BAD_ANGLE). */
 
-static Angle recursive_short_cut(allp, gx, gy, depth)
-    All *allp;
+static Angle
+recursive_short_cut(All *allp, int gx, int gy, int depth)
+#if 0
     int gx, gy;			/* box to check out (initially the box my
 				   vehicle is in) */
     int depth;			/* how many boxes down the path to search */
+#endif
 {
     Angle a;
     Direction dir;
@@ -459,8 +470,8 @@ static Angle recursive_short_cut(allp, gx, gy, depth)
 
 /* follow the route that navigate() produced */
 
-static void follow_route(allp)
-    All *allp;
+static void
+follow_route(All *allp)
 {
     Angle angle;
 
@@ -490,8 +501,8 @@ static void follow_route(allp)
 }
 
 
-static void check_clock(allp)
-    All *allp;
+static void
+check_clock(All *allp)
 {
     int previous_frame;
 
@@ -506,8 +517,8 @@ static void check_clock(allp)
 
 /* deals with the weapons and turrets */
 
-static void handle_weapons(allp)
-    All *allp;
+static void
+handle_weapons(All *allp)
 {
     Location target;
     BoxNotes *np;
@@ -550,12 +561,11 @@ static void handle_weapons(allp)
     }
 }
 
-static void RacerX_main()
+static void
+RacerX_main(void)
 {
     All *allp;
-    register int x, y;
-
-    done();
+    int x, y;
 
     allp = (All *) calloc(1, sizeof(*allp));
     if (allp == NULL) {
@@ -569,19 +579,21 @@ static void RacerX_main()
 	give_up();
     }
 
+    done();
+
     allp->frame = frame_number();
 
     get_settings(&settings);
 
     if (settings.game != RACE_GAME) {
 	printf("%s: Hmph!  Can't we play Race instead?\n", RacerX_prog.name);
-	send_msg(RECIPIENT_ALL, OP_TEXT, "Can't we play Race instead??");
+	send_msg(RECIPIENT_ALL, OP_TEXT, (Byte *) "Can't we play Race instead??");
     }
     if (settings.rel_shoot) {
-	send_msg(RECIPIENT_ALL, OP_TEXT, "Relative shooting sucks!");
+	send_msg(RECIPIENT_ALL, OP_TEXT, (Byte *) "Relative shooting sucks!");
     }
     if (!has_special(MAPPER)) {
-	send_msg(RECIPIENT_ALL, OP_TEXT, "No mapper?!?  I quit!");
+	send_msg(RECIPIENT_ALL, OP_TEXT, (Byte *) "No mapper?!?  I quit!");
 	give_up();
     }
 
@@ -609,7 +621,7 @@ static void RacerX_main()
 	    /* either head for goal or explore */
 	    if (! (allp->saw_goal && navigate(allp, goal, True))) {
 		if (! navigate(allp, unseen_box, False)) {
-		    send_msg(RECIPIENT_ALL, OP_TEXT, "What, no goal?!?");
+		    send_msg(RECIPIENT_ALL, OP_TEXT, (Byte *) "What? No goal?!?");
 		    give_up();
 		}
 	    }
