@@ -12,12 +12,18 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#if defined(SYSV) || defined(SVR4) || defined(__FreeBSD__)
+#if defined(SYSV) || defined(SVR4) || defined(__FreeBSD__) || \
+	(defined(__APPLE__) && defined(__MACH__))
 #define NEED_STRING_H
 #endif
 
-#if defined(__FreeBSD__)
+#if defined(__FreeBSD__) || (defined(__APPLE__) && defined(__MACH__))
 #define NEED_DIRENT_H
+#endif
+
+#if defined(__alpha) || defined(__osf__) || defined(__FreeBSD__) || \
+	(defined(__APPLE__) && defined(__MACH__))
+#define USE_DLOPEN
 #endif
 
 #if defined(NEED_STRING_H)
@@ -25,10 +31,6 @@
 #endif
 #if defined(NEED_STRINGS_H)
 #include <strings.h>
-#endif
-
-#if defined(__FreeBSD__) || defined(__alpha) || defined(__osf__)
-#define USE_DLOPEN
 #endif
 
 #include <math.h>

@@ -16,8 +16,12 @@
 #ifdef NEED_SYS_DIR_H
 #include <sys/dir.h>
 #endif
-#ifdef linux
+
+#if defined(linux)
 #define MAXNAMLEN NAME_MAX
+#endif
+#if !defined(MAXNAMLEN) && defined(__DARWIN_MAXPATHLEN)
+#define MAXNAMLEN __DARWIN_MAXPATHLEN
 #endif
 #endif /* UNIX */
 

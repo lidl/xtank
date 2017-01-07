@@ -222,13 +222,18 @@ init_programs(Vehicle *v)
 
 		if (prog->thread_buf == NULL) {
 			/* Allocate the memory for the thread and stack */
-			if ((prog->thread_buf = malloc(THREAD_TOTALSIZE)) == NULL)
+			if ((prog->thread_buf = calloc(1, THREAD_TOTALSIZE)) == NULL)
 				rorre("init_programs(): malloc failed");
 		}
 		assert(prog->thread == NULL);
+		if (prog->stack_buf == NULL) {
+			/* Allocate the memory for the stack */
+			if ((prog->stack_buf = calloc(1, STACK_SIZE)) == NULL)
+				rorre("init_programs(): malloc failed");
+		}
 		prog->thread = (char *)
-			thread_init(prog->thread_buf, THREAD_TOTALSIZE,
-			(XtankThread *(*)()) prog->desc->func);
+			thread_init(prog->thread_buf, prog->stack_buf,
+			STACK_SIZE, (void *(*)()) prog->desc->func);
 
 #ifdef THREADING_DEFINED
 		if (prog->thread == NULL)

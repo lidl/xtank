@@ -132,12 +132,6 @@ check_internet(int num_clients, char **client)
 #ifdef DYNALOAD
 /* Dynamic loading includes */
 
-/* really for the decstation, but seems to work for sgi, too */
-/* May work on others too */
-#if (defined(__alpha) && defined(__osf__)) || defined(SVR4)
-#define USE_DLOPEN
-#endif
-
 #ifdef USE_DLOPEN
 # include <dlfcn.h>
 #else /* USE_DLOPEN */

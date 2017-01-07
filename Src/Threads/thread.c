@@ -35,7 +35,7 @@ thread_setup(void)
 }
 
 XtankThread *
-thread_init(char *buf, unsigned int bufsize, XtankThread (*(*func(void))))
+thread_init(char *buf, char *stack_buf, unsigned int bufsize, void (*(*func(void))))
 {
 	/* remember to give pointer to _top_ of stack */
 	lwp_create((thread_t *) buf, func, MINPRIO, LWPNOLASTRITES,
@@ -74,7 +74,10 @@ thread_kill(XtankThread *thd)
 XtankThread *
 thread_setup(void)
 {
+	/* allocate a context for the main thread of control */
 	curthd = (ucontext_t *) malloc(sizeof(ucontext_t));
+
+	/* initialize the context */
 	if (getcontext((ucontext_t *) curthd) != 0) {
 		printf("Error returned from getcontext(): %d\n", errno);
 		assert(0);
@@ -92,29 +95,28 @@ thread_setup(void)
    -- it is responsible for all the contexts signal handling
 */
 
-/* The following code is derived from a piece of */
-/* sample code from Peter Chubb, peterc@softway.oz.au */
+/*
+ * The following code was originally derived from a piece of sample
+ * code from Peter Chubb, peterc@softway.oz.au, but has been
+ * substantially re-written over the years.
+ */
 XtankThread *
-thread_init(char *buf, unsigned int bufsize, XtankThread *(*func)(void))
+thread_init(char *buf, char *stack, int stacksize, void *(*func)(void))
 {
-	stack_t st;
-
-	/* malloc a stack space for the context, or fail */
-	if ((st.ss_sp = (char *) malloc(bufsize)) == (char *) NULL) {
-		return (ucontext_t *) NULL;
-	}
-	st.ss_size = bufsize;
-	st.ss_flags = 0;
-
+	/* initialize the buffer with a context */
 	if (getcontext((ucontext_t *) buf) != 0) {
 		printf("Error returned from getcontext(): %d\n", errno);
 		assert(0);
 	}
+
 	/* Modify the context to have a new stack */
-	STRUCT_ASSIGN((((ucontext_t *)buf)->uc_stack), st, stack_t);
+	((ucontext_t *)buf)->uc_stack.ss_sp = stack;
+	((ucontext_t *)buf)->uc_stack.ss_size = stacksize;
 	((ucontext_t *)buf)->uc_link = curthd;  /* depends on a global */
+
 	/* Make the modified context */
 	makecontext((ucontext_t *) buf, (void (*)()) func, 0);
+
 	return (XtankThread *) buf;
 }
 
@@ -135,8 +137,8 @@ thread_switch(XtankThread *newthd)
 XtankThread *
 thread_kill(XtankThread *thd)
 {
-	free(thd->uc_stack.ss_sp);	/* free the stack space buf */
-	thd->uc_stack.ss_sp = NULL;	/* null out stack pointer */
+	/* nothing to do here for swapcontext() based threading */
+
 	return thd;
 }
 
@@ -194,7 +196,7 @@ thread_setup(void)
 /* NOTE: By default, the stack for each thread is allocated internally */
 /* in pthreads, so bufsize is really ignored, at least for now. */
 XtankThread *
-thread_init(char *buf, unsigned int bufsize, int(*(func(void))))
+thread_init(char *buf, unsigned int bufsize, void(*(func(void))))
 {
 	pthread_attr_t prog_attr;
 	struct sched_param params;
@@ -257,6 +259,7 @@ thread_switch(XtankThread *newthd)
 		fprintf(stderr,"thread_switch() -> switching\n");
 		oldthd = curthd;
 		curthd = newthd;
+
 #if 0
 		/* now, lower the old thread's priority, so it runs */
 		status = pthread_attr_getschedparam(&attr, &params);
@@ -330,7 +333,7 @@ thread_setup(void)
 }
 
 XtankThread *
-thread_init(char *buf, unsigned int bufsize, int (*)func(void))
+thread_init(char *buf, unsigned int bufsize, void (*)func(void))
 {
 	return (XtankThread *) 0;
 }
@@ -342,7 +345,7 @@ thread_switch(XtankThread *newthd)
 }
 
 XtankThread *
-thread_kill(XtankThread *thd)
+thread_kill(XtankThread *thd, char *prog_buf, char *stack_buf)
 {
 	return thd;
 }

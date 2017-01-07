@@ -499,7 +499,6 @@ place_vehicle(Vehicle *v)
 void
 game_cleanup(void)
 {
-	extern void inactivate_vehicle();
 	int i;
 
 	for (i = 0; i < num_veh_alive; ++i) {

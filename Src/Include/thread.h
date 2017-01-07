@@ -38,12 +38,13 @@ typedef char XtankThread;
 XtankThread *thread_setup(void);
 
 /* Call this once for each new thread, returns pointer to the thread */
-XtankThread *thread_init(char *buf, unsigned int bufsize, XtankThread *(*func)());
+XtankThread *thread_init(char *buf, char *stack, int stacksize, void *(*func)());
 
 /* Call this to switch to a new thread, returns pointer to previous thread */
 XtankThread *thread_switch(XtankThread *newthd);
 
-/* Call this to destroy a thread.  It does not deallocate the thread memory */
+/* Call this to destroy a thread.  It does not deallocate the thread memory
+   or any memory that was allocated for the thread's stack. */
 XtankThread *thread_kill(XtankThread *thd);
 
 #endif /* !_THREAD_H_ */

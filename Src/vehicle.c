@@ -234,6 +234,10 @@ unmake_vehicle(Vehicle *v)
 			free((char *) v->program[i].thread_buf);
 			v->program[i].thread_buf = NULL;
 		}
+		if (v->program[i].stack_buf != NULL) {
+			free((char *) v->program[i].stack_buf);
+			v->program[i].stack_buf = NULL;
+		}
 	}
 
 	unmake_specials(v);

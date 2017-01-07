@@ -471,12 +471,7 @@ static void draw_dead_symbol P_((int));
 static int compute_minarmor P_((Vehicle *));
 static int compute_totammo P_((Vehicle *));
 
-/* thread.c */
-XtankThread *thread_setup P_((void));
-XtankThread *thread_init P_((char *buf, unsigned int bufsize, XtankThread *(*func)(void)));
-
-/* threadglue.c */
-void init_threader P_((void));
+/* thread.c and threadglue.c prototypes are in thread.h */
 
 /* unix.c */
 int check_internet P_((int num_clients, char **client));

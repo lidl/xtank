@@ -15,6 +15,10 @@ MK_MAN=no
 CFLAGS0+= -I${.CURDIR} -I${.CURDIR}/Include \
 	-I/usr/local/include -O0 -g
 
+.if exists(/opt/X11/include)
+CFLAGS0+= -I/opt/X11/include -D_XOPEN_SOURCE
+.endif
+
 CFLAGS0+= -DX11 -DUNIX -DS1024x864 -DKEYPAD_DETECT -DSTINGY_REDRAW \
 	-DBATCH_LINES -DBATCH_POINTS -DBATCH_COLOR_LINES \
 	-DCODE_SIZE=0x20000 -DSTACK_SIZE=0x8000 \
@@ -28,7 +32,13 @@ DEFINES=-DALLDEFINES="\"${CFLAGS0}\""
 
 CFLAGS+=${DEFINES} ${CFLAGS0} ${CFLAGS1}
 
-LDADD+= -L/usr/local/lib -lX11 -lm
+.if exists(/opt/X11/lib)
+LDADD+= -L/opt/X11/lib
+.endif
+.if exists(/usr/local/lib)
+LDADD+= -L/usr/local/lib
+.endif
+LDADD+= -lX11 -lm
 .if exists(/usr/local/lib/libefence.a)
 LDADD+= -lefence
 .endif
