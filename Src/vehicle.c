@@ -521,8 +521,7 @@ Vehicle *victim;
 
 /* put the given terminal into "observer" mode */
 
-void make_observer(trm)
-Terminal *trm;
+void make_observer(Terminal *trm)
 {
 	extern Terminal *term;
 	Terminal *temp_term;
@@ -531,8 +530,8 @@ Terminal *trm;
 	trm->vehicle = NULL;
 
 	temp_term = term;
-	term = trm;					/* switch to this terminal temporarily */
-	display_help(ON);			/* update the help window */
+	term = trm;		/* switch to this terminal temporarily */
+	display_help(ON);	/* update the help window */
 	term = temp_term;
 }
 
@@ -546,8 +545,8 @@ kill_vehicle(Vehicle *victim, Vehicle *killer) /* killer can be NULL */
 	extern FLOAT rnd_interval();
 
 	if (!tstflag(victim->status, VS_is_alive)) {
-		/* If vehicle isn't alive, don't kill it again.  I guess this happens
-	   when two bullets hit simultaneously */
+		/* If vehicle isn't alive, don't kill it again.  I guess
+		   this happens when two bullets hit simultaneously */
 		return;
 	}
 	explode_vehicle(victim);

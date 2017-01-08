@@ -73,7 +73,8 @@ adjust_loc(Loc *loc, int dx, int dy)
 ** teleguided missile does indeed exist.
 */ 
 
-Boolean get_tele(Vehicle *v, Bullet **b)
+Boolean
+get_tele(Vehicle *v, Bullet **b)
 {
    extern Bset *bset;
    Bullet *temp;
@@ -283,13 +284,14 @@ explode(Bullet *b, int damage)
 	if (b->hit_flgs & AREA)
 		expl_area(b);
 	else {
-		/* Determine type of explosion from the amount of damage the bullet did */
+		/* Determine type of explosion from the amount of damage
+		   the bullet did */
 		type = (damage <= 4) ? (EXP_DAM0 + damage) : EXP_DAM4;
 		make_explosion(b->loc, type, 0);
 	}
 
-	/* I think this makes bullets that explode before they are displayed
-       not get erased, but I'm not sure... (sigh) */
+	/* I think this makes bullets that explode before they are
+	   displayed not get erased, but I'm not sure... (sigh) */
 	if (b->type != DISC) {
 		if (b->life == weapon_stat[(int) b->type].frames - 1)
 			b->life = -2;		/* undisplayed bullet */
@@ -327,7 +329,7 @@ expl_area(Bullet *b)	/* Lots-o-changes 2/93 (HAK and MEL) */
 	index &= (~((unsigned int)1));
 	make_explosion(b->loc, EXP_NUKE, index);
 
-/* Deal with vehicles... */
+	/* Deal with vehicles... */
 	for (i = 0; i < num_veh_alive; i++) {
 		v = live_vehicles[i];
 		dx = v->loc->x - b->loc->x;
