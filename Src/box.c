@@ -231,19 +231,24 @@ box_type_check(Vehicle *v, Box *b, FLOAT *xadj, FLOAT *yadj)
 	  case SLOW:
 		  box_slow(v);
 		  break;
+	  default:
+		  break;
 	}
 
 #ifndef NO_CAMO
-	if (!v->camod)
+	if (v->camod)
+		return;
 #endif /* !NO_CAMO */
 
-		/* Activate any outposts within 2 squares of the vehicle */
-		for (x = v->loc->grid_x - 2; x <= v->loc->grid_x + 2; x++)
-			for (y = v->loc->grid_y - 2; y <= v->loc->grid_y + 2; y++) {
-				b = &real_map[x][y];
-				if (b->type == OUTPOST)
-					box_outpost(v, b, x, y);
+	/* Activate any outposts within 2 squares of the vehicle */
+	for (x = v->loc->grid_x - 2; x <= v->loc->grid_x + 2; x++) {
+		for (y = v->loc->grid_y - 2; y <= v->loc->grid_y + 2; y++) {
+			b = &real_map[x][y];
+			if (b->type == OUTPOST) {
+				box_outpost(v, b, x, y);
 			}
+		}
+	}
 }
 
 /*
@@ -265,8 +270,8 @@ box_landmark(Vehicle *v, Box *b)
 	loc = v->loc;
 
 	/* If we're moving, ignore it */
-	if (v->vector.speed == 0.0 && b->type == TELEPORT ||
-		v->vector.speed != 0.0 && b->type != TELEPORT)
+	if ((v->vector.speed == 0.0 && b->type == TELEPORT) ||
+		(v->vector.speed != 0.0 && b->type != TELEPORT))
 		return;
 
 	/* If we're not close, ignore it */
@@ -301,7 +306,7 @@ box_landmark(Vehicle *v, Box *b)
  * n requires n frames per bullet
  */
 
-					  if (weapon_stat[(int) w->type].refill_time == 0) {
+					if (weapon_stat[(int) w->type].refill_time == 0) {
 						  int needed;
 						  int afford;
 						  int get;
@@ -320,22 +325,24 @@ box_landmark(Vehicle *v, Box *b)
 							  v->owner->money -= (ws->ammo_cost * get);
 							  w->ammo += get;
 						  }
-					  } else if (w->refill_counter != 1)
-						  --w->refill_counter;
-					  else {
-						  w->refill_counter = weapon_stat[(int) w->type].refill_time;
+					} else {
+						  if (w->refill_counter != 1) {
+							  --w->refill_counter;
+						  } else {
+							  w->refill_counter = weapon_stat[(int) w->type].refill_time;
 
-						  w->ammo++;
-						  w->status &= ~WS_no_ammo;
-						  v->owner->money -= ws->ammo_cost;
-					  }
+							  w->ammo++;
+							  w->status &= ~WS_no_ammo;
+							  v->owner->money -= ws->ammo_cost;
+						  }
+					}
+				  }
 			  }
-		  }
-		  break;
-	  case ARMOR:
-		  /* Add one armor point to all sides every 3 frames */
-		  if (frame % 3 != 0)
 			  break;
+		  case ARMOR:
+			  /* Add one armor point to all sides every 3 frames */
+			  if (frame % 3 != 0)
+				  break;
 
 		  side = v->armor.side;
 		  max_side = v->vdesc->armor.side;
@@ -471,6 +478,8 @@ box_landmark(Vehicle *v, Box *b)
 			  }
 			  break;
 		  }
+		default:
+			break;
 	}
 }
 
@@ -633,6 +642,8 @@ box_scroll(LandmarkType type, FLOAT *xadj, FLOAT *yadj)
 	  case SCROLL_NW:
 		  *xadj = -ss / SQRT_2;
 		  *yadj = -ss / SQRT_2;
+		  break;
+	  default:
 		  break;
 	}
 }
