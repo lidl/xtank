@@ -148,7 +148,7 @@ int display_game_stats P_((int));
 int display_game_stats_to_current P_((int, int));
 int game_rules P_((Boolean));
 int race_rules P_((Boolean));
-int stq_rules P_((Boolean));
+int madman_rules P_((Boolean));
 int ultimate_rules P_((Boolean));
 void war_init_time P_((Byte time[GRID_WIDTH][GRID_HEIGHT][MAX_TEAMS], int, int));
 int war_rules P_((Boolean));

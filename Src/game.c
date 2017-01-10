@@ -58,8 +58,8 @@ int
 game_rules(Boolean init)
 {
 	switch (settings.si.game) {
-	  case STQ_GAME:
-		  return stq_rules(init);
+	  case MADMAN_GAME:
+		  return madman_rules(init);
 	  case COMBAT_GAME:
 		  return combat_rules(init);
 	  case WAR_GAME:
@@ -141,7 +141,7 @@ combat_rules(Boolean init)
 }
 
 int
-stq_rules(Boolean init)
+madman_rules(Boolean init)
 {
 	static int starter;
 	Coord *start;
@@ -616,7 +616,7 @@ display_game_stats_to_current(int status, int n)
 			  sprintf(s, "A goal for the %s team scored by %s",
 					  teams_entries[winning_team], winning_vehicle->disp);
 			  break;
-		  case STQ_GAME:
+		  case MADMAN_GAME:
 			  sprintf(s, "Insanity squashed by %s", winning_vehicle->disp);
 			  break;
 		  case COMBAT_GAME:

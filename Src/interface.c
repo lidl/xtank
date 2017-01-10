@@ -1284,7 +1284,7 @@ display_settings(void)
 		display_game_num("Owner slowdown:   %d", setting_num(SET_DISC_SLOW),
 						 line++);
 	}
-	if (settings.si.game == STQ_GAME)
+	if (settings.si.game == MADMAN_GAME)
 		display_game_num("# discs:          %d", setting_num(SET_MAD_DISKS), line++);
 }
 

@@ -16,7 +16,7 @@ typedef enum {
 	ULTIMATE_GAME,
 	CAPTURE_GAME,
 	RACE_GAME,
-	STQ_GAME,
+	MADMAN_GAME,
 	MAX_GAMES
 } Game;
 

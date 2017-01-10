@@ -566,7 +566,7 @@ kill_vehicle(Vehicle *victim, Vehicle *killer) /* killer can be NULL */
 #endif /* SOUND */
 		points = 1000.0 * victim->vdesc->cost / killer->vdesc->cost;
 		if (!SAME_TEAM(killer, victim)) {
-			if (settings.si.game == STQ_GAME) {
+			if (settings.si.game == MADMAN_GAME) {
 				if (victim->num_discs || killer->num_discs) {
 					killer->owner->score += points;
 				}
@@ -587,7 +587,7 @@ kill_vehicle(Vehicle *victim, Vehicle *killer) /* killer can be NULL */
 	send_death_message(victim, killer);
 
 	/* Release at fast speed any discs the victim owned */
-	/* (make sure this is AFTER the points check, for STQ */
+	/* (make sure this is AFTER the points check, for MADMAN */
 	release_discs(victim, DISC_FAST_SPEED, TRUE);
 
 	/* check if we should let them resurrect */
