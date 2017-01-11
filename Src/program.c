@@ -82,9 +82,6 @@ init_prog_descs(void)
 	prog_desc[num_prog_descs++] = &Diophantine_prog;
 	prog_desc[num_prog_descs++] = &artful_prog;
 	prog_desc[num_prog_descs++] = &spot_prog;
-/* Don't really need this, do we? (HAK)
- *	prog_desc[num_prog_descs++] = &hud3_prog;
- */
 	prog_desc[num_prog_descs++] = &Dio_prog;
 	prog_desc[num_prog_descs++] = &Pzkw_I_prog;
 	prog_desc[num_prog_descs++] = &dum_maze_prog;

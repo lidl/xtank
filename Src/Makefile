@@ -53,9 +53,11 @@ SRCS=	actions.c animate.c box.c camo.c collision.c cosell.c \
 	vehicle.c version.c lex.zz.c
 SRCS+=	XMultiSync.c graphics.c objects.c three-d.c
 SRCS+=	threadglue.c thread.c
-SRCS+=	Bootlegger.c Buddy.c Dio.c Diophantine.c Flipper.c Guard.c \
-	Pzkw_I.c RacerX.c artful.c drone.c dum_maze.c eliza.c gnat.c \
-	hud3.c kamikaze.c mmtf.c rdfbot.c roadrunner.c runner.c \
+SRCS+=	Bootlegger.c Buddy.c Dio.c Diophantine.c Flipper.c \
+	Guard.c Pzkw_I.c RacerX.c \
+	artful.c drone.c dum_maze.c \
+	eliza.c gnat.c kamikaze.c mmtf.c \
+	rdfbot.c roadrunner.c runner.c \
 	spot.c tagman.c warrior.c
 
 lex.zz.c: vload.l
