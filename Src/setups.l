@@ -71,22 +71,22 @@ f		{B}[0-9]+("."[0-9]*)?
 
 %%
 
-\n							{ }
+\n				{ }
 ^xtank:[ \t]+114336$		{ }
-^Maze{s}/\n					{ cv_maze(yval(), &settings.mdesc); }
-^Game{s}/\n					{ cv_kw2i(yval(), &settings.si.game,games_entries, MAX_GAMES);}
+^Maze{s}/\n			{ cv_maze(yval(), &settings.mdesc); }
+^Game{s}/\n			{ cv_kw2i(yval(), &settings.si.game, games_entries, MAX_GAMES);}
 ^Point\ Bullets{b}/\n		{ cv_bool(yval(), &settings.point_bullets); }
-^Ricochet{b}/\n				{ cv_bool(yval(), &settings.si.ricochet); }
-^Rel\ Fire{b}/\n			{ cv_bool(yval(), &settings.si.rel_shoot); }
-^No\ Wear{b}/\n				{ cv_bool(yval(), &settings.si.no_wear); }
-^Restart{b}/\n				{ cv_bool(yval(), &settings.si.restart); }
-^Commentator{b}/\n			{ cv_bool(yval(), &settings.commentator); }
-^Full\ Map{b}/\n			{ cv_bool(yval(), &settings.si.full_map); }
+^Ricochet{b}/\n			{ cv_bool(yval(), &settings.si.ricochet); }
+^Rel\ Fire{b}/\n		{ cv_bool(yval(), &settings.si.rel_shoot); }
+^No\ Wear{b}/\n			{ cv_bool(yval(), &settings.si.no_wear); }
+^Restart{b}/\n			{ cv_bool(yval(), &settings.si.restart); }
+^Commentator{b}/\n		{ cv_bool(yval(), &settings.commentator); }
+^Full\ Map{b}/\n		{ cv_bool(yval(), &settings.si.full_map); }
 ^Pay\ To\ Play{b}/\n		{ cv_bool(yval(), &settings.si.pay_to_play); }
 ^Robots\ Don't\ Win{b}/\n	{ cv_bool(yval(), &settings.robots_dont_win); }
 ^Max\ Armor\ Scale{b}/\n	{ cv_bool(yval(), &settings.max_armor_scale); }
-^Nametags{b}/\n				{ cv_bool(yval(), &settings.si.no_nametags); }
-^Team\ Score{b}/\n			{ cv_bool(yval(), &settings.si.team_score); }
+^Nametags{b}/\n			{ cv_bool(yval(), &settings.si.no_nametags); }
+^Team\ Score{b}/\n		{ cv_bool(yval(), &settings.si.team_score); }
 ^Player\ Teleport{b}/\n		{ cv_bool(yval(), &settings.si.player_teleport); }
 ^Disc\ Teleport{b}/\n		{ cv_bool(yval(), &settings.si.disc_teleport); }
 ^Teleport\ From\ Team{b}/\n	{ cv_bool(yval(), &settings.si.teleport_from_team); }
@@ -102,18 +102,18 @@ f		{B}[0-9]+("."[0-9]*)?
 ^"Scroll Speed"{f}/\n		{ cv_flt( yval(), &settings.si.scroll_speed); }
 ^"Box slowdown"{f}/\n		{ cv_flt( yval(), &settings.si.box_slowdown); }
 ^"Disc Friction"{f}/\n		{ cv_flt( yval(), &settings.si.disc_friction); }
-^"Disc Speed"{f}/\n			{ cv_flt( yval(), &settings.si.disc_speed); }
+^"Disc Speed"{f}/\n		{ cv_flt( yval(), &settings.si.disc_speed); }
 ^"Disc Damage"{f}/\n		{ cv_flt( yval(), &settings.si.disc_damage); }
-^"Disc Heat"{f}/\n			{ cv_flt( yval(), &settings.si.disc_heat); }
+^"Disc Heat"{f}/\n		{ cv_flt( yval(), &settings.si.disc_heat); }
 ^"Owner Slowdown"{f}/\n		{ cv_flt( yval(), &settings.si.owner_slowdown); }
 ^"Slip Friction"{f}/\n		{ cv_flt( yval(), &settings.si.slip_friction); }
 ^"Normal Friction"{f}/\n	{ cv_flt( yval(), &settings.si.normal_friction); }
 ^"Shocker Walls"{i}/\n		{ cv_int( yval(), &settings.si.shocker_walls); }
-^"Difficulty"{i}/\n			{ cv_int( yval(), &settings.difficulty); }
-^"Force On"{s}/\n			{ cv_force(yval(), INT_FORCE_ON); }
-^"Force Off"{s}/\n			{ cv_force(yval(), INT_FORCE_OFF); }
+^"Difficulty"{i}/\n		{ cv_int( yval(), &settings.difficulty); }
+^"Force On"{s}/\n		{ cv_force(yval(), INT_FORCE_ON); }
+^"Force Off"{s}/\n		{ cv_force(yval(), INT_FORCE_OFF); }
 
-^"Program"{s}/\n			{
+^"Program"{s}/\n		{
 				/* we should load $2 if prog $1 doesn't exist */
 				char *progname;
 				char *progpath;
@@ -128,9 +128,9 @@ f		{B}[0-9]+("."[0-9]*)?
 				}
 }
 
-^Tanks{s}$					{ /* Who cares... */ }
+^Tanks{s}$			{ /* Who cares... */ }
 
-V#[0-9]+{s}$				{
+V#[0-9]+{s}$			{
 			/* V#N: owner->name, disp, vptr->name, team, #progs, progs... */
 				char buf[BUFLEN];
 				char *cvn;
