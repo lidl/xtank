@@ -37,6 +37,8 @@
 CFLAGS0+= -I/opt/X11/include -D_XOPEN_SOURCE
 .endif
 
+BINDIR?=${DESTDIR}/usr/local/bin
+
 .include "${.CURDIR}/Makefile.inc1"
 
 .PATH:	${.CURDIR}/Display ${.CURDIR}/Programs ${.CURDIR}/Threads

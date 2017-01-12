@@ -29,6 +29,7 @@
 #
 
 .CURDIR= .
+PREFIX=/usr/local
 
 # When this was built using Imake, the Display, Programs and Threads
 # directories were built into different libraries.  Here, we're just
@@ -57,6 +58,10 @@ OBJS:=	$(patsubst %.c,%.o,$(SRCS))
 
 all:	${PROG}
 
+install: ${PROG}
+	mkdir -p ${DESTDIR}${PREFIX}/bin
+	install -s ${PROG} ${DESTDIR}${PREFIX}/bin
+
 ${PROG}: ${OBJS}
 	${LINK.c} $^ ${LOADLIBES} ${LDLIBS} -o $@
 
@@ -64,3 +69,5 @@ include ${.CURDIR}/Makefile.inc2
 
 clean:
 	rm -f ${PROG} ${OBJS} ${CLEANFILES} *.core
+
+.PHONY: all clean install

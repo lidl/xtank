@@ -30,9 +30,7 @@
 
 SUBDIR= Src
 
-all: ${SUBDIR}
+all clean install:
+	cd ${SUBDIR} && ${MAKE} $@
 
-${SUBDIR}:
-	${MAKE} -C $@
-
-.PHONY: all ${SUBDIR}
+.PHONY: all clean install ${SUBDIR}
