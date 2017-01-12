@@ -35,12 +35,14 @@
 #define NEED_STRING_H
 #endif
 
-#if defined(__FreeBSD__) || (defined(__APPLE__) && defined(__MACH__))
+#if defined(__FreeBSD__) || (defined(__APPLE__) && defined(__MACH__)) || \
+	defined(__linux__)
 #define NEED_DIRENT_H
 #endif
 
 #if defined(__alpha) || defined(__osf__) || defined(__FreeBSD__) || \
-	(defined(__APPLE__) && defined(__MACH__))
+	(defined(__APPLE__) && defined(__MACH__)) || \
+	defined(__linux__)
 #define USE_DLOPEN
 #endif
 

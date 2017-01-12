@@ -33,7 +33,6 @@
 #define STRUCT_ASSIGN(a,b,c) { a = b; }
 #endif
 
-
 #if defined(sun) || defined(hpux) || defined(apollo) || defined(mips) || defined(MOTOROLA) || defined(i860) || defined(mmax) || defined(__alpha) || defined(__bsdi__)
 /* Avoid domain errors when both x and y are 0 */
 #define ATAN2(_Y,_X) ((_X)==0 && (_Y)==0 ? 0.0 : atan2((double)_Y, (double)_X))

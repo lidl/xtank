@@ -53,7 +53,7 @@ int elapsed_time;
 */
 
 static void
-increment_time(int sig __unused)
+increment_time(int sig /* __unused */)
 {
 	elapsed_time += INC_TIME;
 #ifdef mmax
@@ -128,7 +128,7 @@ stop_counter(void)
 static Boolean real_timer_expired = TRUE;
 
 static void
-sigalrm_handler(int sig __unused)
+sigalrm_handler(int sig /* __unused */)
 {
 	real_timer_expired = TRUE;
 #ifdef linux
