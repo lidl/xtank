@@ -37,9 +37,21 @@
 
 VPATH=	${.CURDIR}/Display:${.CURDIR}/Programs:${.CURDIR}/Threads
 
+ifneq ("$(wildcard /opt/X11/include)","")
+CFLAGS0+= -I/opt/X11/include -D_XOPEN_SOURCE
+LDFLAGS+= -L/opt/X11/lib
+endif
+ifneq ("$(wildcard /usr/local/include/X11)","")
+CFLAGS0+= -I/usr/local/include
+LDFLAGS+= -L/usr/local/lib
+endif
+
 include ${.CURDIR}/Makefile.inc1
 
-LDLIBS+= -lX11 -ldl -lm
+ifneq ("$(wildcard /usr/lib64/libdl.so)","")
+LDLIBS+= -ldl
+endif
+LDLIBS+= -lX11 -lm
 
 OBJS:=	$(patsubst %.c,%.o,$(SRCS))
 
