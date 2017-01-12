@@ -25,33 +25,30 @@
 # */
 
 #
-# Makefile for the 'xtank' program
+# GNUmakefile for the 'xtank' program
 #
+
+.CURDIR= .
 
 # When this was built using Imake, the Display, Programs and Threads
 # directories were built into different libraries.  Here, we're just
 # going to build them all into this directory and forgo linking the
 # code into libraries.
 
-.if exists(/opt/X11/include)
-CFLAGS0+= -I/opt/X11/include -D_XOPEN_SOURCE
-.endif
+VPATH=	${.CURDIR}/Display:${.CURDIR}/Programs:${.CURDIR}/Threads
 
-.include "${.CURDIR}/Makefile.inc1"
+include ${.CURDIR}/Makefile.inc1
 
-.PATH:	${.CURDIR}/Display ${.CURDIR}/Programs ${.CURDIR}/Threads
+LDLIBS+= -lX11 -ldl -lm
 
-.if exists(/opt/X11/lib)
-LDADD+= -L/opt/X11/lib
-.endif
-.if exists(/usr/local/lib)
-LDADD+= -L/usr/local/lib
-.endif
-LDADD+= -lX11 -lm
-.if exists(/usr/local/lib/libefence.a)
-LDADD+= -lefence
-.endif
+OBJS:=	$(patsubst %.c,%.o,$(SRCS))
 
-.include "${.CURDIR}/Makefile.inc2"
+all:	${PROG}
 
-.include <bsd.prog.mk>
+${PROG}: ${OBJS}
+	${LINK.c} $^ ${LOADLIBES} ${LDLIBS} -o $@
+
+include ${.CURDIR}/Makefile.inc2
+
+clean:
+	rm -f ${PROG} ${OBJS} ${CLEANFILES} *.core

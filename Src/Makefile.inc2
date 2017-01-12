@@ -25,33 +25,22 @@
 # */
 
 #
-# Makefile for the 'xtank' program
+# Makefile.inc2 for the 'xtank' program
 #
+# N.B. This file is included into both the Berkeley style
+# Makefile, as well as the GNUmakefile, to reduce the amount
+# of redundent copies of information between those systems.
 
-# When this was built using Imake, the Display, Programs and Threads
-# directories were built into different libraries.  Here, we're just
-# going to build them all into this directory and forgo linking the
-# code into libraries.
+lex.zz.c: vload.l
+	${LEX} -Pzz ${.CURDIR}/vload.l
 
-.if exists(/opt/X11/include)
-CFLAGS0+= -I/opt/X11/include -D_XOPEN_SOURCE
-.endif
+version.c: ${.CURDIR}/../Bin/newversion.sh
+	sh ${.CURDIR}/../Bin/newversion.sh
 
-.include "${.CURDIR}/Makefile.inc1"
+cscope:
+	(cd ${.CURDIR} && find . -name \*\.\[chly] -a -type f >cscope.files)
+	(cd ${.CURDIR} && cscope -bRk)
+	@echo "Now run 'cscope -d'"
 
-.PATH:	${.CURDIR}/Display ${.CURDIR}/Programs ${.CURDIR}/Threads
-
-.if exists(/opt/X11/lib)
-LDADD+= -L/opt/X11/lib
-.endif
-.if exists(/usr/local/lib)
-LDADD+= -L/usr/local/lib
-.endif
-LDADD+= -lX11 -lm
-.if exists(/usr/local/lib/libefence.a)
-LDADD+= -lefence
-.endif
-
-.include "${.CURDIR}/Makefile.inc2"
-
-.include <bsd.prog.mk>
+CLEANFILES+= setups.c version.c lex.zz.c \
+	${.CURDIR}/cscope.files  ${.CURDIR}/cscope.out

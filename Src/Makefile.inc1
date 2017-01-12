@@ -1,0 +1,68 @@
+#/*-
+# * Copyright (c) 2016, 2017 Kurt Lidl
+# * All rights reserved.
+# *
+# * Redistribution and use in source and binary forms, with or without
+# * modification, are permitted provided that the following conditions
+# * are met:
+# * 1. Redistributions of source code must retain the above copyright
+# *    notice, this list of conditions and the following disclaimer.
+# * 2. Redistributions in binary form must reproduce the above copyright
+# *    notice, this list of conditions and the following disclaimer in the
+# *    documentation and/or other materials provided with the distribution.
+# *
+# * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+# * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+# * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+# * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+# * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+# * SUCH DAMAGE.
+# */
+
+#
+# Makefile.inc1 for the 'xtank' program
+#
+# N.B. This file is included into both the Berkeley style
+# Makefile, as well as the GNUmakefile, to reduce the amount
+# of redundent copies of information between those systems.
+
+PROG=	xtank
+MK_MAN=no
+
+CFLAGS0+= -I${.CURDIR} -I${.CURDIR}/Include \
+	-I/usr/local/include -O0 -g
+
+CFLAGS0+= -DX11 -DUNIX -DS1024x864 -DKEYPAD_DETECT -DSTINGY_REDRAW \
+	-DBATCH_LINES -DBATCH_POINTS -DBATCH_COLOR_LINES \
+	-DCODE_SIZE=0x20000 -DSTACK_SIZE=0x8000 \
+	-DNEW_LIMITS -DSLOWER
+
+CFLAGS0+= -DDYNALOAD -DMULTI_SYNC -DTHREAD_SWAPCONTEXT
+
+CFLAGS1+= -DXTANK_DIR="\"${.CURDIR}/..\""
+
+DEFINES=-DALLDEFINES="\"${CFLAGS0}\""
+
+CFLAGS+=${DEFINES} ${CFLAGS0} ${CFLAGS1}
+
+SRCS=	actions.c animate.c box.c camo.c collision.c cosell.c \
+	disc.c display.c escher.c explosion.c file.c game.c gr.c \
+	highlib.c hit.c hud.c icounter.c init.c input.c interface.c \
+	intersect.c lowlib.c main.c mapper.c maze.c \
+	mdesign.c menu.c message.c newconsole.c newfile.c newradar.c \
+	players.c program.c radar.c repair.c scroll.c setup.c \
+	setups.c status.c sysdep.c unix.c update.c util.c vdesign.c \
+	vehicle.c version.c lex.zz.c
+SRCS+=	XMultiSync.c graphics.c objects.c three-d.c
+SRCS+=	threadglue.c thread.c
+SRCS+=	Bootlegger.c Buddy.c Dio.c Diophantine.c Flipper.c \
+	Guard.c Pzkw_I.c RacerX.c \
+	artful.c drone.c dum_maze.c \
+	eliza.c gnat.c kamikaze.c mmtf.c \
+	rdfbot.c roadrunner.c runner.c \
+	spot.c tagman.c warrior.c

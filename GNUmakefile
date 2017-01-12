@@ -25,33 +25,14 @@
 # */
 
 #
-# Makefile for the 'xtank' program
+# Top Level GNUmakefile
 #
 
-# When this was built using Imake, the Display, Programs and Threads
-# directories were built into different libraries.  Here, we're just
-# going to build them all into this directory and forgo linking the
-# code into libraries.
+SUBDIR= Src
 
-.if exists(/opt/X11/include)
-CFLAGS0+= -I/opt/X11/include -D_XOPEN_SOURCE
-.endif
+all: ${SUBDIR}
 
-.include "${.CURDIR}/Makefile.inc1"
+${SUBDIR}:
+	${MAKE} -C $@
 
-.PATH:	${.CURDIR}/Display ${.CURDIR}/Programs ${.CURDIR}/Threads
-
-.if exists(/opt/X11/lib)
-LDADD+= -L/opt/X11/lib
-.endif
-.if exists(/usr/local/lib)
-LDADD+= -L/usr/local/lib
-.endif
-LDADD+= -lX11 -lm
-.if exists(/usr/local/lib/libefence.a)
-LDADD+= -lefence
-.endif
-
-.include "${.CURDIR}/Makefile.inc2"
-
-.include <bsd.prog.mk>
+.PHONY: all ${SUBDIR}
