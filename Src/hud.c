@@ -68,14 +68,11 @@ draw_armor(int armor, Angle ang)
 	start -= (ang / (2 * PI)) * 360 + 90;
 
 	XDrawArc(vid->dpy, vid->win[ANIM_WIN].id,
-			 vid->graph_gc[DRAW_XOR][RED],
-	  (ANIM_WIN_WIDTH / 2) - (BBOX / 2), (ANIM_WIN_HEIGHT / 2) - (BBOX / 2),
+		 vid->graph_gc[DRAW_XOR][RED],
+		 (ANIM_WIN_WIDTH / 2) - (BBOX / 2),
+		 (ANIM_WIN_HEIGHT / 2) - (BBOX / 2),
 			 BBOX, BBOX, (start) * 64, (90) * 64);
 }
-
-/*
- *
- */
 
 SpecialStatus
 special_hud(Vehicle *v, char *record, int action)
@@ -123,7 +120,7 @@ special_hud(Vehicle *v, char *record, int action)
 		  if (h->need_redisplay_arm)
 			  h->draw_arm_angle = norm_angle(v->vector.heading);
 
-		  /*
+	    /*
 	     * save old speed vector if we need it, and check
 	     * if it has changed
 	     */
@@ -135,7 +132,7 @@ special_hud(Vehicle *v, char *record, int action)
 			  h->old_yspeed = (int) v->vector.yspeed;
 			  vchanged = TRUE;
 		  }
-		  /*
+	    /*
 	     * set wstatus if any of the weapons have
 	     * changed status
 	     *
@@ -154,7 +151,7 @@ special_hud(Vehicle *v, char *record, int action)
 			  }
 		  }
 
-		  /*
+	    /*
 	     * If we lost an update or we just turned
 	     * on rescan weapons
 	     */
@@ -163,7 +160,7 @@ special_hud(Vehicle *v, char *record, int action)
 			  wstatus = TRUE;
 
 
-		  /*
+	    /*
 	     * if no weapons are online and they didn't just
 	     * go offline, return early.
 	     */
@@ -172,7 +169,7 @@ special_hud(Vehicle *v, char *record, int action)
 			  h->frame_updated = frame;
 			  return SP_on;
 		  }
-		  /*
+	    /*
 	     * If the weapon statuses are all the same, and
 	     * our speed is the same, and we haven't
 	     * spun, check
@@ -192,7 +189,7 @@ special_hud(Vehicle *v, char *record, int action)
 			  h->frame_updated = frame;
 			  return SP_on;
 		  }
-		  /*
+	    /*
 	     * If a weapon status changed, search weapons again
 	     * for longest range of on-line weapon per mount
 	     *
@@ -224,7 +221,7 @@ special_hud(Vehicle *v, char *record, int action)
 				  }
 			  }
 		  }
-		  /*
+	    /*
 	     * if we have gotten this far, either a weapon status
 	     * changed, or a turret turreted or the vehicle turned
 	     *
