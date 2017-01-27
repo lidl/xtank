@@ -149,7 +149,7 @@ display_anim(unsigned int status, int lastterm)
 	display_explosions(status);
 
 #ifndef NO_HUD
-	/*
+    /*
      *  The test for NULL is a piece of SPAM.
      *
      *  Basically the reason this is needed is cause
@@ -161,11 +161,15 @@ display_anim(unsigned int status, int lastterm)
      *
      *  -ane
      */
+    /*
+     * Actually, this is probably more an indication that a terminal
+     * is an observer, and the person has clicked on the animation
+     * window, which disassociates that terminal from a vehicle.
+     */
 
 	v = term->vehicle;
 
 	if (v != NULL) {
-
 		switch (status) {
 		  case REDISPLAY:
 			  if (tstflag(v->status, VS_is_alive))
@@ -182,7 +186,6 @@ display_anim(unsigned int status, int lastterm)
 		}
 	}
 #endif /* !NO_HUD */
-
 }
 
 
