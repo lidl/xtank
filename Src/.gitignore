@@ -1,6 +1,14 @@
+.depend
 .buildnumber
 cscope.files
 cscope.out
+lex.zz.c
+setups.c
 setups.flexed
 sload.flexed
+version.c
 vload.flexed
+xtank
+xtank.full
+xtank.debug
+*.o
