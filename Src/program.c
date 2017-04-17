@@ -80,15 +80,28 @@ init_prog_descs(void)
 {
 	int iCtr;
 	extern Prog_desc
-		kamikaze_prog, drone_prog, warrior_prog, eliza_prog,
-		Buddy_prog, Flipper_prog, artful_prog, spot_prog,
-		Diophantine_prog, Dio_prog,
+		kamikaze_prog,
+		drone_prog,
+		warrior_prog,
+		eliza_prog,
+		Buddy_prog,
+		Flipper_prog,
+		artful_prog,
+		spot_prog,
+		Diophantine_prog,
+		Dio_prog,
 	/* New programs with 1.2g and not all that tested: */
-		Pzkw_I_prog, dum_maze_prog, roadrunner_prog,
-		Guard_prog, RacerX_prog,
+		Pzkw_I_prog,
+		dum_maze_prog,
+		roadrunner_prog,
+		Guard_prog,
+		RacerX_prog,
 	/* New programs with 1.3b and extensively tested: */
-		tagman_prog, Bootlegger_prog, gnat_prog,
-		rdfbot_prog, mmtf_prog;
+		tagman_prog,
+		Bootlegger_prog,
+		gnat_prog,
+		rdfbot_prog,
+		mmtf_prog;
 
 	num_prog_descs = 0;
 	prog_desc[num_prog_descs++] = &kamikaze_prog;
