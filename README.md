@@ -9,7 +9,7 @@ depends on the game you play.
 
 ## License
 
-This release of Xtank has been re-licensed under the BSD 2-clause
+The 1.6.0 release of Xtank has been re-licensed under the BSD 2-clause
 copyright, sometimes referred to as the "FreeBSD Copyright".  Check
 individual files for the name of the contributing Author(s).
 
@@ -34,8 +34,7 @@ This is the top-level Xtank directory.  The subdirectories are as follows:
 * Make sure that you have X11 libraries installed for your
   machine.  Xtank only requires libX11.
 * Build the software:
-  * On FreeBSD: Run 'make'
-  * On Mac OS X: Run 'bmake'
+  * On a supported system, just run 'make'
 
 ### FreeBSD notes
 
@@ -48,18 +47,25 @@ itself as FreeBSD-12).
 The code is expected to work fairly well on Mac OS X.  As of this
 writing, the code is known to work on OS X 10.11.6 (El Capitan).
 
-The build system uses the Berkeley make command, typically called
-'bmake' under Mac OS X.  The version that has been tested was
-installed from MacPorts.
-
 To display the graphics from Xtank, you will need an X11 server.
 The code has been tested using Xquartz 2.7.11, and it works OK.
 
+### Linux notes
+
+The code is expected to work fairly well on a modern-ish Linux
+system.  The code was compiled and tested on a Centos-7 installation,
+installed into a virtual machine.
+
+The 'libX11-devel' package had to be added to a standward install,
+via:
+	sudo yum install -y libX11-devel
+
 ### Other systems
 
-No work has been put into making it easy to build this software on
-other platforms, as of yet.  This will be done, but getting something
-that works released was deemed the most important first step.
+No substantial work has been put into making it easy to build this
+software on other platforms.  Hopefully, this will be done eventually,
+but getting the code relicensed and into a working state was deemed
+the most important first step.
 
 ## Mailing List
 
