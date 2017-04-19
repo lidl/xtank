@@ -134,7 +134,7 @@ static char
 *help_entries[] = {
 	"General", "Pictures", "Multi-player", "Games",
 	"Vehicles", "Mazes", "Setups", "Credits", "Motd",
-	"Newsgroups", "Release Notes"
+	"Release Notes"
 },
 
 *grid_entries[] = {
@@ -349,7 +349,7 @@ init_interface(void)
 				   LEV1_X, LEV0_Y, load_entries, M_FONT);
 	menu_norm_make(&menu_sys, DESIGN_MENU, "Design", 2, 0,
 				   LEV1_X, LEV0_Y, design_entries, M_FONT);
-	menu_norm_make(&menu_sys, HELP_MENU, "Help", 11, 0,
+	menu_norm_make(&menu_sys, HELP_MENU, "Help", 10, 0,
 				   LEV1_X, LEV0_Y, help_entries, M_FONT);
 	menu_nohil_make(&menu_sys, GAMES_MENU, "Games",
 					(sizeof(games_entries) / sizeof(char *)), 0,
@@ -612,9 +612,6 @@ sub_interface_help(int choice)
 		  display_file(ANIM_WIN, "Help/motd");
 		  break;
 	  case 9:
-		  display_file(ANIM_WIN, "Help/xtank.FAQ");
-		  break;
-	  case 10:
 		  display_file(ANIM_WIN, "Help/release-notes");
 		  break;
 	}
