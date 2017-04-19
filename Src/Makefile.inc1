@@ -67,7 +67,6 @@ SRCS+=	Bootlegger.c \
 	Guard.c \
 	Pzkw_I.c \
 	RacerX.c \
-	artful.c \
 	drone.c \
 	dum_maze.c \
 	eliza.c \

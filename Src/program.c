@@ -85,7 +85,6 @@ init_prog_descs(void)
 		warrior_prog,
 		eliza_prog,
 		Flipper_prog,
-		artful_prog,
 		spot_prog,
 		Diophantine_prog,
 		Dio_prog,
@@ -109,7 +108,6 @@ init_prog_descs(void)
 	prog_desc[num_prog_descs++] = &eliza_prog;
 	prog_desc[num_prog_descs++] = &Flipper_prog;
 	prog_desc[num_prog_descs++] = &Diophantine_prog;
-	prog_desc[num_prog_descs++] = &artful_prog;
 	prog_desc[num_prog_descs++] = &spot_prog;
 	prog_desc[num_prog_descs++] = &Dio_prog;
 	prog_desc[num_prog_descs++] = &Pzkw_I_prog;

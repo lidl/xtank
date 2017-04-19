@@ -9,7 +9,6 @@ drone		works well
 warrior		works (attacks teammates)
 eliza		doesn't crash, but only sends responses to received messages
 Flipper		works
-artful		works
 spot		works (attacks teammates, stupid)
 Diophantine	crashes after a while
 Dio		works (attacks teammates, stupid)
