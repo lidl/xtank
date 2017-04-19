@@ -86,10 +86,6 @@ init_prog_descs(void)
 		spot_prog,
 		Diophantine_prog,
 		Dio_prog,
-	/* New programs with 1.2g and not all that tested: */
-		Pzkw_I_prog,
-		dum_maze_prog,
-		roadrunner_prog,
 	/* New programs with 1.3b and extensively tested: */
 		tagman_prog,
 		Bootlegger_prog,
@@ -104,9 +100,6 @@ init_prog_descs(void)
 	prog_desc[num_prog_descs++] = &Diophantine_prog;
 	prog_desc[num_prog_descs++] = &spot_prog;
 	prog_desc[num_prog_descs++] = &Dio_prog;
-	prog_desc[num_prog_descs++] = &Pzkw_I_prog;
-	prog_desc[num_prog_descs++] = &dum_maze_prog;
-	prog_desc[num_prog_descs++] = &roadrunner_prog;
 	prog_desc[num_prog_descs++] = &tagman_prog;
 	prog_desc[num_prog_descs++] = &Bootlegger_prog;
 	prog_desc[num_prog_descs++] = &gnat_prog;

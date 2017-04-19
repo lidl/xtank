@@ -10,9 +10,6 @@ Flipper		works
 spot		works (attacks teammates, stupid)
 Diophantine	crashes after a while
 Dio		works (attacks teammates, stupid)
-Pzkw_I		works
-dum_maze	unknown
-roadrunner	unknown
 tagman		works well
 Bootlegger	works well
 gnat		works well (needs code review to changes made)
