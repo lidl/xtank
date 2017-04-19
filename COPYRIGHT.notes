@@ -1,0 +1,60 @@
+Notes on copyright holders, written by Kurt Lidl (2017)
+-------------------------------------------------------
+
+In April 2002, Terry Donahue gave a blanket permission to re-license
+his code using either the BSD or GPL license.
+
+> ----- Forwarded message from "Fr. Terry Donahue" <terrydonahue@usa.net> -----
+>
+> Yes, when I initially wrote the copyright statement (as a
+> not-so-savvy-about-distribution-methods 18-year-old sophomore) I never
+> considered the problems it would cause, primarily because I initially never
+> thought the program would ever make it outside of my circle of 10 friends
+> who played 2-on-2 Ultimate into the wee hours.  Of course, as things got
+> bigger, I should have modified the copyright clause to a GPL or BSD style
+> one.  Now, I'd really be happy to use either one, perhaps based on what Kurt
+> and others would like to unify/rally around.  I guess it would just be a
+> matter of me/us making some public/official release with the new copyright
+> license.
+>
+> ----- End forwarded message -----
+
+The copyrights held by "Pix Technologies Corp" are now (as of this
+writing, January 2017) held by Kurt Lidl.  When the "Pix Technologies
+Corp." consulting company was dissolved, all rights were granted
+to Kurt Lidl to dispose of domain names, intellectual property, and
+materials and distribute any resulting money from that liquidation
+to the members of the Corporation.  That distribution was done, but
+I'm left with the copyrights.  These copyrights covers most the
+code that Josh Osborne and I wrote during the early 1990s when we
+did most of the hacking that we did on Xtank.
+
+I am perfectly happy to change the copyright on the various files
+claimed by "Pix Technologies Corp" to be held by both Josh and myself.
+
+Additional notes:
+
+- 08-Jan-2017: Jeff Snider has graciously allowed his contributions to
+  be re-licensed with the BSD 2-clause copyright statement.
+- 08-Jan-2017: Gordon Smith has graciously allowed his contributions to
+  be re-licensed with the BSD 2-clause copyright statement.
+- 08-Jan-2017: Matt Senft has graciously allowed his contributions to
+  be re-licensed with the BSD 2-clause copyright statement.
+- 08-Jan-2017: Alex North-Keys has graciously allowed his contributions to
+  be re-licensed with the BSD 2-clause copyright statement.
+- 08-Jan-2017: Sean Barrett has graciously allowed his contributions to
+  be re-licensed with the BSD 2-clause copyright statement.
+- 09-Jan-2017: Bill Katz has graciously allowed his contributions to
+  be re-licensed with the BSD 2-clause copyright statement.
+- 10-Jan-2017: Aaron Nabil has graciously allowed his contributions to
+  be re-licensed with the BSD 2-clause copyright statement.
+- 11-Jan-2017: Mark Bullen has graciously allowed his contributions to
+  be re-licensed with the BSD 2-clause copyright statement.
+- 16-Jan-2017: Chris Moore has graciously allowed his contributions to
+  be re-licensed with the BSD 2-clause copyright statement.
+- 25-Jan-2017: Josh Osborne has graciously allowed his contributions to
+  be re-licensed with the BSD 2-clause copyright statement.
+- 27-Jan-2017: Michael Shanzer has graciously allowed his contributions to
+  be re-licensed with the BSD 2-clause copyright statement.
+- 27-Jan-2017: Steve Worley has graciously allowed his contributions to
+  be re-licensed with the BSD 2-clause copyright statement.
