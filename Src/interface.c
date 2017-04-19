@@ -101,40 +101,65 @@ char
 ** view_entries[] (HAK 2/93)
 */
 static char
- *main_entries[] =
-{"Play", "Settings", "Combatants", "View", "Load",
- "Design", "Add players", "Text entry", "Remove", "Help", "Quit"},
- *play_entries[] =
-{"Standard", "Players", "Robots", "Customized"},
 
-/* Added "Madman discs" to settings_entries (HAK 3/93) */
+*main_entries[] = {
+	"Play", "Settings", "Combatants", "View", "Load",
+	"Design", "Add players", "Text entry", "Remove", "Help", "Quit"
+},
 
- *settings_entries[] =
-{
+*play_entries[] = {
+	"Standard", "Players", "Robots", "Customized"
+},
+
+*settings_entries[] = {
 	"Flags", "Maze", "Winning score", "Force Specials",
 	"Game", "Shocker Walls", "Outpost strength", "Difficulty",
 	"Scroll speed", "Box slowdown", "Disc friction", "Throwing speed",
-	"Disc damage", "Disc heat", "Owner slowdown","Madman # discs", "Vehicle",
-	"Save settings", "Load Settings"}, *view_entries[] =
-{"Maze", "Vehicle", "Program", "Setup"}, *load_entries[] =
-{"Maze", "Vehicle", "Program", "Setup"}, *design_entries[] =
-{"Maze", "Vehicle"}, *help_entries[] =
-{"General", "Pictures", "Multi-player", "Games",
- "Vehicles", "Mazes", "Setups", "Credits", "Motd",
- "Newsgroups", "Release Notes"}, *grid_entries[] =
-{"Player", "Program", "Vehicle", "Team"}, *num_entries[] =
-{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"}, *flags_entries[] =
-{"Point bullets", "Ricochet", "Rel. shooting",
- "No wear", "Restart", "Commentator", "Full map",
- "Pay to Play", "Relative Disc", "War:Goals Only",
- "Ultimate:Own Goal", "Robots don't Win",
- "Scale Armor to Max", "No name tags",
- "Team Scoring", 
- "Players can Teleport", "Discs can Teleport",
- "'port from team", "'port from neutral",
- "'port to team", "'port to neutral",
- "'port from any to any"
-}, *programs_entries[MAX_PDESCS], *force_entries[MAX_SPECIALS], *players_entries[MAX_TERMINALS];
+	"Disc damage", "Disc heat", "Owner slowdown", "Madman # discs",
+	"Vehicle", "Save settings", "Load Settings"
+},
+
+*view_entries[] = {
+	"Maze", "Vehicle", "Program", "Setup"
+},
+
+ *load_entries[] = {
+	"Maze", "Vehicle", "Program", "Setup"
+},
+
+*design_entries[] = {
+	"Maze", "Vehicle"
+},
+
+*help_entries[] = {
+	"General", "Pictures", "Multi-player", "Games",
+	"Vehicles", "Mazes", "Setups", "Credits", "Motd",
+	"Newsgroups", "Release Notes"
+},
+
+*grid_entries[] = {
+	"Player", "Program", "Vehicle", "Team"
+},
+
+*num_entries[] = {
+	"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"
+},
+
+*flags_entries[] = {
+	"Point bullets", "Ricochet", "Rel. shooting",
+	 "No wear", "Restart", "Commentator", "Full map",
+	 "Pay to Play", "Relative Disc", "War:Goals Only",
+	 "Ultimate:Own Goal", "Robots don't Win",
+	 "Scale Armor to Max", "No name tags",
+	 "Team Scoring", "Players can Teleport", "Discs can Teleport",
+	 "'port from team", "'port from neutral",
+	 "'port to team", "'port to neutral",
+	 "'port from any to any"
+},
+
+*programs_entries[MAX_PDESCS],
+*force_entries[MAX_SPECIALS],
+*players_entries[MAX_TERMINALS];
 
 char force_states[MAX_SPECIALS];
 
