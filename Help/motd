@@ -1,26 +1,23 @@
-Send comments to xtank@eng.umd.edu                              13 Sept 1992
-Send comments to xtank@pix.net                               01 January 2000
+Send comments to xtank@xtank.org                               18 April 2017
 
-The latest Xtank beta release is available via anonymous FTP on the
-host ftp.pix.net, in the directory /pub/xtank.
+A tar file with the latest Xtank source code is available via
+anonymous FTP on the host ftp.pix.net, in the directory /pub/xtank
 
-Be sure to read the builtin Release Notes.  Also, you should
-probably check out the FAQ answers that have been included.
+The source code should be available via GitHub:
 
-Please *NOTE* -- this is an beta quality release.  As such, there
+  https://github.com/lidl/xtank
+
+Be sure to read the builtin Release Notes.
+
+Please *NOTE* -- this is a beta quality release.  As such, there
 are known bugs, feature problems and so forth, but the general
 feeling is that it is important to get this code out the door so
 that people can play with it.
 
-PIX.NET Hacks (partial list):
-  Shooter hacking                    - Josh Osborne
-  Rearranged window layout           - Gordon Smith
-  386/BSD threading                  - Kurt Lidl
-  Pthreads fixes so it works         - Kurt Lidl
-  General code cleanup               - Kurt Lidl
-
-Contibuted Hacks (partial list):
-  RDF/TACLINK/HARM Fixes             - Aaron Eastlund
-  Damage system                      - Aaron Eastlund
-  Other small fixes                  - Many, many others
-  SVR4 Threading fixes for Solaris   - Kevin Doherty <kdoherty@cosanostra.net>
+XTANK.ORG modifications:                    - Kurt Lidl
+  Relicense code after locating authors
+  Write entirely new Makefiles
+  ANSI C style function definitions
+  Miscellaneous code cleanup and portability changes
+  THREAD_SWAPCONTEXT reworked substantially
+  Debug stack smashing bug in Src/Programs/gnat.c

@@ -1,30 +1,39 @@
-                                                            September 13, 1992
+                                                            April 18, 2017
 
-              Release Notes for the Xtank UMDENG 1.3f Release
+              Release Notes for the Xtank 1.6.0 Release
 
 New features:
 
-   * support for 386BSD threading.
-     No support for dynamic loading yet, but we are working on it.
+ * Rewritten Makefile/GNUmakefiles for building on various systems.
+   So, no more imake, and Imakefiles.
+   Tested on: FreeBSD/Linux/Mac OS X
 
-   * modificiation to the robot "shooter" to bring it up to speed with
-     4 turret'd vehicles
+ * Threading now defaults to THREAD_SWAPCONTEXT.  This is the
+   only threading support that has been tested for this release.
 
-   * more and better RDF/TACLINK work from Aaron Eastlund
+ * Relicensed code under BSD 2-clause license for core of the
+   game.  Two files (sload.l, sound.c) are Public Domain.  It is
+   possible to compile the game without these two files.
 
-   * removal of old code that wasn't ever getting defined, as part
-     of our code cleanup activities
+ * ANSI C style function prototypes everywhere.
 
-   * Imakefile file reorganization, tweaking of some compiler flags
-     on suns, hp's.  Not widely tested.
+Removal of old code, where the authors could not be located
+or failed to respond to attempts to contact them.  It would be
+really nice if any of the authors of the code that was removed
+would consider relicensing their code.
 
-   * re-arranged console layout, to better handle working on screens
-     of size 1024x768
+The following files were removed from the game:
 
-Known Problems:
-   * no updates to the programmer docs (UTSL)
-   * bugs exist -- feel free to send patchs
-   * still no real prototypes, except for lowlib calls
+Src/Programs/Buddy.c:** Copyright 1990 by Daniel Schmidt
+Src/Programs/artful.c:** Copyright 1988 by Dan Schmidt
+Src/Programs/warbuddy.c:** Copyright 1992 by Mike Lee
+Src/Programs/warrior.c:** Copyright 1988 by Michael J. Zehr
 
-                            -Josh
-                            -Kurt
+Src/Programs/Guard.c:** Copyright 1993 by Robert Potter
+Src/Programs/RacerX.c:** Copyright 1991 by Robert Potter
+Src/Programs/kamikaze.c:** Copyright 1990 by Robert Potter
+
+Src/Programs/Pzkw_I.c:** Copyright 1991 by Hans Mejdahl Jeppesen
+Src/Programs/dum_maze.c:** Copyright 1991 by Hans Mejdahl Jeppesen
+Src/Programs/roadrunner.c:** Copyright 1991 by Hans Mejdahl Jeppesen
+Src/Programs/runner.c:** Copyright 1991 by Hans Mejdahl Jeppesen
