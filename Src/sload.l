@@ -1,3 +1,7 @@
+/*-
+ * This file is in the Public Domain.
+ */
+
 %{
 
 #include <stdio.h>
