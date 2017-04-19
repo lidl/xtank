@@ -80,7 +80,6 @@ init_prog_descs(void)
 {
 	int iCtr;
 	extern Prog_desc
-		kamikaze_prog,
 		drone_prog,
 		eliza_prog,
 		Flipper_prog,
@@ -91,8 +90,6 @@ init_prog_descs(void)
 		Pzkw_I_prog,
 		dum_maze_prog,
 		roadrunner_prog,
-		Guard_prog,
-		RacerX_prog,
 	/* New programs with 1.3b and extensively tested: */
 		tagman_prog,
 		Bootlegger_prog,
@@ -101,7 +98,6 @@ init_prog_descs(void)
 		mmtf_prog;
 
 	num_prog_descs = 0;
-	prog_desc[num_prog_descs++] = &kamikaze_prog;
 	prog_desc[num_prog_descs++] = &drone_prog;
 	prog_desc[num_prog_descs++] = &eliza_prog;
 	prog_desc[num_prog_descs++] = &Flipper_prog;
@@ -111,8 +107,6 @@ init_prog_descs(void)
 	prog_desc[num_prog_descs++] = &Pzkw_I_prog;
 	prog_desc[num_prog_descs++] = &dum_maze_prog;
 	prog_desc[num_prog_descs++] = &roadrunner_prog;
-	prog_desc[num_prog_descs++] = &Guard_prog;
-	prog_desc[num_prog_descs++] = &RacerX_prog;
 	prog_desc[num_prog_descs++] = &tagman_prog;
 	prog_desc[num_prog_descs++] = &Bootlegger_prog;
 	prog_desc[num_prog_descs++] = &gnat_prog;

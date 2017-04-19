@@ -64,14 +64,11 @@ SRCS+=	Bootlegger.c \
 	Dio.c \
 	Diophantine.c \
 	Flipper.c \
-	Guard.c \
 	Pzkw_I.c \
-	RacerX.c \
 	drone.c \
 	dum_maze.c \
 	eliza.c \
 	gnat.c \
-	kamikaze.c \
 	mmtf.c \
 	rdfbot.c \
 	roadrunner.c \

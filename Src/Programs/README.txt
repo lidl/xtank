@@ -4,7 +4,6 @@
 
 Program:	Status:
 --------	-------
-kamikaze	works
 drone		works well
 eliza		doesn't crash, but only sends responses to received messages
 Flipper		works
@@ -14,8 +13,6 @@ Dio		works (attacks teammates, stupid)
 Pzkw_I		works
 dum_maze	unknown
 roadrunner	unknown
-Guard		crashes instantly
-RacerX		unknown
 tagman		works well
 Bootlegger	works well
 gnat		works well (needs code review to changes made)
