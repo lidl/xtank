@@ -84,7 +84,6 @@ init_prog_descs(void)
 		drone_prog,
 		warrior_prog,
 		eliza_prog,
-		Buddy_prog,
 		Flipper_prog,
 		artful_prog,
 		spot_prog,
@@ -108,7 +107,6 @@ init_prog_descs(void)
 	prog_desc[num_prog_descs++] = &drone_prog;
 	prog_desc[num_prog_descs++] = &warrior_prog;
 	prog_desc[num_prog_descs++] = &eliza_prog;
-	prog_desc[num_prog_descs++] = &Buddy_prog;
 	prog_desc[num_prog_descs++] = &Flipper_prog;
 	prog_desc[num_prog_descs++] = &Diophantine_prog;
 	prog_desc[num_prog_descs++] = &artful_prog;

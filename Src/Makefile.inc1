@@ -61,7 +61,6 @@ SRCS=	actions.c animate.c box.c camo.c collision.c cosell.c \
 SRCS+=	XMultiSync.c graphics.c objects.c three-d.c
 SRCS+=	threadglue.c thread.c
 SRCS+=	Bootlegger.c \
-	Buddy.c \
 	Dio.c \
 	Diophantine.c \
 	Flipper.c \
