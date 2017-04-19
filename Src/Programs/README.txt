@@ -6,7 +6,6 @@ Program:	Status:
 --------	-------
 kamikaze	works
 drone		works well
-warrior		works (attacks teammates)
 eliza		doesn't crash, but only sends responses to received messages
 Flipper		works
 spot		works (attacks teammates, stupid)

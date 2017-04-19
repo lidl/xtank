@@ -82,7 +82,6 @@ init_prog_descs(void)
 	extern Prog_desc
 		kamikaze_prog,
 		drone_prog,
-		warrior_prog,
 		eliza_prog,
 		Flipper_prog,
 		spot_prog,
@@ -104,7 +103,6 @@ init_prog_descs(void)
 	num_prog_descs = 0;
 	prog_desc[num_prog_descs++] = &kamikaze_prog;
 	prog_desc[num_prog_descs++] = &drone_prog;
-	prog_desc[num_prog_descs++] = &warrior_prog;
 	prog_desc[num_prog_descs++] = &eliza_prog;
 	prog_desc[num_prog_descs++] = &Flipper_prog;
 	prog_desc[num_prog_descs++] = &Diophantine_prog;

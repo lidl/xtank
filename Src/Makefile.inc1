@@ -77,5 +77,4 @@ SRCS+=	Bootlegger.c \
 	roadrunner.c \
 	runner.c \
 	spot.c \
-	tagman.c \
-	warrior.c
+	tagman.c
