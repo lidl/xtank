@@ -36,25 +36,41 @@ Additional notes:
 
 - 08-Jan-2017: Jeff Snider has graciously allowed his contributions to
   be re-licensed with the BSD 2-clause copyright statement.
+
 - 08-Jan-2017: Gordon Smith has graciously allowed his contributions to
   be re-licensed with the BSD 2-clause copyright statement.
+
 - 08-Jan-2017: Matt Senft has graciously allowed his contributions to
   be re-licensed with the BSD 2-clause copyright statement.
+
 - 08-Jan-2017: Alex North-Keys has graciously allowed his contributions to
   be re-licensed with the BSD 2-clause copyright statement.
+
 - 08-Jan-2017: Sean Barrett has graciously allowed his contributions to
   be re-licensed with the BSD 2-clause copyright statement.
+
 - 09-Jan-2017: Bill Katz has graciously allowed his contributions to
   be re-licensed with the BSD 2-clause copyright statement.
+
 - 10-Jan-2017: Aaron Nabil has graciously allowed his contributions to
   be re-licensed with the BSD 2-clause copyright statement.
+
 - 11-Jan-2017: Mark Bullen has graciously allowed his contributions to
   be re-licensed with the BSD 2-clause copyright statement.
+
 - 16-Jan-2017: Chris Moore has graciously allowed his contributions to
   be re-licensed with the BSD 2-clause copyright statement.
+
 - 25-Jan-2017: Josh Osborne has graciously allowed his contributions to
   be re-licensed with the BSD 2-clause copyright statement.
+
 - 27-Jan-2017: Michael Shanzer has graciously allowed his contributions to
   be re-licensed with the BSD 2-clause copyright statement.
+
 - 27-Jan-2017: Steve Worley has graciously allowed his contributions to
   be re-licensed with the BSD 2-clause copyright statement.
+
+- 19-Apr-2017: All code where the authors could not be contacted for
+  re-licensing has been deleted from the master branch in the repository.
+  If the authors can be located, and the code relicensed, it will be
+  easy to reintegrate the code into the Xtank program.
