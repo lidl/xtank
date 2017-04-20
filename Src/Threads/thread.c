@@ -1,5 +1,6 @@
 /*-
  * Copyright (c) 1988 Terry Donahue
+ * Portions Copyright (c) 1992,1993,1999,2017 Kurt Lidl
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
