@@ -1661,7 +1661,16 @@ StartWandering(Environment *pEnv)
 	{
 		if (!navigate(pEnv, unseen_box, FALSE))
 		{
+#if 0
+/*
+ * The call to StartWandering() is recursive.  On a fast system, this
+ * will blow out the stack for the thread, and the entire games dies
+ * when the end of the stack is encountered.  The above calls to
+ * navigate() may alter internal state in pEnv, so leave them in place
+ * but just remove execution of the recursive call.
+*/
 			StartWandering(pEnv);
+#endif
 		}
 	}
 #ifdef DEBUG_WANDER_NAVIGATION
@@ -3120,11 +3129,9 @@ self_clear_path(Location *start, int delta_x, int delta_y)
 }
 
 
-/* decides if a box is a goal of my team.  Suitable to pass to navigate(). */
-static int IsGoalBox(Environment *pEnv, int x, int y)
-#if 0
-int  x, y;	/* grid coords of a box */
-#endif
+/* Decides if a box is a goal of my team.  Suitable to pass to navigate(). */
+static int
+IsGoalBox(Environment *pEnv, int x, int y) /* x, y: grid coords of a box */
 {
     int iRetCode = FALSE;
 
@@ -3152,10 +3159,7 @@ int  x, y;	/* grid coords of a box */
 
 
 static void
-NoticeLandmark(Environment *pEnv, int x, int y)
-#if 0
-	int             x, y;	/* box coordinates */
-#endif
+NoticeLandmark(Environment *pEnv, int x, int y) /* x, y: box coordinates */
 {
 	if (IsGoalBox(pEnv, x, y))
 	{
@@ -3191,13 +3195,14 @@ NoteSurroundings(Environment *pEnv)
  * find a path from the current location to one that fits destfunc().  Leaves
  * the result in the map and returns success in pEnv->have_route.
  */
-
-static int navigate(pEnv, destfunc, through_unseen)
-Environment *pEnv;
-int  (*destfunc) (); /* gets called with pEnv and x and y grid coordinates. */
-					 /* Returns true if that box is a destination. */
-int  through_unseen; /* true if the search should proceed */
-					 /* even through boxes that have not been seen yet */
+static int
+navigate(Environment *pEnv, int (*destfunc)(), int through_unseen)
+/*
+int (*destfunc)(); gets called with pEnv and x and y grid coordinates.
+				   Returns true if that box is a destination.
+int through_unseen; true if the search should proceed
+				   even through boxes that have not been seen yet
+*/
 {
 	/* used to implement breadth-first search through map */
 	Coord           queue[MAX_BOXES];
@@ -3332,7 +3337,6 @@ int  through_unseen; /* true if the search should proceed */
 }
 
 
-
 /*
  * searches down the path the navigator found for short-cuts: clear lines
  * from my vehicle's current position to boxes later on in the route. Returns
@@ -3427,7 +3431,6 @@ int   depth;	/* how many boxes down the path to search */
 
 	return (BAD_ANGLE);	/* didn't find the shortcut */
 }
-
 
 
 /* follow the route that navigate() produced */
@@ -3965,9 +3968,9 @@ OutOfAmmo(Boolean bCountDroppedWeapons)
                 return (FALSE);
             }
         }
-      }
+    }
 
-      return (TRUE);
+    return (TRUE);
 }
 
 
