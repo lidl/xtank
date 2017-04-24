@@ -34,7 +34,7 @@ This is the top-level Xtank directory.  The subdirectories are as follows:
 * Make sure that you have X11 libraries installed for your
   machine.  Xtank only requires libX11.
 * Build the software:
-  * On a supported system, just run 'make'
+  * On a supported system, just run `make`
 
 ### FreeBSD notes
 
@@ -58,6 +58,7 @@ installed into a virtual machine.
 
 The 'libX11-devel' package had to be added to a standward install,
 via:
+
     sudo yum install -y libX11-devel
 
 ### Other systems
@@ -74,7 +75,8 @@ the most important first step.
   * Mazes
   * Programs
   * Vehicles
-  These directories are used by the binary to load the Mazes
+
+* These directories are used by the binary to load the Mazes
   and Vehicles used by the game.  The `Programs` directory is
   only needed if you are going to dynamically load a robot
   program into the game.  The standard robot programs are
