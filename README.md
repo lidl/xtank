@@ -58,7 +58,7 @@ installed into a virtual machine.
 
 The 'libX11-devel' package had to be added to a standward install,
 via:
-	sudo yum install -y libX11-devel
+    sudo yum install -y libX11-devel
 
 ### Other systems
 
@@ -66,6 +66,23 @@ No substantial work has been put into making it easy to build this
 software on other platforms.  Hopefully, this will be done eventually,
 but getting the code relicensed and into a working state was deemed
 the most important first step.
+
+## How to Run
+
+* The game expects the environmental variable XTANK_DIR to be
+  set to point at a directory that contains the directories:
+  * Mazes
+  * Programs
+  * Vehicles
+  These directories are used by the binary to load the Mazes
+  and Vehicles used by the game.  The `Programs` directory is
+  only needed if you are going to dynamically load a robot
+  program into the game.  The standard robot programs are
+  compiled into the `xtank` binary.
+* The simplest way to accomplish this is to run the compiled
+  binary like this:
+
+    XTANK_DIR=$(pwd) ./Src/xtank
 
 ## Mailing List
 
