@@ -26,7 +26,7 @@
 # * SUCH DAMAGE.
 # */
 
-version=1.6.0
+version=1.6.1
 
 if [ $# = 1 ]; then
 	TARGET=$1
