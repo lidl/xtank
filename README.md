@@ -53,13 +53,21 @@ The code has been tested using Xquartz 2.7.11, and it works OK.
 ### Linux notes
 
 The code is expected to work fairly well on a modern-ish Linux
-system.  The code was compiled and tested on a Centos-7 installation,
-installed into a virtual machine.
+system.  The code has been compiled and tested on 64bit virtual
+machines, running Centos-7 and Ubuntu 16.04.02.
 
-The 'libX11-devel' package had to be added to a standward install,
-via:
+#### Centos notes
+
+The 'libX11-devel' package had to be added to a standard install.
 
     sudo yum install -y libX11-devel
+
+#### Ubuntu Linux notes
+
+A few utilities needed to be installed on top of a 'server only'
+installation.
+
+    sudo apt install -y make gcc flex libx11-6 libx11-dev
 
 ### Other systems
 
