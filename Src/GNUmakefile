@@ -49,12 +49,10 @@ endif
 
 include ${.CURDIR}/Makefile.inc1
 
-ifneq ("$(wildcard /usr/lib64/libdl.so*)","")
+ifeq ($(shell uname),Linux)
 LDLIBS+= -ldl
 endif
-ifneq ("$(wildcard /lib/x86_64-linux-gnu/libdl.so*)","")
-LDLIBS+= -ldl
-endif
+
 LDLIBS+= -lX11 -lm
 
 OBJS:=	$(patsubst %.c,%.o,$(SRCS))
