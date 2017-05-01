@@ -100,21 +100,23 @@ Note:
 #include "terminal.h"
 #include <math.h>
 
+extern int rnd(int mx);
+
 /*
 #define SOFT_DEBUG
 #define HARD_DEBUG
 */
 
 #ifdef HARD_DEBUG
-#define debugmsg puts
+#define debugmsg(x) (void)puts(x)
 #else
-#define debugmsg
+#define debugmsg(x)
 #endif
 
 #ifdef TRACE
-#define trace puts
+#define trace(x) (void)puts(x)
 #else
-#define trace
+#define trace(x)
 #endif
 
 /*
@@ -171,6 +173,7 @@ a fair captain, and a poor pilot.",
 	  STANK_TURRET1,
 	  STANK_TURRET2,
 	  STANK_TURRET3,
+	  STANK_TURRET4,
 	  DROPPED_WEAPON,
 	  MOUNTED_WEAPON
   } Sweapon_type;
@@ -308,7 +311,7 @@ static struct allp *setup(a) Z;
 #endif
 
 	if (!a) {
-		send_msg(RECIPIENT_ALL, OP_TEXT, "Someone's hogging memory!");
+		send_msg(RECIPIENT_ALL, OP_TEXT, (Byte *)"Someone's hogging memory!");
 		give_up();
 	}
 	set_cleanup_func(cleanup, a);
@@ -322,10 +325,10 @@ static struct allp *setup(a) Z;
 
 	max_turn = turn_rate(G top_speed);
 	if (!max_turn) {
-		send_msg(RECIPIENT_ALL, OP_TEXT, "This tank won't turn!");
+		send_msg(RECIPIENT_ALL, OP_TEXT, (Byte *)"This tank won't turn!");
 		G no_navigate = 1;
 	} else if (!has_special(MAPPER)) {
-		send_msg(RECIPIENT_ALL, OP_TEXT, "I can't see the walls!");
+		send_msg(RECIPIENT_ALL, OP_TEXT, (Byte *)"I can't see the walls!");
 		G no_navigate = 1;
 	} else {
 		G max_acc = acc();
@@ -341,7 +344,7 @@ static struct allp *setup(a) Z;
 		G ammo[i] = G weapons[i].max_ammo;
 
 		if (IS_TURRET(G weapons[i].mount))
-			G weapon_class[i] = G weapons[i].mount;
+			G weapon_class[i] = (Sweapon_type) G weapons[i].mount;
 
 		else if (G weapons[i].type == MINE || G weapons[i].type == SLICK)
 			G weapon_class[i] = DROPPED_WEAPON;
@@ -661,7 +664,7 @@ int *collide;					/* when are we likely to hit this guy? */
 						  break;
 
 					  case MOUNTED_WEAPON:
-						  if (fabs(dist - G range[i][j] >= radius))
+						  if (abs(dist - G range[i][j] >= radius))
 							  break;
 						  ang = fixed_angle(ATAN2(ty, tx));
 						  switch (G weapons[j].mount) {
@@ -683,6 +686,8 @@ int *collide;					/* when are we likely to hit this guy? */
 							case MOUNT_RIGHT:
 								if (EQUAL_ANGLES(ang + QUART_CIRC, head))
 									FIRE_WEAPON(j);
+								break;
+							default:
 								break;
 						  }
 						  break;
@@ -1127,21 +1132,21 @@ static void captain(a) Z;
 				goal.x = goal.grid_x * BOX_WIDTH + BOX_WIDTH / 2;
 				goal.y = goal.grid_y * BOX_HEIGHT + BOX_HEIGHT / 2;
 				where[0] = msg.opcode;
-				send_msg(msg.sender, OP_ACK, where);
+				send_msg(msg.sender, OP_ACK, (Byte *)where);
 			} else if (msg.sender_team != my_info.team && rnd(2))
-				send_msg(msg.sender, OP_TEXT, "Stuff it.");
+				send_msg(msg.sender, OP_TEXT, (Byte *)"Stuff it.");
 		}
 		if (gres != GUNNER_BLOCKED && gres != GUNNER_BORED) {
 			if (!G me_neutral) {
 				where[0] = mloc.grid_x;
 				where[1] = mloc.grid_y;
 				send_msg(my_info.team + MAX_VEHICLES,
-						 OP_GOTO, where);
+						 OP_GOTO, (Byte *)where);
 			}
 			goto engage;
 		}
 		if (nres == NAV_BLOCK ||
-			mloc.grid_x == goal.grid_x && mloc.grid_y == goal.grid_y)
+			(mloc.grid_x == goal.grid_x && mloc.grid_y == goal.grid_y))
 			/* pick a new target square */
 		{
 			trace("pick square");
