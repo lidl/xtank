@@ -580,7 +580,7 @@ void button_up P_((int w, Boolean status));
 static int make_gcs P_((void));
 static void set_font_path P_((char *));
 static int make_cursors P_((void));
-static int make_cursor P_((int, int, int, int, int, char *, char *));
+static int make_cursor P_((int, int, int, int, int, const char *, const char *));
 void set_cursor P_((int));
 int font_height P_((int));
 int font_string_width P_((char *, int));
@@ -588,7 +588,7 @@ int make_picture P_((Picture *, char *));
 void free_picture P_((Picture *));
 Byte *rotate_pic_90 P_((Picture *, Picture *, Byte *));
 Byte *rotate_pic_180 P_((Picture *, Picture *, Byte *));
-XErrorHandler liteXerror P_((Display *, XErrorEvent *));
+static int liteXerror P_((Display *, XErrorEvent *));
 char *get_default P_((char *, char *, char *));
 int get_num_default P_((char *, char *, int));
 

@@ -200,6 +200,7 @@ char video_error_str[256];
 void
 open_graphics(void)
 {
+	XInitThreads();
 	XSetErrorHandler(liteXerror);
 }
 
@@ -343,14 +344,14 @@ make_parent(void)
 	rw = RootWindow(vid->dpy, DefaultScreen(vid->dpy));
 	vid->parent_id = XCreateSimpleWindow(vid->dpy, rw,
 		size.x, size.y, size.width, size.height, 0, vid->fg, vid->bg);
-	if (vid->parent_id == NULL) {
+	if ((void *)vid->parent_id == NULL) {
 		video_error("Could not open parent window %s", "");
 		return 1;
 	}
-	icon = XCreateBitmapFromData(vid->dpy, rw, icon_bits, icon_width,
-								 icon_height);
+	icon = XCreateBitmapFromData(vid->dpy, rw, (_Xconst char*)icon_bits,
+		icon_width, icon_height);
 	XSetStandardProperties(vid->dpy, vid->parent_id, program_name,
-				   program_name, icon, NULL, 0, &size);
+		program_name, icon, NULL, 0, &size);
 
 	classHint.res_name = "xtank";
 	classHint.res_class = "XTank";
@@ -391,7 +392,7 @@ make_window(int w, int x, int y, int width, int height, int border)
 	Window id;
 
 	id = XCreateSimpleWindow(vid->dpy, vid->parent_id, x, y, width, height,
-							 border, vid->fg, vid->bg);
+		border, vid->fg, vid->bg);
 	if (id == (KeySym) NULL) {
 		video_error("Could not open window #%d", w);
 		return 1;
@@ -658,7 +659,7 @@ XMapSunKeypad(XKeyEvent *event)
   
   inkeysym = XLookupKeysym(event, 0);
   
-  for (loop = 0; SunTranslationTable[loop].original != NULL; loop++)
+  for (loop = 0; SunTranslationTable[loop].original != (KeySym)NULL; loop++)
     if (SunTranslationTable[loop].original == inkeysym)
       {
 	event->keycode = XKeysymToKeycode(vid->dpy,
@@ -1146,12 +1147,12 @@ set_font_path(char *fontdir)
 #define cross_height 16
 #define cross_x_hot 7
 #define cross_y_hot 7
-static unsigned char cross_bits[] =
+static const char cross_bits[] =
 {
 	0x80, 0x00, 0x80, 0x00, 0x80, 0x00, 0x80, 0x00, 0xc0, 0x01, 0x80, 0x00,
 	0x10, 0x04, 0x3f, 0x7e, 0x10, 0x04, 0x80, 0x00, 0xc0, 0x01, 0x80, 0x00,
 	0x80, 0x00, 0x80, 0x00, 0x80, 0x00, 0x00, 0x00};
-static unsigned char cross_mask[] =
+static const char cross_mask[] =
 {
 	0xc0, 0x01, 0xc0, 0x01, 0xc0, 0x01, 0xc0, 0x01, 0xe0, 0x03, 0xd0, 0x05,
 	0xbf, 0x7e, 0x7f, 0x7f, 0xbf, 0x7e, 0xd0, 0x05, 0xe0, 0x03, 0xc0, 0x01,
@@ -1161,12 +1162,12 @@ static unsigned char cross_mask[] =
 #define plus_height 16
 #define plus_x_hot 8
 #define plus_y_hot 7
-static unsigned char plus_bits[] =
+static const char plus_bits[] =
 {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x03, 0x80, 0x03, 0x80, 0x03,
 	0xf0, 0x1f, 0xf0, 0x1f, 0xf0, 0x1f, 0x80, 0x03, 0x80, 0x03, 0x80, 0x03,
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-static unsigned char plus_mask[] =
+static const char plus_mask[] =
 {
 	0x00, 0x00, 0x00, 0x00, 0xc0, 0x07, 0xc0, 0x07, 0xc0, 0x07, 0xf8, 0x3f,
 	0xf8, 0x3f, 0xf8, 0x3f, 0xf8, 0x3f, 0xf8, 0x3f, 0xc0, 0x07, 0xc0, 0x07,
@@ -1176,12 +1177,12 @@ static unsigned char plus_mask[] =
 #define ul_height 16
 #define ul_x_hot 8
 #define ul_y_hot 7
-static unsigned char ul_bits[] =
+static const char ul_bits[] =
 {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	0x80, 0x3f, 0x80, 0x3f, 0x80, 0x3f, 0x80, 0x03, 0x80, 0x03, 0x80, 0x03,
 	0x80, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-static unsigned char ul_mask[] =
+static const char ul_mask[] =
 {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xc0, 0x7f,
 	0xc0, 0x7f, 0xc0, 0x7f, 0xc0, 0x7f, 0xc0, 0x7f, 0xc0, 0x07, 0xc0, 0x07,
@@ -1191,12 +1192,12 @@ static unsigned char ul_mask[] =
 #define lr_height 16
 #define lr_x_hot 8
 #define lr_y_hot 7
-static unsigned char lr_bits[] =
+static const char lr_bits[] =
 {
 	0x00, 0x00, 0x00, 0x00, 0x80, 0x03, 0x80, 0x03, 0x80, 0x03, 0x80, 0x03,
 	0xf8, 0x03, 0xf8, 0x03, 0xf8, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-static unsigned char lr_mask[] =
+static const char lr_mask[] =
 {
 	0x00, 0x00, 0xc0, 0x07, 0xc0, 0x07, 0xc0, 0x07, 0xc0, 0x07, 0xfc, 0x07,
 	0xfc, 0x07, 0xfc, 0x07, 0xfc, 0x07, 0xfc, 0x07, 0x00, 0x00, 0x00, 0x00,
@@ -1226,7 +1227,8 @@ make_cursors(void)
  * Makes a cursor.
  */
 static int
-make_cursor(int c, int width, int height, int xhot, int yhot, char bits[], char mask[])
+make_cursor(int c, int width, int height, int xhot, int yhot,
+	const char bits[], const char mask[])
 {
 	XColor fcol, bcol, junk_col;
 	Colormap cmap;
@@ -1235,12 +1237,12 @@ make_cursor(int c, int width, int height, int xhot, int yhot, char bits[], char 
 
 	/* Make the pixmap for the cursor and make the cursor */
 	bpix = XCreateBitmapFromData(vid->dpy,
-							  RootWindow(vid->dpy, DefaultScreen(vid->dpy)),
-								 bits, width, height);
+		RootWindow(vid->dpy, DefaultScreen(vid->dpy)),
+		bits, width, height);
 	mpix = XCreateBitmapFromData(vid->dpy,
-							  RootWindow(vid->dpy, DefaultScreen(vid->dpy)),
-								 mask, width, height);
-	if (bpix == NULL || mpix == NULL) {
+		RootWindow(vid->dpy, DefaultScreen(vid->dpy)),
+		mask, width, height);
+	if ((void *)bpix == NULL || (void *)mpix == NULL) {
 		video_error("Could not create cursor pixmap #%d", c);
 		return 1;
 	}
@@ -1328,7 +1330,7 @@ make_picture(Picture *pic, char *bitmap)
 	temp = XCreateBitmapFromData(vid->dpy,
 							  RootWindow(vid->dpy, DefaultScreen(vid->dpy)),
 								 bitmap, pic->width, pic->height);
-	if (temp == NULL) {
+	if ((void *)temp == NULL) {
 		video_error("Could not store pixmap #%d", vid->num_pixids);
 		return 1;
 	}
@@ -1588,7 +1590,7 @@ rotate_pic_180(Picture *pic, Picture *rot_pic, Byte *bitmap)
 	return rot_bitmap;
 }
 
-XErrorHandler
+static int
 liteXerror(Display *dpy, XErrorEvent *err)
 {
 	char buf[1024];
@@ -1597,7 +1599,7 @@ liteXerror(Display *dpy, XErrorEvent *err)
 	XGetErrorText(dpy, err->error_code, buf, 1024);
 	printf("Error: %s\n", buf);
 	XGetErrorDatabaseText(dpy, "xtank", "XRequest", "???", buf, 1024);
-	printf("Serial %d/%d, Opcode %d/%d (%s), id $%lx\n", err->serial, 0,
+	printf("Serial %lu/%d, Opcode %d/%d (%s), id $%lx\n", err->serial, 0,
 		   err->request_code, err->minor_code, buf, err->resourceid);
 
 	/* Dump core... */
