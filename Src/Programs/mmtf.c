@@ -61,7 +61,7 @@
 
 #define MY_MAX_ARRAY		(2 * MAX_VEHICLES)
 
-static void main();
+static void mmtf_main();
 
 Prog_desc mmtf_prog = {
 	"mmtf",
@@ -70,7 +70,7 @@ Prog_desc mmtf_prog = {
 	"Jeff Snider",
 	PLAYS_COMBAT,
 	7,
-	main
+	mmtf_main
 };
 
 /* heh.  heh heh.  LOTS of global variables and malloced-once memory */
@@ -214,7 +214,7 @@ static Boolean my_clear_path(dest, x0, y0, x1, y1, allp)
 			}
 			for ( ; grid_y < end_grid_y; grid_y++) {
 				walltype = wall(SOUTH,grid_x,grid_y);
-				if (walltype == MAP_WALL || !dest && walltype == MAP_DEST) {
+				if (walltype == MAP_WALL || (!dest && walltype == MAP_DEST)) {
 					return FALSE;
 				}
 			}
@@ -230,7 +230,7 @@ static Boolean my_clear_path(dest, x0, y0, x1, y1, allp)
 			}
 			for ( ; grid_x < end_grid_x; grid_x++) {
 				walltype = wall(EAST,grid_x,grid_y);
-				if (walltype == MAP_WALL || !dest && walltype == MAP_DEST) {
+				if (walltype == MAP_WALL || (!dest && walltype == MAP_DEST)) {
 					return FALSE;
 				}
 			}
@@ -274,7 +274,7 @@ static Boolean my_clear_path(dest, x0, y0, x1, y1, allp)
 		l2debug_printf(("yhit: %f\n",yhit));
 		if (yhit > (lower_y + BOX_HEIGHT) || yhit < lower_y) {
 			walltype = wall(ywall,grid_x,grid_y);
-			if (walltype == MAP_WALL || !dest && walltype == MAP_DEST) {
+			if (walltype == MAP_WALL || (!dest && walltype == MAP_DEST)) {
 				return FALSE;
 			} else {
 				grid_y += dy;
@@ -282,7 +282,7 @@ static Boolean my_clear_path(dest, x0, y0, x1, y1, allp)
 			}
 		} else {
 			walltype = wall(xwall,grid_x,grid_y);
-			if (walltype == MAP_WALL || !dest && walltype == MAP_DEST) {
+			if (walltype == MAP_WALL || (!dest && walltype == MAP_DEST)) {
 				return FALSE;
 			} else {
 				grid_x += dx;
@@ -1188,7 +1188,7 @@ static void look_for_outposts(allp)
 	}
 }
 
-static void main()
+static void mmtf_main()
 {
 	All *allp;
 	int i, nframe, pos, missed, totmiss, fframe;
@@ -1221,7 +1221,7 @@ static void main()
 		totmiss += missed;
 		if (missed) {
 			sprintf(msg,"missed %d%% of %d turns",(int)(100.0*(double)totmiss/(double)(nframe-fframe)),(nframe-fframe));
-			send_msg(allp->me.id, OP_TEXT, msg);
+			send_msg(allp->me.id, OP_TEXT, (Byte *)msg);
 		}
 		allp->frame = nframe;
 		get_location(&(allp->myloc));
@@ -1253,7 +1253,7 @@ static void main()
 					l2debug_printf(("creating message about id %d\n",allp->hitme[pos]));
 					VehicleInfo2Message(&(allp->vehicle_list[allp->id2num[allp->hitme[pos]]]), msgData);
 					l3debug_printf(("sending message (id %d) (opcode %d)\n",allp->vehicle_list[allp->id2num[allp->hitme[pos]]].id,OP_ENEMY_AT));
-					send_msg(MAX_VEHICLES + allp->me.team, OP_ENEMY_AT, msgData);
+					send_msg(MAX_VEHICLES + allp->me.team, OP_ENEMY_AT, (Byte *)msgData);
 					l3debug_printf(("sent message\n"));
 				}
 			}
@@ -1274,7 +1274,7 @@ static void main()
 					msgData[0] = allp->myloc.grid_x;
 					msgData[1] = allp->myloc.grid_y;
 					msgData[2] = 0;
-					send_msg(MAX_VEHICLES+allp->me.team, OP_OPEN, msgData);
+					send_msg(MAX_VEHICLES+allp->me.team, OP_OPEN, (Byte *)msgData);
 				}
 				for (i = 0; i < allp->num_weap; i++) {
 					turn_off_weapon(i);
