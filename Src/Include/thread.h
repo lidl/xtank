@@ -52,6 +52,8 @@ typedef char XtankThread;
 
 /* prototypes */
 
+void init_threader(void);
+
 /* Call this once at start, returns pointer to main thread */
 XtankThread *thread_setup(void);
 
