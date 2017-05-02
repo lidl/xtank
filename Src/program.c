@@ -266,7 +266,6 @@ init_programs(Vehicle *v)
 void
 run_all_programs(void)
 {
-	extern frame;
 	Vehicle *v;
 	Program *prog;
 	int i, j;
