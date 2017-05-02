@@ -141,13 +141,13 @@ display_mesg(int w, char *string, int row, int font)
 /*
 ** Displays a string in a window starting at the specified row and column.
 */
-int
+void
 display_mesg2(int w, char *string, int column, int row, int font)
 {
 	draw_text_rc(w, column, row, string, font, WHITE);
 }
 
-int
+void
 display_mesg1(int w, char *string, int column, int row, int font, int color)
 {
 	draw_text_rc(w, column, row, string, font, color);

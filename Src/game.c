@@ -88,9 +88,10 @@ game_rules(Boolean init)
 		  return capture_rules(init);
 	  case RACE_GAME:
 		  return race_rules(init);
+	  default:
+		  return GAME_RUNNING;
 	}
 
-	return GAME_RUNNING;
 }
 
 /*
@@ -569,16 +570,16 @@ display_game_stats(int status)
 }
 
 
-int
+void
 ScreenOut(char *str, int x, int y)
 {
-	return (mprint(str, x, y));
+	mprint(str, x, y);
 }
 
-int
+void
 ScreenOutColor(char *str, int x, int y, int color)
 {
-	return (mprint_color(str, x, y, color));
+	mprint_color(str, x, y, color);
 }
 
 void
@@ -599,8 +600,8 @@ display_game_stats_to_current(int status, int n)
 	int i, j, k, l, m;
 	char s[80];
 	char fmt[80];
-	int (*plain_out) ();
-	int (*color_out) ();
+	void (*plain_out) ();
+	void (*color_out) ();
 
 	if (n >= 0) {
 		plain_out = ScreenOut;
@@ -647,8 +648,10 @@ display_game_stats_to_current(int status, int n)
 		  case RACE_GAME:
 			  sprintf(s, "Race won by %s", winning_vehicle->disp);
 			  break;
+		  default:
+			  (*plain_out) (s, 5, 4);
+			  break;
 		}
-		(*plain_out) (s, 5, 4);
 	}
 	/* Print out the total scores for all the teams */
 	(*plain_out) ("Current score:", 5, 6);

@@ -157,8 +157,8 @@ int save_vdesc P_((Vdesc *));
 int SaveVehicleFormat1 P_((Vdesc *));
 
 /* game.c */
-int ScreenOut P_((char *, int, int));
-int ScreenOutColor P_((char *, int, int, int));
+void ScreenOut P_((char *str, int x, int y));
+void ScreenOutColor P_((char *str, int x, int y, int color));
 void StandardOut P_((char *, int, int));
 void StandardOutColor P_((char *, int, int, int));
 int capture_rules P_((Boolean));
@@ -523,8 +523,8 @@ void init_random P_((void));
 int rnd P_((int));
 FLOAT rnd_interval P_((FLOAT, FLOAT));
 void display_mesg P_((int, char *, int, int));
-int display_mesg2 P_((int, char *, int, int, int));
-int display_mesg1 P_((int, char *, int, int, int, int));
+void display_mesg2 P_((int, char *, int, int, int));
+void display_mesg1 P_((int, char *, int, int, int, int));
 void free_everything P_((void));
 long idist P_((long, long, long, long));
 
