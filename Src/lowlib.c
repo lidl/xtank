@@ -744,6 +744,8 @@ fire_weapon(WeaponNum num)
 			  switch (t->angle_flag) {
 				case NO_SPIN:
 					break;
+				case TOGGLE:
+					break;
 				case CLOCKWISE:
 					if ((angle += t->turn_rate) >= t->desired_angle)
 						angle = t->desired_angle;
@@ -774,6 +776,8 @@ fire_weapon(WeaponNum num)
 			  break;
 		  case MOUNT_RIGHT:
 			  angle = cv->vector.heading + PI / 2;
+		  case real_NUM_MOUNTS:
+			  break;
 		}
 
 		if(ws->creat_func)		/* call special creation function. */
