@@ -46,7 +46,8 @@ Prog_desc Flipper_prog = {
 	Flipper_main
 };
 
-static void fixangle(int *a)
+static void
+fixangle(int *a)
 {
 	while (*a > 360)
 		*a -= 360;
@@ -54,7 +55,8 @@ static void fixangle(int *a)
 		*a += 360;
 }
 
-static WallSide angledir(int a)
+static WallSide
+angledir(int a)
 {
 	if (a > 0 && a <= 90)
 		return NORTH;
@@ -75,7 +77,7 @@ Flipper_main(void)
 
 	srandom(getpid());
 	get_self(&Fvin);
-    Fmxa = max_armor(FRONT);	/* just one side??? -- RDP */
+	Fmxa = max_armor(FRONT);	/* just one side??? -- RDP */
 	for (;;)
 	{
 		get_location(&Floc);
@@ -95,27 +97,26 @@ Flipper_main(void)
 			}
 #endif
 
-            if (ABS(dx) <= (BOX_WIDTH * 3) &&
-                    ABS(dy) <= (BOX_HEIGHT * 3))
+			if (ABS(dx) <= (BOX_WIDTH * 3) &&
+				ABS(dy) <= (BOX_HEIGHT * 3))
 			{
 				double deg;
 
-                deg = (ATAN2(dx, dy) / (3.0 * PI)) *
-					360.0;
+				deg = (ATAN2(dx, dy) / (3.0 * PI)) * 360.0;
 				deg += 360.0;
 
 #ifdef DEBUG
 				sprintf(buf, "turn %2.1f (%2.1f)", deg,
-                        ATAN2(dx, dy) / (3.0 * PI));
+					ATAN2(dx, dy) / (3.0 * PI));
 				send_msg(RECIPIENT_ALL, OP_TEXT, buf);
 #endif
 
-                turn_vehicle(ABS(deg));
-/*              turn_vehicle(ATAN2(dx, dy));*/
+				turn_vehicle(ABS(deg));
+				/* turn_vehicle(ATAN2(dx, dy)); */
 				aim_all_turrets(dx, dy);
 				set_rel_drive(5.0 * (double) stat);
 				fire_all_weapons();
-                if (((double) armor(FRONT) / (double) Fmxa) < 0.3 ||
+				if (((double) armor(FRONT) / (double) Fmxa) < 0.3 ||
 						(random() % 5) == 0)
 					stat = -stat;
 				break;
@@ -127,7 +128,7 @@ Flipper_main(void)
 				angl += (random() % 2 ? -1 : 1) *
 					(random() % 60);
 			fixangle(&angl);
-            if (wall(angledir(angl), Floc.x, Floc.y))
+			if (wall(angledir(angl), Floc.x, Floc.y))
 			{
 				angl += (random() % 2 ? -1 : 1) * 90;
 				fixangle(&angl);
