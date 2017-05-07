@@ -24,27 +24,28 @@
  * SUCH DAMAGE.
  */
 
+#include "bullet.h"
+
 #define MIN_ARMOR        0
 #define MAX_ARMOR      999
 
-#define OVER_WEIGHT      (1<<0)
-#define OVER_SPACE       (1<<1)
+#define OVER_WEIGHT	(1<<0)
+#define OVER_SPACE	(1<<1)
 #define NO_TURRETS	(1<<2)
-#define MIS_MOUNT        (1<<3)
+#define MIS_MOUNT	(1<<3)
 #define FRONT_FULL	(1<<4)
 #define BACK_FULL	(1<<5)
 #define LEFT_FULL	(1<<6)
 #define RIGHT_FULL	(1<<7)
 #define TURRET_FULL	(1<<8)
 
-  typedef struct {
-	  char *type;
-	  int defense;
-	  int weight;
-	  int space;
-	  int cost;
-  }
-Armor_stat;
+typedef struct {
+	char *type;
+	int defense;
+	int weight;
+	int space;
+	int cost;
+} Armor_stat;
 
 /* Mount flags */
 #define M_FRONT		(1<<0)
@@ -80,11 +81,11 @@ Armor_stat;
 	  unsigned long disp_flgs;
 	  unsigned long move_flgs;
 	  unsigned long hit_flgs;
-	  void (*creat_func)(void *v, void *bloc, Angle angle);
-	  void (*disp_func)();
-	  void (*upd_func)(void *b);
-	  void (*hit_func)(int whatHit, void *b, int dx, int dy,
-				void *parm1, void *parm2, void *parm3);
+	  void (*creat_func)(Weapon *v, Loc *bloc, Angle angle);
+	  void (*disp_func)(void);
+	  void (*upd_func)(Bullet *b);
+	  void (*hit_func)(int whatHit, Bullet *b, int dx, int dy,
+			void *parm1, void *parm2, void *parm3);
 }
 Weapon_stat;
 

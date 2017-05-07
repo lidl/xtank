@@ -180,7 +180,7 @@ Bumper_stat bumper_stat[MAX_BUMPERS] =
 };
 
 Heat_sink_stat heat_sink_stat =
-{500, 1000, 500};
+	{500, 1000, 500};
 
 Special_stat special_stat[MAX_SPECIALS] =
 {
@@ -188,18 +188,6 @@ Special_stat special_stat[MAX_SPECIALS] =
 #include "special-defs.h"		/* read this file for an explanation */
 #undef  QQ
 };
-
-#if 0
-void creat_harm(void *, void *, Angle);
-void creat_mort(void *, void *, Angle);
-
-/*void display_something();*/
-
-void update_seeker(void *);
-void update_harm(void *);
-void update_mortar(void *);
-void hit_blast(int, void *, int, int, void *, void *, void *);
-#endif
 
 Weapon_stat weapon_stat[VMAX_WEAPONS] =
 {
@@ -250,21 +238,26 @@ char *tread_title = "Treads     fric   cost";
 char *bumper_title = "Bumpers     elas   cost";
 
 static char *weapnum_entries[] =
-{"1", "2", "3", "4", "5", "6"};
+	{"1", "2", "3", "4", "5", "6"};
 
 static char
- *engine_entries[MAX_ENGINES], *weapon_entries[VMAX_WEAPONS + 1], *armor_entries[MAX_ARMORS],
- *body_entries[MAX_BODIES], *special_entries[MAX_SPECIALS], *suspension_entries[MAX_SUSPENSIONS],
- *tread_entries[MAX_TREADS], *bumper_entries[MAX_BUMPERS];
+	*armor_entries[MAX_ARMORS],
+	*body_entries[MAX_BODIES],
+	*bumper_entries[MAX_BUMPERS],
+	*engine_entries[MAX_ENGINES],
+	*special_entries[MAX_SPECIALS],
+	*suspension_entries[MAX_SUSPENSIONS],
+	*tread_entries[MAX_TREADS],
+	*weapon_entries[VMAX_WEAPONS + 1];
 
 static Menu_int menu_sys;
-static whichlevel[MAX_MENUS] =
-{0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+static int whichlevel[MAX_MENUS] =
+	{0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
 static Vdesc design_vdesc;
 static unsigned int problems;
 static Boolean modified = FALSE;/* if the vehicle has been modified
-					   since the last save */
+				   since the last save */
 
 static Boolean input_drawn = FALSE;	/* spl@houston.geoquest.slb.com */
 
@@ -608,6 +601,8 @@ vdesign_interface(Vdesc *d)
 					menu_display(&menu_sys, WEAPONS_MENU);
 					break;
 			  }
+		  default: /* appease clang */
+			break;
 		}
 	} while (quit == FALSE);
 }
@@ -752,6 +747,8 @@ compute_vdesc(Vdesc *d)
 			case MOUNT_RIGHT:
 				if( !(mnt & M_RIGHT) ) problems |= MIS_MOUNT;
 				sRight += weapon_stat[(int)d->weapon[i]].mount_space;
+				break;
+			case real_NUM_MOUNTS: /* appease clang */
 				break;
 		}
 #endif
@@ -924,8 +921,9 @@ display_vdesc(Vdesc *d, int status)
 
 	/* Erase any extra lines if redisplaying */
 	if (status == REDISPLAY)
-		for (i = d->num_weapons; i < od.num_weapons; i++)
+		for (i = d->num_weapons; i < od.num_weapons; i++) {
 			dprintn("", i + 14, 0);
+		}
 
 /*
  * print some valuable armor info - WNW
