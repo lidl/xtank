@@ -128,7 +128,7 @@
 	  unsigned long hit_flgs;	/* Damage type (normal, high, low, blast, area etc... ) */
 
 	/* Pointer to special creation code */
-	  void (*creat_func)(void *v, void *bloc, Angle angle);
+	  void (*creat_func)(Weapon *v, Loc *bloc, Angle angle);
 
 	  void (*disp_func)();		/* Pointer to special display code */
 
