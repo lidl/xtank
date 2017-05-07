@@ -2168,7 +2168,7 @@ best_move_heading(GnatVars *vars, Boolean allow_dest, Angle *move_heading, Boole
     if (low_score >= BadBox || (got_dest && dest_score + diff2 < low_score))
       break;
     
-    dir = NO_DIR;
+    dir = -1;
     if (lowest_x == 1) {
       if (lowest_y == 0)
 	dir = NORTH;
@@ -2202,7 +2202,7 @@ best_move_heading(GnatVars *vars, Boolean allow_dest, Angle *move_heading, Boole
 	clear_score = low_score;
 	break;
       }
-      else if (dir != NO_DIR && allow_dest && vars->have_ammo &&
+      else if (dir != -1 && allow_dest && vars->have_ammo &&
 	       map_wall(vars->map, dir, vars->us.loc.grid_x,
 			vars->us.loc.grid_y) == MAP_DEST) {
 	got_dest = True;

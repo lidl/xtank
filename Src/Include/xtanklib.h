@@ -77,9 +77,9 @@
 #define NUM_LANDMARK_TYPES ((int) real_NUM_LANDMARK_TYPES)
 
 /* the different walls that a box can have */
-  typedef enum {
-	  NO_DIR = -1, NORTH, EAST, SOUTH, WEST
-  } WallSide;
+typedef enum {
+	NORTH=0, EAST, SOUTH, WEST
+} WallSide;
 
 /* the different kinds of walls */
   typedef enum {

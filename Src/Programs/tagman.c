@@ -80,9 +80,6 @@ typedef int Frame;
 typedef int Coor;
 typedef int Speed;
 
-/* (used as an array index, so Xtank's NO_DIR is unsuitable) */
-#define NODIR		(WEST+1)
-
 /* the maximum possible number of boxes in the map */
 #define MAX_BOXES	(GRID_WIDTH * GRID_HEIGHT)
 
@@ -95,15 +92,15 @@ typedef int Speed;
 #define map_wall_west(x,y)  map_west_result(pEnv->my_map[x][y].flags)
 
 
-/* note that Xtank's WallSide type is no good, */
-/* since you can't use its NO_DIR as an array index */
+/* Xtank's enum of "WallSide" used to be no good, as it started */
+/* with "NO_DIR" as -1.  And you can't use that as an array index. */
 typedef enum
 {
 	North = NORTH,
 	East  = EAST,
 	South = SOUTH,
 	West  = WEST,
-	Nodir = NODIR
+	Nodir = (WEST+1)
 }
 Direction;
 
