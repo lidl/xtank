@@ -156,6 +156,8 @@ idx2armor(int idx, int *sidep)
 		  return TOP;
 	  case 49:
 		  return BOTTOM;
+	  default:
+		  return FRONT; /* make clang whine less */
 	}
 }
 
@@ -202,7 +204,7 @@ con_init(Vehicle *v, char *record)
 	crec->changed = FALSE; /* spl@houston.geoquest.slb.com --ane */
 
 	for (i = 0; i < crec->num; i++) {
-		crec->item[i].fval = (float *) NULL;
+		crec->item[i].fval = (FLOAT *) NULL;
 		crec->item[i].ival = (int *) NULL;
 		crec->item[i].action = NULL;
 		crec->item[i].red = crec->item[i].green = crec->item[i].white = 0;
@@ -403,7 +405,7 @@ special_console(Vehicle *v, char *record, int action)
 	  case SP_update:
 		  while (crec->item[1].type != CSTRING_CONST) {
 			  printf("Had to kludge plr %s's console\n", v->owner->name);
-			  con_init(v, crec);/* Kludge */
+			  con_init(v, record);
 		  }
 
 		  for (i = 0; i < crec->num; i++) {
@@ -591,7 +593,7 @@ special_console(Vehicle *v, char *record, int action)
 		  clear_window(CONS_WIN);
 		  break;
 	  case SP_activate:
-		  con_init(v, crec);
+		  con_init(v, record);
 		  return SP_on;
 		  break;
 	  case SP_deactivate:
