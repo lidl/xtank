@@ -262,6 +262,8 @@ special_hud(Vehicle *v, char *record, int action)
 					case MOUNT_RIGHT:
 						a = norm_angle(v->vector.heading) + QUAR_CIRCLE;
 						break;
+					case real_NUM_MOUNTS:
+						break;
 				  }
 
 				  switch (weapon_stat[v->weapon[h->draw[i].weapon].type].disp_flgs & F_CM) {
